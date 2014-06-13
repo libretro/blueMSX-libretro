@@ -1,0 +1,481 @@
+DEBUG = 0
+
+ifneq ($(EMSCRIPTEN),)
+   platform = emscripten
+endif
+
+ifeq ($(platform),)
+platform = unix
+ifeq ($(shell uname -a),)
+   platform = win
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+   platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+   platform = osx
+else ifneq ($(findstring win,$(shell uname -a)),)
+   platform = win
+endif
+endif
+
+# system platform
+system_platform = unix
+ifeq ($(shell uname -a),)
+EXE_EXT = .exe
+   system_platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+   system_platform = osx
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+   system_platform = win
+endif
+
+TARGET_NAME := blueMSX
+
+ifeq ($(platform), unix)
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,-version-script=link.T
+else ifeq ($(platform), osx)
+   TARGET := $(TARGET_NAME)_libretro.dylib
+   fpic := -fPIC
+   SHARED := -dynamiclib
+OSXVER = `sw_vers -productVersion | cut -c 4`
+ifneq ($(OSXVER),9)
+   fpic += -mmacosx-version-min=10.5
+endif
+else ifeq ($(platform), ios)
+   TARGET := $(TARGET_NAME)_libretro_ios.dylib
+   fpic := -fPIC
+   SHARED := -dynamiclib
+
+   CC = clang -arch armv7 -isysroot $(IOSSDK)
+   CXX = clang++ -arch armv7 -isysroot $(IOSSDK)
+OSXVER = `sw_vers -productVersion | cut -c 4`
+ifneq ($(OSXVER),9)
+   CC += -miphoneos-version-min=5.0
+   CXX += -miphoneos-version-min=5.0
+   PLATFORM_DEFINES := -miphoneos-version-min=5.0
+endif
+else ifeq ($(platform), qnx)
+   TARGET := $(TARGET_NAME)_libretro_qnx.so
+   fpic := -fPIC
+   SHARED := -lcpp -lm -shared -Wl,-version-script=link.T
+	CC = qcc -Vgcc_ntoarmv7le
+	CXX = QCC -Vgcc_ntoarmv7le_cpp
+	AR = QCC -Vgcc_ntoarmv7le
+   PLATFORM_DEFINES := -D__BLACKBERRY_QNX__ -fexceptions -marm -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=softfp
+else ifeq ($(platform), ps3)
+   TARGET := $(TARGET_NAME)_libretro_ps3.a
+   CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
+   CXX = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-g++.exe
+   AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
+   PLATFORM_DEFINES := -D__CELLOS_LV2__
+	STATIC_LINKING = 1
+else ifeq ($(platform), sncps3)
+   TARGET := $(TARGET_NAME)_libretro_ps3.a
+   CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
+   CXX = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
+   AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
+   PLATFORM_DEFINES := -D__CELLOS_LV2__
+	STATIC_LINKING = 1
+else ifeq ($(platform), psl1ght)
+   TARGET := $(TARGET_NAME)_libretro_psl1ght.a
+   CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
+   CXX = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
+   AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
+   PLATFORM_DEFINES := -D__CELLOS_LV2__
+	STATIC_LINKING = 1
+else ifeq ($(platform), psp1)
+   TARGET := $(TARGET_NAME)_libretro_psp1.a
+   CC = psp-gcc$(EXE_EXT)
+   CXX = psp-g++$(EXE_EXT)
+   AR = psp-ar$(EXE_EXT)
+   PLATFORM_DEFINES := -DPSP
+   CFLAGS += -G0
+   CXXFLAGS += -G0
+   STATIC_LINKING = 1
+else ifeq ($(platform), xenon)
+   TARGET := $(TARGET_NAME)_libretro_xenon360.a
+   CC = xenon-gcc$(EXE_EXT)
+   CXX = xenon-g++$(EXE_EXT)
+   AR = xenon-ar$(EXE_EXT)
+   PLATFORM_DEFINES := -D__LIBXENON__
+	STATIC_LINKING = 1
+else ifeq ($(platform), ngc)
+   TARGET := $(TARGET_NAME)_libretro_ngc.a
+   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+   CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
+   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+   PLATFORM_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float
+	STATIC_LINKING = 1
+else ifeq ($(platform), wii)
+   TARGET := $(TARGET_NAME)_libretro_wii.a
+   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+   CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
+   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+   PLATFORM_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
+	STATIC_LINKING = 1
+else ifneq (,$(findstring armv,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,-version-script=link.T
+   CC = gcc
+   CXX = g++
+ifneq (,$(findstring cortexa8,$(platform)))
+   PLATFORM_DEFINES += -marm -mcpu=cortex-a8
+else ifneq (,$(findstring cortexa9,$(platform)))
+   PLATFORM_DEFINES += -marm -mcpu=cortex-a9
+endif
+   PLATFORM_DEFINES += -marm
+ifneq (,$(findstring neon,$(platform)))
+   PLATFORM_DEFINES += -mfpu=neon
+   HAVE_NEON = 1
+endif
+ifneq (,$(findstring softfloat,$(platform)))
+   PLATFORM_DEFINES += -mfloat-abi=softfp
+else ifneq (,$(findstring hardfloat,$(platform)))
+   PLATFORM_DEFINES += -mfloat-abi=hard
+endif
+   PLATFORM_DEFINES += -DARM
+else ifeq ($(platform), emscripten)
+   TARGET := $(TARGET_NAME)_libretro_emscripten.bc
+else
+   TARGET := $(TARGET_NAME)_libretro.dll
+   CC = gcc
+   CXX = g++
+   SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
+endif
+
+ifeq ($(DEBUG), 1)
+	CFLAGS += -O0 -g
+	CXXFLAGS += -O0 -g
+else ifeq ($(platform), emscripten)
+	CFLAGS += -O2
+	CXXFLAGS += -O2 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
+else
+	CFLAGS += -O3
+	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
+endif
+
+DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES)
+DEFINES += -D_MBCS -D__WINCRYPT_H__ -DLSB_FIRST -DNARROW -DSOUND -DDISK -DFMSX -DPROPERTIES_DEFAULTS_ALT_1 -DPROPERTIES_NO_REGISTRY -DPROPERTIES_LOCAL_INI_FILE
+DEFINES += -DNO_ASM
+
+
+CFLAGS   += $(fpic) $(DEFINES)
+CFLAGS   += -w
+CXXFLAGS += $(fpic) $(DEFINES)
+CXXFLAGS   += -w
+
+
+
+
+CSRCS   = libretro.c
+CXXSRC  =
+
+
+CSRCS  += Src/libretro/blueMSXlite.c
+CSRCS  += Src/libretro/Dialog.c
+CSRCS  += Src/libretro/Event.c
+CSRCS  += Src/libretro/File.c
+CSRCS  += Src/libretro/Glob.c
+CSRCS  += Src/libretro/Input.c
+CSRCS  += Src/libretro/Menu.c
+CSRCS  += Src/libretro/Midi.c
+CSRCS  += Src/libretro/Notifications.c
+CSRCS  += Src/libretro/Printer.c
+CSRCS  += Src/libretro/Sound.c
+CSRCS  += Src/libretro/Thread.c
+CSRCS  += Src/libretro/Timer.c
+CSRCS  += Src/libretro/Uart.c
+CSRCS  += Src/libretro/VideoIn.c
+
+
+
+CSRCS  += Src/Common/DebugMemory.c
+
+CSRCS  += Src/Bios/Patch.c
+
+CSRCS  += Src/Unzip/adler32.c
+CSRCS  += Src/Unzip/compress.c
+CSRCS  += Src/Unzip/crc32.c
+CSRCS  += Src/Unzip/gzio.c
+CSRCS  += Src/Unzip/uncompr.c
+CSRCS  += Src/Unzip/deflate.c
+CSRCS  += Src/Unzip/trees.c
+CSRCS  += Src/Unzip/zutil.c
+CSRCS  += Src/Unzip/inflate.c
+CSRCS  += Src/Unzip/infback.c
+CSRCS  += Src/Unzip/inftrees.c
+CSRCS  += Src/Unzip/inffast.c
+
+CSRCS  += Src/Unzip/unzip.c
+CSRCS  += Src/Unzip/ioapi.c
+CSRCS  += Src/Unzip/zip.c
+CSRCS  += Src/Unzip/iowin32.c
+
+CSRCS  += Src/Memory/ramMapper.c
+CSRCS  += Src/Memory/ramMapperIo.c
+CSRCS  += Src/Memory/ramNormal.c
+CSRCS  += Src/Memory/RomLoader.c
+CSRCS  += Src/Memory/romMapperASCII16.c
+CSRCS  += Src/Memory/romMapperASCII16nf.c
+CSRCS  += Src/Memory/romMapperASCII16sram.c
+CSRCS  += Src/Memory/romMapperASCII8.c
+CSRCS  += Src/Memory/romMapperASCII8sram.c
+CSRCS  += Src/Memory/romMapperBunsetu.c
+CSRCS  += Src/Memory/romMapperCrossBlaim.c
+CSRCS  += Src/Memory/romMapperDisk.c
+CSRCS  += Src/Memory/romMapperF4device.c
+CSRCS  += Src/Memory/romMapperFMPAC.c
+CSRCS  += Src/Memory/romMapperFMPAK.c
+CSRCS  += Src/Memory/romMapperPAC.c
+CSRCS  += Src/Memory/romMapperGameMaster2.c
+CSRCS  += Src/Memory/romMapperHarryFox.c
+CSRCS  += Src/Memory/romMapperHolyQuran.c
+CSRCS  += Src/Memory/romMapperKanji.c
+CSRCS  += Src/Memory/romMapperKanji12.c
+CSRCS  += Src/Memory/romMapperKonami4.c
+CSRCS  += Src/Memory/romMapperKonami4nf.c
+CSRCS  += Src/Memory/romMapperKonami5.c
+CSRCS  += Src/Memory/romMapperKoei.c
+CSRCS  += Src/Memory/romMapperMegaRAM.c
+CSRCS  += Src/Memory/romMapperMsxAudio.c
+CSRCS  += Src/Memory/romMapperLodeRunner.c
+CSRCS  += Src/Memory/romMapperHalnote.c
+CSRCS  += Src/Memory/romMapperBasic.c
+CSRCS  += Src/Memory/romMapperKorean126.c
+CSRCS  += Src/Memory/romMapperKorean90.c
+CSRCS  += Src/Memory/romMapperKorean80.c
+CSRCS  += Src/Memory/romMapperMsxDos2.c
+CSRCS  += Src/Memory/romMapperNational.c
+CSRCS  += Src/Memory/romMapperNormal.c
+CSRCS  += Src/Memory/romMapperPanasonic.c
+CSRCS  += Src/Memory/romMapperPlain.c
+CSRCS  += Src/Memory/romMapperRType.c
+CSRCS  += Src/Memory/romMapperSCCplus.c
+CSRCS  += Src/Memory/romMapperStandard.c
+CSRCS  += Src/Memory/romMapperSonyHBI55.c
+CSRCS  += Src/Memory/romMapperSvi80Col.c
+CSRCS  += Src/Memory/romMapperSvi328Fdc.c
+CSRCS  += Src/Memory/romMapperSvi328Prn.c
+CSRCS  += Src/Memory/romMapperSvi328Rs232.c
+CSRCS  += Src/Memory/romMapperTC8566AF.c
+CSRCS  += Src/Memory/romMapperPhilipsFdc.c
+CSRCS  += Src/Memory/romMapperNationalFdc.c
+CSRCS  += Src/Memory/romMapperSvi738Fdc.c
+CSRCS  += Src/Memory/romMapperMicrosol.c
+CSRCS  += Src/Memory/romMapperTurboRPcm.c
+CSRCS  += Src/Memory/romMapperTurboRTimer.c
+CSRCS  += Src/Memory/romMapperMajutsushi.c
+CSRCS  += Src/Memory/romMapperMoonsound.c
+CSRCS  += Src/Memory/romMapperMsxMusic.c
+CSRCS  += Src/Memory/romMapperMsxPrn.c
+CSRCS  += Src/Memory/romMapperKonamiSynth.c
+CSRCS  += Src/Memory/romMapperKonamiKeyboardMaster.c
+CSRCS  += Src/Memory/romMapperCasette.c
+CSRCS  += Src/Memory/romMapperS1990.c
+CSRCS  += Src/Memory/sramMapperMatsuchita.c
+CSRCS  += Src/Memory/sramMapperS1985.c
+CSRCS  += Src/Memory/sramLoader.c
+
+CSRCS  += Src/Memory/romMapperGIDE.c
+CSRCS  += Src/Memory/romMapperGameReader.c
+CSRCS  += Src/Memory/romMapperBeerIDE.c
+CSRCS  += Src/Memory/romMapperSfg05.c
+CSRCS  += Src/Memory/romMapperSunriseIDE.c
+CSRCS  += Src/Memory/romMapperSg1000Castle.c
+CSRCS  += Src/Memory/romMapperSonyHBIV1.c
+CSRCS  += Src/Memory/romMapperSvi727.c
+CSRCS  += Src/Memory/romMapperMicrosolVmx80.c
+CSRCS  += Src/Memory/romMapperKonamiWordPro.c
+CSRCS  += Src/Memory/romMapperFmDas.c
+CSRCS  += Src/Memory/ram1kBMirrored.c
+CSRCS  += Src/Memory/romMapperNms8280VideoDa.c
+#CSRCS  += Src/Memory/
+
+CSRCS  += Src/Debugger/DebugDeviceManager.c
+CSRCS  += Src/Debugger/Debugger.c
+
+CSRCS  += Src/Media/Crc32Calc.c
+CXXSRC += Src/Media/MediaDb.cpp
+CXXSRC += Src/Media/Sha1.cpp
+
+CSRCS  += Src/VideoChips/CRTC6845.c
+CSRCS  += Src/VideoChips/FrameBuffer.c
+CSRCS  += Src/VideoChips/VDP.c
+CSRCS  += Src/VideoChips/V9938.c
+CSRCS  += Src/VideoChips/VideoManager.c
+
+CSRCS  += Src/VideoRender/hq2x.c
+CSRCS  += Src/VideoRender/hq3x.c
+CSRCS  += Src/VideoRender/Scalebit.c
+CSRCS  += Src/VideoRender/VideoRender.c
+
+CSRCS  += Src/Z80/R800.c
+CSRCS  += Src/Z80/R800Dasm.c
+CSRCS  += Src/Z80/R800SaveState.c
+
+CSRCS  += Src/Z80/R800Debug.c
+
+CSRCS  += Src/IoDevice/Casette.c
+CSRCS  += Src/IoDevice/DirAsDisk.c
+CSRCS  += Src/IoDevice/Disk.c
+CSRCS  += Src/IoDevice/JoystickIO.c
+CSRCS  += Src/IoDevice/Led.c
+CSRCS  += Src/IoDevice/MsxPPI.c
+CSRCS  += Src/IoDevice/PrinterIO.c
+CSRCS  += Src/IoDevice/RTC.c
+CSRCS  += Src/IoDevice/SviPPI.c
+CSRCS  += Src/IoDevice/Switches.c
+CSRCS  += Src/IoDevice/TC8566AF.c
+CSRCS  += Src/IoDevice/TurboRIO.c
+CSRCS  += Src/IoDevice/WD2793.c
+CSRCS  += Src/IoDevice/WDCRC.c
+CSRCS  += Src/IoDevice/MidiIO.c
+CSRCS  += Src/IoDevice/I8250.c
+CSRCS  += Src/IoDevice/I8251.c
+CSRCS  += Src/IoDevice/I8254.c
+CSRCS  += Src/IoDevice/FdcAudio.c
+CSRCS  += Src/IoDevice/UartIO.c
+CSRCS  += Src/IoDevice/MSXMidi.c
+
+CSRCS  += Src/IoDevice/HarddiskIDE.c
+CSRCS  += Src/IoDevice/GameReader.c
+CSRCS  += Src/IoDevice/SunriseIDE.c
+#CSRCS  += Src/IoDevice/
+
+
+CSRCS  += Src/Language/Language.c
+
+CXXSRC += Src/TinyXML/tinystr.cpp
+CXXSRC += Src/TinyXML/tinyxml.cpp
+CXXSRC += Src/TinyXML/tinyxmlerror.cpp
+CXXSRC += Src/TinyXML/tinyxmlparser.cpp
+
+CSRCS  += Src/SoundChips/AudioMixer.c
+CSRCS  += Src/SoundChips/AY8910.c
+CSRCS  += Src/SoundChips/DAC.c
+CSRCS  += Src/SoundChips/Fmopl.c
+CSRCS  += Src/SoundChips/KeyClick.c
+CSRCS  += Src/SoundChips/MameVLM5030.c
+CSRCS  += Src/SoundChips/Moonsound.c
+CXXSRC += Src/SoundChips/OpenMsxYM2413.cpp
+CXXSRC += Src/SoundChips/OpenMsxYM2413_2.cpp
+CXXSRC += Src/SoundChips/OpenMsxYMF262.cpp
+CXXSRC += Src/SoundChips/OpenMsxYMF278.cpp
+CSRCS  += Src/SoundChips/SamplePlayer.c
+CSRCS  += Src/SoundChips/SCC.c
+CSRCS  += Src/SoundChips/VLM5030.c
+CSRCS  += Src/SoundChips/Y8950.c
+CXXSRC += Src/SoundChips/YM2413.cpp
+CSRCS  += Src/SoundChips/Ymdeltat.c
+CSRCS  += Src/SoundChips/SN76489.c
+
+CSRCS  += Src/SoundChips/ym2151.c
+CSRCS  += Src/SoundChips/MameYM2151.c
+CSRCS  += Src/SoundChips/MsxPsg.c
+
+CSRCS  += Src/Emulator/Actions.c
+CSRCS  += Src/Emulator/CommandLine.c
+CSRCS  += Src/Emulator/Emulator.c
+CSRCS  += Src/Emulator/Keyboard.c
+CSRCS  += Src/Emulator/FileHistory.c
+CSRCS  += Src/Emulator/LaunchFile.c
+CSRCS  += Src/Emulator/Properties.c
+
+CSRCS  += Src/Utils/IsFileExtension.c
+CSRCS  += Src/Utils/SaveState.c
+CSRCS  += Src/Utils/StrcmpNoCase.c
+CSRCS  += Src/Utils/TokenExtract.c
+CSRCS  += Src/Utils/IniFileParser.c
+CSRCS  += Src/Utils/ziphelper.c
+
+#CSRCS  += Src/Theme/Theme.c
+#CSRCS  += Src/Theme/ThemeTriggers.c
+#CSRCS  += Src/Theme/ThemeControls.c
+#CSRCS  += Src/Theme/ThemeLoader.c
+
+CSRCS  += Src/Memory/IoPort.c
+CSRCS  += Src/Memory/MegaromCartridge.c
+CSRCS  += Src/Memory/SlotManager.c
+CSRCS  += Src/Memory/DeviceManager.c
+CSRCS  += Src/IoDevice/I8255.c
+
+CSRCS  += Src/Board/Board.c
+CSRCS  += Src/Board/Machine.c
+CSRCS  += Src/Board/MSX.c
+CSRCS  += Src/Board/SVI.c
+CSRCS  += Src/Board/Coleco.c
+CSRCS  += Src/Board/SG1000.c
+
+CSRCS  += Src/Board/Adam.c
+
+CSRCS  += Src/Input/ColecoJoystick.c
+CSRCS  += Src/Input/InputEvent.c
+CSRCS  += Src/Input/JoystickPort.c
+CSRCS  += Src/Input/MagicKeyDongle.c
+CSRCS  += Src/Input/MsxAsciiLaser.c
+CSRCS  += Src/Input/MsxGunstick.c
+CSRCS  += Src/Input/MsxJoystick.c
+CSRCS  += Src/Input/MsxMouse.c
+CSRCS  += Src/Input/MsxTetrisDongle.c
+CSRCS  += Src/Input/Sg1000Joystick.c
+CSRCS  += Src/Input/SviJoystick.c
+CSRCS  += Src/Input/SviJoyIo.c
+
+
+OBJS := $(CSRCS:.c=.o) $(CXXSRC:.cpp=.o)
+
+
+INCDIRS := -I.
+INCDIRS += -ISrc/Arch
+INCDIRS += -ISrc/Bios
+INCDIRS += -ISrc/Board
+INCDIRS += -ISrc/BuildInfo
+INCDIRS += -ISrc/Common
+INCDIRS += -ISrc/Debugger
+INCDIRS += -ISrc/Emulator
+INCDIRS += -ISrc/IoDevice
+INCDIRS += -ISrc/Language
+INCDIRS += -ISrc/Media
+INCDIRS += -ISrc/Memory
+INCDIRS += -ISrc/Resources
+INCDIRS += -ISrc/SoundChips
+INCDIRS += -ISrc/Theme
+INCDIRS += -ISrc/TinyXML
+INCDIRS += -ISrc/Unzip
+INCDIRS += -ISrc/Utils
+INCDIRS += -ISrc/VideoChips
+INCDIRS += -ISrc/VideoRender
+INCDIRS += -ISrc/Z80
+INCDIRS += -ISrc/Input
+
+INCDIRS += -ISrc/Libretro
+
+LIBS := -lsdl -lz
+
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+ifeq ($(STATIC_LINKING), 1)
+	$(AR) rcs $@ $(OBJS)
+else
+	$(CXX) -o $@ $(SHARED) $(OBJS) $(LDFLAGS) $(LIBS)
+endif
+
+%.o: %.cpp
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCDIRS)
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCDIRS)
+
+clean-objs:
+	rm -f $(OBJS)
+
+clean:
+	rm -f $(OBJS)
+	rm -f $(TARGET)
+
+.PHONY: clean clean-objs
+
