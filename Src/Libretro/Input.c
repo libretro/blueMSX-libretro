@@ -31,8 +31,8 @@
 
 void  archUpdateJoystick() {}
 
-UInt8 archJoystickGetState(int joystickNo) { return 0; }
-int  archJoystickGetCount() { return 0; }
+//UInt8 archJoystickGetState(int joystickNo) { return 0; }
+int  archJoystickGetCount() { return 1; }
 char* archJoystickGetName(int index) { return ""; }
 void archMouseSetForceLock(int lock) { }
 

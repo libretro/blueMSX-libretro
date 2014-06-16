@@ -29,6 +29,181 @@
 #include "ArchNotifications.h"
 #include "JoystickPort.h"
 
+#include "InputEvent.h"
+
+extern int eventMap[256];
+
+static unsigned btn_map[EC_KEYCOUNT] =
+{
+   RETROK_UNKNOWN,   //EC_NONE      0
+
+// ROW 0
+   RETROK_F1,        //EC_F1        1
+   RETROK_F2,        //EC_F2        2
+   RETROK_F3,        //EC_F3        3
+   RETROK_F4,        //EC_F4        4
+   RETROK_F5,        //EC_F5        5
+   RETROK_END,       //EC_STOP      6
+   RETROK_HOME,      //EC_CLS       7
+   RETROK_PAGEUP,   //EC_SELECT    8
+   RETROK_INSERT,    //EC_INS       9
+   RETROK_DELETE,    //EC_DEL      10
+
+// ROW 1
+   RETROK_ESCAPE,   //EC_ESC      11
+   RETROK_1,   //EC_1        12
+   RETROK_2,   //EC_2        13
+   RETROK_3,   //EC_3        14
+   RETROK_4,   //EC_4        15
+   RETROK_5,   //EC_5        16
+   RETROK_6,   //EC_6        17
+   RETROK_7,   //EC_7        18
+   RETROK_8,   //EC_8        19
+   RETROK_9,   //EC_9        20
+   RETROK_0,   //EC_0        21
+   RETROK_MINUS,   //EC_NEG      22
+   RETROK_EQUALS,   //EC_CIRCFLX  23
+   RETROK_UNKNOWN,   //EC_BKSLASH  24
+   RETROK_BACKSPACE,   //EC_BKSPACE  25
+
+// ROW 2
+   RETROK_TAB,   //EC_TAB      26
+   RETROK_q,   //EC_Q        27
+   RETROK_w,   //EC_W        28
+   RETROK_e,   //EC_E        29
+   RETROK_r,   //EC_R        30
+   RETROK_t,   //EC_T        31
+   RETROK_y,   //EC_Y        32
+   RETROK_u,   //EC_U        33
+   RETROK_i,   //EC_I        34
+   RETROK_o,   //EC_O        35
+   RETROK_p,   //EC_P        36
+   RETROK_LEFTBRACKET,   //EC_AT       37
+   RETROK_RIGHTBRACKET,   //EC_LBRACK   38
+   RETROK_RETURN,   //EC_RETURN   39
+
+// ROW 3
+   RETROK_LCTRL,   //EC_CTRL     40
+   RETROK_a,   //EC_A        41
+   RETROK_s,   //EC_S        42
+   RETROK_d,   //EC_D        43
+   RETROK_f,   //EC_F        44
+   RETROK_g,   //EC_G        45
+   RETROK_h,   //EC_H        46
+   RETROK_j,   //EC_J        47
+   RETROK_k,   //EC_K        48
+   RETROK_l,   //EC_L        49
+   RETROK_SEMICOLON,   //EC_SEMICOL  50
+   RETROK_COLON,   //EC_COLON    51
+   RETROK_BACKSLASH,   //EC_RBRACK   52
+
+// ROW 4
+   RETROK_LSHIFT,   //EC_LSHIFT   53
+   RETROK_z,   //EC_Z        54
+   RETROK_x,   //EC_X        55
+   RETROK_c,   //EC_C        56
+   RETROK_v,   //EC_V        57
+   RETROK_b,   //EC_B        58
+   RETROK_n,   //EC_N        59
+   RETROK_m,   //EC_M        60
+   RETROK_COMMA,   //EC_COMMA    61
+   RETROK_PERIOD,   //EC_PERIOD   62
+   RETROK_SLASH,   //EC_DIV      63
+   RETROK_UNKNOWN,   //EC_UNDSCRE  64
+   RETROK_RSHIFT,   //EC_RSHIFT   65
+
+// ROW 5
+   RETROK_CAPSLOCK,   //EC_CAPS     66
+   RETROK_LALT,   //EC_GRAPH    67
+   RETROK_UNKNOWN,   //EC_TORIKE   68
+   RETROK_SPACE,   //EC_SPACE    69
+   RETROK_UNKNOWN,   //EC_JIKKOU   70
+   RETROK_UNKNOWN,   //EC_CODE     71
+   RETROK_PAUSE,   //EC_PAUSE    72
+
+// ARROWS
+   RETROK_LEFT,   //EC_LEFT     73
+   RETROK_UP,   //EC_UP       74
+   RETROK_DOWN,   //EC_DOWN     75
+   RETROK_RIGHT,   //EC_RIGHT    76
+
+// NUMERIC KEYBOARD
+   RETROK_KP7,   //EC_NUM7     77
+   RETROK_KP8,   //EC_NUM8     78
+   RETROK_KP9,   //EC_NUM9     79
+   RETROK_KP_DIVIDE,   //EC_NUMDIV   80
+   RETROK_KP4,   //EC_NUM4     81
+   RETROK_KP5,   //EC_NUM5     82
+   RETROK_KP6,   //EC_NUM6     83
+   RETROK_KP_MULTIPLY,   //EC_NUMMUL   84
+   RETROK_KP1,   //EC_NUM1     85
+   RETROK_KP2,   //EC_NUM2     86
+   RETROK_KP3,   //EC_NUM3     87
+   RETROK_KP_MINUS,   //EC_NUMSUB   88
+   RETROK_KP0,   //EC_NUM0     89
+   RETROK_KP_ENTER,   //EC_NUMPER   90
+   RETROK_KP_PERIOD,   //EC_NUMCOM   91
+   RETROK_KP_PLUS,   //EC_NUMADD   92
+
+// SVI SPECIFIC KEYS
+   RETROK_PRINT,   //EC_PRINT    93
+
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+
+   RETRO_DEVICE_ID_JOYPAD_UP,   //EC_JOY1_UP      100
+   RETRO_DEVICE_ID_JOYPAD_DOWN,   //EC_JOY1_DOWN    101
+   RETRO_DEVICE_ID_JOYPAD_LEFT,   //EC_JOY1_LEFT    102
+   RETRO_DEVICE_ID_JOYPAD_RIGHT,   //EC_JOY1_RIGHT   103
+   RETRO_DEVICE_ID_JOYPAD_A,   //EC_JOY1_BUTTON1 104
+   RETRO_DEVICE_ID_JOYPAD_B,   //EC_JOY1_BUTTON2 105
+   RETRO_DEVICE_ID_JOYPAD_Y,   //EC_JOY1_BUTTON3 106
+   RETRO_DEVICE_ID_JOYPAD_X,   //EC_JOY1_BUTTON4 107
+   RETRO_DEVICE_ID_JOYPAD_START,   //EC_JOY1_BUTTON5 108
+   RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_JOY1_BUTTON6 109
+
+   RETRO_DEVICE_ID_JOYPAD_UP,   //EC_JOY2_UP      110
+   RETRO_DEVICE_ID_JOYPAD_DOWN,   //EC_JOY2_DOWN    111
+   RETRO_DEVICE_ID_JOYPAD_LEFT,   //EC_JOY2_LEFT    112
+   RETRO_DEVICE_ID_JOYPAD_RIGHT,   //EC_JOY2_RIGHT   113
+   RETRO_DEVICE_ID_JOYPAD_A,   //EC_JOY2_BUTTON1 114
+   RETRO_DEVICE_ID_JOYPAD_B,   //EC_JOY2_BUTTON2 115
+   RETRO_DEVICE_ID_JOYPAD_Y,   //EC_JOY2_BUTTON3 116
+   RETRO_DEVICE_ID_JOYPAD_X,   //EC_JOY2_BUTTON4 117
+   RETRO_DEVICE_ID_JOYPAD_START,   //EC_JOY2_BUTTON5 118
+   RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_JOY2_BUTTON6 119
+
+   RETROK_UNKNOWN,   //EC_COLECO1_0    120
+   RETROK_UNKNOWN,   //EC_COLECO1_1    121
+   RETROK_UNKNOWN,   //EC_COLECO1_2    122
+   RETROK_UNKNOWN,   //EC_COLECO1_3    123
+   RETROK_UNKNOWN,   //EC_COLECO1_4    124
+   RETROK_UNKNOWN,   //EC_COLECO1_5    125
+   RETROK_UNKNOWN,   //EC_COLECO1_6    126
+   RETROK_UNKNOWN,   //EC_COLECO1_7    127
+   RETROK_UNKNOWN,   //EC_COLECO1_8    128
+   RETROK_UNKNOWN,   //EC_COLECO1_9    129
+   RETROK_UNKNOWN,   //EC_COLECO1_STAR 130
+   RETROK_UNKNOWN,   //EC_COLECO1_HASH 131
+
+   RETROK_UNKNOWN,   //EC_COLECO2_0    140
+   RETROK_UNKNOWN,   //EC_COLECO2_1    141
+   RETROK_UNKNOWN,   //EC_COLECO2_2    142
+   RETROK_UNKNOWN,   //EC_COLECO2_3    143
+   RETROK_UNKNOWN,   //EC_COLECO2_4    144
+   RETROK_UNKNOWN,   //EC_COLECO2_5    145
+   RETROK_UNKNOWN,   //EC_COLECO2_6    146
+   RETROK_UNKNOWN,   //EC_COLECO2_7    147
+   RETROK_UNKNOWN,   //EC_COLECO2_8    148
+   RETROK_UNKNOWN,   //EC_COLECO2_9    149
+   RETROK_UNKNOWN,   //EC_COLECO2_STAR 150
+   RETROK_UNKNOWN,   //EC_COLECO2_HASH 151
+};
+
 
 static retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
@@ -67,6 +242,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.fps = 60.0;
    info->timing.sample_rate = 44100.0;
 }
+
 
 void retro_init(void)
 {
@@ -236,9 +412,9 @@ bool retro_load_game(const struct retro_game_info *info)
 
 
 
+//  retro_set_controller_port_device(0, RETRO_DEVICE_KEYBOARD);
 
-
-   return true;
+  return true;
 }
 
 
@@ -261,35 +437,35 @@ size_t retro_get_memory_size(unsigned id)
 }
 
 void timerCallback(void* timer) ;
-#include "InputEvent.h"
+UInt8 archJoystickGetState(int joystickNo) {
+   return ((eventMap[EC_JOY1_UP]    << 0) |
+            (eventMap[EC_JOY1_DOWN]  << 1) |
+            (eventMap[EC_JOY1_LEFT]  << 2) |
+            (eventMap[EC_JOY1_RIGHT] << 3) |
+            (eventMap[EC_JOY1_BUTTON1]    << 4) |
+            (eventMap[EC_JOY1_BUTTON2]  << 5) |
+            (eventMap[EC_JOY1_BUTTON3]  << 6) |
+            (eventMap[EC_JOY1_BUTTON4] << 7));
+   ; }
 void retro_run(void)
 {
 
    int i,j;
    input_poll_cb();
 
-   extern int eventMap[256];
 
-   static int btn_map[256];
-   btn_map[RETRO_DEVICE_ID_JOYPAD_B]      = EC_SPACE;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_Y]      = EC_CTRL;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_SELECT] = EC_RETURN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_START]  = EC_RETURN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_UP]     = EC_UP;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_DOWN]   = EC_DOWN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_LEFT]   = EC_LEFT;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_RIGHT]  = EC_RIGHT;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_A]      = EC_LSHIFT;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_X]      = EC_GRAPH;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_L]      = EC_RETURN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_R]      = EC_RETURN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_L2]     = EC_RETURN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_R2]     = EC_RETURN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_L3]     = EC_RETURN;
-   btn_map[RETRO_DEVICE_ID_JOYPAD_R3]     = EC_RETURN;
 
-   for (i=0; i<16; i++)
-      eventMap[btn_map[i]] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, i);
+
+   for (i=0; i <= EC_PRINT; i++)
+      eventMap[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[i]) ? 1 : 0;
+
+
+
+   for (i = EC_JOY1_UP; i <= (EC_JOY1_BUTTON6); i++)
+      eventMap[i] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
+
+   for (i = EC_JOY2_UP; i <= (EC_JOY2_BUTTON6); i++)
+      eventMap[i] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
 
 
    timerCallback(NULL);
