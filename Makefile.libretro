@@ -173,21 +173,22 @@ CSRCS   = libretro.c
 CXXSRC  =
 
 
-CSRCS  += Src/libretro/blueMSXlite.c
-CSRCS  += Src/libretro/Dialog.c
-CSRCS  += Src/libretro/Event.c
-CSRCS  += Src/libretro/File.c
-CSRCS  += Src/libretro/Glob.c
-CSRCS  += Src/libretro/Input.c
-CSRCS  += Src/libretro/Menu.c
-CSRCS  += Src/libretro/Midi.c
-CSRCS  += Src/libretro/Notifications.c
-CSRCS  += Src/libretro/Printer.c
-CSRCS  += Src/libretro/Sound.c
-CSRCS  += Src/libretro/Thread.c
-CSRCS  += Src/libretro/Timer.c
-CSRCS  += Src/libretro/Uart.c
-CSRCS  += Src/libretro/VideoIn.c
+CSRCS  += Src/Libretro/blueMSXlite.c
+CSRCS  += Src/Libretro/Dialog.c
+CSRCS  += Src/Libretro/Event.c
+CSRCS  += Src/Libretro/File.c
+CSRCS  += Src/Libretro/Glob.c
+CSRCS  += Src/Libretro/Input.c
+CSRCS  += Src/Libretro/Menu.c
+CSRCS  += Src/Libretro/Midi.c
+CSRCS  += Src/Libretro/Notifications.c
+CSRCS  += Src/Libretro/Printer.c
+CSRCS  += Src/Libretro/Sound.c
+CSRCS  += Src/Libretro/Thread.c
+CSRCS  += Src/Libretro/Timer.c
+CSRCS  += Src/Libretro/Uart.c
+CSRCS  += Src/Libretro/VideoIn.c
+CSRCS  += Src/Libretro/rthread.c
 
 
 
@@ -195,23 +196,23 @@ CSRCS  += Src/Common/DebugMemory.c
 
 CSRCS  += Src/Bios/Patch.c
 
-CSRCS  += Src/Unzip/adler32.c
-CSRCS  += Src/Unzip/compress.c
-CSRCS  += Src/Unzip/crc32.c
-CSRCS  += Src/Unzip/gzio.c
-CSRCS  += Src/Unzip/uncompr.c
-CSRCS  += Src/Unzip/deflate.c
-CSRCS  += Src/Unzip/trees.c
-CSRCS  += Src/Unzip/zutil.c
-CSRCS  += Src/Unzip/inflate.c
-CSRCS  += Src/Unzip/infback.c
-CSRCS  += Src/Unzip/inftrees.c
-CSRCS  += Src/Unzip/inffast.c
+#CSRCS  += Src/Unzip/adler32.c
+#CSRCS  += Src/Unzip/compress.c
+#CSRCS  += Src/Unzip/crc32.c
+#CSRCS  += Src/Unzip/gzio.c
+#CSRCS  += Src/Unzip/uncompr.c
+#CSRCS  += Src/Unzip/deflate.c
+#CSRCS  += Src/Unzip/trees.c
+#CSRCS  += Src/Unzip/zutil.c
+#CSRCS  += Src/Unzip/inflate.c
+#CSRCS  += Src/Unzip/infback.c
+#CSRCS  += Src/Unzip/inftrees.c
+#CSRCS  += Src/Unzip/inffast.c
 
-CSRCS  += Src/Unzip/unzip.c
-CSRCS  += Src/Unzip/ioapi.c
-CSRCS  += Src/Unzip/zip.c
-CSRCS  += Src/Unzip/iowin32.c
+#CSRCS  += Src/Unzip/unzip.c
+#CSRCS  += Src/Unzip/ioapi.c
+#CSRCS  += Src/Unzip/zip.c
+#CSRCS  += Src/Unzip/iowin32.c
 
 CSRCS  += Src/Memory/ramMapper.c
 CSRCS  += Src/Memory/ramMapperIo.c
@@ -452,7 +453,7 @@ INCDIRS += -ISrc/Input
 
 INCDIRS += -ISrc/Libretro
 
-LIBS := -lsdl -lz
+LIBS := 
 
 
 all: $(TARGET)
