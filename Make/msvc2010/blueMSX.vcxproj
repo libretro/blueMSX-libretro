@@ -1,0 +1,1016 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug Canned|Win32">
+      <Configuration>Debug Canned</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Final|Win32">
+      <Configuration>Final</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Canned|Win32">
+      <Configuration>Release Canned</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Console|Win32">
+      <Configuration>Release Console</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4AE8471F-8983-42BC-9ACB-7420F79C82C2}</ProjectGuid>
+    <RootNamespace>fMSXwin</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">true</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\Src\Bios;..\..\Src\Board;..\..\Src\Theme;..\..\Src\Utils;..\..\Src\Emulator;..\..\Src\BuildInfo;..\..\Src\Common;..\..\Src\IoDevice;..\..\Src\Resources;..\..\Src\SoundChips;..\..\Src\Unzip;..\..\Src\VideoChips;..\..\Src\VideoRender;..\..\Src\Z80;..\..\Src\Language;..\..\Src\Memory;..\..\Src\TinyXML;..\..\Src\Arch;..\..\Src\Media;..\..\Src\Debugger;..\..\Src\Input;..\..\Src\ThirdParty\DirectShowSamples;..\..\Src\ThirdParty\WinPCap;C:\Program Files\Microsoft DirectX SDK (August 2007)\Include;c:\Program Files\Microsoft SDKs\Windows\v6.1\Include;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>OLD_Y8950;WIN32;_DEBUG;_CONSOLE;WINDOWS;NARROW;SOUND;DISK;NOCRYPT;NOUNCRYPT;PROPERTIES_LOCAL_INI_FILE;USE_NOWIND_DLL;USE_PACKET_FS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\Src\BuildInfo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/nodefaultlib:"libcmt.lib" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>wsock32.lib;ws2_32.lib;dxguid.lib;Vfw32.lib;winmm.lib;ComCtl32.Lib;shlwapi.lib;ddraw.lib;dsound.lib;dinput.lib;..\..\Src\ThirdParty\DirectShowSamples\STRMBASE.lib;comsuppwd.lib;d3dx9.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)blueMSX.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft DirectX SDK (August 2007)\Lib\x86;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;atlthunk.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)blueMSX.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>..\..\Src\Bios;..\..\Src\Board;..\..\Src\Theme;..\..\Src\Utils;..\..\Src\Emulator;..\..\Src\BuildInfo;..\..\Src\Common;..\..\Src\IoDevice;..\..\Src\Resources;..\..\Src\SoundChips;..\..\Src\Unzip;..\..\Src\VideoChips;..\..\Src\VideoRender;..\..\Src\Z80;..\..\Src\Language;..\..\Src\Memory;..\..\Src\TinyXML;..\..\Src\Arch;..\..\Src\Media;..\..\Src\Debugger;..\..\Src\Input;..\..\Src\ThirdParty\DirectShowSamples;..\..\Src\ThirdParty\WinPCap;C:\Program Files\Microsoft DirectX SDK (August 2007)\Include;c:\Program Files\Microsoft SDKs\Windows\v6.1\Include;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>OLD_Y8950;_MBCS;__WINCRYPT_H__;WIN32;_WINDOWS;WINDOWS;NDEBUG;NARROW;SOUND;DISK;NOCRYPT;NOUNCRYPT;PROPERTIES_LOCAL_INI_FILE;USE_NOWIND_DLL;USE_PACKET_FS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\Src\BuildInfo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;Vfw32.lib;winmm.lib;ComCtl32.Lib;shlwapi.lib;ddraw.lib;dsound.lib;dinput.lib;..\..\Src\ThirdParty\DirectShowSamples\STRMBASE.lib;comsuppw.lib;d3dx9.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)blueMSX.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft DirectX SDK (August 2007)\Lib\x86;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;atlthunk.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\Src\Bios;..\..\Src\Board;..\..\Src\Theme;..\..\Src\Utils;..\..\Src\Emulator;..\..\Src\BuildInfo;..\..\Src\Common;..\..\Src\IoDevice;..\..\Src\Resources;..\..\Src\SoundChips;..\..\Src\Unzip;..\..\Src\VideoChips;..\..\Src\VideoRender;..\..\Src\Z80;..\..\Src\Language;..\..\Src\Memory;..\..\Src\TinyXML;..\..\Src\Arch;..\..\Src\Media;..\..\Src\Debugger;..\..\Src\Input;..\..\Src\ThirdParty\DirectShowSamples;..\..\Src\ThirdParty\WinPCap;C:\Program Files\Microsoft DirectX SDK (August 2007)\Include;c:\Program Files\Microsoft SDKs\Windows\v6.1\Include;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;__WINCRYPT_H__;WIN32;_WINDOWS;WINDOWS;LSB_FIRST;NDEBUG;NARROW;SOUND;DISK;FMSX;PROPERTIES_LOCAL_INI_FILE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;winmm.lib;ComCtl32.Lib;ddraw.lib;dsound.lib;dinput.lib;..\..\Src\Unzip\zlibstat.lib;comsuppwd.lib;d3dx9.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)blueMSX.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft DirectX SDK (August 2007)\Lib\x86;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;atlthunk.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Pack executable</Message>
+      <Command>upx --best "$(OutDir)"\\"$(TargetName)".exe</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">
+    <ClCompile>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>..\..\Src\Bios;..\..\Src\Board;..\..\Src\Theme;..\..\Src\Utils;..\..\Src\Emulator;..\..\Src\BuildInfo;..\..\Src\Common;..\..\Src\IoDevice;..\..\Src\Resources;..\..\Src\SoundChips;..\..\Src\Unzip;..\..\Src\VideoChips;..\..\Src\VideoRender;..\..\Src\Z80;..\..\Src\Language;..\..\Src\Memory;..\..\Src\TinyXML;..\..\Src\Arch;..\..\Src\Media;..\..\Src\Debugger;..\..\Src\Input;..\..\Src\ThirdParty\DirectShowSamples;..\..\Src\ThirdParty\WinPCap;C:\Program Files\Microsoft DirectX SDK (August 2007)\Include;c:\Program Files\Microsoft SDKs\Windows\v6.1\Include;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>OLD_Y8950;_MBCS;__WINCRYPT_H__;WIN32;_CONSOLE;WINDOWS;NDEBUG;NARROW;SOUND;DISK;NOCRYPT;NOUNCRYPT;PROPERTIES_LOCAL_INI_FILE;USE_NOWIND_DLL;USE_PACKET_FS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\Src\BuildInfo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;Vfw32.lib;winmm.lib;ComCtl32.Lib;shlwapi.lib;ddraw.lib;dsound.lib;dinput.lib;..\..\Src\ThirdParty\DirectShowSamples\STRMBASE.lib;comsuppw.lib;d3dx9.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)blueMSX.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft DirectX SDK (August 2007)\Lib\x86;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;atlthunk.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">
+    <ClCompile>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>..\..\Src\Bios;..\..\Src\Board;..\..\Src\Theme;..\..\Src\Utils;..\..\Src\Emulator;..\..\Src\BuildInfo;..\..\Src\Common;..\..\Src\IoDevice;..\..\Src\Resources;..\..\Src\SoundChips;..\..\Src\Unzip;..\..\Src\VideoChips;..\..\Src\VideoRender;..\..\Src\Z80;..\..\Src\Language;..\..\Src\Memory;..\..\Src\TinyXML;..\..\Src\Arch;..\..\Src\Media;..\..\Src\Debugger;..\..\Src\Input;..\..\Src\ThirdParty\DirectShowSamples;..\..\Src\ThirdParty\WinPCap;C:\Program Files\Microsoft DirectX SDK (August 2007)\Include;c:\Program Files\Microsoft SDKs\Windows\v6.1\Include;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>OLD_Y8950;_MBCS;__WINCRYPT_H__;WIN32;_WINDOWS;WINDOWS;NDEBUG;NARROW;SOUND;DISK;NOCRYPT;NOUNCRYPT;PROPERTIES_LOCAL_INI_FILE;SINGLE_THEME="Canned";SINGLE_MACHINE="Canned";NO_DEFAULT_THEME;NO_FILE_HISTORY; NO_TOOL_SUPPORT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NO_DEFAULT_THEME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\Src\BuildInfo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;Vfw32.lib;winmm.lib;ComCtl32.Lib;shlwapi.lib;ddraw.lib;dsound.lib;dinput.lib;..\..\Src\ThirdParty\DirectShowSamples\STRMBASE.lib;comsuppw.lib;d3dx9.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)blueMSX.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft DirectX SDK (August 2007)\Lib\x86;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;atlthunk.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\Src\Bios;..\..\Src\Board;..\..\Src\Theme;..\..\Src\Utils;..\..\Src\Emulator;..\..\Src\BuildInfo;..\..\Src\Common;..\..\Src\IoDevice;..\..\Src\Resources;..\..\Src\SoundChips;..\..\Src\Unzip;..\..\Src\VideoChips;..\..\Src\VideoRender;..\..\Src\Z80;..\..\Src\Language;..\..\Src\Memory;..\..\Src\TinyXML;..\..\Src\Arch;..\..\Src\Media;..\..\Src\Debugger;..\..\Src\Input;..\..\Src\ThirdParty\DirectShowSamples;..\..\Src\ThirdParty\WinPCap;C:\Program Files\Microsoft DirectX SDK (August 2007)\Include;c:\Program Files\Microsoft SDKs\Windows\v6.1\Include;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>OLD_Y8950;WIN32;_DEBUG;_CONSOLE;WINDOWS;NARROW;SOUND;DISK;NOCRYPT;NOUNCRYPT;PROPERTIES_LOCAL_INI_FILE;SINGLE_THEME="Canned";SINGLE_MACHINE="Canned";NO_DEFAULT_THEME;NO_FILE_HISTORY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NO_DEFAULT_THEME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\Src\BuildInfo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/nodefaultlib:"libcmt.lib" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>wsock32.lib;ws2_32.lib;dxguid.lib;Vfw32.lib;winmm.lib;ComCtl32.Lib;shlwapi.lib;ddraw.lib;dsound.lib;dinput.lib;..\..\Src\ThirdParty\DirectShowSamples\STRMBASE.lib;comsuppwd.lib;d3dx9.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)blueMSX.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft DirectX SDK (August 2007)\Lib\x86;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;atlthunk.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)blueMSX.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Src\Common\ArrayList.c" />
+    <ClCompile Include="..\..\Src\Input\ColecoSteeringWheel.c" />
+    <ClCompile Include="..\..\Src\Input\ColecoSuperAction.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Microchip24x00.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Z8530.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperActivisionPcb.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperArc.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperDooly.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMuPack.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNms1210Rs232.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperOpcodeBios.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperOpcodeMegaRam.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperOpcodeSaveRam.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperOpcodeSlotManager.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSg1000RamExpander.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi328RsIDE.c" />
+    <ClCompile Include="..\..\Src\Utils\ZipFromMem.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Avi.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Bitmap.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Cdrom.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32D3D.cpp" />
+    <ClCompile Include="..\..\Src\Win32\Win32Dir.cpp" />
+    <ClCompile Include="..\..\Src\Win32\Win32DirectShow.cpp" />
+    <ClCompile Include="..\..\Src\Win32\Win32directX.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32directXSound.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Eth.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Event.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32file.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32FileTypes.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Glob.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Help.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32keyboard.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32machineConfig.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Menu.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Midi.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32MouseEmu.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Printer.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32properties.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32ScreenShot.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32ShortcutsConfig.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32snd.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32ThemeClassic.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Thread.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Timer.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32ToolLoader.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32Uart.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32VideoIn.cpp" />
+    <ClCompile Include="..\..\Src\Win32\Win32Window.c" />
+    <ClCompile Include="..\..\Src\Win32\Win32wmmSound.c" />
+    <ClCompile Include="..\..\Src\Bios\Patch.c" />
+    <ClCompile Include="..\..\Src\Unzip\adler32.c" />
+    <ClCompile Include="..\..\Src\Unzip\compress.c" />
+    <ClCompile Include="..\..\Src\Unzip\crc32.c" />
+    <ClCompile Include="..\..\Src\Unzip\deflate.c" />
+    <ClCompile Include="..\..\Src\Unzip\gzio.c" />
+    <ClCompile Include="..\..\Src\Unzip\infback.c" />
+    <ClCompile Include="..\..\Src\Unzip\inffast.c" />
+    <ClCompile Include="..\..\Src\Unzip\inflate.c" />
+    <ClCompile Include="..\..\Src\Unzip\inftrees.c" />
+    <ClCompile Include="..\..\Src\Unzip\ioapi.c" />
+    <ClCompile Include="..\..\Src\Unzip\iowin32.c" />
+    <ClCompile Include="..\..\Src\Unzip\trees.c" />
+    <ClCompile Include="..\..\Src\Unzip\uncompr.c" />
+    <ClCompile Include="..\..\Src\Unzip\unzip.c" />
+    <ClCompile Include="..\..\Src\Unzip\zip.c" />
+    <ClCompile Include="..\..\Src\Unzip\zutil.c" />
+    <ClCompile Include="..\..\Src\Common\DebugMemory.c" />
+    <ClCompile Include="..\..\Src\Memory\AmdFlash.c" />
+    <ClCompile Include="..\..\Src\Memory\DeviceManager.c" />
+    <ClCompile Include="..\..\Src\Memory\IoPort.c" />
+    <ClCompile Include="..\..\Src\Memory\MegaromCartridge.c" />
+    <ClCompile Include="..\..\Src\Memory\MegaSCSIsub.c" />
+    <ClCompile Include="..\..\Src\Memory\ram1kBMirrored.c" />
+    <ClCompile Include="..\..\Src\Memory\ramMapper.c" />
+    <ClCompile Include="..\..\Src\Memory\ramMapperIo.c" />
+    <ClCompile Include="..\..\Src\Memory\ramNormal.c" />
+    <ClCompile Include="..\..\Src\Memory\RomLoader.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperA1FM.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperA1FMModem.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperASCII16.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperASCII16nf.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperASCII16sram.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperASCII8.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperASCII8sram.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperBasic.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperBeerIDE.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperBunsetu.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperCasette.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperCrossBlaim.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperCvMegaCart.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperDisk.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperDRAM.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperDumas.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperF4device.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperFmDas.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperFMPAC.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperFMPAK.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperForteII.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperGameMaster2.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperGameReader.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperGIDE.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperGoudaSCSI.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperHalnote.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperHarryFox.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperHolyQuran.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperJoyrexPsg.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKanji.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKanji12.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKoei.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKonami4.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKonami4nf.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKonami5.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKonamiKeyboardMaster.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKonamiSynth.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKonamiWordPro.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKorean126.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKorean80.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperKorean90.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperLodeRunner.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMajutsushi.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMatraINK.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMegaFlashRomScc.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMegaRAM.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMicrosol.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMicrosolVmx80.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMoonsound.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMsxAudio.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMsxDos2.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMsxMusic.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMsxPrn.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperMsxRs232.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNational.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNationalFdc.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNet.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNettouYakyuu.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNms8280VideoDa.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNormal.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperNoWind.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperObsonet.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperOpcodePsg.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperPAC.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperPanasonic.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperPhilipsFdc.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperPlain.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperPlayBall.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperRType.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperS1990.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSCCplus.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSegaBasic.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSf7000Ipl.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSfg05.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSg1000.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSg1000Castle.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSonyHBI55.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSonyHBIV1.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperStandard.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSunriseIDE.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi328Fdc.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi328Prn.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi328rs232.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi707Fdc.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi727.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi738Fdc.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperSvi80Col.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperTC8566AF.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperTurboRPcm.c" />
+    <ClCompile Include="..\..\Src\Memory\romMapperTurboRTimer.c" />
+    <ClCompile Include="..\..\Src\Memory\SlotManager.c" />
+    <ClCompile Include="..\..\Src\Memory\sramLoader.c" />
+    <ClCompile Include="..\..\Src\Memory\sramMapperEseSCC.c" />
+    <ClCompile Include="..\..\Src\Memory\sramMapperMatsuchita.c" />
+    <ClCompile Include="..\..\Src\Memory\sramMapperMegaSCSI.c" />
+    <ClCompile Include="..\..\Src\Memory\sramMapperS1985.c" />
+    <ClCompile Include="..\..\Src\VideoChips\CRTC6845.c" />
+    <ClCompile Include="..\..\Src\VideoChips\FrameBuffer.c" />
+    <ClCompile Include="..\..\Src\VideoChips\V9938.c" />
+    <ClCompile Include="..\..\Src\VideoChips\VDP.c" />
+    <ClCompile Include="..\..\Src\VideoChips\VideoManager.c" />
+    <ClCompile Include="..\..\Src\VideoRender\hq2x.c" />
+    <ClCompile Include="..\..\Src\VideoRender\hq3x.c" />
+    <ClCompile Include="..\..\Src\VideoRender\Scalebit.c" />
+    <ClCompile Include="..\..\Src\VideoRender\VideoRender.c" />
+    <ClCompile Include="..\..\Src\Z80\R800.c" />
+    <ClCompile Include="..\..\Src\Z80\R800Dasm.c" />
+    <ClCompile Include="..\..\Src\Z80\R800Debug.c" />
+    <ClCompile Include="..\..\Src\Z80\R800SaveState.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Casette.c" />
+    <ClCompile Include="..\..\Src\IoDevice\DirAsDisk.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Disk.c" />
+    <ClCompile Include="..\..\Src\IoDevice\FdcAudio.c" />
+    <ClCompile Include="..\..\Src\IoDevice\ft245.c" />
+    <ClCompile Include="..\..\Src\IoDevice\GameReader.cpp" />
+    <ClCompile Include="..\..\Src\IoDevice\HarddiskIDE.c" />
+    <ClCompile Include="..\..\Src\IoDevice\I8250.c" />
+    <ClCompile Include="..\..\Src\IoDevice\I8251.c" />
+    <ClCompile Include="..\..\Src\IoDevice\I8254.c" />
+    <ClCompile Include="..\..\Src\IoDevice\I8255.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Led.c" />
+    <ClCompile Include="..\..\Src\IoDevice\MB89352.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Microwire93Cx6.c" />
+    <ClCompile Include="..\..\Src\IoDevice\MidiIO.c" />
+    <ClCompile Include="..\..\Src\IoDevice\msxgr.cpp" />
+    <ClCompile Include="..\..\Src\IoDevice\MSXMidi.c" />
+    <ClCompile Include="..\..\Src\IoDevice\MsxPPI.c" />
+    <ClCompile Include="..\..\Src\IoDevice\NEC765.c" />
+    <ClCompile Include="..\..\Src\IoDevice\PrinterIO.c" />
+    <ClCompile Include="..\..\Src\IoDevice\RTC.c" />
+    <ClCompile Include="..\..\Src\IoDevice\rtl8019.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Sc3000PPI.c" />
+    <ClCompile Include="..\..\Src\IoDevice\ScsiDevice.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Sf7000PPI.c" />
+    <ClCompile Include="..\..\Src\IoDevice\sl811hs.c" />
+    <ClCompile Include="..\..\Src\IoDevice\SunriseIDE.c" />
+    <ClCompile Include="..\..\Src\IoDevice\SviPPI.c" />
+    <ClCompile Include="..\..\Src\IoDevice\Switches.c" />
+    <ClCompile Include="..\..\Src\IoDevice\TC8566AF.c" />
+    <ClCompile Include="..\..\Src\IoDevice\TurboRIO.c" />
+    <ClCompile Include="..\..\Src\IoDevice\UartIO.c" />
+    <ClCompile Include="..\..\Src\IoDevice\WD2793.c" />
+    <ClCompile Include="..\..\Src\IoDevice\wd33c93.c" />
+    <ClCompile Include="..\..\Src\IoDevice\WDCRC.c" />
+    <ClCompile Include="..\..\Src\Language\Language.c" />
+    <ClCompile Include="..\..\Src\TinyXML\tinystr.cpp" />
+    <ClCompile Include="..\..\Src\TinyXML\tinyxml.cpp" />
+    <ClCompile Include="..\..\Src\TinyXML\tinyxmlerror.cpp" />
+    <ClCompile Include="..\..\Src\TinyXML\tinyxmlparser.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\AudioMixer.c" />
+    <ClCompile Include="..\..\Src\SoundChips\AY8910.c" />
+    <ClCompile Include="..\..\Src\SoundChips\DAC.c" />
+    <ClCompile Include="..\..\Src\SoundChips\Fmopl.c" />
+    <ClCompile Include="..\..\Src\SoundChips\KeyClick.c" />
+    <ClCompile Include="..\..\Src\SoundChips\MameVLM5030.c" />
+    <ClCompile Include="..\..\Src\SoundChips\MameYM2151.c" />
+    <ClCompile Include="..\..\Src\SoundChips\Moonsound.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\MsxAudio.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\MsxPsg.c" />
+    <ClCompile Include="..\..\Src\SoundChips\OpenMsxY8950.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\OpenMsxY8950Adpcm.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\OpenMsxYM2413.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\OpenMsxYM2413_2.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\OpenMsxYMF262.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\OpenMsxYMF278.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\SamplePlayer.c" />
+    <ClCompile Include="..\..\Src\SoundChips\SCC.c" />
+    <ClCompile Include="..\..\Src\SoundChips\SN76489.c" />
+    <ClCompile Include="..\..\Src\SoundChips\VLM5030.c" />
+    <ClCompile Include="..\..\Src\SoundChips\Y8950.c" />
+    <ClCompile Include="..\..\Src\SoundChips\YM2151.c" />
+    <ClCompile Include="..\..\Src\SoundChips\YM2413.cpp" />
+    <ClCompile Include="..\..\Src\SoundChips\Ymdeltat.c" />
+    <ClCompile Include="..\..\Src\Emulator\Actions.c" />
+    <ClCompile Include="..\..\Src\Emulator\AppConfig.c" />
+    <ClCompile Include="..\..\Src\Emulator\CommandLine.c" />
+    <ClCompile Include="..\..\Src\Emulator\Emulator.c" />
+    <ClCompile Include="..\..\Src\Emulator\FileHistory.c" />
+    <ClCompile Include="..\..\Src\Emulator\LaunchFile.c" />
+    <ClCompile Include="..\..\Src\Emulator\Properties.c" />
+    <ClCompile Include="..\..\Src\Theme\Theme.c" />
+    <ClCompile Include="..\..\Src\Theme\ThemeControls.c" />
+    <ClCompile Include="..\..\Src\Theme\ThemeLoader.cpp" />
+    <ClCompile Include="..\..\Src\Theme\ThemeTriggers.c" />
+    <ClCompile Include="..\..\Src\Board\Adam.c" />
+    <ClCompile Include="..\..\Src\Board\Board.c" />
+    <ClCompile Include="..\..\Src\Board\Coleco.c" />
+    <ClCompile Include="..\..\Src\Board\Machine.c" />
+    <ClCompile Include="..\..\Src\Board\MSX.c" />
+    <ClCompile Include="..\..\Src\Board\SG1000.c" />
+    <ClCompile Include="..\..\Src\Board\SVI.c" />
+    <ClCompile Include="..\..\Src\Media\Crc32Calc.c" />
+    <ClCompile Include="..\..\Src\Media\MediaDb.cpp" />
+    <ClCompile Include="..\..\Src\Media\Sha1.cpp" />
+    <ClCompile Include="..\..\Src\Debugger\DebugDeviceManager.c" />
+    <ClCompile Include="..\..\Src\Debugger\Debugger.c" />
+    <ClCompile Include="..\..\Src\Utils\blowfish.c" />
+    <ClCompile Include="..\..\Src\Utils\IniFileParser.c" />
+    <ClCompile Include="..\..\Src\Utils\IsFileExtension.c" />
+    <ClCompile Include="..\..\Src\Utils\PacketFileSystem.c" />
+    <ClCompile Include="..\..\Src\Utils\SaveState.c" />
+    <ClCompile Include="..\..\Src\Utils\StrcmpNoCase.c" />
+    <ClCompile Include="..\..\Src\Utils\TokenExtract.c" />
+    <ClCompile Include="..\..\Src\Utils\VeryTinyXpath.cpp" />
+    <ClCompile Include="..\..\Src\Utils\ziphelper.c" />
+    <ClCompile Include="..\..\Src\Input\CoinDevice.c" />
+    <ClCompile Include="..\..\Src\Input\ColecoJoystick.c" />
+    <ClCompile Include="..\..\Src\Input\InputEvent.c" />
+    <ClCompile Include="..\..\Src\Input\JoystickPort.c" />
+    <ClCompile Include="..\..\Src\Input\MagicKeyDongle.c" />
+    <ClCompile Include="..\..\Src\Input\MsxArkanoidPad.c" />
+    <ClCompile Include="..\..\Src\Input\MsxAsciiLaser.c" />
+    <ClCompile Include="..\..\Src\Input\MsxGunstick.c" />
+    <ClCompile Include="..\..\Src\Input\MsxJoystick.c" />
+    <ClCompile Include="..\..\Src\Input\MsxMouse.c" />
+    <ClCompile Include="..\..\Src\Input\MsxTetrisDongle.c" />
+    <ClCompile Include="..\..\Src\Input\Sg1000JoyIo.c" />
+    <ClCompile Include="..\..\Src\Input\Sg1000Joystick.c" />
+    <ClCompile Include="..\..\Src\Input\SviJoyIo.c" />
+    <ClCompile Include="..\..\Src\Input\SviJoystick.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Src\Common\ArrayList.h" />
+    <ClInclude Include="..\..\Src\Input\ColecoSteeringWheel.h" />
+    <ClInclude Include="..\..\Src\Input\ColecoSuperAction.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Microchip24x00.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Z8530.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperActivisionPcb.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperArc.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperDooly.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMuPack.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNms1210Rs232.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperOpcodeBios.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperOpcodeMegaRam.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperOpcodeSaveRam.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperOpcodeSlotManager.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSg1000RamExpander.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi328RsIDE.h" />
+    <ClInclude Include="..\..\Src\SoundChips\VLM5030VoiceData.h" />
+    <ClInclude Include="..\..\Src\Utils\ZipFromMem.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32D3D.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Printer.h" />
+    <ClInclude Include="..\..\Src\Win32\BlueMSXToolInterface.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Avi.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Cdrom.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Common.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Dir.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32DirectShow.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32directx.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32directXSound.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Eth.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32file.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32FileTypes.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Help.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32keyboard.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32machineConfig.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Menu.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Midi.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32MouseEmu.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Properties.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32ScreenShot.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32ShortcutsConfig.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Sound.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32ThemeClassic.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32ToolLoader.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Uart.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32VideoIn.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32Window.h" />
+    <ClInclude Include="..\..\Src\Win32\Win32wmmSound.h" />
+    <ClInclude Include="..\..\Src\Unzip\crc32.h" />
+    <ClInclude Include="..\..\Src\Unzip\crypt.h" />
+    <ClInclude Include="..\..\Src\Unzip\deflate.h" />
+    <ClInclude Include="..\..\Src\Unzip\inffast.h" />
+    <ClInclude Include="..\..\Src\Unzip\inffixed.h" />
+    <ClInclude Include="..\..\Src\Unzip\inflate.h" />
+    <ClInclude Include="..\..\Src\Unzip\inftrees.h" />
+    <ClInclude Include="..\..\Src\Unzip\ioapi.h" />
+    <ClInclude Include="..\..\Src\Unzip\iowin32.h" />
+    <ClInclude Include="..\..\Src\Unzip\trees.h" />
+    <ClInclude Include="..\..\Src\Unzip\unzip.h" />
+    <ClInclude Include="..\..\Src\Unzip\zconf.h" />
+    <ClInclude Include="..\..\Src\Unzip\zip.h" />
+    <ClInclude Include="..\..\Src\Unzip\zlib.h" />
+    <ClInclude Include="..\..\Src\Unzip\zutil.h" />
+    <ClInclude Include="..\..\Src\Common\MsxTypes.h" />
+    <ClInclude Include="..\..\Src\Memory\AmdFlash.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperA1FM.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperA1FMModem.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperDumas.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperForteII.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperJoyrexPsg.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMatraINK.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMegaFlashRomScc.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNet.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNettouYakyuu.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNoWind.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperOpcodePsg.h" />
+    <ClInclude Include="..\..\Src\Memory\DeviceManager.h" />
+    <ClInclude Include="..\..\Src\Memory\IoPort.h" />
+    <ClInclude Include="..\..\Src\Memory\MegaromCartridge.h" />
+    <ClInclude Include="..\..\Src\Memory\MegaSCSIsub.h" />
+    <ClInclude Include="..\..\Src\Memory\PlayballSamples.h" />
+    <ClInclude Include="..\..\Src\Memory\ram1kBMirrored.h" />
+    <ClInclude Include="..\..\Src\Memory\ramMapper.h" />
+    <ClInclude Include="..\..\Src\Memory\ramMapperIo.h" />
+    <ClInclude Include="..\..\Src\Memory\ramNormal.h" />
+    <ClInclude Include="..\..\Src\Memory\RomLoader.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperASCII16.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperASCII16nf.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperASCII16sram.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperASCII8.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperASCII8sram.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperBasic.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperBeerIDE.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperBunsetu.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperCasette.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperCrossBlaim.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperCvMegaCart.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperDisk.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperDRAM.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperF4device.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperFmDas.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperFMPAC.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperFMPAK.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperGameMaster2.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperGameReader.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperGIDE.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperGoudaSCSI.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperHalnote.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperHarryFox.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperHolyQuran.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKanji.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKanji12.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKoei.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKonami4.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKonami4nf.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKonami5.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKonamiKeyboardMaster.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKonamiSynth.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKonamiWordPro.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKorean126.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKorean80.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperKorean90.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperLodeRunner.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMajutsushi.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMegaRAM.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMicrosol.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMicrosolVmx80.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMoonsound.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMsxAudio.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMsxDos2.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMsxMusic.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMsxPrn.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperMsxRs232.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNational.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNationalFdc.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNms8280VideoDa.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperNormal.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperObsonet.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperPAC.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperPanasonic.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperPhilipsFdc.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperPlain.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperPlayBall.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperRType.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperS1990.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSCCplus.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSegaBasic.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSf7000Ipl.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSfg05.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSg1000.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSg1000Castle.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSonyHBI55.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSonyHBIV1.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperStandard.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSunriseIDE.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi328Fdc.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi328Prn.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi328rs232.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi707Fdc.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi727.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi738Fdc.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperSvi80Col.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperTC8566AF.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperTurboRPcm.h" />
+    <ClInclude Include="..\..\Src\Memory\romMapperTurboRTimer.h" />
+    <ClInclude Include="..\..\Src\Memory\SlotManager.h" />
+    <ClInclude Include="..\..\Src\Memory\sramLoader.h" />
+    <ClInclude Include="..\..\Src\Memory\sramMapperEseSCC.h" />
+    <ClInclude Include="..\..\Src\Memory\sramMapperMatsuchita.h" />
+    <ClInclude Include="..\..\Src\Memory\sramMapperMegaSCSI.h" />
+    <ClInclude Include="..\..\Src\Memory\sramMapperS1985.h" />
+    <ClInclude Include="..\..\Src\VideoChips\Common.h" />
+    <ClInclude Include="..\..\Src\VideoChips\CRTC6845.h" />
+    <ClInclude Include="..\..\Src\VideoChips\FrameBuffer.h" />
+    <ClInclude Include="..\..\Src\VideoChips\SpriteLine.h" />
+    <ClInclude Include="..\..\Src\VideoChips\V9938.h" />
+    <ClInclude Include="..\..\Src\VideoChips\VDP.h" />
+    <ClInclude Include="..\..\Src\VideoChips\VideoManager.h" />
+    <ClInclude Include="..\..\Src\VideoRender\hq2x.h" />
+    <ClInclude Include="..\..\Src\VideoRender\hq3x.h" />
+    <ClInclude Include="..\..\Src\VideoRender\Scale2x.h" />
+    <ClInclude Include="..\..\Src\VideoRender\Scale3x.h" />
+    <ClInclude Include="..\..\Src\VideoRender\Scalebit.h" />
+    <ClInclude Include="..\..\Src\VideoRender\VideoRender.h" />
+    <ClInclude Include="..\..\Src\Z80\R800.h" />
+    <ClInclude Include="..\..\Src\Z80\R800Dasm.h" />
+    <ClInclude Include="..\..\Src\Z80\R800Debug.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Casette.h" />
+    <ClInclude Include="..\..\Src\IoDevice\DirAsDisk.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Disk.h" />
+    <ClInclude Include="..\..\Src\IoDevice\FdcAudio.h" />
+    <ClInclude Include="..\..\Src\IoDevice\ft245.h" />
+    <ClInclude Include="..\..\Src\IoDevice\GameReader.h" />
+    <ClInclude Include="..\..\Src\IoDevice\HarddiskIDE.h" />
+    <ClInclude Include="..\..\Src\IoDevice\I8250.h" />
+    <ClInclude Include="..\..\Src\IoDevice\I8251.h" />
+    <ClInclude Include="..\..\Src\IoDevice\I8254.h" />
+    <ClInclude Include="..\..\Src\IoDevice\I8255.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Led.h" />
+    <ClInclude Include="..\..\Src\IoDevice\MB89352.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Microwire93Cx6.h" />
+    <ClInclude Include="..\..\Src\IoDevice\MidiIO.h" />
+    <ClInclude Include="..\..\Src\IoDevice\msxgr.h" />
+    <ClInclude Include="..\..\Src\IoDevice\MSXMidi.h" />
+    <ClInclude Include="..\..\Src\IoDevice\MsxPPI.h" />
+    <ClInclude Include="..\..\Src\IoDevice\NEC765.h" />
+    <ClInclude Include="..\..\Src\ThirdParty\NowindUsb\nowindusb.h" />
+    <ClInclude Include="..\..\Src\IoDevice\PrinterIO.h" />
+    <ClInclude Include="..\..\Src\Z80\R800SaveState.h" />
+    <ClInclude Include="..\..\Src\IoDevice\RTC.h" />
+    <ClInclude Include="..\..\Src\IoDevice\rtl8019.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Sc3000PPI.h" />
+    <ClInclude Include="..\..\Src\IoDevice\ScsiDevice.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Sf7000PPI.h" />
+    <ClInclude Include="..\..\Src\IoDevice\sl811hs.h" />
+    <ClInclude Include="..\..\Src\IoDevice\SunriseIDE.h" />
+    <ClInclude Include="..\..\Src\IoDevice\SviPPI.h" />
+    <ClInclude Include="..\..\Src\IoDevice\Switches.h" />
+    <ClInclude Include="..\..\Src\IoDevice\TC8566AF.h" />
+    <ClInclude Include="..\..\Src\IoDevice\TurboRIO.h" />
+    <ClInclude Include="..\..\Src\IoDevice\UartIO.h" />
+    <ClInclude Include="..\..\Src\IoDevice\WD2793.h" />
+    <ClInclude Include="..\..\Src\IoDevice\wd33c93.h" />
+    <ClInclude Include="..\..\Src\IoDevice\WDCRC.h" />
+    <ClInclude Include="..\..\Src\Language\Language.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageCatalan.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageChineseSimplified.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageChineseTraditional.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageDutch.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageEnglish.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageFinnish.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageFrench.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageGerman.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageItalian.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageJapanese.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageKorean.h" />
+    <ClInclude Include="..\..\Src\Language\LanguagePolish.h" />
+    <ClInclude Include="..\..\Src\Language\LanguagePortuguese.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageRussian.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageSpannish.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageStrings.h" />
+    <ClInclude Include="..\..\Src\Language\LanguageSwedish.h" />
+    <ClInclude Include="..\..\Src\BuildInfo\build_number.h" />
+    <ClInclude Include="..\..\Src\Resources\Resource.h" />
+    <ClInclude Include="..\..\Src\BuildInfo\version.h" />
+    <ClInclude Include="..\..\Src\TinyXML\TinyStr.h" />
+    <ClInclude Include="..\..\Src\TinyXML\tinyxml.h" />
+    <ClInclude Include="..\..\Src\SoundChips\AudioMixer.h" />
+    <ClInclude Include="..\..\Src\SoundChips\AY8910.h" />
+    <ClInclude Include="..\..\Src\SoundChips\DAC.h" />
+    <ClInclude Include="..\..\Src\SoundChips\Fmopl.h" />
+    <ClInclude Include="..\..\Src\SoundChips\KeyClick.h" />
+    <ClInclude Include="..\..\Src\SoundChips\MameVLM5030.h" />
+    <ClInclude Include="..\..\Src\SoundChips\MameYM2151.h" />
+    <ClInclude Include="..\..\Src\SoundChips\Moonsound.h" />
+    <ClInclude Include="..\..\Src\SoundChips\MsxAudio.h" />
+    <ClInclude Include="..\..\Src\SoundChips\MsxPsg.h" />
+    <ClInclude Include="..\..\Src\SoundChips\OpenMsxY8950.h" />
+    <ClInclude Include="..\..\Src\SoundChips\OpenMsxY8950Adpcm.h" />
+    <ClInclude Include="..\..\Src\SoundChips\OpenMsxYM2413.h" />
+    <ClInclude Include="..\..\Src\SoundChips\OpenMsxYM2413_2.h" />
+    <ClInclude Include="..\..\Src\SoundChips\OpenMsxYMF262.h" />
+    <ClInclude Include="..\..\Src\SoundChips\OpenMsxYMF278.h" />
+    <ClInclude Include="..\..\Src\SoundChips\SamplePlayer.h" />
+    <ClInclude Include="..\..\Src\SoundChips\SCC.h" />
+    <ClInclude Include="..\..\Src\SoundChips\SN76489.h" />
+    <ClInclude Include="..\..\Src\SoundChips\VLM5030.h" />
+    <ClInclude Include="..\..\Src\SoundChips\Y8950.h" />
+    <ClInclude Include="..\..\Src\SoundChips\YM2151.h" />
+    <ClInclude Include="..\..\Src\SoundChips\YM2413.h" />
+    <ClInclude Include="..\..\Src\SoundChips\Ymdeltat.h" />
+    <ClInclude Include="..\..\Src\Emulator\Actions.h" />
+    <ClInclude Include="..\..\Src\Emulator\AppConfig.h" />
+    <ClInclude Include="..\..\Src\Emulator\CommandLine.h" />
+    <ClInclude Include="..\..\Src\Emulator\Emulator.h" />
+    <ClInclude Include="..\..\Src\Emulator\FileHistory.h" />
+    <ClInclude Include="..\..\Src\Emulator\LaunchFile.h" />
+    <ClInclude Include="..\..\Src\Emulator\Properties.h" />
+    <ClInclude Include="..\..\Src\Theme\Theme.h" />
+    <ClInclude Include="..\..\Src\Theme\ThemeControls.h" />
+    <ClInclude Include="..\..\Src\Theme\ThemeLoader.h" />
+    <ClInclude Include="..\..\Src\Theme\ThemeTriggers.h" />
+    <ClInclude Include="..\..\Src\Board\Adam.h" />
+    <ClInclude Include="..\..\Src\Board\Board.h" />
+    <ClInclude Include="..\..\Src\Board\Coleco.h" />
+    <ClInclude Include="..\..\Src\Board\Machine.h" />
+    <ClInclude Include="..\..\Src\Board\MSX.h" />
+    <ClInclude Include="..\..\Src\Board\SG1000.h" />
+    <ClInclude Include="..\..\Src\Board\SVI.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchBitmap.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchCdrom.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchDialog.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchEth.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchEvent.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchFile.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchGlob.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchInput.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchMenu.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchMidi.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchNotifications.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchPrinter.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchSound.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchText.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchThread.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchTimer.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchUart.h" />
+    <ClInclude Include="..\..\Src\Arch\ArchVideoIn.h" />
+    <ClInclude Include="..\..\Src\Media\Crc32Calc.h" />
+    <ClInclude Include="..\..\Src\Media\MediaDb.h" />
+    <ClInclude Include="..\..\Src\Media\Sha1.h" />
+    <ClInclude Include="..\..\Src\Debugger\DebugDeviceManager.h" />
+    <ClInclude Include="..\..\Src\Debugger\Debugger.h" />
+    <ClInclude Include="..\..\Src\Utils\authkey.h" />
+    <ClInclude Include="..\..\Src\Utils\blowfish.h" />
+    <ClInclude Include="..\..\Src\Utils\IniFileParser.h" />
+    <ClInclude Include="..\..\Src\Utils\IsFileExtension.h" />
+    <ClInclude Include="..\..\Src\Utils\PacketFileSystem.h" />
+    <ClInclude Include="..\..\Src\Utils\SaveState.h" />
+    <ClInclude Include="..\..\Src\Utils\StrcmpNoCase.h" />
+    <ClInclude Include="..\..\Src\Utils\TokenExtract.h" />
+    <ClInclude Include="..\..\Src\Utils\VeryTinyXpath.h" />
+    <ClInclude Include="..\..\Src\Utils\ziphelper.h" />
+    <ClInclude Include="..\..\Src\Input\CoinDevice.h" />
+    <ClInclude Include="..\..\Src\Input\ColecoJoystick.h" />
+    <ClInclude Include="..\..\Src\Input\ColecoJoystickDevice.h" />
+    <ClInclude Include="..\..\Src\Input\InputEvent.h" />
+    <ClInclude Include="..\..\Src\Input\JoystickPort.h" />
+    <ClInclude Include="..\..\Src\Input\MagicKeyDongle.h" />
+    <ClInclude Include="..\..\Src\Input\MsxArkanoidPad.h" />
+    <ClInclude Include="..\..\Src\Input\MsxAsciiLaser.h" />
+    <ClInclude Include="..\..\Src\Input\MsxGunstick.h" />
+    <ClInclude Include="..\..\Src\Input\MsxJoystick.h" />
+    <ClInclude Include="..\..\Src\Input\MsxJoystickDevice.h" />
+    <ClInclude Include="..\..\Src\Input\MsxMouse.h" />
+    <ClInclude Include="..\..\Src\Input\MsxTetrisDongle.h" />
+    <ClInclude Include="..\..\Src\Input\Sg1000JoyIo.h" />
+    <ClInclude Include="..\..\Src\Input\Sg1000Joystick.h" />
+    <ClInclude Include="..\..\Src\Input\Sg1000JoystickDevice.h" />
+    <ClInclude Include="..\..\Src\Input\SviJoyIo.h" />
+    <ClInclude Include="..\..\Src\Input\SviJoystick.h" />
+    <ClInclude Include="..\..\Src\Input\SviJoystickDevice.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\..\Src\Resources\bluemsx.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\Src\Resources\blueMSX.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\Src\BuildInfo\build_info.txt">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">cd ..\..\Src\BuildInfo
+..\..\bin\buildnumber.exe
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">..\..\Src\Win32\Win32.c;..\..\Src\Win32\Win32screenshot.c;..\..\Src\Win32\Win32directX.c;..\..\Src\Win32\Win32wmmSound.c;..\..\Src\Win32\Win32directXSound.c;..\..\Src\Win32\Win32file.c;..\..\Src\Win32\Win32joystick.c;..\..\Src\Win32\Win32properties.c;..\..\Src\Win32\Win32statusbar2.c;..\..\Src\Win32\Win32snd.c;..\..\Src\Win32\Win32Timer.c;..\..\Src\Common\RomMapper.c;..\..\Src\Common\audioMixer.c;..\..\Src\Common\MSX.c;..\..\Src\SoundChips\AY8910.c;..\..\Src\SoundChips\SCC.c;..\..\Src\SoundChips\FMOpl.c;..\..\Src\SoundChips\KeyClick.c;..\..\Src\SoundChips\Y8950.c;..\..\Src\SoundChips\YMDeltat.c;..\..\Src\SoundChips\openMsxYM2413.cpp;..\..\Src\SoundChips\YM2413.cpp;..\..\Src\Bios\Patch.c;..\..\Src\Z80\Debug.c;..\..\Src\Z80\Z80.c;..\..\Src\IoDevice\Disk.c;..\..\Src\IoDevice\Casette.c;..\..\Src\IoDevice\I8251.c;..\..\Src\IoDevice\I8255.c;..\..\Src\VideoChips\V9938.c;..\..\Src\VideoChips\VDP.c;..\..\Src\VideoRender\videoRender.c;..\..\Src\Win32\Win32directx.h;..\..\Src\Win32\Win32file.h;..\..\Src\Win32\Win32joystick.h;..\..\Src\Win32\Win32MouseEmu.h;..\..\Src\Win32\Win32Properties.h;..\..\Src\Win32\Win32Sound.h;..\..\Src\Win32\Win32SystemTime.h;..\..\Src\Win32\Win32Timer.h;..\..\Src\Win32\Win32Screenshot.h;..\..\Src\Win32\Win32wmmsound.h;..\..\Src\Win32\Win32wmmdirectxsound.h;..\..\Src\Win32\Win32ShortcutsConfig.h;..\..\Src\Win32\Win32ShortcutsConfig.c;..\..\Src\Common\audioMixer.h;..\..\Src\Common\Disk.h;..\..\Src\Common\Casette.h;..\..\Src\Common\Common.h;..\..\Src\Common\MSX.h;..\..\Src\Common\msxTypes.h;..\..\Src\Common\romMapper.h;..\..\Src\SoundChips\AY8910.h;..\..\Src\SoundChips\SCC.h;..\..\Src\SoundChips\Y8950.h;..\..\Src\SoundChips\fmopl.h;..\..\Src\SoundChips\KeyClick.h;..\..\Src\SoundChips\OpenMsxYM2413.h;..\..\Src\SoundChips\YM2413.h;..\..\Src\SoundChips\ymdeltat.h;..\..\Src\Z80\Codes.h;..\..\Src\Z80\CodesCB.h;..\..\Src\Z80\CodesED.h;..\..\Src\Z80\CodesXCB.h;..\..\Src\Z80\CodesXX.h;..\..\Src\IoDevice\DiskUtil.h;..\..\Src\IoDevice\I8251.h;..\..\Src\IoDevice\I8255.h;..\..\Src\SoundChips\openMsxYM2413.h;..\..\Src\Resources\resource.h;..\..\Src\IoDevice\Disk.h;..\..\Src\IoDevice\Casette.h;..\..\Src\Bios\Boot.h;..\..\Src\Bios\Patch.h;..\..\Src\Bios\romDISK.h;..\..\Src\Bios\romFMPAC.h;..\..\Src\Bios\romKANJI.h;..\..\Src\Bios\romMapper.h;..\..\Src\Bios\romMSX.h;..\..\Src\Bios\romMSX2.h;..\..\Src\Bios\romMSX2EXT.h;..\..\Src\Bios\romMSX2P.h;..\..\Src\Bios\romMSX2PEXT.h;..\..\Src\Bios\romMSXDOS2.h;..\..\Src\Bios\romRS232.h;..\..\Src\Z80\Tables.h;..\..\Src\Z80\Z80.h;..\..\Src\VideoChips\V9938.h;..\..\Src\VideoChips\VDP.h;..\..\Src\VideoRender\videoRender.h;..\..\Src\Resources\blueMSX.rc;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Canned|Win32'">$(ProjectDir)..\..\Src\BuildInfo\build_number.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd ..\..\Src\BuildInfo
+..\..\bin\buildnumber.exe
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\Src\Win32\Win32.c;..\..\Src\Win32\Win32screenshot.c;..\..\Src\Win32\Win32directX.c;..\..\Src\Win32\Win32wmmSound.c;..\..\Src\Win32\Win32directXSound.c;..\..\Src\Win32\Win32file.c;..\..\Src\Win32\Win32joystick.c;..\..\Src\Win32\Win32properties.c;..\..\Src\Win32\Win32statusbar2.c;..\..\Src\Win32\Win32snd.c;..\..\Src\Win32\Win32Timer.c;..\..\Src\Common\RomMapper.c;..\..\Src\Common\audioMixer.c;..\..\Src\Common\MSX.c;..\..\Src\SoundChips\AY8910.c;..\..\Src\SoundChips\SCC.c;..\..\Src\SoundChips\FMOpl.c;..\..\Src\SoundChips\KeyClick.c;..\..\Src\SoundChips\Y8950.c;..\..\Src\SoundChips\YMDeltat.c;..\..\Src\SoundChips\openMsxYM2413.cpp;..\..\Src\SoundChips\YM2413.cpp;..\..\Src\Bios\Patch.c;..\..\Src\Z80\Debug.c;..\..\Src\Z80\Z80.c;..\..\Src\IoDevice\Disk.c;..\..\Src\IoDevice\Casette.c;..\..\Src\IoDevice\I8251.c;..\..\Src\IoDevice\I8255.c;..\..\Src\VideoChips\V9938.c;..\..\Src\VideoChips\VDP.c;..\..\Src\VideoRender\videoRender.c;..\..\Src\Win32\Win32directx.h;..\..\Src\Win32\Win32file.h;..\..\Src\Win32\Win32joystick.h;..\..\Src\Win32\Win32MouseEmu.h;..\..\Src\Win32\Win32Properties.h;..\..\Src\Win32\Win32Sound.h;..\..\Src\Win32\Win32SystemTime.h;..\..\Src\Win32\Win32Timer.h;..\..\Src\Win32\Win32Screenshot.h;..\..\Src\Win32\Win32wmmsound.h;..\..\Src\Win32\Win32wmmdirectxsound.h;..\..\Src\Win32\Win32ShortcutsConfig.h;..\..\Src\Win32\Win32ShortcutsConfig.c;..\..\Src\Common\audioMixer.h;..\..\Src\Common\Disk.h;..\..\Src\Common\Casette.h;..\..\Src\Common\Common.h;..\..\Src\Common\MSX.h;..\..\Src\Common\msxTypes.h;..\..\Src\Common\romMapper.h;..\..\Src\SoundChips\AY8910.h;..\..\Src\SoundChips\SCC.h;..\..\Src\SoundChips\Y8950.h;..\..\Src\SoundChips\fmopl.h;..\..\Src\SoundChips\KeyClick.h;..\..\Src\SoundChips\OpenMsxYM2413.h;..\..\Src\SoundChips\YM2413.h;..\..\Src\SoundChips\ymdeltat.h;..\..\Src\Z80\Codes.h;..\..\Src\Z80\CodesCB.h;..\..\Src\Z80\CodesED.h;..\..\Src\Z80\CodesXCB.h;..\..\Src\Z80\CodesXX.h;..\..\Src\IoDevice\DiskUtil.h;..\..\Src\IoDevice\I8251.h;..\..\Src\IoDevice\I8255.h;..\..\Src\SoundChips\openMsxYM2413.h;..\..\Src\Resources\resource.h;..\..\Src\IoDevice\Disk.h;..\..\Src\IoDevice\Casette.h;..\..\Src\Bios\Boot.h;..\..\Src\Bios\Patch.h;..\..\Src\Bios\romDISK.h;..\..\Src\Bios\romFMPAC.h;..\..\Src\Bios\romKANJI.h;..\..\Src\Bios\romMapper.h;..\..\Src\Bios\romMSX.h;..\..\Src\Bios\romMSX2.h;..\..\Src\Bios\romMSX2EXT.h;..\..\Src\Bios\romMSX2P.h;..\..\Src\Bios\romMSX2PEXT.h;..\..\Src\Bios\romMSXDOS2.h;..\..\Src\Bios\romRS232.h;..\..\Src\Z80\Tables.h;..\..\Src\Z80\Z80.h;..\..\Src\VideoChips\V9938.h;..\..\Src\VideoChips\VDP.h;..\..\Src\VideoRender\videoRender.h;..\..\Src\Resources\blueMSX.rc;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\Src\BuildInfo\build_number.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">cd ..\..\bin
+buildnumber.exe
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">..\..\Src\Win32\Win32.c;..\..\Src\Win32\Win32directX.c;..\..\Src\Win32\Win32directXSound.c;..\..\Src\Win32\Win32file.c;..\..\Src\Win32\Win32FileHistory.c;..\..\Src\Win32\Win32Help.c;..\..\Src\Win32\Win32joystick.c;..\..\Src\Win32\Win32Keyboard.c;..\..\Src\Win32\Win32machineConfig.c;..\..\Src\Win32\Win32Menu.c;..\..\Src\Win32\Win32MouseEmu.c;..\..\Src\Win32\Win32properties.c;..\..\Src\Win32\Win32screenshot.c;..\..\Src\Win32\Win32snd.c;..\..\Src\Win32\Win32StatusBar.c;..\..\Src\Win32\Win32Timer.c;..\..\Src\Win32\Win32ToolBar.c;..\..\Src\Win32\Win32WaveCapture.c;..\..\Src\Win32\Win32wmmSound.c;..\..\Src\Common\RomMapper.c;..\..\Src\Common\audioMixer.c;..\..\Src\Common\MSX.c;..\..\Src\SoundChips\AY8910.c;..\..\Src\SoundChips\SCC.c;..\..\Src\SoundChips\FMOpl.c;..\..\Src\SoundChips\KeyClick.c;..\..\Src\SoundChips\Y8950.c;..\..\Src\SoundChips\YMDeltat.c;..\..\Src\SoundChips\openMsxYM2413.cpp;..\..\Src\SoundChips\YM2413.cpp;..\..\Src\Bios\Patch.c;..\..\Src\Z80\Debug.c;..\..\Src\Z80\Z80.c;..\..\Src\IoDevice\Disk.c;..\..\Src\IoDevice\Casette.c;..\..\Src\IoDevice\I8251.c;..\..\Src\IoDevice\I8255.c;..\..\Src\VideoChips\V9938.c;..\..\Src\VideoChips\VDP.c;..\..\Src\VideoRender\videoRender.c;..\..\Src\Win32\Win32directx.h;..\..\Src\Win32\Win32file.h;..\..\Src\Win32\Win32joystick.h;..\..\Src\Win32\Win32MouseEmu.h;..\..\Src\Win32\Win32Properties.h;..\..\Src\Win32\Win32Sound.h;..\..\Src\Win32\Win32SystemTime.h;..\..\Src\Win32\Win32Timer.h;..\..\Src\Win32\Win32Screenshot.h;..\..\Src\Win32\Win32wmmsound.h;..\..\Src\Win32\Win32wmmdirectxsound.h;..\..\Src\Common\audioMixer.h;..\..\Src\Common\Disk.h;..\..\Src\Common\Casette.h;..\..\Src\Common\Common.h;..\..\Src\Common\MSX.h;..\..\Src\Common\msxTypes.h;..\..\Src\Common\romMapper.h;..\..\Src\SoundChips\AY8910.h;..\..\Src\SoundChips\SCC.h;..\..\Src\SoundChips\Y8950.h;..\..\Src\SoundChips\fmopl.h;..\..\Src\SoundChips\KeyClick.h;..\..\Src\SoundChips\OpenMsxYM2413.h;..\..\Src\SoundChips\YM2413.h;..\..\Src\SoundChips\ymdeltat.h;..\..\Src\Z80\Codes.h;..\..\Src\Z80\CodesCB.h;..\..\Src\Z80\CodesED.h;..\..\Src\Z80\CodesXCB.h;..\..\Src\Z80\CodesXX.h;..\..\Src\IoDevice\DiskUtil.h;..\..\Src\IoDevice\I8251.h;..\..\Src\IoDevice\I8255.h;..\..\Src\SoundChips\openMsxYM2413.h;..\..\Src\Resources\resource.h;..\..\Src\IoDevice\Disk.h;..\..\Src\IoDevice\Casette.h;..\..\Src\Bios\Boot.h;..\..\Src\Bios\Patch.h;..\..\Src\Bios\romDISK.h;..\..\Src\Bios\romFMPAC.h;..\..\Src\Bios\romKANJI.h;..\..\Src\Bios\romMapper.h;..\..\Src\Bios\romMSX.h;..\..\Src\Bios\romMSX2.h;..\..\Src\Bios\romMSX2EXT.h;..\..\Src\Bios\romMSX2P.h;..\..\Src\Bios\romMSX2PEXT.h;..\..\Src\Bios\romMSXDOS2.h;..\..\Src\Bios\romRS232.h;..\..\Src\Z80\Tables.h;..\..\Src\Z80\Z80.h;..\..\Src\VideoChips\V9938.h;..\..\Src\VideoChips\VDP.h;..\..\Src\VideoRender\videoRender.h;..\..\Src\Resources\blueMSX.rc;..\..\Src\Memory\IoPort.c;..\..\Src\Memory\MegaromCartridge.c;..\..\Src\Memory\ramMapper.c;..\..\Src\Memory\ramNormal.c;..\..\Src\Memory\RomLoader.c;..\..\Src\Memory\RomMapper.c;..\..\Src\Memory\SlotManager.c;..\..\Src\Memory\sramLoader.c;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">$(ProjectDir)..\..\Src\BuildInfo\build_number.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">cd ..\..\Src\BuildInfo
+..\..\bin\buildnumber.exe
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">..\..\Src\Win32\Win32.c;..\..\Src\Win32\Win32directX.c;..\..\Src\Win32\Win32directXSound.c;..\..\Src\Win32\Win32file.c;..\..\Src\Win32\Win32FileHistory.c;..\..\Src\Win32\Win32Help.c;..\..\Src\Win32\Win32joystick.c;..\..\Src\Win32\Win32Keyboard.c;..\..\Src\Win32\Win32machineConfig.c;..\..\Src\Win32\Win32Menu.c;..\..\Src\Win32\Win32MouseEmu.c;..\..\Src\Win32\Win32properties.c;..\..\Src\Win32\Win32screenshot.c;..\..\Src\Win32\Win32snd.c;..\..\Src\Win32\Win32StatusBar.c;..\..\Src\Win32\Win32StatusBar2.c;..\..\Src\Win32\Win32Timer.c;..\..\Src\Win32\Win32ToolBar.c;..\..\Src\Win32\Win32WaveCapture.c;..\..\Src\Win32\Win32wmmSound.c;..\..\Src\Common\RomMapper.c;..\..\Src\Common\audioMixer.c;..\..\Src\Common\MSX.c;..\..\Src\SoundChips\AY8910.c;..\..\Src\SoundChips\SCC.c;..\..\Src\SoundChips\FMOpl.c;..\..\Src\SoundChips\KeyClick.c;..\..\Src\SoundChips\Y8950.c;..\..\Src\SoundChips\YMDeltat.c;..\..\Src\SoundChips\openMsxYM2413.cpp;..\..\Src\SoundChips\YM2413.cpp;..\..\Src\Bios\Patch.c;..\..\Src\Z80\Debug.c;..\..\Src\Z80\Z80.c;..\..\Src\IoDevice\Disk.c;..\..\Src\IoDevice\Casette.c;..\..\Src\IoDevice\I8251.c;..\..\Src\IoDevice\I8255.c;..\..\Src\VideoChips\V9938.c;..\..\Src\VideoChips\VDP.c;..\..\Src\VideoRender\videoRender.c;..\..\Src\Win32\Win32directx.h;..\..\Src\Win32\Win32file.h;..\..\Src\Win32\Win32joystick.h;..\..\Src\Win32\Win32MouseEmu.h;..\..\Src\Win32\Win32Properties.h;..\..\Src\Win32\Win32Sound.h;..\..\Src\Win32\Win32SystemTime.h;..\..\Src\Win32\Win32Timer.h;..\..\Src\Win32\Win32Screenshot.h;..\..\Src\Win32\Win32wmmsound.h;..\..\Src\Win32\Win32wmmdirectxsound.h;..\..\Src\Win32\Win32ShortcutsConfig.h;..\..\Src\Win32\Win32ShortcutsConfig.c;..\..\Src\Common\audioMixer.h;..\..\Src\Common\Disk.h;..\..\Src\Common\Casette.h;..\..\Src\Common\Common.h;..\..\Src\Common\MSX.h;..\..\Src\Common\msxTypes.h;..\..\Src\Common\romMapper.h;..\..\Src\SoundChips\AY8910.h;..\..\Src\SoundChips\SCC.h;..\..\Src\SoundChips\Y8950.h;..\..\Src\SoundChips\fmopl.h;..\..\Src\SoundChips\KeyClick.h;..\..\Src\SoundChips\OpenMsxYM2413.h;..\..\Src\SoundChips\YM2413.h;..\..\Src\SoundChips\ymdeltat.h;..\..\Src\Z80\Codes.h;..\..\Src\Z80\CodesCB.h;..\..\Src\Z80\CodesED.h;..\..\Src\Z80\CodesXCB.h;..\..\Src\Z80\CodesXX.h;..\..\Src\IoDevice\DiskUtil.h;..\..\Src\IoDevice\I8251.h;..\..\Src\IoDevice\I8255.h;..\..\Src\SoundChips\openMsxYM2413.h;..\..\Src\Resources\resource.h;..\..\Src\IoDevice\Disk.h;..\..\Src\IoDevice\Casette.h;..\..\Src\Bios\Boot.h;..\..\Src\Bios\Patch.h;..\..\Src\Bios\romDISK.h;..\..\Src\Bios\romFMPAC.h;..\..\Src\Bios\romKANJI.h;..\..\Src\Bios\romMapper.h;..\..\Src\Bios\romMSX.h;..\..\Src\Bios\romMSX2.h;..\..\Src\Bios\romMSX2EXT.h;..\..\Src\Bios\romMSX2P.h;..\..\Src\Bios\romMSX2PEXT.h;..\..\Src\Bios\romMSXDOS2.h;..\..\Src\Bios\romRS232.h;..\..\Src\Z80\Tables.h;..\..\Src\Z80\Z80.h;..\..\Src\VideoChips\V9938.h;..\..\Src\VideoChips\VDP.h;..\..\Src\VideoRender\videoRender.h;..\..\Src\Resources\blueMSX.rc;..\..\Src\Memory\IoPort.c;..\..\Src\Memory\MegaromCartridge.c;..\..\Src\Memory\ramMapper.c;..\..\Src\Memory\ramNormal.c;..\..\Src\Memory\RomLoader.c;..\..\Src\Memory\RomMapper.c;..\..\Src\Memory\SlotManager.c;..\..\Src\Memory\sramLoader.c;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Canned|Win32'">$(ProjectDir)..\..\Src\BuildInfo\build_number.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">cd ..\..\Src\BuildInfo
+..\..\bin\buildnumber.exe
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">..\..\Src\Win32\Win32.c;..\..\Src\Win32\Win32directX.c;..\..\Src\Win32\Win32directXSound.c;..\..\Src\Win32\Win32file.c;..\..\Src\Win32\Win32FileHistory.c;..\..\Src\Win32\Win32Help.c;..\..\Src\Win32\Win32joystick.c;..\..\Src\Win32\Win32Keyboard.c;..\..\Src\Win32\Win32machineConfig.c;..\..\Src\Win32\Win32Menu.c;..\..\Src\Win32\Win32MouseEmu.c;..\..\Src\Win32\Win32properties.c;..\..\Src\Win32\Win32screenshot.c;..\..\Src\Win32\Win32snd.c;..\..\Src\Win32\Win32StatusBar.c;..\..\Src\Win32\Win32StatusBar2.c;..\..\Src\Win32\Win32Timer.c;..\..\Src\Win32\Win32ToolBar.c;..\..\Src\Win32\Win32WaveCapture.c;..\..\Src\Win32\Win32wmmSound.c;..\..\Src\Common\RomMapper.c;..\..\Src\Common\audioMixer.c;..\..\Src\Common\MSX.c;..\..\Src\SoundChips\AY8910.c;..\..\Src\SoundChips\SCC.c;..\..\Src\SoundChips\FMOpl.c;..\..\Src\SoundChips\KeyClick.c;..\..\Src\SoundChips\Y8950.c;..\..\Src\SoundChips\YMDeltat.c;..\..\Src\SoundChips\openMsxYM2413.cpp;..\..\Src\SoundChips\YM2413.cpp;..\..\Src\Bios\Patch.c;..\..\Src\Z80\Debug.c;..\..\Src\Z80\Z80.c;..\..\Src\IoDevice\Disk.c;..\..\Src\IoDevice\Casette.c;..\..\Src\IoDevice\I8251.c;..\..\Src\IoDevice\I8255.c;..\..\Src\VideoChips\V9938.c;..\..\Src\VideoChips\VDP.c;..\..\Src\VideoRender\videoRender.c;..\..\Src\Win32\Win32directx.h;..\..\Src\Win32\Win32file.h;..\..\Src\Win32\Win32joystick.h;..\..\Src\Win32\Win32MouseEmu.h;..\..\Src\Win32\Win32Properties.h;..\..\Src\Win32\Win32Sound.h;..\..\Src\Win32\Win32SystemTime.h;..\..\Src\Win32\Win32Timer.h;..\..\Src\Win32\Win32Screenshot.h;..\..\Src\Win32\Win32wmmsound.h;..\..\Src\Win32\Win32wmmdirectxsound.h;..\..\Src\Win32\Win32ShortcutsConfig.h;..\..\Src\Win32\Win32ShortcutsConfig.c;..\..\Src\Common\audioMixer.h;..\..\Src\Common\Disk.h;..\..\Src\Common\Casette.h;..\..\Src\Common\Common.h;..\..\Src\Common\MSX.h;..\..\Src\Common\msxTypes.h;..\..\Src\Common\romMapper.h;..\..\Src\SoundChips\AY8910.h;..\..\Src\SoundChips\SCC.h;..\..\Src\SoundChips\Y8950.h;..\..\Src\SoundChips\fmopl.h;..\..\Src\SoundChips\KeyClick.h;..\..\Src\SoundChips\OpenMsxYM2413.h;..\..\Src\SoundChips\YM2413.h;..\..\Src\SoundChips\ymdeltat.h;..\..\Src\Z80\Codes.h;..\..\Src\Z80\CodesCB.h;..\..\Src\Z80\CodesED.h;..\..\Src\Z80\CodesXCB.h;..\..\Src\Z80\CodesXX.h;..\..\Src\IoDevice\DiskUtil.h;..\..\Src\IoDevice\I8251.h;..\..\Src\IoDevice\I8255.h;..\..\Src\SoundChips\openMsxYM2413.h;..\..\Src\Resources\resource.h;..\..\Src\IoDevice\Disk.h;..\..\Src\IoDevice\Casette.h;..\..\Src\Bios\Boot.h;..\..\Src\Bios\Patch.h;..\..\Src\Bios\romDISK.h;..\..\Src\Bios\romFMPAC.h;..\..\Src\Bios\romKANJI.h;..\..\Src\Bios\romMapper.h;..\..\Src\Bios\romMSX.h;..\..\Src\Bios\romMSX2.h;..\..\Src\Bios\romMSX2EXT.h;..\..\Src\Bios\romMSX2P.h;..\..\Src\Bios\romMSX2PEXT.h;..\..\Src\Bios\romMSXDOS2.h;..\..\Src\Bios\romRS232.h;..\..\Src\Z80\Tables.h;..\..\Src\Z80\Z80.h;..\..\Src\VideoChips\V9938.h;..\..\Src\VideoChips\VDP.h;..\..\Src\VideoRender\videoRender.h;..\..\Src\Resources\blueMSX.rc;..\..\Src\Memory\IoPort.c;..\..\Src\Memory\MegaromCartridge.c;..\..\Src\Memory\ramMapper.c;..\..\Src\Memory\ramNormal.c;..\..\Src\Memory\RomLoader.c;..\..\Src\Memory\RomMapper.c;..\..\Src\Memory\SlotManager.c;..\..\Src\Memory\sramLoader.c;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Console|Win32'">$(ProjectDir)..\..\Src\BuildInfo\build_number.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd ..\..\Src\BuildInfo
+..\..\bin\buildnumber.exe
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\Src\Win32\Win32.c;..\..\Src\Win32\Win32directX.c;..\..\Src\Win32\Win32directXSound.c;..\..\Src\Win32\Win32file.c;..\..\Src\Win32\Win32FileHistory.c;..\..\Src\Win32\Win32Help.c;..\..\Src\Win32\Win32joystick.c;..\..\Src\Win32\Win32Keyboard.c;..\..\Src\Win32\Win32machineConfig.c;..\..\Src\Win32\Win32Menu.c;..\..\Src\Win32\Win32MouseEmu.c;..\..\Src\Win32\Win32properties.c;..\..\Src\Win32\Win32screenshot.c;..\..\Src\Win32\Win32snd.c;..\..\Src\Win32\Win32StatusBar.c;..\..\Src\Win32\Win32StatusBar2.c;..\..\Src\Win32\Win32Timer.c;..\..\Src\Win32\Win32ToolBar.c;..\..\Src\Win32\Win32WaveCapture.c;..\..\Src\Win32\Win32wmmSound.c;..\..\Src\Common\RomMapper.c;..\..\Src\Common\audioMixer.c;..\..\Src\Common\MSX.c;..\..\Src\SoundChips\AY8910.c;..\..\Src\SoundChips\SCC.c;..\..\Src\SoundChips\FMOpl.c;..\..\Src\SoundChips\KeyClick.c;..\..\Src\SoundChips\Y8950.c;..\..\Src\SoundChips\YMDeltat.c;..\..\Src\SoundChips\openMsxYM2413.cpp;..\..\Src\SoundChips\YM2413.cpp;..\..\Src\Bios\Patch.c;..\..\Src\Z80\Debug.c;..\..\Src\Z80\Z80.c;..\..\Src\IoDevice\Disk.c;..\..\Src\IoDevice\Casette.c;..\..\Src\IoDevice\I8251.c;..\..\Src\IoDevice\I8255.c;..\..\Src\VideoChips\V9938.c;..\..\Src\VideoChips\VDP.c;..\..\Src\VideoRender\videoRender.c;..\..\Src\Win32\Win32directx.h;..\..\Src\Win32\Win32file.h;..\..\Src\Win32\Win32joystick.h;..\..\Src\Win32\Win32MouseEmu.h;..\..\Src\Win32\Win32Properties.h;..\..\Src\Win32\Win32Sound.h;..\..\Src\Win32\Win32SystemTime.h;..\..\Src\Win32\Win32Timer.h;..\..\Src\Win32\Win32Screenshot.h;..\..\Src\Win32\Win32wmmsound.h;..\..\Src\Win32\Win32wmmdirectxsound.h;..\..\Src\Win32\Win32ShortcutsConfig.h;..\..\Src\Win32\Win32ShortcutsConfig.c;..\..\Src\Common\audioMixer.h;..\..\Src\Common\Disk.h;..\..\Src\Common\Casette.h;..\..\Src\Common\Common.h;..\..\Src\Common\MSX.h;..\..\Src\Common\msxTypes.h;..\..\Src\Common\romMapper.h;..\..\Src\SoundChips\AY8910.h;..\..\Src\SoundChips\SCC.h;..\..\Src\SoundChips\Y8950.h;..\..\Src\SoundChips\fmopl.h;..\..\Src\SoundChips\KeyClick.h;..\..\Src\SoundChips\OpenMsxYM2413.h;..\..\Src\SoundChips\YM2413.h;..\..\Src\SoundChips\ymdeltat.h;..\..\Src\Z80\Codes.h;..\..\Src\Z80\CodesCB.h;..\..\Src\Z80\CodesED.h;..\..\Src\Z80\CodesXCB.h;..\..\Src\Z80\CodesXX.h;..\..\Src\IoDevice\DiskUtil.h;..\..\Src\IoDevice\I8251.h;..\..\Src\IoDevice\I8255.h;..\..\Src\SoundChips\openMsxYM2413.h;..\..\Src\Resources\resource.h;..\..\Src\IoDevice\Disk.h;..\..\Src\IoDevice\Casette.h;..\..\Src\Bios\Boot.h;..\..\Src\Bios\Patch.h;..\..\Src\Bios\romDISK.h;..\..\Src\Bios\romFMPAC.h;..\..\Src\Bios\romKANJI.h;..\..\Src\Bios\romMapper.h;..\..\Src\Bios\romMSX.h;..\..\Src\Bios\romMSX2.h;..\..\Src\Bios\romMSX2EXT.h;..\..\Src\Bios\romMSX2P.h;..\..\Src\Bios\romMSX2PEXT.h;..\..\Src\Bios\romMSXDOS2.h;..\..\Src\Bios\romRS232.h;..\..\Src\Z80\Tables.h;..\..\Src\Z80\Z80.h;..\..\Src\VideoChips\V9938.h;..\..\Src\VideoChips\VDP.h;..\..\Src\VideoRender\videoRender.h;..\..\Src\Resources\blueMSX.rc;..\..\Src\Memory\IoPort.c;..\..\Src\Memory\MegaromCartridge.c;..\..\Src\Memory\ramMapper.c;..\..\Src\Memory\ramNormal.c;..\..\Src\Memory\RomLoader.c;..\..\Src\Memory\RomMapper.c;..\..\Src\Memory\SlotManager.c;..\..\Src\Memory\sramLoader.c;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\Src\BuildInfo\build_number.h;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="..\..\changes.txt" />
+    <None Include="..\..\license.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
