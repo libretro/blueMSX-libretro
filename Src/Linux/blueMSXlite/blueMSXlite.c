@@ -300,7 +300,7 @@ int main(int argc, char **argv)
     boardSetY8950Enable(properties->sound.chip.enableY8950);
     boardSetYm2413Enable(properties->sound.chip.enableYM2413);
     boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
-    boardSetVideoAutodetect(properties->video.chipAutodetect);
+    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
     XSync(display, 0);
     

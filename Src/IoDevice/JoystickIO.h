@@ -30,7 +30,7 @@
 #ifndef JOYSTICK_IO_H
 #define JOYSTICK_IO_H
 
-#include "msxTypes.h"
+#include "MsxTypes.h"
 #include "AY8910.h"
 
 typedef enum { 

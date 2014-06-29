@@ -33,7 +33,7 @@ TARGET_NAME := blueMSX
 ifeq ($(platform), unix)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-   SHARED := -shared -Wl,-version-script=link.T
+   SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC
@@ -159,7 +159,7 @@ endif
 DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES)
 DEFINES += -D_MBCS -D__WINCRYPT_H__ -DLSB_FIRST -DNARROW -DSOUND -DDISK -DFMSX -DPROPERTIES_DEFAULTS_ALT_1 -DPROPERTIES_NO_REGISTRY -DPROPERTIES_LOCAL_INI_FILE
 DEFINES += -DNO_ASM
-
+DEFINES += -DNO_TIMERS -DSINGLE_THREADED
 
 CFLAGS   += $(fpic) $(DEFINES)
 CFLAGS   += -w
@@ -453,7 +453,7 @@ INCDIRS += -ISrc/Input
 
 INCDIRS += -ISrc/Libretro
 
-LIBS := 
+LIBS :=
 
 
 all: $(TARGET)
@@ -478,5 +478,5 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(TARGET)
 
-.PHONY: clean clean-objs
+.PHONY: $(TARGET) clean clean-objs
 
