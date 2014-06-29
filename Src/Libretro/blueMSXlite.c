@@ -54,3 +54,13 @@ int  archUpdateEmuDisplay(int syncMode)
    return 1;
 }
 
+void archTrap(UInt8 value)
+{
+}
+
+#ifdef SINGLE_THREADED
+int archPollEvent()
+{
+   return 0;
+}
+#endif

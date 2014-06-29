@@ -55,3 +55,5 @@ void* archWindowCreate(struct Theme* theme, int childWindow) { return NULL; }
 void archWindowStartMove() {}
 void archWindowMove() {}
 void archWindowEndMove() {}
+
+void archVideoCaptureSave() {}

@@ -40,7 +40,7 @@ void archEventWait(void* event, int timeout) {}
 #error
 #endif
 
-#if 0
+#if 1
 #include <semaphore.h>
 
 typedef struct {

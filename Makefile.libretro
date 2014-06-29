@@ -191,7 +191,7 @@ CSRCS  += Src/Libretro/VideoIn.c
 CSRCS  += Src/Libretro/rthread.c
 
 
-
+CSRCS  += Src/Common/ArrayList.c
 CSRCS  += Src/Common/DebugMemory.c
 
 CSRCS  += Src/Bios/Patch.c
@@ -209,15 +209,17 @@ CSRCS  += Src/Bios/Patch.c
 #CSRCS  += Src/Unzip/inftrees.c
 #CSRCS  += Src/Unzip/inffast.c
 
-#CSRCS  += Src/Unzip/unzip.c
-#CSRCS  += Src/Unzip/ioapi.c
-#CSRCS  += Src/Unzip/zip.c
+CSRCS  += Src/Unzip/unzip.c
+CSRCS  += Src/Unzip/ioapi.c
+CSRCS  += Src/Unzip/zip.c
 #CSRCS  += Src/Unzip/iowin32.c
 
+CSRCS  += Src/Memory/MegaSCSIsub.c
 CSRCS  += Src/Memory/ramMapper.c
 CSRCS  += Src/Memory/ramMapperIo.c
 CSRCS  += Src/Memory/ramNormal.c
 CSRCS  += Src/Memory/RomLoader.c
+CSRCS  += Src/Memory/romMapperA1FM.c
 CSRCS  += Src/Memory/romMapperASCII16.c
 CSRCS  += Src/Memory/romMapperASCII16nf.c
 CSRCS  += Src/Memory/romMapperASCII16sram.c
@@ -226,6 +228,7 @@ CSRCS  += Src/Memory/romMapperASCII8sram.c
 CSRCS  += Src/Memory/romMapperBunsetu.c
 CSRCS  += Src/Memory/romMapperCrossBlaim.c
 CSRCS  += Src/Memory/romMapperDisk.c
+CSRCS  += Src/Memory/romMapperDRAM.c
 CSRCS  += Src/Memory/romMapperF4device.c
 CSRCS  += Src/Memory/romMapperFMPAC.c
 CSRCS  += Src/Memory/romMapperFMPAK.c
@@ -233,6 +236,7 @@ CSRCS  += Src/Memory/romMapperPAC.c
 CSRCS  += Src/Memory/romMapperGameMaster2.c
 CSRCS  += Src/Memory/romMapperHarryFox.c
 CSRCS  += Src/Memory/romMapperHolyQuran.c
+CSRCS  += Src/Memory/romMapperJoyrexPsg.c
 CSRCS  += Src/Memory/romMapperKanji.c
 CSRCS  += Src/Memory/romMapperKanji12.c
 CSRCS  += Src/Memory/romMapperKonami4.c
@@ -249,6 +253,7 @@ CSRCS  += Src/Memory/romMapperKorean90.c
 CSRCS  += Src/Memory/romMapperKorean80.c
 CSRCS  += Src/Memory/romMapperMsxDos2.c
 CSRCS  += Src/Memory/romMapperNational.c
+CSRCS  += Src/Memory/romMapperNms1210Rs232.c
 CSRCS  += Src/Memory/romMapperNormal.c
 CSRCS  += Src/Memory/romMapperPanasonic.c
 CSRCS  += Src/Memory/romMapperPlain.c
@@ -277,6 +282,7 @@ CSRCS  += Src/Memory/romMapperCasette.c
 CSRCS  += Src/Memory/romMapperS1990.c
 CSRCS  += Src/Memory/sramMapperMatsuchita.c
 CSRCS  += Src/Memory/sramMapperS1985.c
+CSRCS  += Src/Memory/sramMapperMegaSCSI.c
 CSRCS  += Src/Memory/sramLoader.c
 
 CSRCS  += Src/Memory/romMapperGIDE.c
@@ -343,8 +349,9 @@ CSRCS  += Src/IoDevice/MSXMidi.c
 CSRCS  += Src/IoDevice/HarddiskIDE.c
 CSRCS  += Src/IoDevice/GameReader.c
 CSRCS  += Src/IoDevice/SunriseIDE.c
-#CSRCS  += Src/IoDevice/
-
+CSRCS  += Src/IoDevice/Z8530.c
+CSRCS  += Src/IoDevice/MB89352.c
+CSRCS  += Src/IoDevice/ScsiDevice.c
 
 CSRCS  += Src/Language/Language.c
 
@@ -377,9 +384,10 @@ CSRCS  += Src/SoundChips/MameYM2151.c
 CSRCS  += Src/SoundChips/MsxPsg.c
 
 CSRCS  += Src/Emulator/Actions.c
+CSRCS  += Src/Emulator/AppConfig.c
 CSRCS  += Src/Emulator/CommandLine.c
 CSRCS  += Src/Emulator/Emulator.c
-CSRCS  += Src/Emulator/Keyboard.c
+#CSRCS  += Src/Emulator/Keyboard.c
 CSRCS  += Src/Emulator/FileHistory.c
 CSRCS  += Src/Emulator/LaunchFile.c
 CSRCS  += Src/Emulator/Properties.c
@@ -389,6 +397,7 @@ CSRCS  += Src/Utils/SaveState.c
 CSRCS  += Src/Utils/StrcmpNoCase.c
 CSRCS  += Src/Utils/TokenExtract.c
 CSRCS  += Src/Utils/IniFileParser.c
+CSRCS  += Src/Utils/ZipFromMem.c
 CSRCS  += Src/Utils/ziphelper.c
 
 #CSRCS  += Src/Theme/Theme.c
@@ -415,6 +424,7 @@ CSRCS  += Src/Input/ColecoJoystick.c
 CSRCS  += Src/Input/InputEvent.c
 CSRCS  += Src/Input/JoystickPort.c
 CSRCS  += Src/Input/MagicKeyDongle.c
+CSRCS  += Src/Input/MsxArkanoidPad.c
 CSRCS  += Src/Input/MsxAsciiLaser.c
 CSRCS  += Src/Input/MsxGunstick.c
 CSRCS  += Src/Input/MsxJoystick.c
@@ -453,7 +463,7 @@ INCDIRS += -ISrc/Input
 
 INCDIRS += -ISrc/Libretro
 
-LIBS :=
+LIBS := -lpthread -lz
 
 
 all: $(TARGET)

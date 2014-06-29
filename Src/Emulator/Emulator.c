@@ -309,6 +309,11 @@ static int timerCallback(void* timer) {
 
     return 1;
 }
+
+int timerCallback_global(void* timer) {
+   timerCallback(timer);
+}
+
 #endif
 
 static void getDeviceInfo(BoardDeviceInfo* deviceInfo)
@@ -843,6 +848,8 @@ static int WaitForSync(int maxSpeed, int breakpointHit) {
 #endif
 
 #else
+
+#ifdef WIN32
 #include <windows.h>
 
 UInt32 getHiresTimer() {
@@ -862,7 +869,9 @@ UInt32 getHiresTimer() {
 
     return (DWORD)(li.QuadPart * 1000000 / hfFrequency);
 }
-
+#else
+#define getHiresTimer archGetHiresTimer
+#endif
 static UInt32 busy, total, oldTime;
 
 static int WaitForSync(int maxSpeed, int breakpointHit) {
@@ -907,5 +916,5 @@ static int WaitForSync(int maxSpeed, int breakpointHit) {
     return emuExitFlag ? -1 : 10;
 }
 
-#endif
+#endif // #ifndef NO_TIMERS
 

@@ -436,7 +436,7 @@ size_t retro_get_memory_size(unsigned id)
    return 0;
 }
 
-void timerCallback(void* timer) ;
+void timerCallback_global(void* timer) ;
 UInt8 archJoystickGetState(int joystickNo) {
    return ((eventMap[EC_JOY1_UP]    << 0) |
             (eventMap[EC_JOY1_DOWN]  << 1) |
@@ -468,7 +468,7 @@ void retro_run(void)
       eventMap[i] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
 
 
-   timerCallback(NULL);
+   timerCallback_global(NULL);
 //   emulatorRunOne();
 
    FrameBuffer* frameBuffer;
