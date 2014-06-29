@@ -253,9 +253,9 @@ void retro_init(void)
    else
       log_cb = NULL;
 
-   image_buffer = NULL;
-   image_buffer_width = 0;
-   image_buffer_height = 0;
+   image_buffer = malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
+   image_buffer_width =  272;
+   image_buffer_height =  240;
 
 }
 
@@ -404,9 +404,6 @@ bool retro_load_game(const struct retro_game_info *info)
    boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
-   image_buffer = malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
-   image_buffer_width =  272;
-   image_buffer_height =  240;
 
    emulatorStart(NULL);
 
