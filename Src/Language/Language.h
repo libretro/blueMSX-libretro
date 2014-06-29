@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Language/Language.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Language/Language.h,v $
 **
-** $Revision: 1.68 $
+** $Revision: 1.99 $
 **
-** $Date: 2006/06/26 19:35:54 $
+** $Date: 2009-04-04 20:57:19 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -45,7 +43,9 @@ typedef enum {
     EMU_LANG_POLISH      = 11,
     EMU_LANG_CHINESESIMP = 12,
     EMU_LANG_CHINESETRAD = 13,
-    EMU_LANG_COUNT       = 14,
+    EMU_LANG_RUSSIAN     = 14,
+    EMU_LANG_CATALAN     = 15,
+    EMU_LANG_COUNT       = 16,
     EMU_LANG_UNKNOWN     = -1 
 } EmuLanguageType;
 
@@ -62,6 +62,7 @@ EmuLanguageType langGetType(int i);
 // Language lines
 //----------------------
 
+char* langLangCatalan();
 char* langLangChineseSimplified();
 char* langLangChineseTraditional();
 char* langLangDutch();
@@ -74,6 +75,7 @@ char* langLangJapanese();
 char* langLangKorean();
 char* langLangPolish();
 char* langLangPortuguese();
+char* langLangRussian();
 char* langLangSpanish();
 char* langLangSwedish();
 
@@ -114,8 +116,10 @@ char* langErrorPortableReadonly();
 char* langFileRom();
 char* langFileAll();
 char* langFileCpuState();
+char* langFileVideoCapture();
 char* langFileDisk();
 char* langFileCas();
+char* langFileAvi();
 
 
 //----------------------
@@ -131,7 +135,12 @@ char* langMenuCartIde();
 char* langMenuCartBeerIde();
 char* langMenuCartGIde();
 char* langMenuCartSunriseIde();
+char* langMenuCartScsi();
+char* langMenuCartMegaSCSI();
+char* langMenuCartWaveSCSI();
+char* langMenuCartGoudaSCSI();
 char* langMenuCartSCC();
+char* langMenuCartJoyrexPsg();
 char* langMenuCartSCCPlus();
 char* langMenuCartFMPac();
 char* langMenuCartPac();
@@ -139,8 +148,12 @@ char* langMenuCartHBI55();
 char* langMenuCartInsertSpecial();
 char* langMenuCartExternalRam();
 char* langMenuCartMegaRam();
+char* langMenuCartEseRam();
+char* langMenuCartEseSCC();
+char* langMenuCartMegaFlashRom();
 
 char* langMenuDiskDirInsert();
+char* langMenuDiskDirInsertCdrom();
 char* langMenuDiskInsertNew();
 char* langMenuDiskAutoStart();
 char* langMenuCartAutoReset();
@@ -150,6 +163,14 @@ char* langMenuCasUseReadOnly();
 char* langMenuCasSaveAs();
 char* langMenuCasSetPosition();
 char* langMenuCasRewind();
+
+char* langMenuVideoLoad();
+char* langMenuVideoPlay();
+char* langMenuVideoRecord();
+char* langMenuVideoRecording();
+char* langMenuVideoRecAppend();
+char* langMenuVideoStop();
+char* langMenuVideoRender();
 
 char* langMenuPrnFormfeed();
 
@@ -161,17 +182,20 @@ char* langMenuPropsEmulation();
 char* langMenuPropsVideo();
 char* langMenuPropsSound();
 char* langMenuPropsControls();
-char* langMenuPropsPerformance();
 char* langMenuPropsSettings();
 char* langMenuPropsFile();
+char* langMenuPropsDisk();
 char* langMenuPropsLanguage();
 char* langMenuPropsPorts();
+char* langMenuPropsEffects();
 
 char* langMenuVideoSource();
 char* langMenuVideoSourceDefault();
 char* langMenuVideoChipAutodetect();
 char* langMenuVideoInSource();
 char* langMenuVideoInBitmap();
+
+char* langMenuEthInterface();
 
 char* langMenuHelpHelp();
 char* langMenuHelpAbout();
@@ -185,10 +209,12 @@ char* langMenuFileSaveState();
 char* langMenuFileQLoadState();
 char* langMenuFileQSaveState();
 char* langMenuFileCaptureAudio();
+char* langMenuFileCaptureVideo();
 char* langMenuFileScreenShot();
 char* langMenuFileExit();
 char* langMenuFileHarddisk();
 char* langMenuFileHarddiskNoPresent();
+char* langMenuFileHarddiskRemoveAll();
 
 char* langMenuRunRun();
 char* langMenuRunPause();
@@ -199,8 +225,9 @@ char* langMenuRunCleanReset();
 
 char* langMenuToolsMachine();
 char* langMenuToolsShortcuts();
-char* langMenuToolsKeyboard();
+char* langMenuToolsCtrlEditor();
 char* langMenuToolsMixer();
+char* langMenuToolsLoadMemory();
 char* langMenuToolsDebugger();
 char* langMenuToolsTrainer();
 char* langMenuToolsTraceLogger();
@@ -234,8 +261,11 @@ char* langDlgLoadDskDesc();
 char* langDlgLoadCasDesc();
 char* langDlgLoadRomDskCasDesc();
 char* langDlgLoadState();
+char* langDlgLoadVideoCapture();
 char* langDlgSaveState();
 char* langDlgSaveCassette();
+char* langDlgSaveVideoClipAs();
+char* langDlgAmountCompleted();
 char* langDlgInsertRom1();
 char* langDlgInsertRom2();
 char* langDlgInsertDiskA();
@@ -243,6 +273,7 @@ char* langDlgInsertDiskB();
 char* langDlgInsertHarddisk();
 char* langDlgInsertCas();
 char* langDlgRomType();
+char* langDlgDiskSize();
 
 char* langDlgTapeTitle();
 char* langDlgTapeFrameText();
@@ -272,6 +303,8 @@ char* langDlgAboutLisence();
 char* langDlgSavePreview();
 char* langDlgSaveDate();
 
+char* langDlgRenderVideoCapture();
+
 
 //----------------------
 // Properties related lines
@@ -279,12 +312,15 @@ char* langDlgSaveDate();
 
 char* langPropTitle();
 char* langPropEmulation();
+char* langPropD3D();
 char* langPropVideo();
 char* langPropSound();
 char* langPropControls();
 char* langPropPerformance();
+char* langPropEffects();
 char* langPropSettings();
 char* langPropFile();
+char* langPropDisk();
 char* langPropPorts();
 
 char* langPropEmuGeneralGB();
@@ -297,6 +333,9 @@ char* langPropEmuSpeedText();
 char* langPropEmuFrontSwitchGB();
 char* langPropEmuFrontSwitch();
 char* langPropEmuFdcTiming();
+char* langPropEmuReversePlay();
+char* langPropEmuNoSpriteLimits();
+char* langPropEnableMsxKeyboardQuirk();
 char* langPropEmuPauseSwitch();
 char* langPropEmuAudioSwitch();
 char* langPropVideoFreqText();
@@ -361,6 +400,7 @@ char* langPropFileTypes();
 char* langPropDisableWinKeys();
 char* langPropPriorityBoost();
 char* langPropScreenshotPng();
+char* langPropEjectMediaOnExit();
 char* langPropClearFileHistory();
 char* langPropOpenRomGB();
 char* langPropDefaultRomType();
@@ -375,6 +415,25 @@ char* langPropSettDefDrive();
 char* langPropThemeGB();
 char* langPropTheme();
 
+char* langPropCdromGB();
+char* langPropCdromMethod();
+char* langPropCdromMethodNone();
+char* langPropCdromMethodIoctl();
+char* langPropCdromMethodAspi();
+char* langPropCdromDrive();
+
+char* langPropD3DParametersGB();
+char* langPropD3DAspectRatioText();
+char* langPropD3DLinearFilteringText();
+char* langPropD3DForceHighResText();
+char* langPropD3DExtendBorderColorText();
+
+char* langpropD3DCroppingGB();
+char* langpropD3DCroppingTypeText();
+char* langpropD3DCroppingLeftText();
+char* langpropD3DCroppingRightText();
+char* langpropD3DCroppingTopText();
+char* langpropD3DCroppingBottomText();
 
 //----------------------
 // Dropdown related lines
@@ -405,6 +464,7 @@ char* langEnumVideoSizeFullscreen();
 char* langEnumVideoDrvDirectDrawHW();
 char* langEnumVideoDrvDirectDraw();
 char* langEnumVideoDrvGDI();
+char* langEnumVideoDrvD3D();
 
 char* langEnumVideoFrameskip0();
 char* langEnumVideoFrameskip1();
@@ -412,6 +472,19 @@ char* langEnumVideoFrameskip2();
 char* langEnumVideoFrameskip3();
 char* langEnumVideoFrameskip4();
 char* langEnumVideoFrameskip5();
+
+char* langEnumD3DARAuto();
+char* langEnumD3DARStretch();
+char* langEnumD3DARPAL();
+char* langEnumD3DARNTSC();
+char* langEnumD3DAR11();
+
+char* langEnumD3DCropNone();
+char* langEnumD3DCropMSX1();
+char* langEnumD3DCropMSX1Plus8();
+char* langEnumD3DCropMSX2();
+char* langEnumD3DCropMSX2Plus8();
+char* langEnumD3DCropCustom();
 
 char* langEnumSoundDrvNone();
 char* langEnumSoundDrvWMM();
@@ -430,6 +503,7 @@ char* langEnumControlsJoyMouse();
 char* langEnumControlsJoy2Button();
 char* langEnumControlsJoyGunStick();
 char* langEnumControlsJoyAsciiLaser();
+char* langEnumControlsJoyArkanoidPad();
 char* langEnumControlsJoyColeco();
     
 char* langEnumDiskMsx35Dbl9Sect();
@@ -438,6 +512,7 @@ char* langEnumDiskMsx35Sgl9Sect();
 char* langEnumDiskMsx35Sgl8Sect();
 char* langEnumDiskSvi525Dbl();
 char* langEnumDiskSvi525Sgl();
+char* langEnumDiskSf3Sgl();
 
 //----------------------
 // Configuration related lines
@@ -482,6 +557,7 @@ char* langConfChipVideoGB();
 char* langConfChipVideoChip();
 char* langConfChipVideoRam();
 char* langConfChipSoundGB();
+char* langConfChipPsgStereoText();
 
 char* langConfCmosGB();
 char* langConfCmosEnableText();
@@ -571,6 +647,7 @@ char* langShortcutSwitchFront();
 char* langShortcutSwitchPause();
 char* langShortcutToggleMouseLock();
 char* langShortcutEmuSpeedMax();
+char* langShortcutEmuPlayReverse();
 char* langShortcutEmuSpeedMaxToggle();
 char* langShortcutEmuSpeedNormal();
 char* langShortcutEmuSpeedInc();
@@ -580,7 +657,7 @@ char* langShortcutShowEmuProp();
 char* langShortcutShowVideoProp();
 char* langShortcutShowAudioProp();
 char* langShortcutShowCtrlProp();
-char* langShortcutShowPerfProp();
+char* langShortcutShowEffectsProp();
 char* langShortcutShowSettProp();
 char* langShortcutShowPorts();
 char* langShortcutShowLanguage();
@@ -595,7 +672,14 @@ char* langShortcutShowAbout();
 char* langShortcutShowFiles();
 char* langShortcutToggleSpriteEnable();
 char* langShortcutToggleFdcTiming();
+char* langShortcutToggleNoSpriteLimits();
+char* langShortcutEnableMsxKeyboardQuirk();
 char* langShortcutToggleCpuTrace();
+char* langShortcutVideoLoad();
+char* langShortcutVideoPlay();
+char* langShortcutVideoRecord();
+char* langShortcutVideoStop();
+char* langShortcutVideoRender();
 
 
 //----------------------
@@ -614,6 +698,8 @@ char* langKeyconfigMappingScheme();
 char* langRomTypeStandard();
 char* langRomTypeMsxdos2();
 char* langRomTypeKonamiScc();
+char* langRomTypeManbow2();
+char* langRomTypeMegaFlashRomScc();
 char* langRomTypeKonami();
 char* langRomTypeAscii8();
 char* langRomTypeAscii16();
@@ -642,18 +728,26 @@ char* langRomTypeNormal();
 char* langRomTypeDiskPatch();
 char* langRomTypeCasPatch();
 char* langRomTypeTc8566afFdc();
+char* langRomTypeTc8566afTrFdc();
 char* langRomTypeMicrosolFdc();
 char* langRomTypeNationalFdc();
 char* langRomTypePhilipsFdc();
+char* langRomTypeSvi707Fdc();
 char* langRomTypeSvi738Fdc();
 char* langRomTypeMappedRam();
 char* langRomTypeMirroredRam1k();
+char* langRomTypeMirroredRam2k();
 char* langRomTypeNormalRam();
 char* langRomTypeKanji();
 char* langRomTypeHolyQuran();
 char* langRomTypeMatsushitaSram();
+char* langRomTypeMasushitaSramInv();
+char* langRomTypePanasonic8();
+char* langRomTypePanasonicWx16();
 char* langRomTypePanasonic16();
 char* langRomTypePanasonic32();
+char* langRomTypePanasonicModem();
+char* langRomTypeDram();
 char* langRomTypeBunsetsu();
 char* langRomTypeJisyo();
 char* langRomTypeKanji12();
@@ -664,6 +758,7 @@ char* langRomTypeTurborPause();
 char* langRomTypeF4deviceNormal();
 char* langRomTypeF4deviceInvert();
 char* langRomTypeMsxMidi();
+char* langRomTypeMsxMidiExternal();
 char* langRomTypeTurborTimer();
 char* langRomTypeKoei();
 char* langRomTypeBasic();
@@ -682,6 +777,10 @@ char* langRomTypeMegaRam512();
 char* langRomTypeMegaRam768();
 char* langRomTypeMegaRam2mb();
 char* langRomTypeExtRam();
+char* langRomTypeExtRam16();
+char* langRomTypeExtRam32();
+char* langRomTypeExtRam48();
+char* langRomTypeExtRam64();
 char* langRomTypeExtRam512();
 char* langRomTypeExtRam1mb();
 char* langRomTypeExtRam2mb();
@@ -695,10 +794,13 @@ char* langRomTypeSvi328Fdc();
 char* langRomTypeSvi328Prn();
 char* langRomTypeSvi328Uart();
 char* langRomTypeSvi328col80();
+char* langRomTypeSvi328RsIde();
 char* langRomTypeSvi727col80();
 char* langRomTypeColecoCart();
 char* langRomTypeSg1000Cart();
+char* langRomTypeSc3000Cart();
 char* langRomTypeTheCastle();
+char* langRomTypeSegaBasic();
 char* langRomTypeSonyHbi55();
 char* langRomTypeMsxPrinter();
 char* langRomTypeTurborPcm();
@@ -709,10 +811,33 @@ char* langRomTypeGide();
 char* langRomTypeVmx80();
 char* langRomTypeNms8280Digitiz();
 char* langRomTypeHbiV1Digitiz();
+char* langRomTypePlayBall();
 char* langRomTypeFmdas();
 char* langRomTypeSfg01();
 char* langRomTypeSfg05();
-
+char* langRomTypeObsonet();
+char* langRomTypeDumas();
+char* langRomTypeNoWind();
+char* langRomTypeMegaSCSI();
+char* langRomTypeMegaSCSI128();
+char* langRomTypeMegaSCSI256();
+char* langRomTypeMegaSCSI512();
+char* langRomTypeMegaSCSI1mb();
+char* langRomTypeEseRam();
+char* langRomTypeEseRam128();
+char* langRomTypeEseRam256();
+char* langRomTypeEseRam512();
+char* langRomTypeEseRam1mb();
+char* langRomTypeWaveSCSI();
+char* langRomTypeWaveSCSI128();
+char* langRomTypeWaveSCSI256();
+char* langRomTypeWaveSCSI512();
+char* langRomTypeWaveSCSI1mb();
+char* langRomTypeEseSCC();
+char* langRomTypeEseSCC128();
+char* langRomTypeEseSCC256();
+char* langRomTypeEseSCC512();
+char* langRomTypeGoudaSCSI();
 
 //----------------------
 // Debug type lines
@@ -739,6 +864,8 @@ char* langDbgDevRamMapper();
 char* langDbgDevRam();
 char* langDbgDevIdeBeer();
 char* langDbgDevIdeGide();
+char* langDbgDevIdeSviRs();
+char* langDbgDevScsiGouda();
 char* langDbgDevF4Device();
 char* langDbgDevFmpac();
 char* langDbgDevFmpak();

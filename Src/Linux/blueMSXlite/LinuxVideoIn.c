@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxVideoIn.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxVideoIn.c,v $
 **
 ** $Revision: 1.1 $
 **
-** $Date: 2006/06/13 18:50:46 $
+** $Date: 2006-06-13 18:50:46 $
 **
 ** More info: http://www.bluemsx.com
 **

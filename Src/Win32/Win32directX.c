@@ -1,37 +1,35 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32directX.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32directX.c,v $
 **
-** $Revision: 1.14 $
+** $Revision: 1.21 $
 **
-** $Date: 2005/07/23 06:10:51 $
+** $Date: 2008-09-01 21:22:01 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Laurent Halter
+** Copyright (C) 2003-2006 Daniel Vik, Laurent Halter
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
-
 #include <windows.h>
+#define DIRECTDRAW_VERSION 0x0700
 #include <ddraw.h>
 #include <mmsystem.h>
 #include <prsht.h>
@@ -39,16 +37,16 @@
 #include "Win32directx.h"
 #include "VideoRender.h"
 #include "FrameBuffer.h"
+#include "AppConfig.h"
 
-
-static LPDIRECTDRAW         lpDD = NULL;            // DirectDraw object
-static LPDIRECTDRAW         lpTheDD = NULL;            // DirectDraw object
-static LPDIRECTDRAW         lpDDinit = NULL;
-static LPDIRECTDRAWSURFACE  lpDDSPrimary = NULL;    // DirectDraw primary surface
-static LPDIRECTDRAWSURFACE  lpDDSBack = NULL;       // DirectDraw back surface
-static LPDIRECTDRAWSURFACE  lpDDSTemp1 = NULL;       // DirectDraw temp surface
-static LPDIRECTDRAWSURFACE  lpDDSTemp2 = NULL;       // DirectDraw temp surface
-static LPDIRECTDRAWSURFACE  lpDDSDraw = NULL;       // DirectDraw temp surface
+static LPDIRECTDRAW7         lpDD = NULL;            // DirectDraw object
+static LPDIRECTDRAW7         lpTheDD = NULL;            // DirectDraw object
+static LPDIRECTDRAW7         lpDDinit = NULL;
+static LPDIRECTDRAWSURFACE7  lpDDSPrimary = NULL;    // DirectDraw primary surface
+static LPDIRECTDRAWSURFACE7  lpDDSBack = NULL;       // DirectDraw back surface
+static LPDIRECTDRAWSURFACE7  lpDDSTemp1 = NULL;       // DirectDraw temp surface
+static LPDIRECTDRAWSURFACE7  lpDDSTemp2 = NULL;       // DirectDraw temp surface
+static LPDIRECTDRAWSURFACE7  lpDDSDraw = NULL;       // DirectDraw temp surface
 static LPDIRECTDRAWCLIPPER  lpClipper = NULL;       // clipper for primary
 static HWND    hwndThis;
 static int     MyDevice;
@@ -64,8 +62,25 @@ static DWORD   allScreenHeight;
 #define DDBLTFAST_DONOTWAIT 0x00000020
 #endif
 
+#define MAX_DISPLAY_MODES 128
 
-BOOL CALLBACK OneMonitorCallback(HMONITOR hMonitor, HDC hdc, LPRECT prc, LPARAM lParam) {
+static DxDisplayMode displayModes[MAX_DISPLAY_MODES];
+static int displayModeCount = 0;
+static DxDisplayMode* currentFullscreenMode = NULL;
+
+static DWORD vblankRefOffset = 0;
+static DWORD vblankAdjust = 240;
+
+static UInt8 lowresOffscreen[640 * 480 * 4];
+
+typedef struct {
+    LPSTR   szDevice;
+    GUID*   lpGUID;
+    GUID    GUID;
+    BOOL    fFound;
+} FindDeviceData;
+
+static BOOL CALLBACK OneMonitorCallback(HMONITOR hMonitor, HDC hdc, LPRECT prc, LPARAM lParam) {
     HMONITOR *phMonitorFound = (HMONITOR *)lParam;
 
     if (*phMonitorFound == 0) {
@@ -78,7 +93,7 @@ BOOL CALLBACK OneMonitorCallback(HMONITOR hMonitor, HDC hdc, LPRECT prc, LPARAM 
     return TRUE;
 }
 
-HMONITOR OneMonitorFromWindow(HWND hwnd) {
+static HMONITOR OneMonitorFromWindow(HWND hwnd) {
     HMONITOR hMonitor = NULL;
     RECT rc;
 
@@ -95,7 +110,7 @@ HMONITOR OneMonitorFromWindow(HWND hwnd) {
     return hMonitor;
 }
 
-int DirectDrawDeviceFromWindow(HWND hwnd, LPSTR szDevice, RECT *prc) {
+static int DirectDrawDeviceFromWindow(HWND hwnd, LPSTR szDevice, RECT *prc) {
     HMONITOR hMonitor;
 
     if (GetSystemMetrics(SM_CMONITORS) <= 1) {
@@ -123,14 +138,7 @@ int DirectDrawDeviceFromWindow(HWND hwnd, LPSTR szDevice, RECT *prc) {
     }
 }
 
-typedef struct {
-    LPSTR   szDevice;
-    GUID*   lpGUID;
-    GUID    GUID;
-    BOOL    fFound;
-} FindDeviceData;
-
-BOOL CALLBACK FindDeviceCallback(GUID* lpGUID, LPSTR szName, LPSTR szDevice, LPVOID lParam) {
+static BOOL CALLBACK FindDeviceCallback(GUID* lpGUID, LPSTR szName, LPSTR szDevice, LPVOID lParam) {
     FindDeviceData *p = (FindDeviceData*)lParam;
 
     if (lstrcmpi(p->szDevice, szDevice) == 0) {
@@ -147,20 +155,21 @@ BOOL CALLBACK FindDeviceCallback(GUID* lpGUID, LPSTR szName, LPSTR szDevice, LPV
     return TRUE;
 }
 
-#define MAX_DISPLAY_MODES 128
-
-DxDisplayMode displayModes[MAX_DISPLAY_MODES];
-static int displayModeCount = 0;
-static DxDisplayMode* currentFullscreenMode = NULL;
-
-static HRESULT WINAPI EnumDisplayModes(LPDDSURFACEDESC desc, LPVOID context) {
+static HRESULT WINAPI EnumDisplayModes(LPDDSURFACEDESC2 desc, LPVOID context) {
     int width     = desc->dwWidth;
     int height    = desc->dwHeight;
     int bitCount  = desc->ddpfPixelFormat.dwRGBBitCount;
 
-    if (width < 640 || height < 480 || (bitCount != 16 && bitCount != 32)) {
+#if 1
+    if (bitCount != 16 && bitCount != 32) {
         return DDENUMRET_OK;
     }
+#else
+    if (!(width == 320 && height == 240 && (bitCount == 16 || bitCount == 32))) {
+        if (width < 640 || height < 480 || (bitCount != 16 && bitCount != 32)) {
+        }
+    }
+#endif
 
     if (displayModeCount < MAX_DISPLAY_MODES) {
         displayModes[displayModeCount].width    = width;
@@ -203,12 +212,12 @@ void DirectDrawSetDisplayMode(int width, int height, int bitCount) {
 }
 
 void DirectDrawInitDisplayModes() {
-    LPDIRECTDRAW ddraw;
+    LPDIRECTDRAW7 ddraw;
     displayModeCount = 0;
-    DirectDrawCreate(NULL, &ddraw, NULL);
+    DirectDrawCreateEx(NULL, (LPVOID *) &ddraw, &IID_IDirectDraw7, NULL);
     if (ddraw != NULL) {
-        IDirectDraw_EnumDisplayModes(ddraw, 0, NULL, NULL, EnumDisplayModes);
-        IDirectDraw_Release(ddraw);
+        IDirectDraw7_EnumDisplayModes(ddraw, 0, NULL, NULL, EnumDisplayModes);
+        IDirectDraw7_Release(ddraw);
     }
     if (displayModeCount == 0) {
         displayModes[0].width    = 640;
@@ -220,9 +229,8 @@ void DirectDrawInitDisplayModes() {
     currentFullscreenMode = displayModes;
 }
 
-
-IDirectDraw * DirectDrawCreateFromDevice(LPSTR szDevice) {
-    IDirectDraw*    pdd = NULL;
+static IDirectDraw7 * DirectDrawCreateFromDevice(LPSTR szDevice) {
+    IDirectDraw7*    pdd = NULL;
     FindDeviceData  find;
 
     find.szDevice = szDevice;
@@ -230,14 +238,14 @@ IDirectDraw * DirectDrawCreateFromDevice(LPSTR szDevice) {
     DirectDrawEnumerate(FindDeviceCallback, (LPVOID)&find);
 
     if (find.fFound) {
-        DirectDrawCreate(find.lpGUID, &pdd, NULL);
+        DirectDrawCreateEx(find.lpGUID, (LPVOID *) &pdd, &IID_IDirectDraw7, NULL);
     }
 
     return pdd;
 }
 
-IDirectDraw* DirectDrawCreateFromWindow(HWND hwnd) {
-    IDirectDraw *pdd = NULL;
+static IDirectDraw7* DirectDrawCreateFromWindow(HWND hwnd) {
+    IDirectDraw7 *pdd = NULL;
     char szDevice[80];
     OSVERSIONINFO osw;
     int supportsMonitors;
@@ -259,7 +267,7 @@ IDirectDraw* DirectDrawCreateFromWindow(HWND hwnd) {
     }
 
     if (pdd == NULL) {
-        DirectDrawCreate(NULL, &pdd, NULL);
+        DirectDrawCreateEx(NULL, (LPVOID *) &pdd, &IID_IDirectDraw7, NULL);
     }
 
     return pdd;
@@ -270,30 +278,30 @@ void DirectXExitFullscreenMode()
     lpTheDD = NULL;
 
     if( lpDDSPrimary != NULL ) {
-        IDirectDrawSurface_Release(lpDDSPrimary);
+        IDirectDrawSurface7_Release(lpDDSPrimary);
         lpDDSPrimary = NULL;
     }
     if( lpDDSTemp1 != NULL ) {
-        IDirectDrawSurface_Release(lpDDSTemp1);
+        IDirectDrawSurface7_Release(lpDDSTemp1);
         lpDDSTemp1 = NULL;
     }
     if( lpDDSTemp2 != NULL ) {
-        IDirectDrawSurface_Release(lpDDSTemp2);
+        IDirectDrawSurface7_Release(lpDDSTemp2);
         lpDDSTemp2 = NULL;
     }
     if ( lpDDSDraw != NULL ) {
-        IDirectDrawSurface_Release(lpDDSDraw);
+        IDirectDrawSurface7_Release(lpDDSDraw);
         lpDDSDraw = NULL;
     }
     if( lpDD != NULL ) {
-        IDirectDraw_SetCooperativeLevel(lpDD, NULL, DDSCL_NORMAL);
-        IDirectDraw_Release(lpDD);
+        IDirectDraw7_SetCooperativeLevel(lpDD, NULL, DDSCL_NORMAL);
+        IDirectDraw7_Release(lpDD);
         lpDD = NULL;
     }
     if( lpDDinit != NULL ) {
-        IDirectDraw_SetCooperativeLevel(lpDDinit, NULL, DDSCL_NORMAL);
-        IDirectDraw_RestoreDisplayMode(lpDDinit);
-        IDirectDraw_Release(lpDDinit);
+        IDirectDraw7_SetCooperativeLevel(lpDDinit, NULL, DDSCL_NORMAL);
+        IDirectDraw7_RestoreDisplayMode(lpDDinit);
+        IDirectDraw7_Release(lpDDinit);
         lpDDinit = NULL;
     }
 
@@ -302,11 +310,10 @@ void DirectXExitFullscreenMode()
     DirectXSetGDISurface();
 }
 
-
 int DirectXEnterFullscreenMode(HWND hwnd, int useVideoBackBuffer, int useSysMemBuffering)
 {
-    DDSURFACEDESC   ddsd;
-    DDSCAPS     ddscaps;
+    DDSURFACEDESC2   ddsd;
+    DDSCAPS2     ddscaps;
     HRESULT     ddrval;
     int width  = currentFullscreenMode->width;
     int height = currentFullscreenMode->height;
@@ -322,42 +329,46 @@ int DirectXEnterFullscreenMode(HWND hwnd, int useVideoBackBuffer, int useSysMemB
     sysMemBuffering = useSysMemBuffering;
     isFullscreen = 1;
 
-    ddrval = DirectDrawCreate( NULL, &lpDDinit, NULL );
+    ddrval = DirectDrawCreateEx(NULL, (LPVOID *) &lpDDinit, &IID_IDirectDraw7, NULL);
     if( ddrval != DD_OK ) {
         return DXE_DIRECTDRAWCREATE;
     }
 
-    ddrval = IDirectDraw_SetCooperativeLevel(lpDDinit, NULL, DDSCL_NORMAL);
-    ddrval = IDirectDraw_QueryInterface(lpDDinit, (GUID *)&IID_IDirectDraw, (LPVOID *)&lpDD);
+    ddrval = IDirectDraw7_SetCooperativeLevel(lpDDinit, NULL, DDSCL_NORMAL);
+    ddrval = IDirectDraw7_QueryInterface(lpDDinit, (GUID *)&IID_IDirectDraw7, (LPVOID *)&lpDD);
 
     // Get exclusive mode
-    ddrval = IDirectDraw_SetCooperativeLevel(lpDD, GetParent(hwnd) ? GetParent(hwnd) : hwnd, DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN);
+    ddrval = IDirectDraw7_SetCooperativeLevel(lpDD, GetParent(hwnd) ? GetParent(hwnd) : hwnd, 
+                                              DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN);
     if( ddrval != DD_OK ) {
         return DXE_SETCOOPERATIVELEVEL;
     }
 
-    ddrval = IDirectDraw_SetDisplayMode(lpDD, width, height, depth);
+    ddrval = IDirectDraw7_SetDisplayMode(lpDD, width, height, depth, 0, 0);
     if( ddrval != DD_OK ) {
         return DXE_SETDISPLAYMODE;
     }
 
     // Create the primary surface with 1 back buffer
+    memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
     ddsd.dwSize = sizeof( ddsd );
     ddsd.dwFlags = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
     ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
     ddsd.dwBackBufferCount = 1;
-    ddrval = IDirectDraw2_CreateSurface(lpDD, &ddsd, &lpDDSPrimary, NULL );
+    ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSPrimary, NULL );
     if( ddrval != DD_OK ) {
         return DXE_CREATESURFACE;
     }
 
+    memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+    ddsd.dwSize = sizeof( ddsd );
     ddscaps.dwCaps = DDSCAPS_BACKBUFFER;
-    ddrval = IDirectDrawSurface_GetAttachedSurface(lpDDSPrimary, &ddscaps, &lpDDSBack);
+    ddrval = IDirectDrawSurface7_GetAttachedSurface(lpDDSPrimary, &ddscaps, &lpDDSBack);
     if( ddrval != DD_OK ) {
         lpDDSBack = NULL;
     }
 
-    ddrval = IDirectDraw_CreateClipper( lpDD, 0, &lpClipper, NULL );
+    ddrval = IDirectDraw7_CreateClipper( lpDD, 0, &lpClipper, NULL );
     if( ddrval != DD_OK ) {
         return DXE_CREATECLIPPER;
     }
@@ -367,40 +378,40 @@ int DirectXEnterFullscreenMode(HWND hwnd, int useVideoBackBuffer, int useSysMemB
         return DXE_SETHWND;
     }
 
-    ddrval = IDirectDrawSurface_SetClipper(lpDDSPrimary, lpClipper);
+    ddrval = IDirectDrawSurface7_SetClipper(lpDDSPrimary, lpClipper);
     if( ddrval != DD_OK ) {
         return DXE_SETCLIPPER;
     }
 
-    memset(&ddsd, 0, sizeof(DDSURFACEDESC));
-    ddsd.dwSize = sizeof(DDSURFACEDESC);
+    memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+    ddsd.dwSize = sizeof(DDSURFACEDESC2);
     ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
     ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | (useVideoBackBuffer ? DDSCAPS_VIDEOMEMORY : DDSCAPS_SYSTEMMEMORY);
     ddsd.dwWidth = width;
     ddsd.dwHeight = height;
-    ddrval = IDirectDraw2_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
+    ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
 
     if (ddrval != DD_OK) {
-        memset(&ddsd, 0, sizeof(DDSURFACEDESC));
-        ddsd.dwSize = sizeof(DDSURFACEDESC);
+        memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+        ddsd.dwSize = sizeof(DDSURFACEDESC2);
         ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
         ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
         ddsd.dwWidth = width;
         ddsd.dwHeight = height;
-        ddrval = IDirectDraw2_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
+        ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
         if( ddrval != DD_OK ) {
             return DXE_CREATESURFACE;
         }
     }
 
     if (useSysMemBuffering) {
-        memset(&ddsd, 0, sizeof(DDSURFACEDESC));
-        ddsd.dwSize = sizeof(DDSURFACEDESC);
+        memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+        ddsd.dwSize = sizeof(DDSURFACEDESC2);
         ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
         ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
         ddsd.dwWidth = width;
         ddsd.dwHeight = height;
-        ddrval = IDirectDraw2_CreateSurface(lpDD, &ddsd, &lpDDSTemp2, NULL);
+        ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSTemp2, NULL);
         if( ddrval != DD_OK ) {
             return DXE_CREATESURFACE;
         }
@@ -408,14 +419,37 @@ int DirectXEnterFullscreenMode(HWND hwnd, int useVideoBackBuffer, int useSysMemB
 
     lpTheDD = lpDD;
 
+    {
+        LONG w, h;
+        DxDisplayMode* ddm = DirectDrawGetDisplayMode();
+
+        w = ddm->width;
+        h = ddm->height;
+
+        SetWindowPos(
+            GetParent(hwnd),
+            HWND_TOPMOST,
+            0,
+            0,
+            w,
+            h,
+            SWP_SHOWWINDOW);
+
+        SetWindowPos(
+            hwnd,
+            NULL,
+            0,
+            0,
+            w,
+            h,
+            SWP_NOZORDER);
+    }
     return DXE_OK;
 }
 
-
-
 BOOL DirectXEnterWindowedMode(HWND hwnd, int width, int height, int useVideoBackBuffer, int useSysMemBuffering)
 {
-    DDSURFACEDESC   ddsd;
+    DDSURFACEDESC2   ddsd;
     HRESULT     ddrval;
 
     lpDDSBack = NULL;
@@ -436,7 +470,7 @@ BOOL DirectXEnterWindowedMode(HWND hwnd, int width, int height, int useVideoBack
         return DXE_CREATEFROMWINDOW;
     }
 
-    ddrval = IDirectDraw_SetCooperativeLevel(lpDD, NULL, DDSCL_NORMAL);
+    ddrval = IDirectDraw7_SetCooperativeLevel(lpDD, NULL, DDSCL_NORMAL);
     if( ddrval != DD_OK ) {
         return DXE_SETCOOPERATIVELEVEL;
     }
@@ -445,12 +479,12 @@ BOOL DirectXEnterWindowedMode(HWND hwnd, int width, int height, int useVideoBack
     ddsd.dwSize = sizeof( ddsd );
     ddsd.dwFlags = DDSD_CAPS;
     ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-    ddrval = IDirectDraw_CreateSurface(lpDD, &ddsd, &lpDDSPrimary, NULL );
+    ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSPrimary, NULL );
     if( ddrval != DD_OK ) {
         return DXE_CREATESURFACE;
     }
 
-    ddrval = IDirectDraw_CreateClipper( lpDD, 0, &lpClipper, NULL );
+    ddrval = IDirectDraw7_CreateClipper( lpDD, 0, &lpClipper, NULL );
     if( ddrval != DD_OK ) {
         return DXE_CREATECLIPPER;
     }
@@ -460,40 +494,40 @@ BOOL DirectXEnterWindowedMode(HWND hwnd, int width, int height, int useVideoBack
         return DXE_SETHWND;
     }
 
-    ddrval = IDirectDrawSurface_SetClipper(lpDDSPrimary, lpClipper );
+    ddrval = IDirectDrawSurface7_SetClipper(lpDDSPrimary, lpClipper );
     if( ddrval != DD_OK ) {
         return DXE_SETCLIPPER;
     }
 
-    memset(&ddsd, 0, sizeof(DDSURFACEDESC));
-    ddsd.dwSize = sizeof(DDSURFACEDESC);
+    memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+    ddsd.dwSize = sizeof(DDSURFACEDESC2);
     ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
     ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | (useVideoBackBuffer ? DDSCAPS_VIDEOMEMORY : DDSCAPS_SYSTEMMEMORY);
     ddsd.dwWidth = width;
     ddsd.dwHeight = height;
-    ddrval = IDirectDraw2_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
+    ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
 
     if (ddrval != DD_OK) {
-        memset(&ddsd, 0, sizeof(DDSURFACEDESC));
-        ddsd.dwSize = sizeof(DDSURFACEDESC);
+        memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+        ddsd.dwSize = sizeof(DDSURFACEDESC2);
         ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
         ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
         ddsd.dwWidth = width;
         ddsd.dwHeight = height;
-        ddrval = IDirectDraw2_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
+        ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSTemp1, NULL);
         if( ddrval != DD_OK ) {
             return DXE_CREATESURFACE;
         }
     }
 
     if (useSysMemBuffering) {
-        memset(&ddsd, 0, sizeof(DDSURFACEDESC));
-        ddsd.dwSize = sizeof(DDSURFACEDESC);
+        memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+        ddsd.dwSize = sizeof(DDSURFACEDESC2);
         ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
         ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
         ddsd.dwWidth = width;
         ddsd.dwHeight = height;
-        ddrval = IDirectDraw2_CreateSurface(lpDD, &ddsd, &lpDDSTemp2, NULL);
+        ddrval = IDirectDraw7_CreateSurface(lpDD, &ddsd, &lpDDSTemp2, NULL);
         if( ddrval != DD_OK ) {
             return DXE_CREATESURFACE;
         }
@@ -506,10 +540,9 @@ BOOL DirectXEnterWindowedMode(HWND hwnd, int width, int height, int useVideoBack
 
 void DirectXSetGDISurface() {
     if (isFullscreen) {
-        IDirectDraw_FlipToGDISurface(lpDD);
+        IDirectDraw7_FlipToGDISurface(lpDD);
     }
 }
-
 
 int DirectXUpdateWindowedMode(HWND hwnd, int width, int height, int useVideoBackBuffer, int useSysMemBuffering) {
     if (!isFullscreen) {
@@ -520,15 +553,13 @@ int DirectXUpdateWindowedMode(HWND hwnd, int width, int height, int useVideoBack
     return DXE_OK;
 }
 
-static DWORD vblankRefOffset = 0;
-static DWORD vblankAdjust = 240;
-void DirectXAdjustVBlankOffset() {
+static void DirectXAdjustVBlankOffset() {
     DWORD s = 0;
-    HRESULT rv = IDirectDraw_GetScanLine(lpTheDD, &s);
+    HRESULT rv = IDirectDraw7_GetScanLine(lpTheDD, &s);
     vblankAdjust = (s + allScreenHeight - 10 - vblankRefOffset) % allScreenHeight;
 }
 
-int DirectXCheckVBlank()
+static int DirectXCheckVBlank()
 {
     if (lpTheDD == NULL) {
         return FALSE;
@@ -538,7 +569,7 @@ int DirectXCheckVBlank()
         static int f = 0;
         static DWORD o = 0;
         DWORD s;
-        HRESULT rv = IDirectDraw_GetScanLine(lpTheDD, &s);
+        HRESULT rv = IDirectDraw7_GetScanLine(lpTheDD, &s);
         if (rv != DD_OK) {
             return FALSE;
         }
@@ -566,21 +597,60 @@ int DirectXCheckVBlank()
     return FALSE;
 }
 
+static int renderNoStretch(Video* pVideo, FrameBuffer* frameBuffer, int bitCount, 
+                            int zoom, void* dstBuffer, int dstPitch, int canChangeZoom)
+{
+    int borderWidth = (320 - frameBuffer->maxWidth) / 2;
+    int dstOffset = borderWidth > 0 ? borderWidth * bitCount / 8 : 0;
+
+    zoom = videoRender(pVideo, frameBuffer, bitCount, zoom, 
+                       dstBuffer, dstOffset, dstPitch, canChangeZoom);
+
+    if (borderWidth > 0) {
+        borderWidth *= zoom;
+        if (bitCount == 16) {
+            UInt16* ptr  = dstBuffer;                    
+            int h = zoom * 240;
+            while (h--) {
+                memset(ptr, 0, borderWidth * sizeof(UInt16));
+                memset(ptr + zoom * 320 - borderWidth, 0, borderWidth * sizeof(UInt16));
+                ptr += dstPitch / sizeof(UInt16);
+            }
+        }
+        else if (bitCount == 32) {
+            UInt32* ptr  = dstBuffer;                 
+            int h = zoom * 240;
+            while (h--) {
+                memset(ptr, 0, borderWidth * sizeof(UInt32));
+                memset(ptr + zoom * 320 - borderWidth, 0, borderWidth * sizeof(UInt32));
+                ptr += dstPitch / sizeof(UInt32);
+            }
+        }
+    }
+
+    return zoom;
+}
+
 int DirectXUpdateSurface(Video* pVideo, 
                           int noFlip, int dstPitchY, int dstOffset, int zoom, 
                           int horizontalStretch, int verticalStretch, 
-                          int syncVblank) 
+                          int syncVblank, int zoomModeNormal) 
 {
-    DDSURFACEDESC ddsd;
-    LPDIRECTDRAWSURFACE surface = NULL;
-    LPDIRECTDRAWSURFACE  lpDDSTemp;
+    DDSURFACEDESC2 ddsd;
+    LPDIRECTDRAWSURFACE7 surface = NULL;
+    LPDIRECTDRAWSURFACE7  lpDDSTemp;
     HRESULT     ddrval;
     FrameBuffer* frameBuffer;
     POINT pt = {0, 0};
     int canChangeZoom;
     RECT destRect = { 0, 0, screenWidth, screenHeight };
-    RECT rcRect;
+    RECT rcRect = { 0, 0, screenWidth, screenHeight };
     void* surfaceBuffer;
+    int lowresMode = 0; // Lowres mode is a non stretched lowres mode centering the screen with a black border if needed
+
+    if (screenWidth < 320 || screenHeight < 240) lowresMode = 1;
+    if (zoom == 1 && (screenWidth != 320 || screenHeight != 240) && !horizontalStretch) lowresMode = 1;
+
 
     if (lpTheDD == NULL) {
         return 0;
@@ -593,7 +663,12 @@ int DirectXUpdateSurface(Video* pVideo,
     if (syncVblank && !DirectXCheckVBlank()) {
         return 0;
     }
-
+/*
+    ddrval = IDirectDraw7_TestCooperativeLevel(lpTheDD);
+    if (ddrval != DD_OK) {
+        return 0;
+    }
+*/
     ClientToScreen( hwndThis, &pt );
 
     lpDDSTemp = sysMemBuffering ? lpDDSTemp2 : lpDDSTemp1;
@@ -601,8 +676,8 @@ int DirectXUpdateSurface(Video* pVideo,
     if (surface == NULL && lpDDSTemp != NULL) {
         ddsd.dwSize = sizeof(ddsd);
         do {
-            ddrval = IDirectDrawSurface_Lock(lpDDSTemp, NULL, &ddsd, sysMemBuffering ? 0 : DDLOCK_WAIT, NULL);
-            if (ddrval == DDERR_SURFACELOST && IDirectDrawSurface_Restore(lpDDSTemp) != DD_OK) {
+            ddrval = IDirectDrawSurface7_Lock(lpDDSTemp, NULL, &ddsd, sysMemBuffering ? 0 : DDLOCK_WAIT, NULL);
+            if (ddrval == DDERR_SURFACELOST && IDirectDrawSurface7_Restore(lpDDSTemp) != DD_OK) {
                 break;
             }
         } while (ddrval == DDERR_SURFACELOST);
@@ -614,8 +689,8 @@ int DirectXUpdateSurface(Video* pVideo,
     if (surface == NULL) {
         ddsd.dwSize = sizeof(ddsd);
         do {
-            ddrval = IDirectDrawSurface_Lock(lpDDSPrimary, NULL, &ddsd, 0, NULL);
-            if (ddrval == DDERR_SURFACELOST && IDirectDrawSurface_Restore(lpDDSPrimary) != DD_OK) {
+            ddrval = IDirectDrawSurface7_Lock(lpDDSPrimary, NULL, &ddsd, 0, NULL);
+            if (ddrval == DDERR_SURFACELOST && IDirectDrawSurface7_Restore(lpDDSPrimary) != DD_OK) {
                 break;
             }
         } while (ddrval == DDERR_SURFACELOST);
@@ -640,55 +715,45 @@ int DirectXUpdateSurface(Video* pVideo,
     if (isFullscreen && currentFullscreenMode->width >= 3 * 320) {
         canChangeZoom = 1; // Allow scale up in fullscreen
     }
-    
-    if (horizontalStretch) {
-        zoom = videoRender(pVideo, frameBuffer, ddsd.ddpfPixelFormat.dwRGBBitCount, zoom, 
-                            surfaceBuffer, 0, ddsd.lPitch, canChangeZoom);
+
+    if (lowresMode) {
+        int bytesPerPixel = ddsd.ddpfPixelFormat.dwRGBBitCount / 8;
+        UInt8* rdrPtr = lowresOffscreen + (((480 - 240) / 2) * 640 + ((640 - 320) / 2)) * bytesPerPixel;
+        UInt8* dstPtr = surfaceBuffer;
+        UInt8* srcPtr = lowresOffscreen + (((480 - screenHeight) / 2) * 640 + ((640 - screenWidth) / 2)) * bytesPerPixel;
+        int y;
+
+        renderNoStretch(pVideo, frameBuffer, ddsd.ddpfPixelFormat.dwRGBBitCount, zoom, 
+                        rdrPtr, 640 * bytesPerPixel, -1);
+
+        for (y = 0; y < screenHeight; y++) {
+            memcpy(dstPtr, srcPtr, screenWidth * bytesPerPixel);
+            srcPtr += 640 * bytesPerPixel;
+            dstPtr += ddsd.lPitch;
+        }
     }
     else {
-        int bitCount = ddsd.ddpfPixelFormat.dwRGBBitCount;
-        int borderWidth = (320 - frameBuffer->maxWidth) / 2;
-        int dstOffset = borderWidth > 0 ? borderWidth * bitCount / 8 : 0;
-
-        zoom = videoRender(pVideo, frameBuffer, bitCount, zoom, 
-                           surfaceBuffer, dstOffset, ddsd.lPitch, canChangeZoom);
-
-        if (borderWidth > 0) {
-            borderWidth *= zoom;
-            if (ddsd.ddpfPixelFormat.dwRGBBitCount == 16) {
-                UInt16* ptr  = surfaceBuffer;                    
-                int h = zoom * 240;
-                surfaceBuffer = ptr + borderWidth;
-                while (h--) {
-                    memset(ptr, 0, borderWidth * sizeof(UInt16));
-                    memset(ptr + zoom * 320 - borderWidth, 0, borderWidth * sizeof(UInt16));
-                    ptr += ddsd.lPitch / sizeof(UInt16);
-                }
-            }
-            else if (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) {
-                UInt32* ptr  = surfaceBuffer;                 
-                int h = zoom * 240;
-                surfaceBuffer = ptr + borderWidth;
-                while (h--) {
-                    memset(ptr, 0, borderWidth * sizeof(UInt32));
-                    memset(ptr + zoom * 320 - borderWidth, 0, borderWidth * sizeof(UInt32));
-                    ptr += ddsd.lPitch / sizeof(UInt32);
-                }
-            }
+        if (horizontalStretch) {
+            zoom = videoRender(pVideo, frameBuffer, ddsd.ddpfPixelFormat.dwRGBBitCount, zoom, 
+                                surfaceBuffer, 0, ddsd.lPitch, canChangeZoom);
+        }
+        else {
+            zoom = renderNoStretch(pVideo, frameBuffer, ddsd.ddpfPixelFormat.dwRGBBitCount, zoom, 
+                                   surfaceBuffer, ddsd.lPitch, canChangeZoom);
         }
     }
 
-    if (IDirectDrawSurface_Unlock(surface, NULL) == DDERR_SURFACELOST) {
-        IDirectDrawSurface_Restore(surface);
-        IDirectDrawSurface_Unlock(surface, NULL);
+    if (IDirectDrawSurface7_Unlock(surface, NULL) == DDERR_SURFACELOST) {
+        IDirectDrawSurface7_Restore(surface);
+        IDirectDrawSurface7_Unlock(surface, NULL);
     }
 
     if (sysMemBuffering) {
         do {
-            ddrval = IDirectDrawSurface_BltFast(lpDDSTemp1, 0, 0, surface, NULL, DDBLTFAST_DONOTWAIT);
+            ddrval = IDirectDrawSurface7_BltFast(lpDDSTemp1, 0, 0, surface, NULL, DDBLTFAST_DONOTWAIT);
 
             if (ddrval == DDERR_SURFACELOST) {
-                ddrval = IDirectDrawSurface_Restore(lpDDSTemp1);
+                ddrval = IDirectDrawSurface7_Restore(lpDDSTemp1);
             }
         } while (ddrval == DDERR_WASSTILLDRAWING);
         surface = lpDDSTemp1;
@@ -700,12 +765,10 @@ int DirectXUpdateSurface(Video* pVideo,
 
     pt.x -= MyDeviceRect.left;
     pt.y -= MyDeviceRect.top;
+    pt.y += dstOffset;
     OffsetRect(&destRect, pt.x, pt.y);
 
-    destRect.top += dstOffset;
-    destRect.bottom += dstOffset;
-    
-    do {
+    if (!lowresMode) {
         rcRect.top = 0;
         rcRect.left = 0;
         rcRect.bottom = 240 * zoom;
@@ -720,34 +783,47 @@ int DirectXUpdateSurface(Video* pVideo,
             rcRect.top    += 7 * zoom;
             rcRect.bottom -= 7 * zoom;
         }
-    } while (0);
+    }
+
+    if (zoomModeNormal) {
+        static int deltaWidth = -9999;
+        static int deltaHeight = -9999;
+        if (deltaWidth == -9999) {
+            deltaWidth  = (640 - appConfigGetInt("screen.normal.width", 640)) / 2;
+            deltaHeight = (480 - appConfigGetInt("screen.normal.height", 480)) / 2;
+        }
+        destRect.right  -= deltaWidth;
+        destRect.left   -= deltaWidth;
+        destRect.top    -= deltaHeight;
+        destRect.bottom -= deltaHeight;
+    }
 
     if (syncVblank) {
         DirectXAdjustVBlankOffset();
     }
 
     if (lpDDSBack != NULL && !noFlip) {
-	    DDSCAPS ddscaps = { DDSCAPS_BACKBUFFER };
+        DDSCAPS2 ddscaps = { DDSCAPS_BACKBUFFER };
         do {
-            ddrval = IDirectDrawSurface_Blt(lpDDSBack, &destRect, surface, &rcRect, DDBLT_ASYNC, NULL);
+            ddrval = IDirectDrawSurface7_Blt(lpDDSBack, &destRect, surface, &rcRect, DDBLT_ASYNC, NULL);
             if (ddrval == DDERR_SURFACELOST) {
-                ddrval = IDirectDrawSurface_Restore(lpDDSBack);
+                ddrval = IDirectDrawSurface7_Restore(lpDDSBack);
             }
         } while (ddrval == DDERR_WASSTILLDRAWING);
         do {
-            ddrval = IDirectDrawSurface_Flip(lpDDSPrimary, NULL, 0 );
+            ddrval = IDirectDrawSurface7_Flip(lpDDSPrimary, NULL, 0 );
             if (ddrval == DDERR_SURFACELOST) {
-                IDirectDrawSurface_Restore(lpDDSPrimary);
+                IDirectDrawSurface7_Restore(lpDDSPrimary);
                 break;
             }
         } while (ddrval == DDERR_WASSTILLDRAWING);
-    	IDirectDrawSurface_GetAttachedSurface(lpDDSPrimary, &ddscaps, &lpDDSBack);
+        IDirectDrawSurface7_GetAttachedSurface(lpDDSPrimary, &ddscaps, &lpDDSBack);
     }
     else {
-        ddrval = IDirectDrawSurface_Blt(lpDDSPrimary, &destRect, surface, &rcRect, DDBLT_ASYNC, NULL);
+        ddrval = IDirectDrawSurface7_Blt(lpDDSPrimary, &destRect, surface, &rcRect, DDBLT_ASYNC, NULL);
 
         if (ddrval == DDERR_SURFACELOST) {
-            ddrval = IDirectDrawSurface_Restore(lpDDSPrimary);
+            ddrval = IDirectDrawSurface7_Restore(lpDDSPrimary);
         }
     }
 

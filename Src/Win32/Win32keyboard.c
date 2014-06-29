@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32keyboard.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32keyboard.c,v $
 **
-** $Revision: 1.31 $
+** $Revision: 1.35 $
 **
-** $Date: 2006/06/03 17:55:54 $
+** $Date: 2008-05-15 10:23:42 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -32,11 +30,15 @@
 #include "Language.h"
 #include "InputEvent.h"
 #include "IniFileParser.h"
+#include "Properties.h"
 #include <windows.h>
 #include <stdio.h>
 #include <winioctl.h>
 #include <dinput.h>
 
+
+// PacketFileSystem.h Need to be included after all other includes
+#include "PacketFileSystem.h"
 
 #define MAX_JOYSTICKS 8
 
@@ -67,6 +69,12 @@ static char currentConfigFile[MAX_PATH];
 
 #define DIK_JOY1_BUTTON1  256
 #define DIK_JOY1_BUTTON2  257
+#define DIK_JOY1_BUTTON3  258
+#define DIK_JOY1_BUTTON4  259
+#define DIK_JOY1_BUTTON5  260
+#define DIK_JOY1_BUTTON6  261
+#define DIK_JOY1_WHEELA   262
+#define DIK_JOY1_WHEELB   263
 #define DIK_JOY1_UP       284
 #define DIK_JOY1_DOWN     285
 #define DIK_JOY1_LEFT     286
@@ -74,6 +82,12 @@ static char currentConfigFile[MAX_PATH];
 
 #define DIK_JOY2_BUTTON1  288
 #define DIK_JOY2_BUTTON2  289
+#define DIK_JOY2_BUTTON3  290
+#define DIK_JOY2_BUTTON4  291
+#define DIK_JOY2_BUTTON5  292
+#define DIK_JOY2_BUTTON6  293
+#define DIK_JOY2_WHEELA   294
+#define DIK_JOY2_WHEELB   295
 #define DIK_JOY2_UP       316
 #define DIK_JOY2_DOWN     317
 #define DIK_JOY2_LEFT     318
@@ -264,9 +278,9 @@ int str2dik(char* dikString)
 // initKbdTable initializes the keyboard table with default keys
 static void initKbdTable()
 {
-    memset (kbdTable[0], 0, sizeof(kbdTable));
-    memset (kbdTable[1], 0, sizeof(kbdTable));
-    memset (kbdTable[2], 0, sizeof(kbdTable));
+    memset (kbdTable[0], 0, sizeof(kbdTable[0]));
+    memset (kbdTable[1], 0, sizeof(kbdTable[1]));
+    memset (kbdTable[2], 0, sizeof(kbdTable[2]));
 
     kbdTable[0][DIK_0          ] = EC_0;
     kbdTable[0][DIK_1          ] = EC_1;
@@ -370,6 +384,12 @@ static void initKbdTable()
 
     kbdTable[1][DIK_JOY1_BUTTON1] = EC_JOY1_BUTTON1;
     kbdTable[1][DIK_JOY1_BUTTON2] = EC_JOY1_BUTTON2;
+    kbdTable[1][DIK_JOY1_BUTTON3] = EC_JOY1_BUTTON3;
+    kbdTable[1][DIK_JOY1_BUTTON4] = EC_JOY1_BUTTON4;
+    kbdTable[1][DIK_JOY1_BUTTON5] = EC_JOY1_BUTTON5;
+    kbdTable[1][DIK_JOY1_BUTTON6] = EC_JOY1_BUTTON6;
+    kbdTable[1][DIK_JOY1_WHEELA]  = EC_JOY1_WHEELA;
+    kbdTable[1][DIK_JOY1_WHEELB]  = EC_JOY1_WHEELB;
     kbdTable[1][DIK_JOY1_UP     ] = EC_JOY1_UP;
     kbdTable[1][DIK_JOY1_DOWN   ] = EC_JOY1_DOWN;
     kbdTable[1][DIK_JOY1_LEFT   ] = EC_JOY1_LEFT;
@@ -390,6 +410,12 @@ static void initKbdTable()
 
     kbdTable[2][DIK_JOY2_BUTTON1] = EC_JOY2_BUTTON1;
     kbdTable[2][DIK_JOY2_BUTTON2] = EC_JOY2_BUTTON2;
+    kbdTable[2][DIK_JOY2_BUTTON3] = EC_JOY2_BUTTON3;
+    kbdTable[2][DIK_JOY2_BUTTON4] = EC_JOY2_BUTTON4;
+    kbdTable[2][DIK_JOY2_BUTTON5] = EC_JOY2_BUTTON5;
+    kbdTable[2][DIK_JOY2_BUTTON6] = EC_JOY2_BUTTON6;
+    kbdTable[2][DIK_JOY2_WHEELA]  = EC_JOY2_WHEELA;
+    kbdTable[2][DIK_JOY2_WHEELB]  = EC_JOY2_WHEELB;
     kbdTable[2][DIK_JOY2_UP     ] = EC_JOY2_UP;
     kbdTable[2][DIK_JOY2_DOWN   ] = EC_JOY2_DOWN;
     kbdTable[2][DIK_JOY2_LEFT   ] = EC_JOY2_LEFT;
@@ -652,6 +678,7 @@ static int joystickUpdateState(int index,  DWORD* buttonMask) {
     int state = 0;
     DWORD bMask = 0;
     int i;
+    Properties* pProperties = propGetGlobalProperties();
 
     *buttonMask = 0;
     if (index >= joyCount) {
@@ -664,17 +691,27 @@ static int joystickUpdateState(int index,  DWORD* buttonMask) {
 
     rv = IDirectInputDevice_GetDeviceState(joyInfo[index].diDevice, sizeof(DIJOYSTATE), &js);
     if (rv == DIERR_INPUTLOST || rv == DIERR_NOTACQUIRED) {
-    	rv = IDirectInputDevice_Acquire(joyInfo[index].diDevice);
+        rv = IDirectInputDevice_Acquire(joyInfo[index].diDevice);
+        // dink: after acquire, return 0 instead of proceeding further
+        return 0;
     }
 
     if (rv != DI_OK) {
         return 0;
     }
-
-    if (js.lX < -50) state |= 0x04; 
-    if (js.lX >  50) state |= 0x08;
-    if (js.lY < -50) state |= 0x01; 
-    if (js.lY >  50) state |= 0x02; 
+    
+    if (pProperties->joystick.POV0isAxes) {
+        state|=(((js.rgdwPOV[0]<=31500)&(js.rgdwPOV[0]>=22500))<<2);
+        state|=(((js.rgdwPOV[0]<=13500)&(js.rgdwPOV[0]>=4500))<<3);
+        state|=((js.rgdwPOV[0]<=4500)|((js.rgdwPOV[0]>=31500)&(js.rgdwPOV[0]<36000)));
+        state|=(((js.rgdwPOV[0]<=22500)&(js.rgdwPOV[0]>=13500))<<1);
+    }
+    else {
+        if (js.lX < -50) state |= 0x04;
+        if (js.lX >  50) state |= 0x08;
+        if (js.lY < -50) state |= 0x01;
+        if (js.lY >  50) state |= 0x02;
+    }
     if (js.rgbButtons[joyInfo[index].buttonA]) state |= 0x10;
     if (js.rgbButtons[joyInfo[index].buttonB]) state |= 0x20;
 
@@ -914,6 +951,7 @@ char** keyboardGetConfigs()
 
 int keyboardLoadConfig(char* configName)
 {
+	IniFile *keyConfigFile;
     char fileName[MAX_PATH];
     FILE* file;
     int i;
@@ -939,7 +977,7 @@ int keyboardLoadConfig(char* configName)
 
     sprintf(currentConfigFile, *configName ? configName : DefaultConfigName);
 
-    iniFileOpen(fileName);
+    keyConfigFile = iniFileOpen(fileName);
 
     for (n = 0; n < KBD_TABLE_NUM; n++) {
         char profString[32];
@@ -952,7 +990,7 @@ int keyboardLoadConfig(char* configName)
                 char key[32] = { 0 };
                 strcat(key, keyCode);
                 strcat(key, " ");
-                iniFileGetString(profString, key, "", dikName, sizeof(dikName));
+                iniFileGetString(keyConfigFile, profString, key, "", dikName, sizeof(dikName));
 //                GetPrivateProfileString(profString, keyCode, "", dikName, sizeof(dikName), fileName);
                 dikKey = str2dik(dikName);
                 if (dikKey > 0) {
@@ -967,7 +1005,7 @@ int keyboardLoadConfig(char* configName)
             }
         }
     }
-    iniFileClose();
+    iniFileClose(keyConfigFile);
 
     if (kbdTable[0][DIK_NUMPADENTER] == 0) {
         kbdTable[0][DIK_NUMPADENTER] = kbdTable[0][DIK_RETURN];
@@ -978,6 +1016,7 @@ int keyboardLoadConfig(char* configName)
 
 void keyboardSaveConfig(char* configName)
 {
+	IniFile *keyConfigFile;
     char fileName[MAX_PATH];
     int i, n;
     
@@ -987,7 +1026,7 @@ void keyboardSaveConfig(char* configName)
 
     sprintf(fileName, "%s/%s.config", keyboardConfigDir, configName);
     
-    iniFileOpen(fileName);
+    keyConfigFile = iniFileOpen(fileName);
     for (n = 0; n < KBD_TABLE_NUM; n++) {
         char profString[32];
         sprintf(profString, "Keymapping-%d", n);
@@ -1005,7 +1044,7 @@ void keyboardSaveConfig(char* configName)
                 char key[32] = { 0 };
                 strcat(key, keyCode);
                 strcat(key, " ");
-                iniFileWriteString(profString, key, (char*)dikName);
+                iniFileWriteString(keyConfigFile, profString, key, (char*)dikName);
 //            WritePrivateProfileString(profString, keyCode, dikName, fileName);
             }
         }
@@ -1013,7 +1052,7 @@ void keyboardSaveConfig(char* configName)
         memcpy(kbdTableBackup[n], kbdTable[n], sizeof(kbdTableBackup[n]));
     }
     sprintf(currentConfigFile, configName);
-    iniFileClose();
+    iniFileClose(keyConfigFile);
 }
 
 void keyboardSetDirectory(char* directory)

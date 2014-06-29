@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32joystick.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32joystick.h,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.3 $
 **
-** $Date: 2004/12/06 07:31:42 $
+** $Date: 2008-03-30 18:38:48 $
 **
 ** More info: http://www.bluemsx.com
 **

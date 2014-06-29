@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Debugger/DebugDeviceManager.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Debugger/DebugDeviceManager.h,v $
 **
-** $Revision: 1.9 $
+** $Revision: 1.11 $
 **
-** $Date: 2005/08/17 07:03:28 $
+** $Date: 2008-03-31 19:42:19 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -39,6 +37,9 @@ typedef struct {
     int (*writeRegister)(void* ref, char* name, int reg, UInt32 value);
     int (*writeIoPort)(void* ref, char* name, UInt16 port, UInt32 value);
 } DebugCallbacks;
+
+typedef UInt8 (*WatchpointReadMemCallback)(void*, int);
+
 
 void debugDeviceManagerReset();
 
@@ -87,5 +88,9 @@ void debugDeviceGetSnapshot(DbgDevice** dbgDeviceList, int* count);
 int debugDeviceWriteMemory(DbgMemoryBlock* memoryBlock, void* data, int startAddr, int size);
 int debugDeviceWriteRegister(DbgRegisterBank* regBank, int regIndex, UInt32 value);
 int debugDeviceWriteIoPort(DbgIoPorts* ioPorts, int portIndex, UInt32 value);
+
+void debugDeviceSetMemoryWatchpoint(DbgDeviceType devType, int address, DbgWatchpointCondition condition, UInt32 refValue, int size);
+void debugDeviceClearMemoryWatchpoint(DbgDeviceType devType, int address);
+void tryWatchpoint(DbgDeviceType devType, int address, UInt8 value, void* ref, WatchpointReadMemCallback callback);
 
 #endif /*DEBUG_DEVICE_MANAGER_H*/

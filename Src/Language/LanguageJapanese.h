@@ -1,68 +1,70 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Language/LanguageJapanese.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Language/LanguageJapanese.h,v $
 **
-** $Revision: 1.37 $
+** $Revision: 1.68 $
 **
-** $Date: 2006/07/07 00:20:19 $
+** $Date: 2009-04-04 20:57:19 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
+
 #ifndef LANGUAGE_JAPANESE_H
 #define LANGUAGE_JAPANESE_H
 
 #include "LanguageStrings.h"
 
 void langInitJapanese(LanguageStrings* ls) 
+
 {
     //----------------------
     // Language lines
     //----------------------
 
-    ls->langChineseSimplified   = "中国語(簡体字)";         // New in 2.5
-    ls->langChineseTraditional  = "中国語(繁体字)";        // New in 2.5
-    ls->langDutch               = "オランダ語";                      // New in 2.5
-    ls->langEnglish             = "英語";                    // New in 2.5
-    ls->langFinnish             = "フィンランド語";                    // New in 2.5
-    ls->langFrench              = "フランス語";                     // New in 2.5
-    ls->langGerman              = "ドイツ語";                     // New in 2.5
-    ls->langItalian             = "イタリア語";                    // New in 2.5
-    ls->langJapanese            = "日本語";                   // New in 2.5
-    ls->langKorean              = "韓国語";                     // New in 2.5
-    ls->langPolish              = "ポーランド語";                     // New in 2.5
-    ls->langPortuguese          = "ポルトガル語";                 // New in 2.5
-    ls->langSpanish             = "スペイン語";                    // New in 2.5
-    ls->langSwedish             = "スウェーデン語";                    // New in 2.5
+    ls->langCatalan             = "Catalan";
+    ls->langChineseSimplified   = "中国語(簡体字)";
+    ls->langChineseTraditional  = "中国語(繁体字)";
+    ls->langDutch               = "オランダ語";
+    ls->langEnglish             = "英語";
+    ls->langFinnish             = "フィンランド語";
+    ls->langFrench              = "フランス語";
+    ls->langGerman              = "ドイツ語";
+    ls->langItalian             = "イタリア語";
+    ls->langJapanese            = "日本語";
+    ls->langKorean              = "韓国語";
+    ls->langPolish              = "ポーランド語";
+    ls->langPortuguese          = "ポルトガル語";
+    ls->langRussian             = "Russian";            // v2.8
+    ls->langSpanish             = "スペイン語";
+    ls->langSwedish             = "スウェーデン語";
 
 
     //----------------------
     // Generic lines
     //----------------------
 
-    ls->textDevice              = "デバイス:"; 
-    ls->textFilename            = "ファイル名:"; 
-    ls->textFile                = "ファイル"; 
-    ls->textNone                = "なし"; 
-    ls->textUnknown             = "不明";                            // New in 2.5
+    ls->textDevice              = "デバイス:";
+    ls->textFilename            = "ファイル名:";
+    ls->textFile                = "ファイル";
+    ls->textNone                = "なし";
+    ls->textUnknown             = "不明";
 
 
     //----------------------
@@ -71,7 +73,7 @@ void langInitJapanese(LanguageStrings* ls)
 
     ls->warningTitle            = "blueMSX - 警告";
     ls->warningDiscardChanges   = "構\成が失われますが、よろしいですか?";
-    ls->warningOverwriteFile    = "このファイルに上書きしてもよろしいですか:"; // New in 2.5
+    ls->warningOverwriteFile    = "このファイルに上書きしてもよろしいですか:"; 
     ls->errorTitle              = "blueMSX - エラー";
     ls->errorEnterFullscreen    = "フルスクリーンモードにできません。          \n";
     ls->errorDirectXFailed      = "DirectX オブジェクトを作成できません。          \nGDIを代わりに使用します。\nグラフィックカードの設定を確認してください。";
@@ -80,18 +82,20 @@ void langInitJapanese(LanguageStrings* ls)
     ls->errorNoCasInZip         = "zipファイルの中に.casファイルが見つかりません。";
     ls->errorNoHelp             = "blueMSX のヘルプファイルが見つかりません。";
     ls->errorStartEmu           = "blueMSX の開始に失敗しました。";
-    ls->errorPortableReadonly   = "ポータブルデバイスは読込専用です。";        // New in 2.5
+    ls->errorPortableReadonly   = "ポータブルデバイスは読込専用です。";
 
 
     //----------------------
     // File related lines
     //----------------------
 
-    ls->fileRom                 = "ROM イメージ"; 
-    ls->fileAll                 = "全てのファイル"; 
-    ls->fileCpuState            = "CPU ステート"; 
-    ls->fileDisk                = "ディスクイメージ"; 
-    ls->fileCas                 = "テープイメージ"; 
+    ls->fileRom                 = "ROM イメージ";
+    ls->fileAll                 = "全てのファイル";
+    ls->fileCpuState            = "CPU ステート";
+    ls->fileVideoCapture        = "ビデオのキャプチャ"; 
+    ls->fileDisk                = "ディスクイメージ";
+    ls->fileCas                 = "テープイメージ";
+    ls->fileAvi                 = "ビデオ クリップ";    
 
 
     //----------------------
@@ -102,22 +106,31 @@ void langInitJapanese(LanguageStrings* ls)
     ls->menuInsert              = "挿入";
     ls->menuEject               = "取り出し";
 
-    ls->menuCartGameReader      = "ゲームリーダーに接続";                        // New in 2.5
-    ls->menuCartIde             = "IDE カートリッジ";                                // New in 2.5
-    ls->menuCartBeerIde         = "Beer IDE";                               // New in 2.5
-    ls->menuCartGIde            = "GIDE";                               // New in 2.5
-    ls->menuCartSunriseIde      = "Sunrise IDE";                            // New in 2.5
-    ls->menuCartSCC              = "SCC カートリッジ";
-    ls->menuCartSCCPlus          = "SCC+ カートリッジ";
+    ls->menuCartGameReader      = "ゲームリーダーに接続";
+    ls->menuCartIde             = "IDE カートリッジ";
+    ls->menuCartBeerIde         = "Beer IDE";
+    ls->menuCartGIde            = "GIDE";
+    ls->menuCartSunriseIde      = "Sunrise IDE";
+    ls->menuCartScsi            = "SCSI カートリッジ";          // New in 2.7
+    ls->menuCartMegaSCSI        = "MEGA-SCSI";                  // New in 2.7
+    ls->menuCartWaveSCSI        = "WAVE-SCSI";                  // New in 2.7
+    ls->menuCartGoudaSCSI       = "Gouda SCSI";                 // New in 2.7
+    ls->menuJoyrexPsg           = "Joyrex PSG カートリッジ"; // New in 2.9
+    ls->menuCartSCC             = "SCC カートリッジ";
+    ls->menuCartSCCPlus         = "SCC-I カートリッジ";
     ls->menuCartFMPac           = "FMPAC+ カートリッジ";
     ls->menuCartPac             = "PAC+ カートリッジ";
     ls->menuCartHBI55           = "Sony HBI-55 カートリッジ";
-    ls->menuCartInsertSpecial   = "特殊カートリッジ";                     // New in 2.5
-    ls->menuCartMegaRam         = "メガRAM カートリッジ";                            // New in 2.5
+    ls->menuCartInsertSpecial   = "特殊カートリッジ";
+    ls->menuCartMegaRam         = "メガRAM カートリッジ";
     ls->menuCartExternalRam     = "外部RAM カートリッジ"; 
+    ls->menuCartEseRam          = "似非RAM カートリッジ";       // New in 2.7
+    ls->menuCartEseSCC          = "似非SCC カートリッジ";       // New in 2.7
+    ls->menuCartMegaFlashRom    = "Mega Flash ROM";             // New in 2.7
 
-    ls->menuDiskInsertNew       = "新規ディスクイメージを挿入";              // New in 2.5
-    ls->menuDiskDirInsert       = "ディレクトリ挿入"; 
+    ls->menuDiskInsertNew       = "新規ディスクイメージを挿入";
+    ls->menuDiskInsertCdrom     = "CD-ROM挿入";          // New in 2.7
+    ls->menuDiskDirInsert       = "ディレクトリ挿入";
     ls->menuDiskAutoStart       = "挿入/取り出し後リセット";
     ls->menuCartAutoReset       = "挿入/取り出し後リセット";
 
@@ -126,6 +139,14 @@ void langInitJapanese(LanguageStrings* ls)
     ls->lmenuCasSaveAs           = "テープを別名で保存...";
     ls->menuCasSetPosition      = "テープ位置セット";
     ls->menuCasRewind           = "巻き戻し";
+
+    ls->menuVideoLoad           = "読み込み...";             
+    ls->menuVideoPlay           = "キャプチャ映像の再生";   
+    ls->menuVideoRecord         = "録画";              
+    ls->menuVideoRecording      = "録画中";           
+    ls->menuVideoRecAppend      = "録画 (付加する)";     
+    ls->menuVideoStop           = "停止";                
+    ls->menuVideoRender         = "ビデオファイルのレンダリング";   
     
     ls->menuPrnFormfeed         = "紙送り"; 
 
@@ -137,17 +158,20 @@ void langInitJapanese(LanguageStrings* ls)
     ls->menuPropsVideo          = "ビデオ";
     ls->menuPropsSound          = "サウンド";
     ls->menuPropsControls       = "コントロール";
-    ls->menuPropsPerformance    = "パフォーマンス";
-    ls->menuPropsSettings        = "その他";
+    ls->menuPropsEffects        = "Effects";               // New in 2.9
+    ls->menuPropsSettings       = "その他";
     ls->menuPropsFile           = "ファイル";
+    ls->menuPropsDisk           = "ディスク";            // New in 2.7
     ls->menuPropsLanguage       = "言語";
     ls->menuPropsPorts          = "ポート";
     
     ls->menuVideoChipAutodetect = "ビデオチップの自動認識";
-    ls->menuVideoSource         = "ビデオ出力";                   // New in 2.5
-    ls->menuVideoSourceDefault  = "ビデオ出力が見つかりません";      // New in 2.5    
-    ls->menuVideoInSource       = "ビデオ入力";                    // New in 2.5
-    ls->menuVideoInBitmap       = "ビットマップファイル";                        // New in 2.5
+    ls->menuVideoSource         = "ビデオ出力";
+    ls->menuVideoSourceDefault  = "ビデオ出力が見つかりません";
+    ls->menuVideoInSource       = "ビデオ入力";
+    ls->menuVideoInBitmap       = "ビットマップファイル";
+    
+    ls->menuEthInterface        = "イーサーネット　インターフェース"; 
 
     ls->menuHelpHelp            = "ヘルプ目次";
     ls->menuHelpAbout           = "blueMSXについて";
@@ -161,11 +185,13 @@ void langInitJapanese(LanguageStrings* ls)
     ls->menuFileQLoadState      = "クイックロード";
     ls->menuFileQSaveState      = "クイックセーブ";
     ls->menuFileCaptureAudio    = "録音";
+    ls->menuFileCaptureVideo    = "ビデオのキャプチャ"; 
     ls->menuFileScreenShot      = "スクリーンショット";
     ls->menuFileExit            = "終了";
 
-    ls->menuFileHarddisk        = "ハードディスク";                          // New in 2.5
-    ls->menuFileHarddiskNoPesent= "ハードディスクは無効です";             // New in 2.5
+    ls->menuFileHarddisk        = "ハードディスク";
+    ls->menuFileHarddiskNoPesent= "ハードディスクは無効です";
+    ls->menuFileHarddiskRemoveAll= "ハードディスクを全て取り出す"; // New in 2.7
 
     ls->menuRunRun              = "実行";
     ls->menuRunPause            = "中断";
@@ -176,11 +202,11 @@ void langInitJapanese(LanguageStrings* ls)
 
     ls->menuToolsMachine         = "マシン構\成編集";
     ls->menuToolsShortcuts      = "ショートカット構\成編集";
-    ls->menuToolsKeyboard       = "キーボード構\成編集";
-    ls->menuToolsMixer          = "ミキサー"; 
-    ls->menuToolsDebugger       = "デバッガー";               // New in 2.5
-    ls->menuToolsTrainer        = "トレーナー";                // New in 2.5
-    ls->menuToolsTraceLogger    = "トレースロガー";           // New in 2.5
+    ls->menuToolsCtrlEditor     = "コントローラー / キーボード構\成編集"; 
+    ls->menuToolsMixer          = "ミキサー";
+    ls->menuToolsDebugger       = "デバッガー";
+    ls->menuToolsTrainer        = "トレーナー";
+    ls->menuToolsTraceLogger    = "トレースロガー";
 
     ls->menuFile                = "ファイル";
     ls->menuRun                 = "実行";
@@ -211,15 +237,19 @@ void langInitJapanese(LanguageStrings* ls)
     ls->dlgLoadCasDesc          = "読み込むcasイメージ:";
     ls->dlgLoadRomDskCasDesc    = "読み込むrom, dsk, casイメージ:";
     ls->dlgLoadState            = "CPUステート 読み込み";
+    ls->dlgLoadVideoCapture     = "キャプチャ映像の読み込み";      
     ls->dlgSaveState            = "CPUステート 保存";
     ls->dlgSaveCassette          = "blueMSX - テープを保存";
+    ls->dlgSaveVideoClipAs      = "ビデオクリップを別名で保存...";      
+    ls->dlgAmountCompleted      = "処理済:";          
     ls->dlgInsertRom1           = "ROM イメージをスロット1に挿入";
     ls->dlgInsertRom2           = "ROM イメージをスロット2に挿入";
     ls->dlgInsertDiskA          = "ディスクイメージをドライブAに挿入";
     ls->dlgInsertDiskB          = "ディスクイメージをドライブBに挿入";
-    ls->dlgInsertHarddisk       = "ハードディスクを挿入";                   // New in 2.5
+    ls->dlgInsertHarddisk       = "ハードディスクを挿入";                   
     ls->dlgInsertCas            = "カセットテープを挿入";
     ls->dlgRomType              = "ROM タイプ:"; 
+    ls->dlgDiskSize             = "ディスク要領:";             
 
     ls->dlgTapeTitle            = "blueMSX - カセットテープ";
     ls->dlgTapeFrameText        = "テープ位置";
@@ -243,7 +273,7 @@ void langInitJapanese(LanguageStrings* ls)
     ls->dlgAboutBuildDate       = "ビルド日付:";
     ls->dlgAboutCreat           = "製作:\tDaniel Vik";
     ls->dlgAboutDevel           = "開発者\r\n=====";
-    ls->dlgAboutThanks          = "ご協力いただいた方々\r\n=============";
+    ls->dlgAboutThanks          = "ご協力いただいた方々\r\n=============";       // New in 2.7 (retranslate, see english)
     ls->dlgAboutLisence         = "ライセンス\r\n"
                                   "======\r\n\r\n"
                                   "このソ\フトウェアは現状をそのままの状態で配布するものであり、明示的または"
@@ -253,6 +283,8 @@ void langInitJapanese(LanguageStrings* ls)
 
     ls->dlgSavePreview          = "プレビュー表\示";
     ls->dlgSaveDate             = "セーブ時刻:";
+
+    ls->dlgRenderVideoCapture   = "blueMSX - キャプチャ映像をレンダリング中...";  
 
 
     //----------------------
@@ -265,8 +297,10 @@ void langInitJapanese(LanguageStrings* ls)
     ls->propSound               = "サウンド";
     ls->propControls            = "コントロール";
     ls->propPerformance         = "パフォーマンス";
-    ls->propSettings             = "その他";
-    ls->propFile                = "ファイル"; 
+    ls->propEffects             = "Effects";             // New in 2.9
+    ls->propSettings            = "その他";
+    ls->propFile                = "ファイル";
+    ls->propDisk                = "ディスク";            // New in 2.7
     ls->propPorts               = "ポート";
     
     ls->propEmuGeneralGB        = " 一般 ";
@@ -278,27 +312,30 @@ void langInitJapanese(LanguageStrings* ls)
     ls->propEmuSpeedText        = "スピード:";
     ls->propEmuFrontSwitchGB     = " パナソ\ニックスイッチ "; 
     ls->propEmuFrontSwitch       = " 前面[内蔵ソ\フト]スイッチ"; 
+    ls->propEmuNoSpriteLimits   = " Disable Sprites Limitation";  // New in 2.9
+    ls->propEnableMsxKeyboardQuirk = " Emulate MSX keyboard quirk";  // New in 2.9
     ls->propEmuFdcTiming        = " FDDドライブのタイミングを無効化";
+    ls->propEmuReversePlay      = " Enable reverse playback"; // New in 2.8.3
     ls->propEmuPauseSwitch      = " ポーズスイッチ";
     ls->propEmuAudioSwitch       = " MSX-AUDIO カートリッジスイッチ"; 
     ls->propVideoFreqText       = "ビデオ周波数:";
     ls->propVideoFreqAuto       = "自動";
     ls->propSndOversampleText   = "サンプリング:";
-    ls->propSndYkInGB           = " YK-01/YK-10/YK-20 イン ";                // New in 2.5
-    ls->propSndMidiInGB         = " MIDI イン "; 
-    ls->propSndMidiOutGB        = " MIDI アウト "; 
-    ls->propSndMidiChannel      = "MIDI チャンネル:";                      // New in 2.5
-    ls->propSndMidiAll          = "全て";                                // New in 2.5
+    ls->propSndYkInGB           = " YK-01/YK-10/YK-20 イン ";
+    ls->propSndMidiInGB         = " MIDI イン ";
+    ls->propSndMidiOutGB        = " MIDI アウト ";
+    ls->propSndMidiChannel      = "MIDI チャンネル:";
+    ls->propSndMidiAll          = "全て";
 
     ls->propMonMonGB            = " モニター ";
     ls->propMonTypeText         = "モニターの種類:";
     ls->propMonEmuText          = "モニターエミュレーション:";
     ls->propVideoTypeText       = "映像方式:";
     ls->propWindowSizeText      = "ウィンドウサイズ:";
-    ls->propMonHorizStretch      = " 水平方向に拡大";  
+    ls->propMonHorizStretch      = " 水平方向に拡大";
     ls->propMonVertStretch       = " 垂直方向に拡大";
     ls->propMonDeInterlace      = " インターレース除去";
-    ls->propBlendFrames         = " 残像を残す";           // New in 2.5
+    ls->propBlendFrames         = " 残像を残す"; 
     ls->propMonBrightness       = "明るさ:";
     ls->propMonContrast         = "コントラスト:";
     ls->propMonSaturation       = "彩度:";
@@ -329,34 +366,54 @@ void langInitJapanese(LanguageStrings* ls)
     ls->propPortsCom1Text       = "ポート 1:";
     ls->propPortsNone           = "なし";
     ls->propPortsSimplCovox     = "SiMPL / Covox DAC";
-    ls->propPortsFile           = "ログファイルへ出力"; 
-    ls->propPortsComFile        = "ログファイルへ出力"; 
-    ls->propPortsOpenLogFile    = "ログファイルを開く"; 
-    ls->propPortsEmulateMsxPrn  = "エミュレート:"; 
+    ls->propPortsFile           = "ログファイルへ出力";
+    ls->propPortsComFile        = "ログファイルへ出力";
+    ls->propPortsOpenLogFile    = "ログファイルを開く";
+    ls->propPortsEmulateMsxPrn  = "エミュレート:";
 
-    ls->propSetFileHistoryGB     = " ファイルヒストリ ";
-    ls->propSetFileHistorySize   = "ファイルヒストリの個数:";
-    ls->propSetFileHistoryClear  = "ヒストリの消去";
-    ls->propFileTypes            = " blueMSX で使用するファイル (rom, dsk, cas, sta) を関連付け";
-    ls->propWindowsEnvGB         = " Windows ";
-    ls->propSetScreenSaver       = " blueMSX の動作中はスクリーンセーバを無効にする";
-    ls->propDisableWinKeys       = " Windows キー及び漢字キーを blueMSX に割り当てる"; 
-    ls->propPriorityBoost        = " Windows で blueMSX の優先度を高くする";
-    ls->propScreenshotPng       = " スクリーンショットを PNG 形式で取得する";  // New in 2.5
-    ls->propClearHistory         = "ヒストリの消去を実行してよろしいですか?"; 
-    ls->propOpenRomGB           = " ROM イメージ "; 
-    ls->propDefaultRomType      = "デフォルトROMタイプ:"; 
+    ls->propSetFileHistoryGB    = " ファイルヒストリ ";
+    ls->propSetFileHistorySize  = "ファイルヒストリの個数:";
+    ls->propSetFileHistoryClear = "ヒストリの消去";
+    ls->propFileTypes           = " blueMSX で使用するファイル (rom, dsk, cas, sta) を関連付け";
+    ls->propWindowsEnvGB        = " Windows ";
+    ls->propSetScreenSaver      = " blueMSX の動作中はスクリーンセーバを無効にする";
+    ls->propDisableWinKeys      = " Windows キー及び漢字キーを blueMSX に割り当てる";
+    ls->propPriorityBoost       = " Windows で blueMSX の優先度を高くする";
+    ls->propScreenshotPng       = " スクリーンショットを PNG 形式で取得する";
+    ls->propEjectMediaOnExit    = " Eject media when blueMSX exits";        // New in 2.8
+    ls->propClearHistory        = "ヒストリの消去を実行してよろしいですか?";
+    ls->propOpenRomGB           = " ROM イメージ ";
+    ls->propDefaultRomType      = "デフォルトROMタイプ:";
     ls->propGuessRomType        = "ROMタイプを自動判定";
 
     ls->propSettDefSlotGB       = " ドラッグ＆ドロップ "; 
     ls->propSettDefSlots        = "ROM を挿入するスロット:"; 
-    ls->propSettDefSlot         = " スロット"; 
+    ls->propSettDefSlot         = " スロット";
     ls->propSettDefDrives       = "ディスクを挿入するドライブ:"; 
-    ls->propSettDefDrive        = " ドライブ"; 
+    ls->propSettDefDrive        = " ドライブ";
 
     ls->propThemeGB             = " テーマ ";
     ls->propTheme               = "テーマ:";
 
+    ls->propCdromGB             = " CD-ROM ";       // New in 2.7
+    ls->propCdromMethod         = "アクセス方式:";  // New in 2.7
+    ls->propCdromMethodNone     = "なし";           // New in 2.7
+    ls->propCdromMethodIoctl    = "IOCTL";          // New in 2.7
+    ls->propCdromMethodAspi     = "ASPI";           // New in 2.7
+    ls->propCdromDrive          = "ドライブ:";      // New in 2.7
+
+    ls->propD3DParametersGB         = "Parameters ";                // New in 2.9
+    ls->propD3DAspectRatioText      = "Aspect ratio";               // New in 2.9
+    ls->propD3DLinearFilteringText  = " Linear filtering";          // New in 2.9
+    ls->propD3DForceHighResText     = " Force high resolution";     // New in 2.9
+    ls->propD3DExtendBorderColorText    = " Extend border color";   // New in 2.9
+
+    ls->propD3DCroppingGB               = "Cropping ";              // New in 2.9
+    ls->propD3DCroppingTypeText         = "Cropping type:";         // New in 2.9
+    ls->propD3DCroppingLeftText         = "Left:";                  // New in 2.9
+    ls->propD3DCroppingRightText        = "Right:";                 // New in 2.9
+    ls->propD3DCroppingTopText          = "Top:";                   // New in 2.9
+    ls->propD3DCroppingBottomText       = "Bottom:";                // New in 2.9
 
     //----------------------
     // Dropdown related lines
@@ -383,9 +440,10 @@ void langInitJapanese(LanguageStrings* ls)
     ls->enumVideoSize2x         = "2倍サイズ - 640x400";
     ls->enumVideoSizeFullscreen = "フルスクリーン";
 
-    ls->enumVideoDrvDirectDrawHW= "DirectDraw ハードウェア";           // New in 2.5
-    ls->enumVideoDrvDirectDraw  = "DirectDraw ソ\フトウェア";                     // New in 2.5
-    ls->enumVideoDrvGDI         = "GDI";                            // New in 2.5
+    ls->enumVideoDrvDirectDrawHW= "DirectDraw ハードウェア";
+    ls->enumVideoDrvDirectDraw  = "DirectDraw ソ\フトウェア";
+    ls->enumVideoDrvGDI         = "GDI";
+    ls->enumVideoDrvD3D         = "Direct3D";
 
     ls->enumVideoFrameskip0     = "なし";
     ls->enumVideoFrameskip1     = "1フレーム";
@@ -394,31 +452,46 @@ void langInitJapanese(LanguageStrings* ls)
     ls->enumVideoFrameskip4     = "4フレーム";
     ls->enumVideoFrameskip5     = "5フレーム";
 
+    ls->enumD3DARAuto           = "Auto";           // New in 2.9
+    ls->enumD3DARStretch        = "Stretch";        // New in 2.9
+    ls->enumD3DARPAL            = "PAL";            // New in 2.9
+    ls->enumD3DARNTSC           = "NTSC";           // New in 2.9
+    ls->enumD3DAR11             = "1:1";            // New in 2.9
+
+    ls->enumD3DCropNone         = "None";           // New in 2.9
+    ls->enumD3DCropMSX1         = "MSX1";           // New in 2.9
+    ls->enumD3DCropMSX1Plus8    = "MSX1+8";         // New in 2.9
+    ls->enumD3DCropMSX2         = "MSX2";           // New in 2.9
+    ls->enumD3DCropMSX2Plus8    = "MSX2+8";         // New in 2.9
+    ls->enumD3DCropCustom       = "Custom";         // New in 2.9
+
     ls->enumSoundDrvNone        = "なし";
     ls->enumSoundDrvWMM         = "WMM";
     ls->enumSoundDrvDirectX     = "DirectX";
     
     ls->enumEmuSync1ms          = "MSXに同期"; 
-    ls->enumEmuSyncAuto         = "オート(高速)"; 
-    ls->enumEmuSyncNone         = "なし"; 
-    ls->enumEmuSyncVblank       = "Windowsに同期"; 
-    ls->enumEmuAsyncVblank      = "非同期";             // New in 2.5
+    ls->enumEmuSyncAuto         = "オート(高速)";
+    ls->enumEmuSyncNone         = "なし";
+    ls->enumEmuSyncVblank       = "Windowsに同期";
+    ls->enumEmuAsyncVblank      = "非同期";
 
     ls->enumControlsJoyNone     = "なし";
     ls->enumControlsJoyMouse    = "マウス";
-    ls->enumControlsJoyTetris2Dongle = "テトリス2 ドングル"; 
-    ls->enumControlsJoyTMagicKeyDongle = "MagicKey ドングル";             // New in 2.5
-    ls->enumControlsJoy2Button = "2ボタン ジョイスティック";                   // New in 2.5
-    ls->enumControlsJoyGunstick  = "ガンスティック";                         // New in 2.5
-    ls->enumControlsJoyAsciiLaser="ASCII Plus-X ターミネーターレーザー";      // New in 2.5
-    ls->enumControlsJoyColeco = "ColecoVision ジョイスティック";                // New in 2.5
+    ls->enumControlsJoyTetris2Dongle = "テトリス2 ドングル";
+    ls->enumControlsJoyTMagicKeyDongle = "MagicKey ドングル";
+    ls->enumControlsJoy2Button = "2ボタン ジョイスティック";
+    ls->enumControlsJoyGunstick  = "ガンスティック";
+    ls->enumControlsJoyAsciiLaser="ASCII Plus-X ターミネーターレーザー";
+    ls->enumControlsArkanoidPad  ="Arkanoid Pad";                   // New in 2.7.1
+    ls->enumControlsJoyColeco = "ColecoVision ジョイスティック";
 
-    ls->enumDiskMsx35Dbl9Sect    = "MSX 3.5インチ 2DD (9セクタ)";     // New in 2.5
-    ls->enumDiskMsx35Dbl8Sect    = "MSX 3.5インチ 2DD (8セクタ)";     // New in 2.5
-    ls->enumDiskMsx35Sgl9Sect    = "MSX 3.5インチ 2D (9セクタ)";     // New in 2.5
-    ls->enumDiskMsx35Sgl8Sect    = "MSX 3.5インチ 2D (8セクタ)";     // New in 2.5
-    ls->enumDiskSvi525Dbl        = "SVI-328 5.25インチ 2DD";           // New in 2.5
-    ls->enumDiskSvi525Sgl        = "SVI-328 5.25インチ 2D";           // New in 2.5
+    ls->enumDiskMsx35Dbl9Sect    = "MSX 3.5インチ 2DD (9セクタ)";
+    ls->enumDiskMsx35Dbl8Sect    = "MSX 3.5インチ 2DD (8セクタ)";
+    ls->enumDiskMsx35Sgl9Sect    = "MSX 3.5インチ 2D (9セクタ)";
+    ls->enumDiskMsx35Sgl8Sect    = "MSX 3.5インチ 2D (8セクタ)";
+    ls->enumDiskSvi525Dbl        = "SVI-328 5.25インチ 2DD";
+    ls->enumDiskSvi525Sgl        = "SVI-328 5.25インチ 2D";
+    ls->enumDiskSf3Sgl           = "Sega SF-7000 3インチ 2D";  
 
 
     //----------------------
@@ -434,7 +507,7 @@ void langInitJapanese(LanguageStrings* ls)
 
     ls->confOpenRom             = "ROMイメージを開く"; 
     ls->confSaveTitle            = "blueMSX - マシン構\成編集の終了";
-    ls->confSaveText             = "現在の構\成が失われますが、よろしいですか?";    
+    ls->confSaveText             = "現在の構\成が失われますが、よろしいですか?";
     ls->confSaveAsTitle         = "別名で保存...";
     ls->confSaveAsMachineName    = "構\成名:";
     ls->confDiscardTitle         = "blueMSX - マシン構\成編集";
@@ -449,8 +522,8 @@ void langInitJapanese(LanguageStrings* ls)
     ls->confSlotExpanded         = "拡張(4つの拡張スロット)";
 
     ls->confSlotCart             = "カートリッジ";
-    ls->confSlot                = "スロット"; 
-    ls->confSubslot             = "拡張スロット"; 
+    ls->confSlot                = "スロット";
+    ls->confSubslot             = "拡張スロット";
 
     ls->confMemAdd               = "追加...";
     ls->confMemEdit              = "編集...";
@@ -464,6 +537,7 @@ void langInitJapanese(LanguageStrings* ls)
     ls->confChipVideoChip        = "ビデオチップ:";
     ls->confChipVideoRam         = "ビデオ RAM:";
     ls->confChipSoundGB          = " サウンド ";
+    ls->confChipPsgStereoText    = " PSG ステレオの切り替え";
 
     ls->confCmosGB                = " CMOS "; 
     ls->confCmosEnable            = " CMOS有効"; 
@@ -553,6 +627,7 @@ void langInitJapanese(LanguageStrings* ls)
     ls->shortcutSwitchPause     = "パナソ\ニック系 ポーズスイッチ";
     ls->shortcutToggleMouseLock = "マウスロック";
     ls->shortcutEmuSpeedMax     = "エミュレーション実行速度を最速化";
+    ls->shortcutEmuPlayReverse  = "Rewind emulation";                     // New in 2.8.3
     ls->shortcutEmuSpeedToggle  = "最速動作の有無";
     ls->shortcutEmuSpeedNormal  = "エミュレーション実行速度を標準化";
     ls->shortcutEmuSpeedInc     = "エミュレーション速度を加速";
@@ -562,7 +637,7 @@ void langInitJapanese(LanguageStrings* ls)
     ls->shortcutShowVideoProp   = "ビデオ設定画面の表\示";
     ls->shortcutShowAudioProp   = "サウンド設定画面の表\示";
     ls->shortcutShowCtrlProp    = "コントロール設定画面の表\示";
-    ls->shortcutShowPerfProp    = "パフォーマンス設定画面の表\示";
+    ls->shortcutShowEffectsProp = "Show Effects Properties";     // New in 2.9
     ls->shortcutShowSettProp    = "その他設定画面の表\示";
     ls->shortcutShowPorts       = "ポート設定画面の表\示";
     ls->shortcutShowLanguage    = "言語ダイアログの表\示";
@@ -577,7 +652,14 @@ void langInitJapanese(LanguageStrings* ls)
     ls->shortcutShowFiles       = "ファイルダイアログを表\示";
     ls->shortcutToggleSpriteEnable = "スプライトの表\示/非表\示";
     ls->shortcutToggleFdcTiming = "FDDドライブのタイミングの有効/無効";
+    ls->shortcutToggleNoSpriteLimits = "Toggle Sprites Limitation";                 // New in 2.9
+    ls->shortcutEnableMsxKeyboardQuirk = "Emulate MSX Keyboard Quirk";              // New in 2.9
     ls->shortcutToggleCpuTrace  = "CPUトレースの有効/無効";
+    ls->shortcutVideoLoad       = "読み込み...";             
+    ls->shortcutVideoPlay       = "キャプチャ映像の再生";   
+    ls->shortcutVideoRecord     = "録画";              
+    ls->shortcutVideoStop       = "停止";                
+    ls->shortcutVideoRender     = "ビデオファイルのレンダリング";   
 
 
     //----------------------
@@ -595,84 +677,42 @@ void langInitJapanese(LanguageStrings* ls)
     //----------------------
 
     ls->romTypeStandard         = "Standard";
-    ls->romTypeMsxdos2          = "MSXDOS 2";
-    ls->romTypeKonamiScc        = "Konami SCC";
-    ls->romTypeKonami           = "Konami";
-    ls->romTypeAscii8           = "ASCII 8";
-    ls->romTypeAscii16          = "ASCII 16";
-    ls->romTypeGameMaster2      = "Game Master 2 (SRAM)";
-    ls->romTypeAscii8Sram       = "ASCII 8 (SRAM)";
-    ls->romTypeAscii16Sram      = "ASCII 16 (SRAM)";
-    ls->romTypeRtype            = "R-Type";
-    ls->romTypeCrossblaim       = "Cross Blaim";
-    ls->romTypeHarryFox         = "Harry Fox";
-    ls->romTypeMajutsushi       = "Konami Majutsushi";
     ls->romTypeZenima80         = "Zemina 80 in 1";
     ls->romTypeZenima90         = "Zemina 90 in 1";
     ls->romTypeZenima126        = "Zemina 126 in 1";
-    ls->romTypeScc              = "SCC";
-    ls->romTypeSccPlus          = "SCC+";
-    ls->romTypeSnatcher         = "The Snatcher";
-    ls->romTypeSdSnatcher       = "SD Snatcher";
     ls->romTypeSccMirrored      = "SCC mirrored";
     ls->romTypeSccExtended      = "SCC extended";
-    ls->romTypeFmpac            = "FMPAC (SRAM)";
-    ls->romTypeFmpak            = "FMPAK";
     ls->romTypeKonamiGeneric    = "Konami Generic";
-    ls->romTypeSuperPierrot     = "Super Pierrot";
     ls->romTypeMirrored         = "Mirrored ROM";
     ls->romTypeNormal           = "Normal ROM";
     ls->romTypeDiskPatch        = "Normal + Disk Patch";
     ls->romTypeCasPatch         = "Normal + Cassette Patch";
     ls->romTypeTc8566afFdc      = "TC8566AF Disk Controller";
+    ls->romTypeTc8566afTrFdc    = "TC8566AF Turbo-R Disk Controller";
     ls->romTypeMicrosolFdc      = "Microsol Disk Controller";
     ls->romTypeNationalFdc      = "National Disk Controller";
     ls->romTypePhilipsFdc       = "Philips Disk Controller";
+    ls->romTypeSvi707Fdc        = "SVI-707 Disk Controller";
     ls->romTypeSvi738Fdc        = "SVI-738 Disk Controller";
     ls->romTypeMappedRam        = "Mapped RAM";
     ls->romTypeMirroredRam1k    = "1kB Mirrored RAM";
+    ls->romTypeMirroredRam2k    = "2kB Mirrored RAM";
     ls->romTypeNormalRam        = "Normal RAM";
-    ls->romTypeKanji            = "Kanji";
-    ls->romTypeHolyQuran        = "Holy Quran";
-    ls->romTypeMatsushitaSram   = "Matsushita SRAM";
-    ls->romTypePanasonic16      = "Panasonic 16kB SRAM";
-    ls->romTypePanasonic32      = "Panasonic 32kB SRAM";
-    ls->romTypeBunsetsu         = "Bunsetsu";
-    ls->romTypeJisyo            = "Jisyo";
-    ls->romTypeKanji12          = "Kanji12";
-    ls->romTypeNationalSram     = "National (SRAM)";
-    ls->romTypeS1985            = "S1985";
-    ls->romTypeS1990            = "S1990";
     ls->romTypeTurborPause      = "Turbo-R Pause";
     ls->romTypeF4deviceNormal   = "F4 Device Normal";
     ls->romTypeF4deviceInvert   = "F4 Device Inverted";
-    ls->romTypeMsxMidi          = "MSX-MIDI";
     ls->romTypeTurborTimer      = "Turbo-R Timer";
-    ls->romTypeKoei             = "Koei (SRAM)";
-    ls->romTypeBasic            = "Basic ROM";
-    ls->romTypeHalnote          = "Halnote";
-    ls->romTypeLodeRunner       = "Lode Runner";
     ls->romTypeNormal4000       = "Normal 4000h";
     ls->romTypeNormalC000       = "Normal C000h";
-    ls->romTypeKonamiSynth      = "Konami Synthesizer";
-    ls->romTypeKonamiKbdMast    = "Konami Keyboard Master";
-    ls->romTypeKonamiWordPro    = "Konami Word Pro";
-    ls->romTypePac              = "PAC (SRAM)";
-    ls->romTypeMegaRam          = "MegaRAM";
-    ls->romTypeMegaRam128       = "128kB MegaRAM";
-    ls->romTypeMegaRam256       = "256kB MegaRAM";
-    ls->romTypeMegaRam512       = "512kB MegaRAM";
-    ls->romTypeMegaRam768       = "768kB MegaRAM";
-    ls->romTypeMegaRam2mb       = "2MB MegaRAM";
     ls->romTypeExtRam           = "External RAM";
+    ls->romTypeExtRam16         = "16kB External RAM";
+    ls->romTypeExtRam32         = "32kB External RAM";
+    ls->romTypeExtRam48         = "48kB External RAM";
+    ls->romTypeExtRam64         = "64kB External RAM";
     ls->romTypeExtRam512        = "512kB External RAM";
     ls->romTypeExtRam1mb        = "1MB External RAM";
     ls->romTypeExtRam2mb        = "2MB External RAM";
     ls->romTypeExtRam4mb        = "4MB External RAM";
-    ls->romTypeMsxMusic         = "MSX Music";
-    ls->romTypeMsxAudio         = "MSX Audio";
-    ls->romTypeY8950            = "Y8950";
-    ls->romTypeMoonsound        = "Moonsound";
     ls->romTypeSvi328Cart       = "SVI-328 Cartridge";
     ls->romTypeSvi328Fdc        = "SVI-328 Disk Controller";
     ls->romTypeSvi328Prn        = "SVI-328 Printer";
@@ -681,20 +721,11 @@ void langInitJapanese(LanguageStrings* ls)
     ls->romTypeSvi727col80      = "SVI-727 80 Column Card";
     ls->romTypeColecoCart       = "Coleco Cartridge";
     ls->romTypeSg1000Cart       = "SG-1000 Cartridge";
-    ls->romTypeTheCastle        = "The Castle";
-    ls->romTypeSonyHbi55        = "Sony HBI-55";
+    ls->romTypeSc3000Cart       = "SC-3000 Cartridge";
     ls->romTypeMsxPrinter       = "MSX Printer";
     ls->romTypeTurborPcm        = "Turbo-R PCM Chip";
-    ls->romTypeGameReader       = "Sunrise GameReader";
-    ls->romTypeSunriseIde       = "Sunrise IDE";
-    ls->romTypeBeerIde          = "Beer IDE";
-    ls->romTypeGide             = "GIDE";
-    ls->romTypeVmx80            = "Microsol VMX-80";
     ls->romTypeNms8280Digitiz   = "Philips NMS-8280 Digitizer";
     ls->romTypeHbiV1Digitiz     = "Sony HBI-V1 Digitizer";
-    ls->romTypeFmdas            = "F&M Direct Assembler System";
-    ls->romTypeSfg01            = "Yamaha SFG-01";
-    ls->romTypeSfg05            = "Yamaha SFG-05";
     
     
     //----------------------
@@ -705,7 +736,6 @@ void langInitJapanese(LanguageStrings* ls)
     ls->dbgMemVisible           = "Visible Memory";
     ls->dbgMemRamNormal         = "Normal";
     ls->dbgMemRamMapped         = "Mapped";
-    ls->dbgMemVram              = "VRAM";
     ls->dbgMemYmf278            = "YMF278 Sample RAM";
     ls->dbgMemAy8950            = "AY8950 Sample RAM";
     ls->dbgMemScc               = "Memory";
@@ -721,46 +751,17 @@ void langInitJapanese(LanguageStrings* ls)
 
     ls->dbgDevRamMapper         = "RAM Mapper";
     ls->dbgDevRam               = "RAM";
-    ls->dbgDevIdeBeer           = "Beer IDE";
-    ls->dbgDevIdeGide           = "GIDE";
     ls->dbgDevF4Device          = "F4 Device";
-    ls->dbgDevFmpac             = "FMPAC";
-    ls->dbgDevFmpak             = "FMPAK";
-    ls->dbgDevKanji             = "Kanji";
-    ls->dbgDevKanji12           = "Kanji 12";
-    ls->dbgDevKonamiKbd         = "Konami Keyboard Master";
     ls->dbgDevKorean80          = "Korean 80";
     ls->dbgDevKorean90          = "Korean 90";
     ls->dbgDevKorean128         = "Korean 128";
-    ls->dbgDevMegaRam           = "Mega RAM";
     ls->dbgDevFdcMicrosol       = "Microsol FDC";
-    ls->dbgDevMoonsound         = "Moonsound";
-    ls->dbgDevMsxAudio          = "MSX Audio";
-    ls->dbgDevMsxAudioMidi      = "MSX Audio MIDI";
-    ls->dbgDevMsxMusic          = "MSX Music";
     ls->dbgDevPrinter           = "Printer";
-    ls->dbgDevRs232             = "RS232";
-    ls->dbgDevS1990             = "S1990";
-    ls->dbgDevSfg05             = "Yamaha SFG-05";
-    ls->dbgDevHbi55             = "Sony HBI-55";
     ls->dbgDevSviFdc            = "SVI FDC";
     ls->dbgDevSviPrn            = "SVI Printer";
     ls->dbgDevSvi80Col          = "SVI 80 Column";
-    ls->dbgDevPcm               = "PCM";
-    ls->dbgDevMatsushita        = "Matsushita";
-    ls->dbgDevS1985             = "S1985";
-    ls->dbgDevCrtc6845          = "CRTC6845";
-    ls->dbgDevTms9929A          = "TMS9929A";
-    ls->dbgDevTms99x8A          = "TMS99x8A";
-    ls->dbgDevV9938             = "V9938";
-    ls->dbgDevV9958             = "V9958";
-    ls->dbgDevZ80               = "Z80";
-    ls->dbgDevMsxMidi           = "MSX MIDI";
-    ls->dbgDevPpi               = "PPI";
     ls->dbgDevRtc               = "RTC";
     ls->dbgDevTrPause           = "TR Pause";
-    ls->dbgDevAy8910            = "AY8910 PSG";
-    ls->dbgDevScc               = "SCC";
 
 
     //----------------------
@@ -769,7 +770,7 @@ void langInitJapanese(LanguageStrings* ls)
     //----------------------
 
     ls->aboutScrollThanksTo     = "Special thanks to: ";
-    ls->aboutScrollAndYou       = "and YOU !!!!";
+    ls->aboutScrollAndYou       = "and Support wo shitekureru user no minasama  !!!!";
 };
 
 #endif

@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxPrinter.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxPrinter.c,v $
 **
 ** $Revision: 1.1 $
 **
-** $Date: 2005/09/25 07:39:07 $
+** $Date: 2005-09-25 07:39:07 $
 **
 ** More info: http://www.bluemsx.com
 **

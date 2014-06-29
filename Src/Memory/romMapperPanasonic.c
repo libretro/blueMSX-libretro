@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperPanasonic.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperPanasonic.c,v $
 **
-** $Revision: 1.8 $
+** $Revision: 1.15 $
 **
-** $Date: 2005/02/13 21:20:01 $
+** $Date: 2009-07-03 21:27:14 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -55,12 +53,18 @@ typedef struct {
     char   sramFilename[512];
     int    maxSRAMBank;
     int    romSize;
+    int    mappedSlots;
     UInt8  control;
     int    romMapper[8];
     int    slot;
     int    sslot;
     int    startPage;
 } RomMapperPanasonic;
+
+extern void panasonicSramDestroy();
+extern void panasonicSramCreate(UInt8* sram, UInt32 size);
+
+static UInt8 emptyRam[0x2000];
 
 static int SRAM_BASE = 0x80;
 static int RAM_BASE  = 0x180;
@@ -78,9 +82,10 @@ static void saveState(RomMapperPanasonic* rm)
         saveStateSet(state, tag, rm->romMapper[i]);
     }
     
-    saveStateGet(state, "readSection", rm->readSection);
-    saveStateGet(state, "readOffset", rm->readOffset);
+    saveStateSet(state, "readSection", rm->readSection);
+    saveStateSet(state, "readOffset", rm->readOffset);
     saveStateSet(state, "control", rm->control);
+    saveStateSetBuffer(state, "sram", rm->sram, rm->sramSize);
 
     saveStateClose(state);
 }
@@ -100,6 +105,7 @@ static void loadState(RomMapperPanasonic* rm)
     rm->readSection = saveStateGet(state, "readSection", 0);
     rm->readOffset  = saveStateGet(state, "readOffset", 0);
     rm->control     = (UInt8)saveStateGet(state, "control", 0);
+    saveStateGetBuffer(state, "sram", rm->sram, rm->sramSize);
 
     saveStateClose(state);
 
@@ -113,6 +119,9 @@ static void loadState(RomMapperPanasonic* rm)
         break;
     case READ_RAM:
         rm->readBlock = boardGetRamPage(rm->readOffset);
+        if (rm->readBlock == NULL) {
+            rm->readBlock = emptyRam;
+        }
         break;
     case READ_ROM:
         rm->readBlock = rm->romData + rm->readOffset;
@@ -126,6 +135,8 @@ static void destroy(RomMapperPanasonic* rm)
 
     slotUnregister(rm->slot, rm->sslot, rm->startPage);
     deviceManagerUnregister(rm->deviceHandle);
+
+    panasonicSramDestroy();
 
     free(rm->sram);
     free(rm->romData);
@@ -148,12 +159,20 @@ static void changeBank(RomMapperPanasonic* rm, int region, int bank)
         slotMapPage(rm->slot, rm->sslot, region, rm->sram + offset, region != 3, 0);
 	} 
     else if (bank >= RAM_BASE) {
+        UInt8* ram;
+
+        ram = boardGetRamPage(bank - RAM_BASE);
+        if (ram == NULL) {
+            ram = emptyRam;
+        }
+
         if (region == 3) {
             rm->readSection = READ_RAM;
             rm->readOffset = bank - RAM_BASE;
-            rm->readBlock = boardGetRamPage(bank - RAM_BASE);
+            rm->readBlock = ram;
         }
-        slotMapPage(rm->slot, rm->sslot, region, boardGetRamPage(bank - RAM_BASE), region != 3, 0);
+
+        slotMapPage(rm->slot, rm->sslot, region, ram, region != 3, 0);
 	} 
     else {
 		int offset = bank * 0x2000 & (rm->romSize - 1);
@@ -202,6 +221,9 @@ static UInt8 read(RomMapperPanasonic* rm, UInt16 address)
 	} 
     if (bank >= RAM_BASE) {
         UInt8* ram = boardGetRamPage(bank - RAM_BASE);
+        if (ram == NULL) {
+            ram = emptyRam;
+        }
         return ram[address & 0x1fff];
 	}
 
@@ -253,7 +275,9 @@ static void write(RomMapperPanasonic* rm, UInt16 address, UInt8 value)
 		} 
         else if (bank >= RAM_BASE) {
             UInt8* ram = boardGetRamPage(bank - RAM_BASE);
-            ram[address & 0x1fff] = value;
+            if (ram != NULL) {
+                ram[address & 0x1fff] = value;
+            }
 		}
 	} 
 }
@@ -264,28 +288,50 @@ static void reset(RomMapperPanasonic* rm)
 
     rm->control = 0;
     
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < rm->mappedSlots; i++) {
         rm->romMapper[i] = 0;
         slotMapPage(rm->slot, rm->sslot, i, rm->romData, i != 3, 0);
     }
 }
 
-int romMapperPanasonicCreate(char* filename, UInt8* romData, 
+int romMapperPanasonicCreate(const char* filename, UInt8* romData, 
                              int size, int slot, int sslot, int startPage,
-                             int sramSize) 
+                             int sramSize, int mappedSlots) 
 {
     DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };
     RomMapperPanasonic* rm;
+    RomType romType;
     char suffix[16];
 
     if (size < 0x8000 || startPage != 0) {
         return 0;
     }
 
+    memset(emptyRam, 0xff, sizeof(emptyRam));
+
     rm = malloc(sizeof(RomMapperPanasonic));
 
-    rm->deviceHandle = deviceManagerRegister(sramSize == 0x4000 ? ROM_PANASONIC16 : ROM_PANASONIC32, &callbacks, rm);
-    slotRegister(slot, sslot, 0, 8, read, read, write, destroy, rm);
+    rm->mappedSlots = mappedSlots;
+
+    if (mappedSlots == 6) {
+        rm->maxSRAMBank = SRAM_BASE + 8;
+        romType = ROM_PANASONICWX16;
+    }
+    else {
+        rm->maxSRAMBank = SRAM_BASE + sramSize / 0x2000;
+        switch (sramSize) {
+        default:
+        case 0x4000:
+            romType = ROM_PANASONIC16;
+            break;
+        case 0x8000:
+            romType = ROM_PANASONIC32;
+            break;
+        }
+    }
+
+    rm->deviceHandle = deviceManagerRegister(romType, &callbacks, rm);
+    slotRegister(slot, sslot, 0, rm->mappedSlots, read, read, write, destroy, rm);
 
     rm->romData = malloc(size);
     memcpy(rm->romData, romData, size);
@@ -293,7 +339,6 @@ int romMapperPanasonicCreate(char* filename, UInt8* romData,
     rm->sramSize = sramSize;
     rm->sram = malloc(sramSize);
     memset(rm->sram, 0xff, sramSize);
-    rm->maxSRAMBank = SRAM_BASE + sramSize / 0x2000;
     memset(rm->romMapper, 0, sizeof(rm->romMapper));
     rm->readBlock = rm->romData;
     rm->slot  = slot;
@@ -301,9 +346,11 @@ int romMapperPanasonicCreate(char* filename, UInt8* romData,
     rm->startPage  = startPage;
 
     sprintf(suffix, "_%d", sramSize / 1024);
-    strcpy(rm->sramFilename, sramCreateFilenameWithSuffix(filename, suffix));
+    strcpy(rm->sramFilename, sramCreateFilenameWithSuffix(filename, suffix, NULL));
 
     sramLoad(rm->sramFilename, rm->sram, rm->sramSize, NULL, 0);
+
+    panasonicSramCreate(rm->sram, rm->sramSize);
 
     reset(rm);
 

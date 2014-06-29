@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperKorean90.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperKorean90.c,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.9 $
 **
-** $Date: 2006/06/14 19:59:52 $
+** $Date: 2008-06-08 13:02:48 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -84,7 +82,8 @@ static void loadState(RomMapperKorean90* rm)
 
 static void destroy(RomMapperKorean90* rm)
 {
-    ioPortUnregister(0x77);
+    if (ioPortGetRef(0x77)&&ioPortGetRef(0x77)==rm) ioPortUnregister(0x77);
+    
     slotUnregister(rm->slot, rm->sslot, rm->startPage);
     deviceManagerUnregister(rm->deviceHandle);
     debugDeviceUnregister(rm->debugHandle);
@@ -95,33 +94,25 @@ static void destroy(RomMapperKorean90* rm)
 
 static void write(RomMapperKorean90* rm, UInt16 address, UInt8 value) 
 {
-    int page = (value & 0x3f) << 1;
-    int mode = value >> 6;
+    int page = ((value & 0x7f) << 1) & (rm->size / 8192 - 1);
     int i;
 
-    switch (mode) {
-    case 0:
-    case 1:
-        rm->romMapper[0] = page + 0;
-        rm->romMapper[1] = page + 1;
-        rm->romMapper[2] = page + 0;
-        rm->romMapper[3] = page + 1;
-        break;
-    case 2:
+    if (value&0x80) {
+        // 32K mode
         rm->romMapper[0] = (page & 0xfc) + 0;
         rm->romMapper[1] = (page & 0xfc) + 1;
         rm->romMapper[2] = (page & 0xfc) + 2;
         rm->romMapper[3] = (page & 0xfc) + 3;
-        break;
-    case 3:
+    }
+    else {
+        // 16K mode
         rm->romMapper[0] = page + 0;
         rm->romMapper[1] = page + 1;
-        rm->romMapper[2] = page + 1;
-        rm->romMapper[3] = page + 0;
-        break;
+        rm->romMapper[2] = page + 0;
+        rm->romMapper[3] = page + 1;
     }
 
-    for (i = 0; i < 4; i++) {   
+    for (i = 0; i < 4; i++) {
         slotMapPage(rm->slot, rm->sslot, rm->startPage + i, rm->romData + rm->romMapper[i] * 0x2000, 1, 0);
     }
 }
@@ -134,7 +125,7 @@ static void getDebugInfo(RomMapperKorean90* rm, DbgDevice* dbgDevice)
     dbgIoPortsAddPort(ioPorts, 0, 0x77, DBG_IO_WRITE, 0);
 }
 
-int romMapperKorean90Create(char* filename, UInt8* romData, 
+int romMapperKorean90Create(const char* filename, UInt8* romData, 
                             int size, int slot, int sslot, int startPage) 
 {
     DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };
@@ -162,13 +153,15 @@ int romMapperKorean90Create(char* filename, UInt8* romData,
 
     rm->romMapper[0] = 0;
     rm->romMapper[1] = 1;
-    rm->romMapper[2] = 2;
-    rm->romMapper[3] = 3;
+    rm->romMapper[2] = 0;
+    rm->romMapper[3] = 1;
 
     for (i = 0; i < 4; i++) {   
         slotMapPage(rm->slot, rm->sslot, rm->startPage + i, rm->romData + rm->romMapper[i] * 0x2000, 1, 0);
     }
     
+    // bankswitch I/O at port $77, 1st insertion only
+    // it's very likely though that writes to that port get intercepted by every inserted Korean90 cart, and not just 1
     ioPortRegister(0x77, NULL, write, rm);
 
     return 1;

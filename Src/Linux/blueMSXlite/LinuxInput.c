@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxInput.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxInput.c,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.3 $
 **
-** $Date: 2006/06/13 18:50:46 $
+** $Date: 2008-03-31 19:42:21 $
 **
 ** More info: http://www.bluemsx.com
 **

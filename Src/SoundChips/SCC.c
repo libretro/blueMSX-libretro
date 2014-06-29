@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/SoundChips/SCC.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/SoundChips/SCC.c,v $
 **
-** $Revision: 1.22 $
+** $Revision: 1.27 $
 **
-** $Date: 2006/06/14 19:59:52 $
+** $Date: 2008-03-30 18:38:45 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -36,14 +34,13 @@
 #include <string.h>
 
 
-#define BASE_PHASE_STEP 0x28959becUL  /* = (1 << 28) * 3579545 / 32 / 44100 */
+//#define BASE_PHASE_STEP 0x28959becUL  /* = (1 << 28) * 3579545 / 32 / 44100 */
+#define BASE_PHASE_STEP 0xA2566FBUL  /* = (1 << 28) * 3579545 / 32 / (44100 * 4) */
 
 #define ROTATE_OFF 32
 #define ROTATE_ON  28
 
 #define OFFSETOF(s, a) ((int)(&((s*)0)->a))
-
-#define BUFFER_SIZE     10000
 
 static Int32* sccSync(SCC* scc, UInt32 count);
 
@@ -56,6 +53,7 @@ struct SCC
     
     SccMode mode;
     UInt8 deformReg;
+    Int8 curWave[5];
     Int8 wave[5][32];
     UInt32 period[5];
     UInt32 phase[5];
@@ -63,19 +61,18 @@ struct SCC
     int  volume[5];
     int  nextVolume[5];
     UInt8 enable;
-    UInt8 deformValue;
-    UInt32 deformTime;
+    UInt16 bus;
     int rotate[5];
     int readOnly[5];
-    UInt8 offset[5];
     Int32 oldSample[5];
+    Int32 deformSample[5];
     Int32  daVolume[5];
 
-    Int32 in[5];
+    Int32 in[95];
     Int32 inHp[3];
     Int32 outHp[3];
 
-    Int32  buffer[BUFFER_SIZE];
+    Int32  buffer[AUDIO_MONO_BUFFER_SIZE];
 };
 
 void sccLoadState(SCC* scc)
@@ -114,9 +111,6 @@ void sccLoadState(SCC* scc)
         
         sprintf(tag, "readOnly%d", i);
         scc->readOnly[i] = saveStateGet(state, tag, 0);
-        
-        sprintf(tag, "offset%d", i);
-        scc->offset[i] = (UInt8)saveStateGet(state, tag, 0);
         
         sprintf(tag, "daVolume%d", i);
         scc->daVolume[i] = saveStateGet(state, tag, 0);
@@ -165,9 +159,6 @@ void sccSaveState(SCC* scc)
         sprintf(tag, "readOnly%d", i);
         saveStateSet(state, tag, scc->readOnly[i]);
         
-        sprintf(tag, "offset%d", i);
-        saveStateSet(state, tag, scc->offset[i]);
-        
         sprintf(tag, "daVolume%d", i);
         saveStateSet(state, tag, scc->daVolume[i]);
 
@@ -181,13 +172,31 @@ void sccSaveState(SCC* scc)
 static UInt8 sccGetWave(SCC* scc, UInt8 channel, UInt8 address)
 {
     if (scc->rotate[channel] == ROTATE_OFF) {
-        return scc->wave[channel][address & 0x1f];
+        UInt8 value = scc->wave[channel][address & 0x1f];
+        scc->bus = value;
+        return value;
     } 
     else {
-        int ticks = (boardSystemTime() - scc->deformTime) / 6; //FIXME: What is the frequency
-        int period = ((channel == 3) && (scc->mode != SCC_PLUS)) ? scc->period[4] : scc->period[channel];
-        int shift = ticks / (period + 1);
-        return scc->wave[channel][(address + shift) & 0x1f];
+        UInt8 periodCh = channel;
+        UInt8 value;
+        int shift;
+
+        mixerSync(scc->mixer);
+
+         if ((scc->deformReg & 0xc0) == 0x80) {
+             if (channel == 4) {
+                 periodCh = 3;
+             }
+         }
+         else if (channel == 3 && scc->mode != SCC_PLUS) {
+             periodCh = 4;
+         }
+
+         shift = scc->oldSample[periodCh] - scc->deformSample[periodCh];
+
+        value = scc->wave[channel][(address + shift) & 0x1f];
+        scc->bus = value;
+        return value;
     }
 }
 
@@ -217,8 +226,9 @@ static void sccUpdateWave(SCC* scc, UInt8 channel, UInt8 address, UInt8 value)
     if (!scc->readOnly[channel]) {
         UInt8 pos = address & 0x1f;
 
-        scc->wave[channel][pos] = value;
+        scc->bus = value;
 
+        scc->wave[channel][pos] = value;
         if ((scc->mode != SCC_PLUS) && (channel == 3)) {
             scc->wave[4][pos] = scc->wave[3][pos];
         }
@@ -232,25 +242,27 @@ static void sccUpdateFreqAndVol(SCC* scc, UInt8 address, UInt8 value)
         UInt8 channel = address / 2;
         UInt32 period;
 
+        mixerSync(scc->mixer);
+
         if (address & 1) {
             scc->period[channel] = ((value & 0xf) << 8) | (scc->period[channel] & 0xff);
         } 
         else {
             scc->period[channel] = (scc->period[channel] & 0xf00) | (value & 0xff);
         }
-        if (scc->deformValue & 0x20) {
+        if (scc->deformReg & 0x20) {
             scc->phase[channel] = 0;
         }
         period = scc->period[channel];
 
-        if (scc->deformValue & 2) {
+        if (scc->deformReg & 2) {
             period &= 0xff;
         }
-        else if (scc->deformValue & 1) {
+        else if (scc->deformReg & 1) {
             period >>= 8;
         }
         
-        scc->phaseStep[channel] = period > 8 ? BASE_PHASE_STEP / (1 + period) : 0;
+        scc->phaseStep[channel] = period > 0 ? BASE_PHASE_STEP / (1 + period) : 0;
         
         scc->volume[channel] = scc->nextVolume[channel];
         scc->phase[channel] &= 0x1f << 23;
@@ -268,13 +280,18 @@ static void sccUpdateDeformation(SCC* scc, UInt8 value)
 {
     int channel;
 
-    if (value == scc->deformValue) {
+    if (value == scc->deformReg) {
         return;
     }
 
-    scc->deformValue = value;
-    scc->deformTime = boardSystemTime();
+    mixerSync(scc->mixer);
+
+    scc->deformReg = value;
     
+    for (channel = 0; channel < 5; channel++) {
+        scc->deformSample[channel] = scc->oldSample[channel];
+    }
+
     if (scc->mode != SCC_REAL) {
         value &= ~0x80;
     }
@@ -284,7 +301,6 @@ static void sccUpdateDeformation(SCC* scc, UInt8 value)
             for (channel = 0; channel < 5; channel++) {
                 scc->rotate[channel]   = ROTATE_OFF;
                 scc->readOnly[channel] = 0;
-                scc->offset[channel]   = 0;
             }
             break;
         case 0x40:
@@ -324,19 +340,20 @@ void sccReset(SCC* scc) {
     }
 
     for (channel = 0; channel < 5; channel++) {
+        scc->curWave[channel]    = 0;
         scc->phase[channel]      = 0;
         scc->phaseStep[channel]  = 0;
         scc->volume[channel]     = 0;
         scc->nextVolume[channel] = 0;
         scc->rotate[channel]     = ROTATE_OFF;
         scc->readOnly[channel]   = 0;
-        scc->offset[channel]     = 0;
         scc->daVolume[channel]   = 0;
         scc->oldSample[channel]  = 0xff;
     }
 
-    scc->deformValue = 0;
+    scc->deformReg = 0;
     scc->enable      = 0xFF;
+    scc->bus         = 0xFFFF;
 }
 
 void sccSetMode(SCC* scc, SccMode newMode)
@@ -365,7 +382,7 @@ SCC* sccCreate(Mixer* mixer)
 
 //    scc->debugHandle = debugDeviceRegister(DBGTYPE_AUDIO, langDbgDevScc(), &dbgCallbacks, scc);
 
-    scc->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_SCC, 0, sccSync, scc);
+    scc->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_SCC, 0, sccSync, NULL, scc);
 
     sccReset(scc);
 
@@ -586,6 +603,77 @@ static Int32 filter(SCC* scc, Int32 input) {
     return scc->outHp[0];
 }
 
+// Filter type: Low pass
+// Passband: 0.0 - 750.0 Hz
+// Order: 94
+// Transition band: 250.0 Hz
+// Stopband attenuation: 50.0 dB
+//
+static Int32 filter4(SCC* scc, Int32 in1, Int32 in2, Int32 in3, Int32 in4)
+{
+    int i;
+    DoubleT res;
+
+    for (i = 0; i < 91; ++i) {
+        scc->in[i] = scc->in[i + 4];
+    }
+    scc->in[91] = in1;
+    scc->in[92] = in2;
+    scc->in[93] = in3;
+    scc->in[94] = in4;
+
+    res =  2.8536195E-4 * (scc->in[ 0] + scc->in[94]) +
+           9.052306E-5  * (scc->in[ 1] + scc->in[93]) +
+          -2.6902245E-4 * (scc->in[ 2] + scc->in[92]) +
+          -6.375284E-4  * (scc->in[ 3] + scc->in[91]) +
+          -7.87536E-4   * (scc->in[ 4] + scc->in[90]) +
+          -5.3910224E-4 * (scc->in[ 5] + scc->in[89]) +
+           1.1107049E-4 * (scc->in[ 6] + scc->in[88]) +
+           9.2801993E-4 * (scc->in[ 7] + scc->in[87]) +
+           0.0015018889 * (scc->in[ 8] + scc->in[86]) +
+           0.0014338732 * (scc->in[ 9] + scc->in[85]) +
+           5.688559E-4  * (scc->in[10] + scc->in[84]) +
+          -8.479743E-4  * (scc->in[11] + scc->in[83]) +
+          -0.0021999443 * (scc->in[12] + scc->in[82]) +
+          -0.0027432537 * (scc->in[13] + scc->in[81]) +
+          -0.0019824558 * (scc->in[14] + scc->in[80]) +
+           2.018935E-9  * (scc->in[15] + scc->in[79]) +
+           0.0024515253 * (scc->in[16] + scc->in[78]) +
+           0.00419754   * (scc->in[17] + scc->in[77]) +
+           0.0041703423 * (scc->in[18] + scc->in[76]) +
+           0.0019952168 * (scc->in[19] + scc->in[75]) +
+          -0.0016656333 * (scc->in[20] + scc->in[74]) +
+          -0.005242034  * (scc->in[21] + scc->in[73]) +
+          -0.0068841926 * (scc->in[22] + scc->in[72]) +
+          -0.005360789  * (scc->in[23] + scc->in[71]) +
+          -8.1365916E-4 * (scc->in[24] + scc->in[70]) +
+           0.0050464263 * (scc->in[25] + scc->in[69]) +
+           0.00950725   * (scc->in[26] + scc->in[68]) +
+           0.010038091  * (scc->in[27] + scc->in[67]) +
+           0.005602208  * (scc->in[28] + scc->in[66]) +
+          -0.00253724   * (scc->in[29] + scc->in[65]) +
+          -0.011011368  * (scc->in[30] + scc->in[64]) +
+          -0.015622435  * (scc->in[31] + scc->in[63]) +
+          -0.013267951  * (scc->in[32] + scc->in[62]) +
+          -0.0036876823 * (scc->in[33] + scc->in[61]) +
+           0.009843254  * (scc->in[34] + scc->in[60]) +
+           0.021394625  * (scc->in[35] + scc->in[59]) +
+           0.02469893   * (scc->in[36] + scc->in[58]) +
+           0.01608393   * (scc->in[37] + scc->in[57]) +
+          -0.0032088074 * (scc->in[38] + scc->in[56]) +
+          -0.026453404  * (scc->in[39] + scc->in[55]) +
+          -0.043139543  * (scc->in[40] + scc->in[54]) +
+          -0.042553578  * (scc->in[41] + scc->in[53]) +
+          -0.018007802  * (scc->in[42] + scc->in[52]) +
+           0.029919287  * (scc->in[43] + scc->in[51]) +
+           0.09252273   * (scc->in[44] + scc->in[50]) +
+           0.15504532   * (scc->in[45] + scc->in[49]) +
+           0.20112106   * (scc->in[46] + scc->in[48]) +
+           0.2180678    *  scc->in[47];
+
+    return (Int32)res;
+}
+
 static Int32* sccSync(SCC* scc, UInt32 count)
 {
     Int32* buffer  = scc->buffer;
@@ -593,38 +681,53 @@ static Int32* sccSync(SCC* scc, UInt32 count)
     UInt32 index;
 
     for (index = 0; index < count; index++) {
-        Int32 masterVolume = 0;
-        for (channel = 0; channel < 5; channel++) {
-            Int32 refVolume;
-            Int32 phase;
-            Int32 sample;
+        Int32 masterVolume[4] = {0, 0, 0, 0};
+        int i;
+        for (i = 0; i < 4; i++) {
+            for (channel = 0; channel < 5; channel++) {
+                Int32 refVolume;
+                Int32 phase;
+                Int32 sample;
 
-            phase = scc->phase[channel] + scc->phaseStep[channel];
-            if (scc->rotate[channel] == ROTATE_ON) {
-                scc->offset[channel] += (UInt8)(phase >> scc->rotate[channel]);
-            }
-            phase &= 0xfffffff;
-            scc->phase[channel] = phase;
+                phase = scc->phase[channel] + scc->phaseStep[channel];
+                phase &= 0xfffffff;
+                scc->phase[channel] = phase;
 
-            sample = ((phase >> 23) + scc->offset[channel]) & 0x1f;
+                sample = (phase >> 23) & 0x1f;
 
-            if (sample != scc->oldSample[channel]) {
-                scc->volume[channel] = scc->nextVolume[channel];
-            }
-            scc->oldSample[channel] = sample;
+                if (sample != scc->oldSample[channel]) {
+                    scc->volume[channel] = scc->nextVolume[channel];
 
-            refVolume = 65 * ((scc->enable >> channel) & 1) * (Int32)scc->volume[channel];
-            if (scc->daVolume[channel] < refVolume) {
-                scc->daVolume[channel] = refVolume;
-            }
+#if 0
+                    if ((sample == 15 || sample == 16) && scc->bus != 0xFFFF) {
+                        scc->curWave[channel] = (UInt8)scc->bus;
+                    }
+                    else {
+                        scc->curWave[channel] = scc->wave[channel][sample];
+                    }
+#else
+                    scc->curWave[channel] = scc->wave[channel][sample];
+#endif
 
-            masterVolume += scc->wave[channel][sample] * scc->daVolume[channel];
-            
-            if (scc->daVolume[channel] > refVolume) {
-                scc->daVolume[channel] = scc->daVolume[channel] * 9 / 10;
+                    scc->oldSample[channel] = sample;   
+                }
+
+                refVolume = 25 * ((scc->enable >> channel) & 1) * (Int32)scc->volume[channel];
+                if (scc->daVolume[channel] < refVolume) {
+                    scc->daVolume[channel] = refVolume;
+                }
+
+                masterVolume[i] += scc->curWave[channel] * scc->daVolume[channel];
+                
+                if (scc->daVolume[channel] > refVolume) {
+                    scc->daVolume[channel] = scc->daVolume[channel] * 9 / 10;
+                }
             }
         }
-        buffer[index] = filter(scc, masterVolume);
+        buffer[index] = filter4(scc, masterVolume[0], masterVolume[1], masterVolume[2], masterVolume[3]);
+        scc->bus = 0xFFFF;
+
+//        buffer[index] = (masterVolume[0] + masterVolume[1] + masterVolume[2] + masterVolume[3]);
     }
 
     return scc->buffer;

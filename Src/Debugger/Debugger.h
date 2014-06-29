@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Debugger/Debugger.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Debugger/Debugger.h,v $
 **
-** $Revision: 1.19 $
+** $Revision: 1.23 $
 **
-** $Date: 2005/08/17 07:03:28 $
+** $Date: 2009-07-01 05:00:23 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -32,7 +30,7 @@
 
 #include "MsxTypes.h"
 
-typedef struct Debugger    Debugger;
+typedef struct BlueDebugger    BlueDebugger;
 typedef struct DbgSnapshot DbgSnapshot;
 typedef struct DbgDevice   DbgDevice;
 
@@ -45,8 +43,16 @@ typedef enum {
     DBGTYPE_RAM, 
     DBGTYPE_AUDIO,
     DBGTYPE_VIDEO,
-    DBGTYPE_PORT
+    DBGTYPE_PORT,
 } DbgDeviceType;
+
+typedef enum {
+    DBGWP_ANY,
+    DBGWP_EQUALS,
+    DBGWP_NOT_EQUALS,
+    DBGWP_LESS_THAN,
+    DBGWP_GREATER_THAN
+} DbgWatchpointCondition;
 
 
 typedef void (*DebuggerEvent)(void*);
@@ -93,7 +99,7 @@ typedef struct {
     } port[1];
 } DbgIoPorts;
 
-Debugger* debuggerCreate(DebuggerEvent onEmulatorStart,
+BlueDebugger* debuggerCreate(DebuggerEvent onEmulatorStart,
                          DebuggerEvent onEmulatorStop,
                          DebuggerEvent onEmulatorPause,
                          DebuggerEvent onEmulatorResume,
@@ -102,7 +108,7 @@ Debugger* debuggerCreate(DebuggerEvent onEmulatorStart,
                          DebuggerSetBp onDebugSetBp,
                          void* ref);
 
-void debuggerDestroy(Debugger* debugger);
+void debuggerDestroy(BlueDebugger* debugger);
 
 DbgSnapshot*     dbgSnapshotCreate();
 void             dbgSnapshotDestroy(DbgSnapshot* dbgSnapshot);
@@ -127,13 +133,21 @@ void dbgRun();
 void dbgStop();
 void dbgPause();
 void dbgStep();
+void dbgStepBack();
 
 void dbgSetBreakpoint(UInt16 address);
 void dbgClearBreakpoint(UInt16 address);
 
+void dbgSetWatchpoint(DbgDeviceType devType, int address, DbgWatchpointCondition condition, UInt32 referenceValue, int size);
+void dbgClearWatchpoint(DbgDeviceType devType, int address);
+
+int debuggerCheckVramAccess(void);
+
+void dbgEnableVramAccessCheck(int enable);
+
 // Internal structure and interface
 
-#define MAX_DBG_COMPONENTS 4
+#define MAX_DBG_COMPONENTS 16
 struct DbgDevice {
     char name[64];
     DbgDeviceType type;
@@ -154,5 +168,7 @@ void debuggerNotifyEmulatorResume();
 void debuggerNotifyEmulatorReset();
 void debuggerTrace(const char* str);
 void debuggerSetBreakpoint(UInt16 slot, UInt16 page, UInt16 address);
+
+int debuggerIsPresent(void);
 
 #endif /*DEBUGGER_H*/

@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Theme/ThemeTriggers.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Theme/ThemeTriggers.h,v $
 **
-** $Revision: 1.20 $
+** $Revision: 1.26 $
 **
-** $Date: 2006/06/16 01:19:19 $
+** $Date: 2008-03-30 18:38:45 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -38,6 +36,7 @@ typedef enum {
     THEME_TRIGGER_IMG_DISKA,
     THEME_TRIGGER_IMG_DISKB,
     THEME_TRIGGER_IMG_CAS,
+    THEME_TRIGGER_IMG_HD,
     THEME_TRIGGER_IMG_AS,
     THEME_TRIGGER_IMG_FS,
     THEME_TRIGGER_IMG_PS,
@@ -46,6 +45,7 @@ typedef enum {
 	THEME_TRIGGER_IMG_TURBOR,
 	THEME_TRIGGER_IMG_PAUSE,
     THEME_TRIGGER_IMG_FDCTIMING,
+    THEME_TRIGGER_IMG_NOSPRITELIMITS,
     THEME_TRIGGER_IMG_KBD,
     THEME_TRIGGER_IMG_MOON,
     THEME_TRIGGER_IMG_SFG,
@@ -100,25 +100,35 @@ typedef enum {
     THEME_TRIGGER_VIDEO_DEINTERLACE_EN,
     THEME_TRIGGER_VIDEO_BLENDFRAMES_EN,
     THEME_TRIGGER_VIDEO_RFMODULATION_EN,
+    THEME_TRIGGER_VIDEO_CAPTURE_NONE,
+    THEME_TRIGGER_VIDEO_CAPTURE_PLAY,
+    THEME_TRIGGER_VIDEO_CAPTURE_REC,
     
+    THEME_TRIGGER_KEYBOARD_ENABLE,
     THEME_TRIGGER_JOY1_ENABLE,
     THEME_TRIGGER_JOY1_NONE,
     THEME_TRIGGER_JOY1_JOYSTICK,
     THEME_TRIGGER_JOY1_MOUSE,
+    THEME_TRIGGER_JOY1_ARK_PAD,
     THEME_TRIGGER_JOY1_TETRIS,
     THEME_TRIGGER_JOY1_MAGICKEY,
     THEME_TRIGGER_JOY1_GUNSTICK,
     THEME_TRIGGER_JOY1_ASCIILASER,
     THEME_TRIGGER_JOY1_COLECOJOY,
+    THEME_TRIGGER_JOY1_SUPERACTION,
+    THEME_TRIGGER_JOY1_STEERINGWHEEL,
     THEME_TRIGGER_JOY2_ENABLE,
     THEME_TRIGGER_JOY2_NONE,
     THEME_TRIGGER_JOY2_JOYSTICK,
     THEME_TRIGGER_JOY2_MOUSE,
+    THEME_TRIGGER_JOY2_ARK_PAD,
     THEME_TRIGGER_JOY2_TETRIS,
     THEME_TRIGGER_JOY2_MAGICKEY,
     THEME_TRIGGER_JOY2_GUNSTICK,
     THEME_TRIGGER_JOY2_ASCIILASER,
     THEME_TRIGGER_JOY2_COLECOJOY,
+    THEME_TRIGGER_JOY2_SUPERACTION,
+    THEME_TRIGGER_JOY2_STEERINGWHEEL,
 
     THEME_TRIGGER_TEXT_SCANLINESPCT,
     THEME_TRIGGER_TEXT_VIDEOGAMMA,
@@ -236,9 +246,11 @@ int themeTriggerEmuStopped();
 int themeTriggerEmuPaused();
 int themeTriggerEmuRunning();
 int themeTriggerFdcTiming();
+int themeTriggerNoSpriteLimits();
 int themeTriggerLedDiskA();
 int themeTriggerLedDiskB();
 int themeTriggerLedCas();
+int themeTriggerLedHd();
 int themeTriggerLedAudioSwitch();
 int themeTriggerLedFrontSwitch();
 int themeTriggerLedPauseSwitch();
@@ -272,24 +284,31 @@ int themeTriggerMachineMegaRom();
 int themeTriggerMachineMegaRam();
 int themeTriggerMachineFmPac();
 
+int themeTriggerKeyboardEnabled();
 int themeTriggerJoyPort1Enabled();
 int themeTriggerJoyPort1IsNone();
 int themeTriggerJoyPort1IsJoystick();
 int themeTriggerJoyPort1IsMouse();
+int themeTriggerJoyPort1IsArkanoidPad();
 int themeTriggerJoyPort1IsTetris2Dongle();
 int themeTriggerJoyPort1IsMagicKeyDongle();
 int themeTriggerJoyPort1IsGunstick();
 int themeTriggerJoyPort1IsAsciiLaser();
 int themeTriggerJoyPort1IsColecoJoystick();
+int themeTriggerJoyPort1IsSuperAction();
+int themeTriggerJoyPort1IsSteeringWheel();
 int themeTriggerJoyPort2Enabled();
 int themeTriggerJoyPort2IsNone();
 int themeTriggerJoyPort2IsJoystick();
 int themeTriggerJoyPort2IsMouse();
+int themeTriggerJoyPort2IsArkanoidPad();
 int themeTriggerJoyPort2IsTetris2Dongle();
 int themeTriggerJoyPort2IsMagicKeyDongle();
 int themeTriggerJoyPort2IsGunstick();
 int themeTriggerJoyPort2IsAsciiLaser();
 int themeTriggerJoyPort2IsColecoJoystick();
+int themeTriggerJoyPort2IsSuperAction();
+int themeTriggerJoyPort2IsSteeringWheel();
 
 int themeTriggerConfDiskRI();
 int themeTriggerConfCartRI();
@@ -300,6 +319,9 @@ int themeTriggerVideoScanlinesEn();
 int themeTriggerVideoDeinterlaceEn();
 int themeTriggerVideoBlendFramesEn();
 int themeTriggerVideoRfModulatorEn();
+int themeTriggerVideoCaptureNone();
+int themeTriggerVideoCapturePlay();
+int themeTriggerVideoCaptureRec();
 
 // The following themeTrigger functions should return a value between 0 and 100
 int themeTriggerVolKbdLeft();

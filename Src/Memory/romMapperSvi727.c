@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperSvi727.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperSvi727.c,v $
 **
-** $Revision: 1.5 $
+** $Revision: 1.8 $
 **
-** $Date: 2006/02/18 09:32:32 $
+** $Date: 2008-03-31 19:42:22 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -36,7 +34,7 @@
 #include "IoPort.h"
 #include "RomLoader.h"
 #include <stdlib.h>
-#include <memory.h>
+#include <string.h>
 
 typedef struct {
     int deviceHandle;
@@ -45,21 +43,21 @@ typedef struct {
     int sslot;
     int startPage;
     CRTC6845* crtc6845;
-} RomMapperSvi727;
+} RomMapperSvi727Col80;
 
-static void saveState(RomMapperSvi727* rm)
+static void saveState(RomMapperSvi727Col80* rm)
 {
     SaveState* state = saveStateOpenForWrite("Svi727");
     saveStateClose(state);
 }
 
-static void loadState(RomMapperSvi727* rm)
+static void loadState(RomMapperSvi727Col80* rm)
 {
     SaveState* state = saveStateOpenForRead("Svi727");
     saveStateClose(state);
 }
 
-static void destroy(RomMapperSvi727* rm)
+static void destroy(RomMapperSvi727Col80* rm)
 {
     ioPortUnregister(0x78);
     ioPortUnregister(0x79);
@@ -71,7 +69,7 @@ static void destroy(RomMapperSvi727* rm)
     free(rm);
 }
 
-static UInt8 read(RomMapperSvi727* rm, UInt16 address)
+static UInt8 read(RomMapperSvi727Col80* rm, UInt16 address)
 {
     UInt8 value = 0xff;
     if (address >= 0xb800 && address < 0xc000) {
@@ -81,20 +79,20 @@ static UInt8 read(RomMapperSvi727* rm, UInt16 address)
     return value;
 }
 
-static void write(RomMapperSvi727* rm, UInt16 address, UInt8 value) 
+static void write(RomMapperSvi727Col80* rm, UInt16 address, UInt8 value) 
 {
     if (address >= 0xb800 && address < 0xc000) {
         crtcMemWrite(rm->crtc6845, address & 0x07ff, value);
     }
 }
 
-static UInt8 readIo(RomMapperSvi727* rm, UInt16 ioPort) 
+static UInt8 readIo(RomMapperSvi727Col80* rm, UInt16 ioPort) 
 {
     UInt8 value = crtcRead(rm->crtc6845);
     return value;
 }
 
-static void writeIo(RomMapperSvi727* rm, UInt16 ioPort, UInt8 value) 
+static void writeIo(RomMapperSvi727Col80* rm, UInt16 ioPort, UInt8 value) 
 {
     switch (ioPort) {
     case 0x78:
@@ -106,23 +104,23 @@ static void writeIo(RomMapperSvi727* rm, UInt16 ioPort, UInt8 value)
     }
 }
 
-static void reset(RomMapperSvi727* rm)
+static void reset(RomMapperSvi727Col80* rm)
 {
 }
 
-int romMapperSvi727Create(char* filename, UInt8* charRom, int charSize,
+int romMapperSvi727Col80Create(const char* filename, UInt8* charRom, int charSize,
                                  int slot, int sslot, int startPage) 
 {
     DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };
-    RomMapperSvi727* rm;
+    RomMapperSvi727Col80* rm;
     int pages = 8;
     int i;
 
     startPage = 0;
 
-    rm = malloc(sizeof(RomMapperSvi727));
+    rm = malloc(sizeof(RomMapperSvi727Col80));
 
-    rm->deviceHandle = deviceManagerRegister(ROM_SVI727, &callbacks, rm);
+    rm->deviceHandle = deviceManagerRegister(ROM_SVI727COL80, &callbacks, rm);
     slotRegister(slot, sslot, startPage, pages, read, read, write, destroy, rm);
 
     rm->charData = calloc(1, 0x2000);

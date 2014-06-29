@@ -1,30 +1,28 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Board/SG1000.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Board/SG1000.c,v $
 **
-** $Revision: 1.10 $
+** $Revision: 1.26 $
 **
-** $Date: 2006/05/30 20:02:43 $
+** $Date: 2008-04-18 04:09:54 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Author: Ricardo Bittencourt
-** Copyright (C) 2003-2005 Daniel Vik, Ricardo Bittencourt
+** Copyright (C) 2003-2006 Daniel Vik, Ricardo Bittencourt
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -46,80 +44,65 @@
 #include "Led.h"
 #include "Switches.h"
 #include "IoPort.h"
+#include "Disk.h"
 #include "MegaromCartridge.h"
-#include "JoystickPort.h"
-#include "Sg1000Joystick.h"
+#include "Sg1000JoyIo.h"
+#include "Sc3000PPI.h"
+#include "Sf7000PPI.h"
 
 
 /* Hardware */
-static SN76489*    sn76489;
-static R800*       r800;
+static Sg1000JoyIo* joyIo;
+static SN76489*     sn76489;
+static R800*        r800;
+static UInt8*       sfRam;
+static UInt32       sfRamSize;
+static UInt32       sfRamStart;
+
+
+/* Although the Sega machines doesn't have the slotted layout
+   described below, it makes handling of carts and boot roms
+   easy when memory is layed out as below:
+
+       SLOT 0    SLOT 1    SLOT 2    SLOT 3
+0000 +---------+---------+---------+---------+
+     | RAM*    |   IPL*  |  CART   |         |
+4000 +---------+---------+---------+---------+
+     | RAM*    |         |  CART   |         |
+8000 +---------+---------+---------+---------+
+     | RAM*    |         |         |         |
+C000 +---------+---------+---------+---------+
+     | RAM*    |         |         |         |
+     +---------+---------+---------+---------+
+
+     * All RAM is not present in all Sega machines. Some use
+       1kB mirrored ram, some use normal ram
+     * The IPL boot rom is only present in SF-7000 machines
+*/
+
 
 // ---------------------------------------------
 // SG-1000 Joystick and PSG handler
 
-static Sg1000JoystickDevice* joyDevice;
-static int joyDeviceHandle;
 
 static void sg1000Sn76489Write(void* dummy, UInt16 ioPort, UInt8 value) 
 {
     sn76489WriteData(sn76489, ioPort, value);
 }
 
-static UInt8 sg1000JoyIoRead(void* dummy, UInt16 ioPort)
+static UInt8 joyIoRead(void* dummy, UInt16 ioPort)
 {
-    UInt8 joyState = 0x3f;
-
-    if (joyDevice != NULL && joyDevice->read != NULL) {
-        joyState = joyDevice->read(joyDevice);
+    switch (ioPort & 1) {
+    case 0:
+        return boardCaptureUInt8(0, (UInt8)(sg1000JoyIoRead(joyIo) & 0xff));
+    case 1:
+        return boardCaptureUInt8(1, (UInt8)(sg1000JoyIoRead(joyIo) >> 8));
     }
 
-    return joyState | 0xC0;
+    return 0xff;
 }
 
-static void sg1000JoyIoHandler(void* dummy, int port, JoystickPortType type)
-{
-    if (port >= 1) {
-        return;
-    }
-
-    if (joyDevice != NULL && joyDevice->destroy != NULL) {
-        joyDevice->destroy(joyDevice);
-    }
-    
-    switch (type) {
-    default:
-    case JOYSTICK_PORT_NONE:
-        joyDevice = NULL;
-        break;
-    case JOYSTICK_PORT_JOYSTICK:
-        joyDevice = sg1000JoystickCreate();
-        break;
-    }
-}
-
-static void sg1000JoyIoLoadState(void* dummy)
-{
-    if (joyDevice != NULL && joyDevice->loadState != NULL) {
-        joyDevice->loadState(joyDevice);
-    }
-}
-
-static void sg1000JoyIoSaveState(void* dummy)
-{
-    if (joyDevice != NULL && joyDevice->saveState != NULL) {
-        joyDevice->saveState(joyDevice);
-    }
-}
-
-static void sg1000JoyIoReset(void* dummy)
-{
-    if (joyDevice != NULL && joyDevice->reset != NULL) {
-        joyDevice->reset(joyDevice);
-    }
-}
-
-static void sg1000JoyIoDestroy(void* dummy)
+static void sg1000IoPortDestroy(void* dummy)
 {
 	int i;
 
@@ -128,31 +111,24 @@ static void sg1000JoyIoDestroy(void* dummy)
 
 	for (i=0xC0; i<0x100; i+=2)
 		ioPortUnregister(i);
-    
-    if (joyDevice != NULL && joyDevice->destroy != NULL) {
-        joyDevice->destroy(joyDevice);
-    }
 
-    deviceManagerUnregister(joyDeviceHandle);
-
-    joystickPortUpdateHandlerUnregister();
+	ioPortUnregister(0xc1);
+	ioPortUnregister(0xdd);
 }
 
-static void sg1000JoyIoCreate()
+static void sg1000IoPortCreate()
 {
-    DeviceCallbacks callbacks = { sg1000JoyIoDestroy, sg1000JoyIoReset, 
-                                  sg1000JoyIoSaveState, sg1000JoyIoLoadState };
+    DeviceCallbacks callbacks = { sg1000IoPortDestroy, NULL, NULL, NULL };
 	int i;
    
 	for (i=0x40; i<0x80; i++)
 		ioPortRegister(i, NULL, sg1000Sn76489Write, NULL);
 
 	for (i=0xC0; i<0x100; i+=2)
-		ioPortRegister(i, sg1000JoyIoRead, NULL, NULL);
+		ioPortRegister(i, joyIoRead, NULL, NULL);
     
-    joystickPortUpdateHandlerRegister(sg1000JoyIoHandler, NULL);
-
-    joyDeviceHandle = deviceManagerRegister(ROM_UNKNOWN, &callbacks, NULL);
+	ioPortRegister(0xc1, joyIoRead, NULL, NULL);
+	ioPortRegister(0xdd, joyIoRead, NULL, NULL);
 }
 
 // -----------------------------------------------------
@@ -191,6 +167,10 @@ static int getRefreshRate()
     return vdpGetRefreshRate();
 }
 
+static UInt32 getTimeTrace(int offset) {
+    return r800GetTimeTrace(r800, offset);
+}
+
 static void saveState()
 {    
     r800SaveState(r800);
@@ -208,6 +188,29 @@ static void loadState()
     sn76489LoadState(sn76489);
 }
 
+static UInt8* getRamPage(int page) {
+    int start = page * 0x2000 - (int)sfRamStart;
+
+    if (sfRam == NULL) {
+        return NULL;
+    }
+
+    if (start < 0 || start >= (int)sfRamSize) {
+        return NULL;
+    }
+
+	return sfRam + start;
+}
+
+static void changeCartridge(void* ref, int cartNo, int inserted)
+{
+    if (cartNo == 0) {
+        int slot = inserted ? 2 + cartNo : 0;
+
+        slotSetRamSlot(0, slot);
+    }
+}
+
 int sg1000Create(Machine* machine, 
                  VdpSyncMode vdpSyncMode,
                  BoardInfo* boardInfo)
@@ -215,7 +218,9 @@ int sg1000Create(Machine* machine,
     int success;
     int i;
 
-    r800 = r800Create(0, slotRead, slotWrite, ioPortRead, ioPortWrite, NULL, boardTimerCheckTimeout, NULL, NULL, NULL);
+    sfRam = NULL;
+
+    r800 = r800Create(0, slotRead, slotWrite, ioPortRead, ioPortWrite, NULL, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
     boardInfo->cartridgeCount   = 1;
     boardInfo->diskdriveCount   = 0;
@@ -227,7 +232,7 @@ int sg1000Create(Machine* machine,
     boardInfo->loadState        = loadState;
     boardInfo->saveState        = saveState;
     boardInfo->getRefreshRate   = getRefreshRate;
-    boardInfo->getRamPage       = NULL;
+    boardInfo->getRamPage       = getRamPage;
 
     boardInfo->run              = r800Execute;
     boardInfo->stop             = r800StopExecution;
@@ -236,6 +241,11 @@ int sg1000Create(Machine* machine,
     boardInfo->setCpuTimeout    = r800SetTimeoutAt;
     boardInfo->setBreakpoint    = r800SetBreakpoint;
     boardInfo->clearBreakpoint  = r800ClearBreakpoint;
+    boardInfo->setDataBus       = r800SetDataBus;
+    
+    boardInfo->getTimeTrace     = getTimeTrace;
+
+    boardInfo->changeCartridge  = changeCartridge;
 
     deviceManagerCreate();
     
@@ -256,7 +266,18 @@ int sg1000Create(Machine* machine,
     }
     vdpCreate(VDP_SG1000, machine->video.vdpVersion, vdpSyncMode, machine->video.vramSize / 0x4000);
 
-    sg1000JoyIoCreate();
+    joyIo = sg1000JoyIoCreate();
+    if (machine->board.type == BOARD_SC3000) {
+        sc3000PPICreate(joyIo);
+    }
+    if (machine->board.type == BOARD_SF7000) {
+        sc3000PPICreate(joyIo);
+        sf7000PPICreate();
+            
+        diskEnable(0, machine->fdc.count > 0);
+        diskEnable(1, machine->fdc.count > 1);
+    }
+    sg1000IoPortCreate();
 
 	ledSetCapslock(0);
 
@@ -264,13 +285,17 @@ int sg1000Create(Machine* machine,
         slotSetSubslotted(i, 0);
     }
     for (i = 0; i < 2; i++) {
-        cartridgeSetSlotInfo(i, machine->cart[i].slot, 0);
+        cartridgeSetSlotInfo(i, 2 + i, 0);
     }
 
-    success = machineInitialize(machine, NULL, NULL);
+    success = machineInitialize(machine, &sfRam, &sfRamSize, &sfRamStart);
 
     for (i = 0; i < 8; i++) {
         slotMapRamPage(0, 0, i);
+    }
+
+    if (machine->board.type == BOARD_SF7000) {
+        slotSetRamSlot(0, 1);
     }
 
     if (success) {

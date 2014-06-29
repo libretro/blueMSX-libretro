@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Language/LanguageKorean.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Language/LanguageKorean.h,v $
 **
-** $Revision: 1.33 $ + additions 2005/03/03
+** $Revision: 1.62 $ + additions 2005/03/03
 **
-** $Date: 2006/06/27 15:43:08 $
+** $Date: 2009-04-04 20:57:19 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -38,6 +36,7 @@ void langInitKorean(LanguageStrings* ls)
     // Language lines
     //----------------------
 
+    ls->langCatalan             = "Catalan";
     ls->langChineseSimplified   = "중국어 간체";
     ls->langChineseTraditional  = "중국어 번체";
     ls->langDutch               = "네덜란드어";
@@ -50,6 +49,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->langKorean              = "한국어";
     ls->langPolish              = "폴란드어";
     ls->langPortuguese          = "포르투갈어";
+    ls->langRussian             = "Russian";            // v2.8
     ls->langSpanish             = "스페인어";
     ls->langSwedish             = "스웨덴어";
 
@@ -62,7 +62,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->textFilename            = "파일 이름:";
     ls->textFile                = "파일";
     ls->textNone                = "없음";
-    ls->textUnknown             = "알려지지 않음";                            // New in 2.5
+    ls->textUnknown             = "알려지지 않음";                            
 
 
     //----------------------
@@ -70,17 +70,17 @@ void langInitKorean(LanguageStrings* ls)
     //----------------------
 
     ls->warningTitle             = "blueMSX - 경고";
-    ls->warningDiscardChanges   = "변경한 설정이 적용되기 위해선 저장을 하셔야 합니다만 현재 설정에는 아무런 영향도 주지않고 그냥 나가겠습니까?";
-    ls->warningOverwriteFile    = "파일을 덮어 쓰시겠습니까:"; // New in 2.5
+    ls->warningDiscardChanges   = "변경한 설정이 적용되기 위해선 저장을 해야 합니다. 현재 설정에 아무런 영향을 주지않고 그냥 나가겠습니까?";
+    ls->warningOverwriteFile    = "파일을 덮어 쓰시겠습니까:"; 
     ls->errorTitle              = "blueMSX - 에러";
     ls->errorEnterFullscreen    = "전체 화면모드 진입 실패.           \n";
     ls->errorDirectXFailed      = "DirectX 오브젝트 만들기 실패.           \nGDI로 대체해서 사용합니다.\n그래픽카드 등록정보를 확인하세요.";
-    ls->errorNoRomInZip         = "zip파일 내부의 .rom을 찾을 수 없습니다.";
-    ls->errorNoDskInZip         = "zip파일 내부의 .dsk를 찾을 수 없습니다.";
-    ls->errorNoCasInZip         = "zip파일 내부의 .cas를 찾을 수 없습니다.";
+    ls->errorNoRomInZip         = "zip파일 내부의 rom을 찾을 수 없습니다.";
+    ls->errorNoDskInZip         = "zip파일 내부의 dsk를 찾을 수 없습니다.";
+    ls->errorNoCasInZip         = "zip파일 내부의 cas를 찾을 수 없습니다.";
     ls->errorNoHelp             = "blueMSX 도움말을 찾을 수 없습니다.";
     ls->errorStartEmu           = "MSX 에뮬레이터를 시작할 수 없습니다.";
-    ls->errorPortableReadonly   = "이동 장치는 읽기 전용입니다.";        // New in 2.5
+    ls->errorPortableReadonly   = "이동 장치는 읽기 전용입니다.";        
 
 
     //----------------------
@@ -90,8 +90,10 @@ void langInitKorean(LanguageStrings* ls)
     ls->fileRom                 = "롬 이미지";
     ls->fileAll                 = "모든 파일";
     ls->fileCpuState            = "CPU 상태";
+    ls->fileVideoCapture        = "녹화된 영상"; 
     ls->fileDisk                = "디스크 이미지";
     ls->fileCas                 = "테이프 이미지";
+    ls->fileAvi                 = "동영상 클립";    
 
 
     //----------------------
@@ -102,21 +104,30 @@ void langInitKorean(LanguageStrings* ls)
     ls->menuInsert              = "삽입";
     ls->menuEject               = "꺼내기";
 
-    ls->menuCartGameReader      = "게임 리더";                        // New in 2.5
-    ls->menuCartIde             = "IDE";                                // New in 2.5
-    ls->menuCartBeerIde         = "Beer";                               // New in 2.5
-    ls->menuCartGIde            = "GIDE";                               // New in 2.5
-    ls->menuCartSunriseIde      = "Sunrise";                            // New in 2.5
+    ls->menuCartGameReader      = "게임 리더";                        
+    ls->menuCartIde             = "IDE";                                
+    ls->menuCartBeerIde         = "Beer";                               
+    ls->menuCartGIde            = "GIDE";                               
+    ls->menuCartSunriseIde      = "Sunrise";                              
+    ls->menuCartScsi            = "SCSI";                // New in 2.7
+    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
+    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
+    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
+    ls->menuJoyrexPsg           = "Joyrex PSG 카트리지"; // New in 2.9
     ls->menuCartSCC             = "SCC 카트리지";
-    ls->menuCartSCCPlus         = "SCC+ 카트리지";
+    ls->menuCartSCCPlus         = "SCC-I 카트리지";
     ls->menuCartFMPac           = "FM-PAC 카트리지";
     ls->menuCartPac             = "PAC 카트리지";
     ls->menuCartHBI55           = "Sony HBI-55 카트리지";
-    ls->menuCartInsertSpecial   = "특수 카트리지 삽입";                     // New in 2.5
-    ls->menuCartMegaRam         = "메가램";                            // New in 2.5
+    ls->menuCartInsertSpecial   = "특수 카트리지 삽입";                     
+    ls->menuCartMegaRam         = "메가램";                            
     ls->menuCartExternalRam     = "외장램";
+    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
+    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
+    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
 
-    ls->menuDiskInsertNew       = "새로운 디스크 이미지 삽입";              // New in 2.5
+    ls->menuDiskInsertNew       = "새로운 디스크 이미지 삽입";              
+    ls->menuDiskInsertCdrom     = "시디롬 삽입";       // New in 2.7
     ls->menuDiskDirInsert       = "디렉토리 삽입";
     ls->menuDiskAutoStart       = "삽입후에 재시작";
     ls->menuCartAutoReset       = "삽입/제거 후에 재시작";
@@ -126,6 +137,14 @@ void langInitKorean(LanguageStrings* ls)
     ls->lmenuCasSaveAs           = "다른 이름으로 저장...";
     ls->menuCasSetPosition      = "위치 설정";
     ls->menuCasRewind           = "되감기";
+
+    ls->menuVideoLoad           = "불러오기...";             
+    ls->menuVideoPlay           = "마지막으로 녹화한 영상 재생";   
+    ls->menuVideoRecord         = "녹화";              
+    ls->menuVideoRecording      = "녹화중";           
+    ls->menuVideoRecAppend      = "녹화 (추가)";     
+    ls->menuVideoStop           = "정지";                
+    ls->menuVideoRender         = "동영상 파일로 저장";   
 
     ls->menuPrnFormfeed         = "폼피드";
 
@@ -137,17 +156,20 @@ void langInitKorean(LanguageStrings* ls)
     ls->menuPropsVideo          = "비디오";
     ls->menuPropsSound          = "사운드";
     ls->menuPropsControls       = "컨트롤";
-    ls->menuPropsPerformance    = "성능";
+    ls->menuPropsEffects        = "Effects";               // New in 2.9
     ls->menuPropsSettings        = "외부 설정";
     ls->menuPropsFile           = "파일";
+    ls->menuPropsDisk           = "디스크";               // New in 2.7
     ls->menuPropsLanguage       = "언어";
     ls->menuPropsPorts          = "포트"; 
     
-    ls->menuVideoSource         = "비디오 출력 소스";                   // New in 2.5
-    ls->menuVideoSourceDefault  = "비디오 출력 소스 연결안됨";      // New in 2.5
+    ls->menuVideoSource         = "비디오 출력 소스";                   
+    ls->menuVideoSourceDefault  = "비디오 출력 소스 연결안됨";      
     ls->menuVideoChipAutodetect = "비디오 칩 자동감지";    
-    ls->menuVideoInSource       = "비디오 입력 소스";                    // New in 2.5
-    ls->menuVideoInBitmap       = "비트맵 파일";                        // New in 2.5
+    ls->menuVideoInSource       = "비디오 입력 소스";                    
+    ls->menuVideoInBitmap       = "비트맵 파일";                        
+    
+    ls->menuEthInterface        = "이더넷 인터페이스"; 
 
     ls->menuHelpHelp            = "도움말 항목";
     ls->menuHelpAbout           = "blueMSX에 대하여";
@@ -161,11 +183,13 @@ void langInitKorean(LanguageStrings* ls)
     ls->menuFileQLoadState      = "상태 바로 불러오기";
     ls->menuFileQSaveState      = "상태 바로 저장";
     ls->menuFileCaptureAudio    = "소리 저장";
+    ls->menuFileCaptureVideo    = "영상 녹화"; 
     ls->menuFileScreenShot      = "화면 저장";
     ls->menuFileExit            = "끝내기";
 
-    ls->menuFileHarddisk        = "하드 디스크";                          // New in 2.5
-    ls->menuFileHarddiskNoPesent= "컨트롤러 존재하지 않음";             // New in 2.5
+    ls->menuFileHarddisk        = "하드 디스크";                          
+    ls->menuFileHarddiskNoPesent= "컨트롤러 존재하지 않음";             
+    ls->menuFileHarddiskRemoveAll= "모든 하드 디스크 제거";    // New in 2.7
 
     ls->menuRunRun              = "실행";
     ls->menuRunPause            = "일시 정지";
@@ -177,10 +201,10 @@ void langInitKorean(LanguageStrings* ls)
     ls->menuTools                = "도구";
     ls->menuToolsMachine         = "머신 편집기";
     ls->menuToolsShortcuts      = "단축키 편집기";
-    ls->menuToolsKeyboard       = "키보드 편집기";
-    ls->menuToolsDebugger       = "디버거";               // New in 2.5
-    ls->menuToolsTrainer        = "트레이너";                // New in 2.5
-    ls->menuToolsTraceLogger    = "트레이스 기록";           // New in 2.5
+    ls->menuToolsCtrlEditor     = "컨트롤러 / 키보드 편집기"; 
+    ls->menuToolsDebugger       = "디버거";               
+    ls->menuToolsTrainer        = "트레이너";                
+    ls->menuToolsTraceLogger    = "트레이스 기록";           
 
     ls->menuFile                = "파일";
     ls->menuRun                 = "실행";
@@ -211,15 +235,19 @@ void langInitKorean(LanguageStrings* ls)
     ls->dlgLoadCasDesc          = "카세트 플레이어에 넣을 테잎 이미지를 선택해 주세요:";
     ls->dlgLoadRomDskCasDesc    = "읽어 들일 롬,디스크,또는 테잎 이미지를 선택해 주세요:";
     ls->dlgLoadState            = "CPU 상태 불러오기";
+    ls->dlgLoadVideoCapture     = "녹화된 영상 불러오기";      
     ls->dlgSaveState            = "CPU 상태 저장";
     ls->dlgSaveCassette          = "blueMSX - 테잎 이미지 저장";
+    ls->dlgSaveVideoClipAs      = "다른 이름으로 영상 클립 저장...";      
+    ls->dlgAmountCompleted      = "저장 완료율:";          
     ls->dlgInsertRom1           = "슬롯 1에 ROM 카트리지 삽입";
     ls->dlgInsertRom2           = "슬롯 2에 ROM 카트리지 삽입";
     ls->dlgInsertDiskA          = "드라이브 A에 디스크 삽입";
     ls->dlgInsertDiskB          = "드라이브 B에 디스크 삽입";
-    ls->dlgInsertHarddisk       = "하드 디스크 삽입";                   // New in 2.5
+    ls->dlgInsertHarddisk       = "하드 디스크 삽입";                   
     ls->dlgInsertCas            = "카세트 테잎 삽입";
     ls->dlgRomType              = "롬 형식:";
+    ls->dlgDiskSize             = "디스크 사이즈:";             
 
     ls->dlgTapeTitle            = "blueMSX - 테잎 위치";
     ls->dlgTapeFrameText        = "테잎 위치";
@@ -237,22 +265,24 @@ void langInitKorean(LanguageStrings* ls)
     ls->dlgLangLangText         = "blueMSX에 사용할 언어 선택";
     ls->dlgLangLangTitle        = "blueMSX - 언어";
 
-    ls->dlgAboutAbout           = "대하여\r\n=====";
+    ls->dlgAboutAbout           = "blueMSX에 대하여\r\n=====";
     ls->dlgAboutVersion         = "버전:";
     ls->dlgAboutBuildNumber     = "빌드:";
     ls->dlgAboutBuildDate       = "날짜:";
     ls->dlgAboutCreat           = "제작자: Daniel Vik";
     ls->dlgAboutDevel           = "개발자 분들\r\n========";
-    ls->dlgAboutThanks          = "도움을 주신 분들\r\n===========";
+    ls->dlgAboutThanks          = "도움을 주신 분들\r\n===========";       // New in 2.7 (retranslate, see english)
     ls->dlgAboutLisence         = "라이센스\r\n"
                                   "======\r\n\r\n"
 				  "이 소프트웨어는 원본 그대로 배포되어야 하며, 명시적이든 암묵적이든 "
-				  "어떤 종류의 보증도 하지 않습니다.\r\n이 소프트웨어의 사용으로 일어나는 "
-				  "어떠한 문제에도 제작자에게는 책임이 없습니다.\r\n\r\n"
-                                  "더 자세한 것은 www.bluemsx.com을 방문해 주세요.";
+				  "어떤 보증도 하지 않습니다.\r\n이 소프트웨어의 사용으로 일어나는 "
+				  "어떠한 문제에 대해서도 제작자에게는 책임이 없습니다.\r\n\r\n"
+                                  "더 자세한 것은 www.bluemsx.com에 방문해 주세요.";
 
     ls->dlgSavePreview          = "미리 보기";
     ls->dlgSaveDate             = "시간 저장됨:";
+
+    ls->dlgRenderVideoCapture   = "blueMSX - 동영상 파일로 저장...";  
 
 
     //----------------------
@@ -265,8 +295,10 @@ void langInitKorean(LanguageStrings* ls)
     ls->propSound               = "사운드";
     ls->propControls            = "콘트롤";
     ls->propPerformance         = "성능";
+    ls->propEffects             = "Effects";             // New in 2.9
     ls->propSettings             = "외부 설정";
     ls->propFile                = "파일";
+    ls->propDisk                = "디스크";              // New in 2.7
     ls->propPorts               = "포트";
     
     ls->propEmuGeneralGB        = "일반 ";
@@ -278,17 +310,20 @@ void langInitKorean(LanguageStrings* ls)
     ls->propEmuSpeedText        = "에뮬레이션 속도:";
     ls->propEmuFrontSwitchGB     = "파나소닉 스위치 ";
     ls->propEmuFrontSwitch       = " 프론트 스위치";
-    ls->propEmuFdcTiming        = "플로피 드라이브 타이밍 사용 않함";
+    ls->propEmuNoSpriteLimits   = " Disable Sprites Limitation";  // New in 2.9
+    ls->propEnableMsxKeyboardQuirk = " Emulate MSX keyboard quirk";  // New in 2.9
+    ls->propEmuFdcTiming        = " 플로피 드라이브 타이밍 사용 안함";
+    ls->propEmuReversePlay      = " Enable reverse playback"; // New in 2.8.3
     ls->propEmuPauseSwitch      = " 일시 정지 스위치";
     ls->propEmuAudioSwitch       = " MSX-AUDIO 카트리지 스위치";
     ls->propVideoFreqText       = "비디오 주파수:";
     ls->propVideoFreqAuto       = "자동";
     ls->propSndOversampleText   = "오버샘플:";
-    ls->propSndYkInGB           = "YK-01/YK-10/YK-20 입력 ";                // New in 2.5
+    ls->propSndYkInGB           = "YK-01/YK-10/YK-20 입력 ";                
     ls->propSndMidiInGB         = "MIDI 입력 ";
     ls->propSndMidiOutGB        = "MIDI 출력 ";
-    ls->propSndMidiChannel      = "MIDI 채널:";                      // New in 2.5
-    ls->propSndMidiAll          = "전부";                                // New in 2.5
+    ls->propSndMidiChannel      = "MIDI 채널:";                      
+    ls->propSndMidiAll          = "전부";                                
 
     ls->propMonMonGB            = "모니터 ";
     ls->propMonTypeText         = "모니터 유형:";
@@ -298,14 +333,14 @@ void langInitKorean(LanguageStrings* ls)
     ls->propMonHorizStretch      = " 수평 스트레치";
     ls->propMonVertStretch       = " 수직 스트레치";
     ls->propMonDeInterlace      = " 디인터레이스";
-    ls->propBlendFrames         = " 인접한 프레임 색상혼합";           // New in 2.5
-    ls->propMonColorGhosting    = "RF모듈레이터";
+    ls->propBlendFrames         = " 인접한 프레임 색상혼합";           
+    ls->propMonColorGhosting    = " RF모듈레이터:";
     ls->propMonBrightness       = "밝기:";
     ls->propMonContrast         = "대비:";
     ls->propMonSaturation       = "채도:";
     ls->propMonGamma            = "감마:";
-    ls->propMonScanlines        = "스캔라인:";
-    ls->propMonEffectsGB        = "효과";
+    ls->propMonScanlines        = " 스캔라인:";
+    ls->propMonEffectsGB        = "효과 ";
 
     ls->propPerfVideoDrvGB      = "비디오 드라이버 ";
     ls->propPerfVideoDispDrvText= "화면 드라이버:";
@@ -340,9 +375,10 @@ void langInitKorean(LanguageStrings* ls)
     ls->propFileTypes            = " blueMSX에 파일형식(.rom .dsk .cas .sta) 연결";
     ls->propWindowsEnvGB         = "윈도우즈 환경 "; 
     ls->propSetScreenSaver       = " blueMSX 실행중에는 화면 보호기 기능 중지";
-    ls->propDisableWinKeys       = " blueMSX 실행중에는 왼/오른쪽 윈도우 키 사용 않함"; 
+    ls->propDisableWinKeys       = " blueMSX 실행중에는 왼/오른쪽 윈도우 키 사용 안함"; 
     ls->propPriorityBoost        = " blueMSX에 작업 우선권 주기";
-    ls->propScreenshotPng       = " Portable Network Graphics (.png) 스크린샷 사용";  // New in 2.5
+    ls->propScreenshotPng       = " Portable Network Graphics (.png) 스크린샷 사용";  
+    ls->propEjectMediaOnExit    = " Eject media when blueMSX exits";        // New in 2.8
     ls->propClearHistory         = "열어본 파일 목록을 지울까요?";
     ls->propOpenRomGB           = "열때 항상 현재 설정 사용 ";
     ls->propDefaultRomType      = "기본 롬 형식:";
@@ -356,6 +392,26 @@ void langInitKorean(LanguageStrings* ls)
 
     ls->propThemeGB             = "테마 ";
     ls->propTheme               = "기본 테마:";
+
+    ls->propCdromGB             = "시디롬 ";         // New in 2.7
+    ls->propCdromMethod         = "액세스 방법:";  // New in 2.7
+    ls->propCdromMethodNone     = "없음";            // New in 2.7
+    ls->propCdromMethodIoctl    = "IOCTL";           // New in 2.7
+    ls->propCdromMethodAspi     = "ASPI";            // New in 2.7
+    ls->propCdromDrive          = "드라이브:";          // New in 2.7
+
+    ls->propD3DParametersGB         = "Parameters ";                // New in 2.9
+    ls->propD3DAspectRatioText      = "Aspect ratio";               // New in 2.9
+    ls->propD3DLinearFilteringText  = " Linear filtering";          // New in 2.9
+    ls->propD3DForceHighResText     = " Force high resolution";     // New in 2.9
+    ls->propD3DExtendBorderColorText    = " Extend border color";   // New in 2.9
+
+    ls->propD3DCroppingGB               = "Cropping ";              // New in 2.9
+    ls->propD3DCroppingTypeText         = "Cropping type:";         // New in 2.9
+    ls->propD3DCroppingLeftText         = "Left:";                  // New in 2.9
+    ls->propD3DCroppingRightText        = "Right:";                 // New in 2.9
+    ls->propD3DCroppingTopText          = "Top:";                   // New in 2.9
+    ls->propD3DCroppingBottomText       = "Bottom:";                // New in 2.9
 
 
     //----------------------
@@ -386,6 +442,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->enumVideoDrvDirectDrawHW = "DirectDraw HW 가속";
     ls->enumVideoDrvDirectDraw  = "DirectDraw";
     ls->enumVideoDrvGDI         = "GDI";
+    ls->enumVideoDrvD3D         = "Direct3D";
 
     ls->enumVideoFrameskip0     = "없음";
     ls->enumVideoFrameskip1     = "1 프레임";
@@ -394,31 +451,46 @@ void langInitKorean(LanguageStrings* ls)
     ls->enumVideoFrameskip4     = "4 프레임";
     ls->enumVideoFrameskip5     = "5 프레임";
 
+    ls->enumD3DARAuto           = "Auto";           // New in 2.9
+    ls->enumD3DARStretch        = "Stretch";        // New in 2.9
+    ls->enumD3DARPAL            = "PAL";            // New in 2.9
+    ls->enumD3DARNTSC           = "NTSC";           // New in 2.9
+    ls->enumD3DAR11             = "1:1";            // New in 2.9
+
+    ls->enumD3DCropNone         = "None";           // New in 2.9
+    ls->enumD3DCropMSX1         = "MSX1";           // New in 2.9
+    ls->enumD3DCropMSX1Plus8    = "MSX1+8";         // New in 2.9
+    ls->enumD3DCropMSX2         = "MSX2";           // New in 2.9
+    ls->enumD3DCropMSX2Plus8    = "MSX2+8";         // New in 2.9
+    ls->enumD3DCropCustom       = "Custom";         // New in 2.9
+
     ls->enumSoundDrvNone        = "소리없음";
     ls->enumSoundDrvWMM         = "WMM 드라이버";
-    ls->enumSoundDrvDirectX     = "DirectX 드라이버";
+    ls->enumSoundDrvDirectX     = "다이렉트X 드라이버";
 
     ls->enumEmuSync1ms          = "MSX의 속도에 동기";
     ls->enumEmuSyncAuto         = "자동 (빠름)";
     ls->enumEmuSyncNone         = "하지않음";
     ls->enumEmuSyncVblank       = "PC의 수직주파수에 동기";
-    ls->enumEmuAsyncVblank      = "PC의 수직주파수에 비동기";             // New in 2.5
+    ls->enumEmuAsyncVblank      = "PC의 수직주파수에 비동기";             
 
     ls->enumControlsJoyNone     = "없음";
     ls->enumControlsJoyMouse    = "마우스";
     ls->enumControlsJoyTetris2Dongle = "테트리스 2 동글";
-    ls->enumControlsJoyTMagicKeyDongle = "매직키 동글";             // New in 2.5
-    ls->enumControlsJoy2Button = "2버튼 조이스틱";                   // New in 2.5
-    ls->enumControlsJoyGunstick  = "건 스틱";                         // New in 2.5
-    ls->enumControlsJoyAsciiLaser="아스키 플러스-X 터미네이터 레이저";      // New in 2.5
-    ls->enumControlsJoyColeco = "ColecoVision 조이스틱";                // New in 2.5
+    ls->enumControlsJoyTMagicKeyDongle = "매직키 동글";             
+    ls->enumControlsJoy2Button = "2버튼 조이스틱";                   
+    ls->enumControlsJoyGunstick  = "건 스틱";                         
+    ls->enumControlsJoyAsciiLaser="아스키 플러스-X 터미네이터 레이저";      
+    ls->enumControlsArkanoidPad  ="Arkanoid Pad";                   // New in 2.7.1
+    ls->enumControlsJoyColeco = "ColecoVision 조이스틱";                
 
-    ls->enumDiskMsx35Dbl9Sect    = "MSX 3.5 양면, 9 섹터";     // New in 2.5
-    ls->enumDiskMsx35Dbl8Sect    = "MSX 3.5 양면, 8 섹터";     // New in 2.5
-    ls->enumDiskMsx35Sgl9Sect    = "MSX 3.5 단면, 9 섹터";     // New in 2.5
-    ls->enumDiskMsx35Sgl8Sect    = "MSX 3.5 단면, 8 섹터";     // New in 2.5
-    ls->enumDiskSvi525Dbl        = "SVI-328 5.25 양면";           // New in 2.5
-    ls->enumDiskSvi525Sgl        = "SVI-328 5.25 단면";           // New in 2.5
+    ls->enumDiskMsx35Dbl9Sect    = "MSX 3.5\" 양면, 9 섹터";     
+    ls->enumDiskMsx35Dbl8Sect    = "MSX 3.5\" 양면, 8 섹터";     
+    ls->enumDiskMsx35Sgl9Sect    = "MSX 3.5\" 단면, 9 섹터";     
+    ls->enumDiskMsx35Sgl8Sect    = "MSX 3.5\" 단면, 8 섹터";     
+    ls->enumDiskSvi525Dbl        = "SVI-328 5.25\" 양면";           
+    ls->enumDiskSvi525Sgl        = "SVI-328 5.25\" 단면";  
+    ls->enumDiskSf3Sgl           = "Sega SF-7000 3\" 단면";             
 
 
     //----------------------
@@ -439,7 +511,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->confSaveAsMachineName    = "머신 이름:";
     ls->confDiscardTitle         = "blueMSX - 설정";
     ls->confExitSaveTitle        = "blueMSX - 머신 설정 편집기 나가기";
-    ls->confExitSaveText         = "변경한 설정이 적용되기 위해선 저장을 하셔야 합니다만 현재 설정에는 아무런 영향도 주지않고 그냥 나가겠습니까?";
+    ls->confExitSaveText         = "변경한 설정이 적용되기 위해선 저장을 해야 합니다. 현재 설정에 아무런 영향을 주지않고 그냥 나가겠습니까?";
 
     ls->confSlotLayoutGB         = "슬롯 배치 ";
     ls->confSlotExtSlotGB        = "외부 슬롯 ";
@@ -464,6 +536,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->confChipVideoChip        = "비디오 칩:";
     ls->confChipVideoRam         = "비디오 램:";
     ls->confChipSoundGB          = "사운드 ";
+    ls->confChipPsgStereoText    = " PSG 스테레오 변환";
 
     ls->confCmosGB                = "CMOS ";
     ls->confCmosEnable            = " CMOS 사용";
@@ -553,6 +626,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->shortcutSwitchPause     = "일시 정지 스위치";
     ls->shortcutToggleMouseLock = "마우스 고정 변환";
     ls->shortcutEmuSpeedMax     = "최대 에뮬레이션 속도";
+    ls->shortcutEmuPlayReverse  = "Rewind emulation";                     // New in 2.8.3
     ls->shortcutEmuSpeedToggle  = "에뮬레이션 속도 최대화 변환";
     ls->shortcutEmuSpeedNormal  = "보통 에뮬레이션 속도";
     ls->shortcutEmuSpeedInc     = "에뮬레이션 속도 증가";
@@ -562,7 +636,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->shortcutShowVideoProp   = "비디오 속성 보기";
     ls->shortcutShowAudioProp   = "오디오 속성 보기";
     ls->shortcutShowCtrlProp    = "콘트롤 속성 보기";
-    ls->shortcutShowPerfProp    = "성능 속성 보기";
+    ls->shortcutShowEffectsProp = "Show Effects Properties";     // New in 2.9
     ls->shortcutShowSettProp    = "외부 설정 속성 보기";
     ls->shortcutShowPorts       = "포트 속성 보기";
     ls->shortcutShowLanguage    = "언어 보기";
@@ -577,7 +651,14 @@ void langInitKorean(LanguageStrings* ls)
     ls->shortcutShowFiles       = "파일 속성 보기";
     ls->shortcutToggleSpriteEnable = "스프라이트 보이기/숨기기 변환";
     ls->shortcutToggleFdcTiming = "플로피 드라이브 타이밍 사용/않함 변환";
+    ls->shortcutToggleNoSpriteLimits = "Toggle Sprites Limitation";                 // New in 2.9
+    ls->shortcutEnableMsxKeyboardQuirk = "Emulate MSX Keyboard Quirk";              // New in 2.9
     ls->shortcutToggleCpuTrace  = "CPU 트레이스 변환";
+    ls->shortcutVideoLoad       = "녹화된 영상 불러오기";             
+    ls->shortcutVideoPlay       = "마지막으로 녹화한 영상 재생";   
+    ls->shortcutVideoRecord     = "영상 녹화";              
+    ls->shortcutVideoStop       = "영상 녹화 정지";                
+    ls->shortcutVideoRender     = "동영상 파일로 저장";   
 
 
     //----------------------
@@ -594,84 +675,42 @@ void langInitKorean(LanguageStrings* ls)
     //----------------------
 
     ls->romTypeStandard         = "Standard";
-    ls->romTypeMsxdos2          = "MSXDOS 2";
-    ls->romTypeKonamiScc        = "Konami SCC";
-    ls->romTypeKonami           = "Konami";
-    ls->romTypeAscii8           = "ASCII 8";
-    ls->romTypeAscii16          = "ASCII 16";
-    ls->romTypeGameMaster2      = "Game Master 2 (SRAM)";
-    ls->romTypeAscii8Sram       = "ASCII 8 (SRAM)";
-    ls->romTypeAscii16Sram      = "ASCII 16 (SRAM)";
-    ls->romTypeRtype            = "R-Type";
-    ls->romTypeCrossblaim       = "Cross Blaim";
-    ls->romTypeHarryFox         = "Harry Fox";
-    ls->romTypeMajutsushi       = "Konami Majutsushi";
     ls->romTypeZenima80         = "Zemina 80 in 1";
     ls->romTypeZenima90         = "Zemina 90 in 1";
     ls->romTypeZenima126        = "Zemina 126 in 1";
-    ls->romTypeScc              = "SCC";
-    ls->romTypeSccPlus          = "SCC+";
-    ls->romTypeSnatcher         = "The Snatcher";
-    ls->romTypeSdSnatcher       = "SD Snatcher";
     ls->romTypeSccMirrored      = "SCC mirrored";
     ls->romTypeSccExtended      = "SCC extended";
-    ls->romTypeFmpac            = "FMPAC (SRAM)";
-    ls->romTypeFmpak            = "FMPAK";
     ls->romTypeKonamiGeneric    = "Konami Generic";
-    ls->romTypeSuperPierrot     = "Super Pierrot";
     ls->romTypeMirrored         = "Mirrored ROM";
     ls->romTypeNormal           = "Normal ROM";
     ls->romTypeDiskPatch        = "Normal + Disk Patch";
     ls->romTypeCasPatch         = "Normal + Cassette Patch";
     ls->romTypeTc8566afFdc      = "TC8566AF Disk Controller";
+    ls->romTypeTc8566afTrFdc    = "TC8566AF Turbo-R Disk Controller";
     ls->romTypeMicrosolFdc      = "Microsol Disk Controller";
     ls->romTypeNationalFdc      = "National Disk Controller";
     ls->romTypePhilipsFdc       = "Philips Disk Controller";
+    ls->romTypeSvi707Fdc        = "SVI-707 Disk Controller";
     ls->romTypeSvi738Fdc        = "SVI-738 Disk Controller";
     ls->romTypeMappedRam        = "Mapped RAM";
     ls->romTypeMirroredRam1k    = "1kB Mirrored RAM";
+    ls->romTypeMirroredRam2k    = "2kB Mirrored RAM";
     ls->romTypeNormalRam        = "Normal RAM";
-    ls->romTypeKanji            = "Kanji";
-    ls->romTypeHolyQuran        = "Holy Quran";
-    ls->romTypeMatsushitaSram   = "Matsushita SRAM";
-    ls->romTypePanasonic16      = "Panasonic 16kB SRAM";
-    ls->romTypePanasonic32      = "Panasonic 32kB SRAM";
-    ls->romTypeBunsetsu         = "Bunsetsu";
-    ls->romTypeJisyo            = "Jisyo";
-    ls->romTypeKanji12          = "Kanji12";
-    ls->romTypeNationalSram     = "National (SRAM)";
-    ls->romTypeS1985            = "S1985";
-    ls->romTypeS1990            = "S1990";
     ls->romTypeTurborPause      = "Turbo-R Pause";
     ls->romTypeF4deviceNormal   = "F4 Device Normal";
     ls->romTypeF4deviceInvert   = "F4 Device Inverted";
-    ls->romTypeMsxMidi          = "MSX-MIDI";
     ls->romTypeTurborTimer      = "Turbo-R Timer";
-    ls->romTypeKoei             = "Koei (SRAM)";
-    ls->romTypeBasic            = "Basic ROM";
-    ls->romTypeHalnote          = "Halnote";
-    ls->romTypeLodeRunner       = "Lode Runner";
     ls->romTypeNormal4000       = "Normal 4000h";
     ls->romTypeNormalC000       = "Normal C000h";
-    ls->romTypeKonamiSynth      = "Konami Synthesizer";
-    ls->romTypeKonamiKbdMast    = "Konami Keyboard Master";
-    ls->romTypeKonamiWordPro    = "Konami Word Pro";
-    ls->romTypePac              = "PAC (SRAM)";
-    ls->romTypeMegaRam          = "MegaRAM";
-    ls->romTypeMegaRam128       = "128kB MegaRAM";
-    ls->romTypeMegaRam256       = "256kB MegaRAM";
-    ls->romTypeMegaRam512       = "512kB MegaRAM";
-    ls->romTypeMegaRam768       = "768kB MegaRAM";
-    ls->romTypeMegaRam2mb       = "2MB MegaRAM";
     ls->romTypeExtRam           = "External RAM";
+    ls->romTypeExtRam16         = "16kB External RAM";
+    ls->romTypeExtRam32         = "32kB External RAM";
+    ls->romTypeExtRam48         = "48kB External RAM";
+    ls->romTypeExtRam64         = "64kB External RAM";
     ls->romTypeExtRam512        = "512kB External RAM";
     ls->romTypeExtRam1mb        = "1MB External RAM";
     ls->romTypeExtRam2mb        = "2MB External RAM";
     ls->romTypeExtRam4mb        = "4MB External RAM";
-    ls->romTypeMsxMusic         = "MSX Music";
-    ls->romTypeMsxAudio         = "MSX Audio";
-    ls->romTypeY8950            = "Y8950";
-    ls->romTypeMoonsound        = "Moonsound";
     ls->romTypeSvi328Cart       = "SVI-328 Cartridge";
     ls->romTypeSvi328Fdc        = "SVI-328 Disk Controller";
     ls->romTypeSvi328Prn        = "SVI-328 Printer";
@@ -680,20 +719,11 @@ void langInitKorean(LanguageStrings* ls)
     ls->romTypeSvi727col80      = "SVI-727 80 Column Card";
     ls->romTypeColecoCart       = "Coleco Cartridge";
     ls->romTypeSg1000Cart       = "SG-1000 Cartridge";
-    ls->romTypeTheCastle        = "The Castle";
-    ls->romTypeSonyHbi55        = "Sony HBI-55";
+    ls->romTypeSc3000Cart       = "SC-3000 Cartridge";
     ls->romTypeMsxPrinter       = "MSX Printer";
     ls->romTypeTurborPcm        = "Turbo-R PCM Chip";
-    ls->romTypeGameReader       = "Sunrise GameReader";
-    ls->romTypeSunriseIde       = "Sunrise IDE";
-    ls->romTypeBeerIde          = "Beer IDE";
-    ls->romTypeGide             = "GIDE";
-    ls->romTypeVmx80            = "Microsol VMX-80";
     ls->romTypeNms8280Digitiz   = "Philips NMS-8280 Digitizer";
     ls->romTypeHbiV1Digitiz     = "Sony HBI-V1 Digitizer";
-    ls->romTypeFmdas            = "F&M Direct Assembler System";
-    ls->romTypeSfg01            = "Yamaha SFG-01";
-    ls->romTypeSfg05            = "Yamaha SFG-05";
 
 
     //----------------------
@@ -704,7 +734,6 @@ void langInitKorean(LanguageStrings* ls)
     ls->dbgMemVisible           = "Visible Memory";
     ls->dbgMemRamNormal         = "Normal";
     ls->dbgMemRamMapped         = "Mapped";
-    ls->dbgMemVram              = "VRAM";
     ls->dbgMemYmf278            = "YMF278 Sample RAM";
     ls->dbgMemAy8950            = "AY8950 Sample RAM";
     ls->dbgMemScc               = "Memory";
@@ -720,46 +749,17 @@ void langInitKorean(LanguageStrings* ls)
 
     ls->dbgDevRamMapper         = "RAM Mapper";
     ls->dbgDevRam               = "RAM";
-    ls->dbgDevIdeBeer           = "Beer IDE";
-    ls->dbgDevIdeGide           = "GIDE";
     ls->dbgDevF4Device          = "F4 Device";
-    ls->dbgDevFmpac             = "FMPAC";
-    ls->dbgDevFmpak             = "FMPAK";
-    ls->dbgDevKanji             = "Kanji";
-    ls->dbgDevKanji12           = "Kanji 12";
-    ls->dbgDevKonamiKbd         = "Konami Keyboard Master";
     ls->dbgDevKorean80          = "Korean 80";
     ls->dbgDevKorean90          = "Korean 90";
     ls->dbgDevKorean128         = "Korean 128";
-    ls->dbgDevMegaRam           = "Mega RAM";
     ls->dbgDevFdcMicrosol       = "Microsol FDC";
-    ls->dbgDevMoonsound         = "Moonsound";
-    ls->dbgDevMsxAudio          = "MSX Audio";
-    ls->dbgDevMsxAudioMidi      = "MSX Audio MIDI";
-    ls->dbgDevMsxMusic          = "MSX Music";
     ls->dbgDevPrinter           = "Printer";
-    ls->dbgDevRs232             = "RS232";
-    ls->dbgDevS1990             = "S1990";
-    ls->dbgDevSfg05             = "Yamaha SFG-05";
-    ls->dbgDevHbi55             = "Sony HBI-55";
     ls->dbgDevSviFdc            = "SVI FDC";
     ls->dbgDevSviPrn            = "SVI Printer";
     ls->dbgDevSvi80Col          = "SVI 80 Column";
-    ls->dbgDevPcm               = "PCM";
-    ls->dbgDevMatsushita        = "Matsushita";
-    ls->dbgDevS1985             = "S1985";
-    ls->dbgDevCrtc6845          = "CRTC6845";
-    ls->dbgDevTms9929A          = "TMS9929A";
-    ls->dbgDevTms99x8A          = "TMS99x8A";
-    ls->dbgDevV9938             = "V9938";
-    ls->dbgDevV9958             = "V9958";
-    ls->dbgDevZ80               = "Z80";
-    ls->dbgDevMsxMidi           = "MSX MIDI";
-    ls->dbgDevPpi               = "PPI";
     ls->dbgDevRtc               = "RTC";
     ls->dbgDevTrPause           = "TR Pause";
-    ls->dbgDevAy8910            = "AY8910 PSG";
-    ls->dbgDevScc               = "SCC";
 
 
     //----------------------

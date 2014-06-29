@@ -1,0 +1,711 @@
+Next release
+============
+- Z80 IRQ timing (not yet)
+- Fix DER files in panasonic FDC
+- Add search for numbers (byte, word, dword) in degugger
+- Wildcard search (part of numbers or strings)
+- Support for new EEPROM in Activision PCB
+
+v 2.9.0     December 15, 2012
+=============================
+
+- Added support for smooth rewind of emulation
+- Added support for step back in debugger
+- Added support for memory and IO watchpoints
+- Added support for Direct3D
+- Added support for disabling sprite limits
+- Added support for the Spectravideo SVI-707 FDC cartridge
+- Added support for Spectravideo SVI-328 64KB cartridge 
+- Added support for SVI-328 80 track single sided drive 
+- Added support for ColecoVision Super Action Controller
+- Added support for ColecoVision Super Expansion Module hardware
+- Added support for ColecoVision Expansion Module #2 using mouse
+- Added support for ColecoVision ActivisionPCB (small EEPROM) (a cartridge for homebrew games)
+- Added support for Mu-Pack MIDI cartridge
+- Added support for Parallax ARC cartridge
+- Added support for Dooly cartridge
+- Added support for Manbow 2 v2 cartridge
+- Added support for Hamaraja Night cartridge
+- Added support for Korean SG-1000 Ram expander cartridge
+- Added support for stereo PSG in MSX machine configuration
+- Added support for inverted turbo mode bits on Panasonic MSX2+ machines
+- Added support for loading data from file directly into memory
+- Added preliminary support for PC joystick POV hat switch, use the joystick.POV0isAxes setting to swap X/Y axes with POV0
+- Added build system for Visual Studio 2010 (Needs some old SDK's downloadable from Microsoft)
+- Increased number of supported machine configs to 512 
+- Fixed critical bug that caused Trainer and Cheats to fail as well as memory writes in the debugger 
+  when when language is any of: Catalan, Chinese, Dutch, Finnish, or Russian
+- Multiple performance optimizations (mainly developed during the MSX.emu port)
+- Fixed Gunstick and ASCII Laser bug
+- Fixed 64kB vram handling (now correctly detects 64kB vram)
+- Fixed bug in handling of transparent sprites
+- Fix ARTRAGs VDP command engine bug
+- Fixed bug in handling C flag in MUL instructions
+- Fixed 'no frequency' bug in SN76489 emulation
+- Fixed minor bug in Beer IDE emulation
+- Fixed minor bug in video capture
+- Fixed minor bug in debugger shortcuts for breakpoints
+
+v 2.8.2     August 14, 2009
+===========================
+- Added support for MSX1 VDP timing checks in the debugger
+- Added support for .der copy protected disk files
+- Fixed multiple bugs in DRAM management that fixes many known Turbo R issues
+- Fixed memory write bug in debugger that made memory writes occasionally fail
+- Fixed default directory for hard disk insert
+- Fixed memory leaks
+- Fixed Moonsound FM bug
+- Speed up save states and pause/resume
+
+
+v 2.8.1     May 3, 2009
+=======================
+- Added support for 16kB, 32kB, 48kB and 64kB external ram cartridges
+- Added support for Joyrex PSG module
+- Added support for PSG pin 6/7 quirk
+- Added support for VR bit in VDP register 8
+- Added 35 new machine configurations
+- Added 23 new cheats
+- Updated support for NoWind USB Diskroms
+- Fixed SVI M1 Wait state
+- Fixed ColecoVision Keyboard read error
+- Fixed ColceoVision PSG noise bug
+- Fixed DirectX initialization bug
+- Fixed V9958 Scroll masking bug in Screen 4 (introduced in 2.8)
+- Fixed Screen 2 scroll bug
+- Fixed R15 PSG register read
+- Fixed bug in VDP line engine
+- Fixed bug in obsonet write method
+- Fixed bug in Harryfox rom mapper
+- Fixed bug in Crossblaim rom mapper
+- Fixed bug in Korean bootleg rom mapper
+- Made bluemsxlite compile on OSX
+- Fixed bug in Arkanoid Pad emulation
+- Fixed addressing bug in R-Type mapper
+- Fixed x/y flags on scf/ccf
+- Fixed instructions ld a,i or ld a,r to handle interrupts correclty
+
+
+v 2.8       June 8, 2008
+========================
+- Added support for Manbow 2 mapper
+- Added support for DRAM mode in MSXturboR machines
+- Added support for Panasonic FS-A1FM machine
+- Added support for FS-A1WX and FS-A1WSX firmware mapper
+- Added support for Matra INK mapper
+- Added support for Jaleco Moero!! Nettou Yakyuu '88 mapper with sample player
+- Added support for Ark-A-Noah copy protected disks
+- Replaced SN76489 emulation
+- Updated support for TC8566AF Disk Controller
+- Updated machine structure
+- Added 2 new generic machines : MSX1 Estonian and MSX2 Estonian 
+- Updated some generic MSX1 machines (no keyboard repeat bug)
+- More accurate configuration of specific machines (correct RAM size, no CAS patch on the BIOS)
+- Updated all specific machines to use MESS file names when it's possible
+- Added Catalonian translation
+- Added Russian translation
+- Added infos in the manual about specific machines with internal or external firmware
+- Extended or improved other parts of the manual
+- Added current machine and currently inserted media information to the Classic theme titlebar
+- Fixed DigiBlue Suite theme thinking a cartridge or disk was still present after ejecting it
+- Fixed DirectSound bug that happened on constant intervals depending on sound buffer size
+- Added ejectMediaOnExit setting. If enabled, all media are ejected when exiting blueMSX
+- Added MSX keyboard matrix quirk emulation, eg. pressing X+Z+J results in X+Z+H+J
+- Fixed cassette rewind after insert setting
+- Fixed horizontal scroll in lower screenmodes
+- Fixed 512 pixel width screen modes having a width of 511
+- Fixed small bug with MSX1 VDP address writes
+- Fixed audio mixer knobs being one notch to the left
+- Fixed Moonsound FM 4-op bug
+- Fixed many resource leaks, most notably in the debugger
+- Fixed ColecoVision RAM initialization bug
+- Added 75ms setting for soundbuffer size (step from 50 to 100 was a bit too big)
+
+
+v 2.7.1     December 15, 2007  
+=============================
+
+- Added support for Forte II Games arcade boards
+- Added support for Halnote mapper
+- Added support for Arkanoid pad
+- Added the Ciel Expert 3 IDE machine
+- Added 165 new game cheats
+- Reduced SCC volume to conform with an average MSX machine
+- Fixed screen 6 sprite collision timing bug
+- Fixed properties bug when canceling the Properties dialog
+- Fixed bug in Konami mapper that made non standard size roms not run properly
+- Rom name in machine config dialog can now be edited in the text field
+- Fixed minor SCC timing issue
+- Fixed PSG volume initialization in ColecoVision
+- Fixed Joystick initialization in ColecoVision
+- Minor bugfixes in Yamaha SFG05 emulation
+
+
+v 2.7       May 13, 2007
+=========================
+
+- Added support for MEGA-SCSI, WAVE-SCSI and MSX Club Gouda SCSI (NOVAXIS)
+- Added support for SCSI CD Audio and CD-ROM
+- Added support for keyboard input in the Philips Music Module (MSX-Audio) 
+- Added support for MIDI input and output in the Philips Music Module (MSX-Audio) and SFG-05 (Yamaha CX5M/CX7M)
+- Added support for ESE-SCC, ESE-RAM and Mega Flash ROM SCC cartridges 
+- New trainer with improved search capabilities and a new .mcf file format
+- Added remove all harddisks feature
+- Added support for sprite mirroring (screen 2) in MSX1 machines
+- Added pixel accuracy in screen 0
+- Added Home hotkey in debugger to go to current command 
+- Added new values in the cpu register window of the debugger
+- Added ability to use registers in the 'Go to' feature and the memory viewer of the debugger
+- When CPU is stopped by a breakpoint, the sound buffer is cleared
+- Fixed z80 timing bugs 
+- Fixed z80 instruction bugs 
+- Fixed bug in Cas and Disk leds
+- Vram pointer updated correctly in MSX1 machines 
+- 5th Sprite status bits updated correctly 
+- Fixed bug with collision detection for transparent sprites 
+- Screen 0 masking handled correctly 
+- Fixed digitize enable bit (ignoring it) in screen 0-4 
+- Fixed scroll bug in screen 4 
+- TC8566AF format bug fixed : filler byte was not used.
+- Fixed a bug in the Panasonic FDC that caused some MSX2+ machines to fail 
+- Fixed aliasing in SCC filter 
+- Improved Moonsound emulation
+- Fixed bug in mirrored mapper 
+- Re-added support for old command line rom types
+
+
+v 2.6.1     October 1, 2006  
+===========================
+
+- Fixed AVI rendering that caused emulator crash on some PC's
+- Fixed fullspeed support that was source of crash on some PC's
+- Improved the video capture algorithm (runned out of space in 2.6)
+- Fixed bug related to the blending of consecutive frames (didn't take effect on startup in 2.6)
+- Changed default width of the memory window in the debugger to 16 bytes
+
+
+v 2.6.0     September 17, 2006  
+==============================
+
+- Added support for the MSX Game Reader
+- Added input event logging, replay and AVI rendering
+- Added support for the Sega SC-3000 and SF-7000 computers
+- Added support for ObsoNET, the only existing Ethernet solution for MSX
+- Added support for low resolution in fullscreen mode
+- Added SVI printer support
+- Added selection of video in grabber
+- Added support for Sony Playball roms with digitized speech
+- Added support for MegaCart(R), a new type of Coleco rom
+- Added dutch version of the user manual
+- Fixed crash caused by video grabber card
+- Made video grabber unload if not selected (in 2.5, the grabber was always enabled)
+- Fixed NMI bug in z80 emulation causing some Coleco games to fail running
+- Fixed detection of Sega rom types in menus and dialogs
+- Fixed bug in screen 10 vertical border color
+- Fixed header of PNG screenshots
+- Fixed bug in the S1985 device that caused emulator to crash when debugger was open.
+- Fixed the joystick button triggers for the SVI joystick
+- Fixed bug in the I8250 UART used in SVI-328 that caused emulator to hang
+- Fixed SVI-328 PPI bug
+- Fixed default rom mapper handling
+- Fixed some printer emulation bugs
+- Fixed save state in R-Type rom mapper so it doesn't crash the emulator
+- VDP timers are now saved correctly in save states
+- Updated MSX Printer emulation to include a static font
+- Fixed screen 6 sprites
+- Fixed CC sprite bug that made CC sprites visible even if no non CC sprite was present
+- Fixed sprite collision index in Status Register 0 for screen 5-8 sprites
+- Fixed bug related to CC sprites (having the attribute "Mix color with sprite that has next higher priority")
+
+
+v 2.5.0     July 8, 2006  
+========================
+
+In the emulator : 
+- Implemented a new controllers and keyboard editor that gives still more comfort to the gamers and will allow to support easily other computers or consoles in future versions
+- Added the hard disk emulation : besides the well-known Sunrise IDE hard disk controllers, blueMSX has also implemented the Beer IDE and GIDE supports
+- blueMSX is the first emulator that is capable to support the Yamaha CX5M, CX5M-128 and CX7M-128 computers by emulation of the YM2151 sound chip and the YK-01, YK-10 and YK-20 music keyboards. The MIDI part of the Yamaha SFG cartridges is not yet available.
+- Added support for the MHT Ingenieros Gunstick and the ASCII Plus-X Terminator Laser
+- Added support for two 80 columns graphics cards on MSX1 : Microsol VMX-80 and SVI-737 
+- Added support for Video In, Sony HBI-V1 digitizer and the digitization part of the Philips NMS-8280 computer
+- Added superimpose and external video source support in V9938 emulation
+- Added support for PNG screenshots
+- Added support for creating new disk images of various size on MSX and SVI-328
+- Added support for undocumented screen mode (screen 0 with screen 2 style name table addressing)
+- Added a new display synchronization method
+- Added a video option to blend consecutive frames and get smoother picture
+- Added support for the YM2149 PSG
+- Fixed the MIDI-IN support in the Turbo-R machines
+- Added new rom mappers for SFG-01 and SFG-05 (used in the Yamaha music computers), the F&M Direct Assembler System and the SG-1000 version of The Castle
+- Improved SRAM enable/disable handling in FM-PAC
+- Restructured Keyboard and Joystick input
+- Optimized the video rendering
+- Added support for running blueMSX from read only media
+- Added support for running blueMSX without storing any data on local machine
+- Fixed addressing in Konami mappers
+- Fixed bug in 1kB ram mapper used in ColecoVision and SG-1000
+- Border rendering is now cycle accurate
+- Fixed HREFRESH timing in VDP
+- Fixed bug in XVRAM emulation
+- Fixed sprite status bug
+- Fixed VDP timing in Turbo-R and MSX2+ machines
+
+In the debugger :
+- Added find dialog to search for strings or values in the memory
+- Improved editing in memory window
+- Added debugging support of OPL sound chips
+
+In the trainer :
+- Extended the cheat database to 396 MSX games
+
+
+v 2.4.0     September 18, 2005  
+==============================
+
+In the emulator : 
+- Added support for the first Sega console, the SG-1000
+- Added a new synchronisation mode, it is linked to the PC Vertical Blank and does a linear interpolation of the MSX frames to match the PC monitor frequency
+- The audio mixer is now, like the keyboard editor, a theme-written plugin and appears in an apart draggable window
+- Added support for MSX-MIDI OUT in generic Turbo-R machines and in Panasonic FS-A1GT, with checkbox to map the MT-32 instruments to General MIDI 
+- Added support for the mapper and the soundchip (VLM5030) of the Konami Keyboard Master, an unreleased and rare cartridge 
+- Improved SCC emulation to support the NYYRIKKI's sample players 
+- Rewrote completely the interrupt support 
+- Added support for renewed CAS and DSK databases in XML format with SHA1 values 
+- Extended the CAS database with new entries and with data for the corresponding WAV files 
+- Added support for Chinese language (Chinese Simplified and Chinese Traditional) 
+- Added 5 new generic MSX machines : MSX1 Arabic, MSX1 French, MSX1 Russian, MSX1 Spanish, MSX2 Swedish 
+- Added the RS232 rom in all generic MSX machines 
+- Improved the SVI memory management
+- Added support for the SVI-603 Coleco game adapter 
+- Added 2 SVI-328 machines with second video card (80 columns) 
+- Fixed different bugs 
+
+In the debugger : 
+- Added support for Chinese and Korean languages 
+- Added a window with list of values in the I/O ports 
+- Added a window to read and edit values of peripheral registers (VDP and PSG) 
+- Added saving of a disassembly in a text file 
+- Added saving of the memory in a binary file 
+
+In the tracer : 
+- Added support for Chinese and Korean languages 
+
+
+v 2.3.1     June 24, 2005  
+=========================
+
+Update of the debugger :
+- Added Japanese translation of the debugger 
+- Added assembly style flags (in addition to the other flags) in the CPU registry window.
+- Added set breakpoint dialog that takes an address or a symbol 
+- Updated BiFi's breakpoints 
+- Added BiFi's debug command 
+- Made step over work with block commands (ldir, cpir, otir, ....) 
+
+Bugfixes :
+- Fixed ASCII SRAM mapper bug 
+- Fixed minor bug in debugger hotkeys 
+- Fixed memory address input to work with large numbers 
+- Fixed bug in debugger that made writing to memory and registers to fail 
+- Fixed bug that made dropdowns in debugger to show incorrectly on some Windows machines 
+- Fixed VDP bug that made the intro to the game FEEDBACK to fail (command engine now continues to execute after screensplit) 
+- Fixed VDP bug in the PSET command (made the stars show incorrectly in the game FEEDBACK)
+- Fixed bug in fullscreen mode when using F12 (reset) if the menu is visible
+
+
+v 2.3.0     June 18, 2005  
+=========================
+
+Printer support : 
+- MSX printer and Epson FX-80 printer are emulated 
+- You can also write to a text file 
+- The printer port can be used as sound device (SiMPL/Covox DAC) 
+
+Enhanced version of the debugger : 
+- Added symbol file support in debugger (tniASM, asMSX, ...): 
+* Symbols can be shown/hidden in the disassembly window 
+* Symbol names can be used to look up an address in the memory window 
+- Added stack window 
+- Added 'step into' feature 
+- Added 'step out' feature 
+- Added more options to enable/disable breakpoints 
+- Added a goto dialog to jump to a specific address or symbol in the disassembly window 
+- Made visible memory writable in debugger 
+- Added support for asMSX DEBUG command (shown in trace logger window) 
+- Added support for BiFi's BREAKPOINT command (set bp from assembler) 
+- Fixed hotkey handling in debugger 
+
+Other changes in the emulator : 
+- Added German and Polish languages 
+- Updated Italian language support 
+- Updated C-BIOS machines to version 0.21 
+- Corrected the Brazilian MSX1 and MSX2 machines (1 physical drive and 2 logical drives)
+- Improved MSX-MUSIC support by implementing Mitsutaka Okazaki new YM2413 core 
+- Added FDC Audio samples 
+- Added support for Tetris 2 special edition copyright protection dongle 
+- Added keyboard lock handle for Japanese function keys 
+- Corrected frequency of MSX-AUDIO (runs now at 50 Khz) 
+- Corrected noise support in the ColecoVision console 
+- Fixed Hq2x and Hq3x palette bug 
+- Fixed VDP horizontal scroll bug (Tetris 2 special edition) 
+- Fixed VDP addressing bug (F-Nano 2) 
+- Fixed sprite collision detection bug 
+- Fixed screen 2 addressing bug
+- Fixed bug that made joystick config to resets to NONE after reboot 
+- Fixed bug related to subdirectory when running on read only media
+
+
+v 2.2.0     March 19, 2005  
+==========================
+
+- Added a keyboard editor
+- Introduced a plugin structure that allows to add external program (dll's) : debugger and trainer capacities come under this form with the emulator
+- Developed a multi-page interface with system infos, audio mixer, video settings and virtual keyboard
+- Intern changes for the soundchips emulation that makes possible support for multiple simultaneous chips
+- Added support for selectable video resolution in fullscreen mode
+- blueMSX shares now with openMSX a rom database in an improved updatable new format ; for a limited period, the old format will still be supported.
+- Updated C-BIOS to version 0.20
+- Replaced the FM-PAC cartridge in all generic MSX2 machines by the MSX2+ FM chip and the PAC cartridge
+- Added a generic MSX2 machine with only the PSG soundchip
+- Changed the special machines to make them closer to the real machines (the only exception is 512 Kb RAM in all MSX2, MSX2+ and Turbo-R machines) 
+- Added a new mapper for the Dutch and Korean MSX-MUSIC cartridges
+- Added support for the Sony HBI55 cartridge 
+- Added complete support for the SVI-328 Floppy Drive Controller 
+- Added autodetection of video source and support for the SVI-806 video card (80 columns - CRTC6845) ; this feature is also a step for future GFX9000 support 
+- Added support for 192 Kb VRAM in the V9958 VDP chip 
+- Improved the Disable Floppy Drive Timing feature
+- Added the amber monitor type 
+- Added support for the Hq2x scaler (and the Hq3x scaler if the emulator runs in fullscreen mode and at least the resolution 1024 x 768)
+- Added the RF-Modulator effect 
+- Improved the filtering for SCC, MSX-MUSIC and MSX-AUDIO 
+- Added support for parallel and serial ports 
+- Added preview of the save states
+- Added support for the .col files, used for the ColecoVision cartridges
+- Fixed different bugs (PSG sounds, save states, MSX-AUDIO initialisation, loss of performance when using menus) 
+- Fixed sprite bug in Dragon Quest 2 (the title is now displayed correctly) 
+
+
+v 2.1.0     December 25, 2004  
+=============================
+
+- Added support for ColecoVision
+- Added support for disabling real floppy drive timing
+- Added selection for enabling/disabling saving configuration in Windows registry
+- Improved disk metric detection
+- Updated machines, including one with the brand new C-BIOS 0.19
+- Fixed bug that caused returning from A1 internal software back to VShell to fail.
+- Fixed bug in the Panasonic Rom Mapper that made FS-A1WSX machines crash
+- Fixed bug in the VDP Command engine that made graphics corrupt in Eidolon
+- Fixed Screen 3 rendering bug
+- Fixed Interlace bug in GigaMix game
+- Fixed bug in PSG that made notes hang in Sex Bomb Bunny
+- Fixed mouse bug in ROM disk magazines
+- Fixed bug in PCM playback that made some samples to be played too slow
+- Fixed bug in file associations that did not update associations for newly installed versions of the emulator
+- Fixed bug in Cassette Auto Rewind that made rewind fail when a cassette from the history was selected
+- Fixed bug in cas and caszip arguments for the command line
+- Fixed bug that made the casinfo directory not created correctly
+- Fixed bug in R800 frequency selector list
+- Fixed bug in Cassette saving that added trash at the end of the file
+- Fixed bug in Drag & Drop that made files with spaces sometimes fail
+
+
+v 2.0.0     November 20, 2004  
+=============================
+
+- First version completely free from all fMSX sources and codes
+- Added Turbo-R support, including PCM support (only the playback part) and Turbo-R SRAM support
+- Added support for the almost MSX1 machines Spectravideo SVI-318 and SVI-328 
+- Fixed timing of the Panasonic Floppy Drive Controller
+- Added support for the Western Digital FDC and 4 new mappers : National/Daewoo, Philips/Sony, Microsol and SVI-738
+- Added new general machines : MSX1 German, MSX1 Swedish, MSX2 Spanish
+- Extended the choice for specific machines, including machines without diskdrive
+- Updated all machines to use an appropriate FDC
+- Added mappers for 2 digital-to-analog converters : Konami's Synthesiser, Matjusushi 
+- Added support for the MSX-AUDIO DAC
+- Added support for the Pause switch
+- Added support for external RAM
+- Added video frequency selector 
+- Added monitor display mode
+- Added hotkeys to minimize the emulator and use the Pause key
+- Added oversampling feature for MSX-MUSIC, MSX-AUDIO and Moonsound
+- Added checkbox to enable/disable priority boosting of the emulator
+- Added support for 1 or 2 FDC's (selectable in the machine editor)
+- Added Z80/R800 frequency selector in the machine editor
+- Added new arguments for the command line 
+- Added toggle CPU trace shortcut (to define by advanced users)
+- Added the cassette database and updated the rom database
+- Fixed differend bugs in the VDP timing
+- Fixed a bug in the overflow detection for CPU load
+- Rewritten the whole save state feature to allow better backward compatibility and include saving of the cassette position
+- Extended the themes features with new triggers and actions, support for sliders controls, native windows fonts and clips regions to hide the windows borders
+
+
+v 1.7.0     September 20, 2004  
+==============================
+
+- More accuracy, stability and performance by implementation of the M1 additionnal waiting states, optimisation of the VDP emulation and retuning of the Z80, VDP and MSX-AUDIO timings
+- Support for patched disk rom is now replaced in all general and special machines by support of the Panasonic TC8566AF floppy drive controller
+- Added Dir as Dsk feature
+- Added remembering of the position of the main dialogs on the screen
+- Added tools to create new themes for the emulator layout with customisable skins
+- Added real interlace mode (to complement the de-interlaced mode) 
+- Improved automatic detection of rom mapper type for roms of 8Kb size 
+- Improved colors for screen 8 and for MSX2+ screens
+- Improved dropdown menu for selecting the rom mapper type
+- Improved Moonsound support - thanks to Wouter Vermaelen and the openMSX dev team (these fixes will also be available in the next openMSX release)
+- Simplified menu for SCC/SCC+ (only 2 options in place of 5) 
+- Fixed bugs in MSX-AUDIO and Moonsound emulation
+- Fixed bugs in the MSX2+ horizontal scroll support
+- Fixed different bugs in the VDP emulation
+- Fixed bug in the Super Pierrot mapper (ascii16nf)
+- Fixed bugs in the refreshing of menus
+- Fixed bug when creating blank dsk/cas image via file name requester
+- Fixed bug in the cassette position dialog (files weren't showed properly when custom files checkbox was deselected)
+- Fixed bug in the open file dialog (confusion between slot 1 and slot 2)
+- Fixed bug in the screen capture feature when using zip file with folder structure 
+
+
+v 1.6.0     July 27, 2004  
+=========================
+
+- Added a customizable shortcuts editor : the user can remap a long list of features to keys, combinations or keys or to the joypad buttons, create different profiles or modify the existing profiles 
+- Added an alternative interface "DIGIblue" with the visualisation of the audio outputs and more indicators about the emulated machine and his working 
+- Added Korean language
+- Added DirectX support for joystick/joypad
+- Updated Joystick configuration dialog (Properties/Controls) 
+- Added Gamma/Brightness/Contrast/Saturation controls 
+- Added slider for adaptable scanlines on each monitor emulation type 
+- Added new screenshots modes : Filtered screenshot (the original) , large unfiltered screenshot (544x480 pixels) , small unfiltered screenshot (272x240 pixels)
+- More uptodate MSX-AUDIO engine
+- New keyclick emulation
+- Renewed and extensive rom database (now fully external to the emulator)
+- Added support for future cas and dsk databases
+- Added support for selecting rom type for zipped rom files
+- Added toggle Show/hide sprites 
+- Added choice of the default slot or drive for the drag and drop of files
+- Added choice of the default mapper type for the roms not found in the rom database
+- Fixed Bunsetsu Mapper to work with FS-4500 & FS-4700 
+- Fixed bug when ejecting an ASCII8 rom while emulation is running 
+- Fixed audio bugs : PSG samples now works again, Panasonic MSX-AUDIO is well detected without special poke and you can play Disk Station dismagazines or games like Labyrinth or Xevious with MSX-AUDIO 
+- Fixed a bug in the creation of all needed directories at startup
+- Disabled the video rendering when minimising the emulator window without stopping the emulator
+
+
+v 1.5.0     June 12, 2004  
+=========================
+
+- The entire timing scheme of the emulation and DirectDraw is replaced. The result is higher frame rate on slower PCs (< 1.4 GHz) and less interruptions in the sound. 
+- MSX1 emulation is improved : correct specific palette of colors, CMOS disabled in MSX1 mode 
+- Full RTC implementation in MSX2/2+ modes, including test and alarm register 
+- The system roms are no more embedded in the executable file and the emulator is released in two versions : one that includes the bios roms as separate files (as NLMSX or paraMSX) and one that only contains C-BIOS and no copyrighted roms. 
+- Added two counters : frames per second and using of CPU resource by the emulator 
+- Added pause and stop buttons to toolbar 
+- Added finnish language 
+- Added support for the different SCC/SCC+ mappers 
+- Added support for zipped save states
+- Added rom type selection dropdown in rom open dialog box 
+- Updated horizontal stretch 
+- Correct sprite palette in screen 8
+- Fixed bugs with double click on a dsk or rom file : the emulator starts now with this file only (it ejects any inserted cartridges); if blueMSX is already running, the double click will have effect in the existing emulator 
+- Fixed mouse lock when running at high frequency 
+- Fixed lockups when running emu and dialogs are moved over emulation 
+- Fixed bug with property page in full screen mode 
+- Fixed bug in toolbar update when starting or stopping emulation 
+- Made switch check boxes in options/emulation not restart emulation 
+- Fixed VDP bug that made some Namcot MSX1 games fail in screen 1 
+- Fixed bug in disk patch : it flushes VDP commands correctly (BGV #13 in Disk Station 17 and Rune Master III now show graphics correctly) 
+- Fixed bug in machine editor dropdowns : clicking outside dropdown does not reset value 
+- Fixed bugs in the mixer control (position of the balance slider, volume when selecting mono) 
+- Fixed bugs in sprite emulation and screen 6 horizontal scroll 
+- Fixed bugs in the graphical interface 
+- Fixed bug in save states for MSX1 machines
+
+
+v 1.4.1     May 10, 2004  
+========================
+
+- General video improvement :
+* Addition of horizontal and vertical stretch on all monitor modes for a still more better MSX experience 
+* Implementation of a DirectDraw Hw Acceleration driver that combines video and system memory for optimised performance
+- General sound improvement : 
+* Better sound mixer
+* Updated Moonsound (less bad noises)
+* Support of the MSX-AUDIO cartridges (including the switch of the Panasonic cartridge)
+* Improved SCC support
+- New default machine configs : MSX2 French and German
+- Support for smaller sound buffer sizes in performance 
+- Added support for di1, di2, mx1, mx2 file types
+- Added registration of file types in settings, so double clicking a file starts blueMSX 
+- Added romdb.dat database (created in blueMSX root directory if not exist) 
+- Added support for Kanji roms in cartridge slots
+- Added support for Korean 90-in-1 rom
+- Added support for PAC and Megaram in special submenu
+- Added Drag and drop of .sta files 
+- Mouse / Joystick config saved in save state 
+- Fixed mouse issues 
+- Mouse as joystick when left button pressed at start
+- Changed "Joystick in Port #1" to "Port #1"
+- Possibility to disable Windows menu keys
+- Correct screen split to screen 0 (Boring scroll in Anma's Relax)
+- Updated Disk Patch to synchronize pending VDP commands (XAK Tower of Gazzel)
+- Updated sprite addressing
+- Fixed bug in set position for zipped cas files
+- Added support for NT4 and Win95
+
+
+v 1.4.0     April 23, 2004  
+==========================
+
+- Moonsound support
+- Added a new megarom mapper : blueMSX is the first emulator to correctly support KOEI roms with 8kB and 32kB SRAM. 
+- Improved support of all games with SRAM
+- Added support for basic games in rom format
+- Correct overscan behaviour (Matra games, Unknown Reality)
+- Version control in savestate (to make saved states backwards compatible and avoid errors when loading old states)
+- Additions to the internal rom database
+- Changed emulation of special keys of Japanese MSX keyboard
+- Fixed bug in mouse buttons emulation
+- Fixed bug in screen 0 width 80
+- Fixed bug about sprite collision and drawing in screen 1-3
+- Fixed bug in cassette read only mode 
+- Fixed bug in save state (audio chip was not saved)
+- Fixed bugs in translations and menu
+
+
+v 1.3.0     April 11, 2004  
+==========================
+
+- Machine configuration editor that supports external system roms
+- New default configurations : Arabic, Brazilian, and Russian MSX 2
+- New mappers: Holy Quran, Matsushita, Panasonic, Bunsetsu, National
+- Better mouse emulation (the mouse works now in Princess Maker)
+- Change of multiple disk with use of a virtual FDD index and indication of the selected disk in a window
+- Hotkeys for set or release of mouse capture
+- Italian language support
+- Better performance by disabling of the Windows screensaver
+- Clearing and setting of number of files in history
+- Updated state save : it saves now the entire state with a better naming
+- Updated japanese keyboard default settings
+- Support for MSX2+ horizontal scroll in screens 4 and 6
+- Fixed VDP timing problems (removing of flicker in some games)
+- Fixed screenshot bug when selected from the menu
+- Fixed bugs when playing PSG samples
+- Support for the Panasonic front switch
+- Extended cassette interface
+- Support for fMSX-DOS and fMSX98/AT dsk images
+- Max emulation speed hot key
+- Fixed bug when going to full screen mode by double clicking on the title bar
+- Fixed colors corruption bug when using horizontal scroll in screen 10 or 12 
+
+
+v 1.2.0     March 4, 2004  
+=========================
+
+- Interlace support.
+- Major improvements in the VDP synchronisation to the Z80
+- Enable/disable MSX-AUDIO, MSX-MUSIC
+- Slider and hotkeys for controlling emulation speed
+- Audio works when running other speed than normal
+- Hotkeys for cart/disk insert
+- Z80 timing bugfix, e.g. the game TZR
+- Support for FMPAC rom type including SRAM support
+- Language support : Dutch, English, French, Japanese, Portuguese, Spanish, and Swedish
+- Remember individual dirs for disks/roms/tapes
+- Command line arguments
+- Updated sprite handling (large sprites, corrected color, better collision detection)
+- Additional toolbar buttons : Start/Pause and Help
+- Updated disk handling and format bugfix
+- Bugfix in horizontal scroll for screen 12
+- Bugfix in the AY8910 emulation that made some samples not play correctly.
+- Bugfix in the ASCII rom mappers that made some roms not run properly.
+
+
+v 1.1.1     February 5, 2004  
+============================
+
+- Support for MSX2+ horizontal scroll
+- Correct VRAM addressing in screen 7 and 8
+- Correct 256/512 pixel screen split behavior
+- Improved PSG and SCC audio
+- Support for R-TYPE, Harry Fox and Cross Blaim megaroms
+- Support for Korean MSX1 and MSX2 system roms
+- Support for .CAS tape files
+- Uses DirectX for keyboard input (fixes problems when using Win9x or AZERTY keyboards)
+- Save state now works with MSX-MUSIC and MSX-AUDIO
+- Caps lock and Kana lock indicators in status bar
+- Fixed bug in "Insert Disk" menu that made history choices fail first time
+- Minor bugfixes in megarom mapper
+- Monor Z80 opcode updates
+- Various non critical bugfixes
+
+
+v 1.1.0     January 15, 2004  
+============================
+
+- Added users manual
+- Added toolbar to user interface
+- Support for ASCII8 and ASCII16 mega roms with SRAM
+- Support for SCC+ mega rom with internal RAM
+- Support for soft reset. (RAM is not erased on reset)
+- Support for inserting and removing mega roms while emulator is running
+- Support for MSX-AUDIO
+- Improved PSG audio emulation
+- Support for selecting CPU frequency
+- Added screenshot feature
+- Updated video rendering to make screen less flickery
+- Fixed bug in the "load state" feature that sometimes made load state fail
+- Fixed bug in rom mapper that made call command fail
+- Fixed bug in zipped rom support that made Konami rom combinations work wierd
+- Fixed bug that made blueMSX crash when cancelling the save CPU state dialog
+
+
+v 1.0.5     December 7, 2003  
+============================
+
+- Stereo (and mono) sound
+- Advanced mixer to control volume and pan of individual audio chips in real time
+- Zipped rom and dsk support, including drag and drop. Supports multiple roms/dsks in the same zip file
+- Support for 512 pixel wide SCREEN6, SCREEN7, and TEXT80 screen.
+- Support for 256 color SCREEN8
+- Scale 2x monitor renderer
+- Drag and drop to the blueMSX program icon. Emulator starts with the dragged file
+- Fixed bug in PSG that prevented some samples to be played
+- Fixed bug in the bios patch that made some disks hang the PC
+
+
+v 1.0.4     November 30, 2003  
+=============================
+
+- Support for Japanese MSX1 and MSX2 system roms
+- Support for Konami Game Master and Game Master 2 roms
+- Added key click audio emulation
+- Fine tuned SCC and AY8910 emulation
+- Updated composite monitor emulation
+- Updated keyboard mapping for european keyboards
+- Fixed bug that left settings unsaved on Windows 95 and 98 (and maybe other systems as well)
+- Fixed bug in cartridge and disk insert menu
+- Fixed bug that sometimes made disk insert fail when emulator is run in windowed mode
+- Fixed bug that sometimes caused blueMSX to crash after 20 minutes
+- Fixed bug that sometimes caused blueMSX to crash at exit
+
+
+v 1.0.3     November 24, 2003  
+=============================
+
+- Corrected timing in emulator
+- Added video mode option in video preferences where PAL or NTSC can be selected. This ensures correct speed of games like Nemesis2
+- Added support for brazilian MSX1 system roms
+
+
+v 1.0.2     November 22, 2003  
+=============================
+
+- Added support for DirectX sound
+- Corrected behavior in DirectX video
+
+
+v 1.0.1     November 20, 2003  
+=============================
+
+- First official blueMSX release

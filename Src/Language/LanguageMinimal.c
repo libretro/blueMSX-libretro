@@ -1,33 +1,32 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Language/LanguageMinimal.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Language/LanguageMinimal.c,v $
 **
-** $Revision: 1.5 $
+** $Revision: 1.21 $
 **
-** $Date: 2006/06/27 15:43:09 $
+** $Date: 2009-04-04 20:57:19 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Copyright (C) 2003-2004 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
 #include "Language.h"
+#include <string.h>
 
 EmuLanguageType langFromName(char* name, int translate)
 {
@@ -68,6 +67,8 @@ char* langTextUnknown()             { return "Unknown"; }
 char* langRomTypeStandard()         { return "Standard"; }
 char* langRomTypeMsxdos2()          { return "MSXDOS 2"; }
 char* langRomTypeKonamiScc()        { return "Konami SCC"; }
+char* langRomTypeManbow2()          { return "Manbbow 2"; }
+char* langRomTypeMegaFlashRomScc()  { return "Mega Flash Rom SCC"; }
 char* langRomTypeKonami()           { return "Konami"; }
 char* langRomTypeAscii8()           { return "ASCII 8"; }
 char* langRomTypeAscii16()          { return "ASCII 16"; }
@@ -96,18 +97,25 @@ char* langRomTypeNormal()           { return "Normal ROM"; }
 char* langRomTypeDiskPatch()        { return "Normal + Disk Patch"; }
 char* langRomTypeCasPatch()         { return "Normal + Cassette Patch"; }
 char* langRomTypeTc8566afFdc()      { return "TC8566AF Disk Controller"; }
+char* langRomTypeTc8566afTrFdc()    { return "TC8566AF Turbo-R Disk Controller"; }
 char* langRomTypeMicrosolFdc()      { return "Microsol Disk Controller"; }
 char* langRomTypeNationalFdc()      { return "National Disk Controller"; }
 char* langRomTypePhilipsFdc()       { return "Philips Disk Controller"; }
+char* langRomTypeSvi707Fdc()        { return "SVI-707 Disk Controller"; }
 char* langRomTypeSvi738Fdc()        { return "SVI-738 Disk Controller"; }
 char* langRomTypeMappedRam()        { return "Mapped RAM"; }
 char* langRomTypeMirroredRam1k()    { return "1kB Mirrored RAM"; }
+char* langRomTypeMirroredRam2k()    { return "2kB Mirrored RAM"; }
 char* langRomTypeNormalRam()        { return "Normal RAM"; }
 char* langRomTypeKanji()            { return "Kanji"; }
 char* langRomTypeHolyQuran()        { return "Holy Quran"; }
 char* langRomTypeMatsushitaSram()   { return "Matsushita SRAM"; }
+char* langRomTypePanasonic8()       { return "Panasonic FM 8kB SRAM"; }
+char* langRomTypePanasonicWx16()    { return "Panasonic WX 16kB SRAM"; }
 char* langRomTypePanasonic16()      { return "Panasonic 16kB SRAM"; }
 char* langRomTypePanasonic32()      { return "Panasonic 32kB SRAM"; }
+char* langRomTypePanasonicModem()   { return "Panasonic Modem"; }
+char* langRomTypeDram()             { return "Panasonic DRAM"; }
 char* langRomTypeBunsetsu()         { return "Bunsetsu"; }
 char* langRomTypeJisyo()            { return "Jisyo"; }
 char* langRomTypeKanji12()          { return "Kanji 12"; }
@@ -136,6 +144,10 @@ char* langRomTypeMegaRam512()       { return "512kB MegaRAM"; }
 char* langRomTypeMegaRam768()       { return "768kB MegaRAM"; }
 char* langRomTypeMegaRam2mb()       { return "2MB MegaRAM"; }
 char* langRomTypeExtRam()           { return "External RAM"; }
+char* langRomTypeExtRam16()         { return "16kB External RAM"; }
+char* langRomTypeExtRam32()         { return "32kB External RAM"; }
+char* langRomTypeExtRam48()         { return "48kB External RAM"; }
+char* langRomTypeExtRam64()         { return "64kB External RAM"; }
 char* langRomTypeExtRam512()        { return "512kB External RAM"; }
 char* langRomTypeExtRam1mb()        { return "1MB External RAM"; }
 char* langRomTypeExtRam2mb()        { return "2MB External RAM"; }
@@ -149,9 +161,11 @@ char* langRomTypeSvi328Fdc()        { return "SVI-328 Disk Controller"; }
 char* langRomTypeSvi328Prn()        { return "SVI-328 Printer"; }
 char* langRomTypeSvi328Uart()       { return "SVI-328 Serial Port"; }
 char* langRomTypeSvi328col80()      { return "SVI-328 80 Column Card"; }
+char* langRomTypeSvi328RsIde()      { return "SVI-328 RS IDE"; }
 char* langRomTypeSvi727col80()      { return "SVI-727 80 Column Card"; }
 char* langRomTypeColecoCart()       { return "Coleco Cartridge"; }
 char* langRomTypeSg1000Cart()       { return "SG-1000 Cartridge"; }
+char* langRomTypeSc3000Cart()       { return "SC-3000 Cartridge"; }
 char* langRomTypeTheCastle()        { return "The Castle"; }
 char* langRomTypeSonyHbi55()        { return "Sony HBI-55"; }
 char* langRomTypeMsxPrinter()       { return "MSX Printer"; }
@@ -166,7 +180,33 @@ char* langRomTypeHbiV1Digitiz()     { return "Sony HBI-V1 Digitizer"; }
 char* langRomTypeFmdas()            { return "F&M Direct Assembler System"; }
 char* langRomTypeSfg01()            { return "Yamaha SFG-01"; }
 char* langRomTypeSfg05()            { return "Yamaha SFG-05"; }
-
+char* langRomTypePlayBall()         { return "Sony Playball"; }
+char* langRomTypeObsonet()          { return "Obsonet"; }
+char* langRomTypeDumas()            { return "Dumas"; }
+char* langRomTypeSegaBasic()        { return "Sega Basic"; }
+char* langRomTypeMegaSCSI()         { return "MEGA-SCSI"; }
+char* langRomTypeMegaSCSI128()      { return "128kB MEGA-SCSI"; }
+char* langRomTypeMegaSCSI256()      { return "256kB MEGA-SCSI"; }
+char* langRomTypeMegaSCSI512()      { return "512kB MEGA-SCSI"; }
+char* langRomTypeMegaSCSI1mb()      { return "1MB MEGA-SCSI"; }
+char* langRomTypeEseRam()           { return "Ese-RAM"; }
+char* langRomTypeEseRam128()        { return "128kB Ese-RAM"; }
+char* langRomTypeEseRam256()        { return "256kB Ese-RAM"; }
+char* langRomTypeEseRam512()        { return "512kB Ese-RAM"; }
+char* langRomTypeEseRam1mb()        { return "1MB Ese-RAM"; }
+char* langRomTypeWaveSCSI()         { return "WAVE-SCSI"; }
+char* langRomTypeWaveSCSI128()      { return "128kB WAVE-SCSI"; }
+char* langRomTypeWaveSCSI256()      { return "256kB WAVE-SCSI"; }
+char* langRomTypeWaveSCSI512()      { return "512kB WAVE-SCSI"; }
+char* langRomTypeWaveSCSI1mb()      { return "1MB WAVE-SCSI"; }
+char* langRomTypeEseSCC()           { return "Ese-SCC"; }
+char* langRomTypeEseSCC128()        { return "128kB Ese-SCC"; }
+char* langRomTypeEseSCC256()        { return "256kB Ese-SCC"; }
+char* langRomTypeEseSCC512()        { return "512kB Ese-SCC"; }
+char* langRomTypeNoWind()           { return "NoWind USB"; }
+char* langRomTypeGoudaSCSI()        { return "Gouda SCSI"; }
+char* langRomTypeMasushitaSramInv() { return "Matsushita SRAM - Turbo 5.37MHz"; }
+char* langRomTypeMsxMidiExternal()  { return "External MIDI"; }
 
 //----------------------
 // Debug type lines
@@ -193,6 +233,8 @@ char* langDbgDevRamMapper()         { return "RAM Mapper"; }
 char* langDbgDevRam()               { return "RAM"; }
 char* langDbgDevIdeBeer()           { return "Beer IDE"; }
 char* langDbgDevIdeGide()           { return "GIDE"; }
+char* langDbgDevIdeSviRs()          { return "SVI-328 RS IDE"; }
+char* langDbgDevScsiGouda()         { return "Gouda SCSI"; }
 char* langDbgDevF4Device()          { return "F4 Device"; }
 char* langDbgDevFmpac()             { return "FMPAC"; }
 char* langDbgDevFmpak()             { return "FMPAK"; }
@@ -232,7 +274,6 @@ char* langDbgDevTrPause()           { return "TR Pause"; }
 char* langDbgDevAy8910()            { return "AY8910 PSG"; }
 char* langDbgDevScc()               { return "SCC"; }
 
-
 char* langEnumControlsJoyNone()             { return "None"; }
 char* langEnumControlsJoyTetrisDongle()     { return "Tetris 2 Dongle"; }
 char* langEnumControlsJoyMagicKeyDongle()   { return "MagicKey Dongle"; }
@@ -240,4 +281,5 @@ char* langEnumControlsJoyMouse()            { return "Mouse"; }
 char* langEnumControlsJoy2Button()          { return "2-button Joystick"; }
 char* langEnumControlsJoyGunStick()         { return "Gun Stick"; }
 char* langEnumControlsJoyAsciiLaser()       { return "ASCII Plus-X Terminator Laser"; }
+char* langEnumControlsJoyArkanoidPad()      { return "Arkanoid Pad"; }
 char* langEnumControlsJoyColeco()           { return "ColecoVision Joystick"; }

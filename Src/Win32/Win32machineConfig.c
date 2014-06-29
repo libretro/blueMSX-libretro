@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32machineConfig.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32machineConfig.c,v $
 **
-** $Revision: 1.50 $
+** $Revision: 1.81 $
 **
-** $Date: 2006/06/26 19:35:55 $
+** $Date: 2009-04-30 03:53:28 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -64,7 +62,12 @@ static int      editRamNormalSize;
 static int      editRamMapperSize;
 static int      editRamMirroredSize;
 static int      editExtRamSize;
+
 static int      editMegaRamSize;
+static int      editMegaSCSISize;
+static int      editEseRamSize;
+static int      editWaveSCSISize;
+static int      editEseSCCSize;
 
 static void setCartSlotDropdown(HWND hDlg, int cart, int dropdownId);
 
@@ -93,26 +96,32 @@ static void updateMachine() {
     EnableWindow(GetDlgItem(hDlgMain, IDC_CONFSAVEAS), machineModified | foundMachine);
 }
 
-static updateMachineList(HWND hDlg) {
-    char** machineNames = machineGetAvailable(0);
+static void updateMachineList(HWND hDlg) {
     int index = 0;
+	ArrayListIterator *iterator;
+	ArrayList *machineList;
 
     while (CB_ERR != SendDlgItemMessage(hDlg, IDC_CONF_CONFIGS, CB_DELETESTRING, 0, 0));
 
-    while (*machineNames != NULL) {
-        char buffer[128];
+    machineList = arrayListCreate();
+    machineFillAvailable(machineList, 0);
 
-        sprintf(buffer, "%s", *machineNames);
+    iterator = arrayListCreateIterator(machineList);
+    while (arrayListCanIterate(iterator)) {
+        char buffer[128];
+        _snprintf(buffer, sizeof(buffer) - 1, "%s", arrayListIterate(iterator));
 
         SendDlgItemMessage(hDlg, IDC_CONF_CONFIGS, CB_ADDSTRING, 0, (LPARAM)buffer);
-
-        if (index == 0 || 0 == strcmp(*machineNames, machineName)) {
+        if (index == 0 || 0 == strcmp(buffer, machineName)) {
             SendDlgItemMessage(hDlg, IDC_CONF_CONFIGS, CB_SETCURSEL, index, 0);
             foundMachine = 1;
         }
-        machineNames++;
         index++;
     }
+    arrayListDestroyIterator(iterator);
+
+    arrayListDestroy(machineList);
+
     if (!foundMachine) {
         machineName[0] = 0;
     }
@@ -182,6 +191,8 @@ static void setSubSlotsEnable(HWND hDlg, int nEnable) {
             SendDlgItemMessage(hDlg, IDC_CONF_SLOTCART2, CB_SETCURSEL, 0, 0);
             break;
         case BOARD_SG1000:
+        case BOARD_SC3000:
+        case BOARD_SF7000:
             SendDlgItemMessage(hDlg, IDC_CONF_SLOTCART1, CB_SETCURSEL, 0, 0);
             SendDlgItemMessage(hDlg, IDC_CONF_SLOTCART2, CB_SETCURSEL, 0, 0);
             break;
@@ -202,10 +213,13 @@ static void setBoardDropdown(HWND hDlg) {
     SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"MSX S-1985");
     SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"MSX T-9769B");
     SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"MSX T-9769C");
+    SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"MSX Forte II");
     SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"SVI");
     SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"ColecoVision");
     SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"ColecoAdam");
     SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"SG-1000");
+    SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"SC-3000");
+    SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_ADDSTRING, 0, (LPARAM)"SF-7000");
 
     switch (machine->board.type) {
     default:
@@ -229,20 +243,32 @@ static void setBoardDropdown(HWND hDlg) {
         SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 4, 0);
         setSubSlotsEnable(hDlg, 1);
         break;
-    case BOARD_SVI:
+    case BOARD_MSX_FORTE_II:
         SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 5, 0);
         setSubSlotsEnable(hDlg, 0);
         break;
-    case BOARD_COLECO:
+    case BOARD_SVI:
         SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 6, 0);
         setSubSlotsEnable(hDlg, 0);
         break;
-    case BOARD_COLECOADAM:
+    case BOARD_COLECO:
         SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 7, 0);
         setSubSlotsEnable(hDlg, 0);
         break;
-    case BOARD_SG1000:
+    case BOARD_COLECOADAM:
         SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 8, 0);
+        setSubSlotsEnable(hDlg, 0);
+        break;
+    case BOARD_SG1000:
+        SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 9, 0);
+        setSubSlotsEnable(hDlg, 0);
+        break;
+    case BOARD_SC3000:
+        SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 10, 0);
+        setSubSlotsEnable(hDlg, 0);
+        break;
+    case BOARD_SF7000:
+        SendDlgItemMessage(hDlg, IDC_CONFBOARD, CB_SETCURSEL, 11, 0);
         setSubSlotsEnable(hDlg, 0);
         break;
     }
@@ -275,19 +301,31 @@ static int getBoardDropDown(HWND hDlg) {
         setSubSlotsEnable(hDlg, 1);
         break;
     case 5:
-        machine->board.type = BOARD_SVI;
+        machine->board.type = BOARD_MSX_FORTE_II;
         setSubSlotsEnable(hDlg, 0);
         break;
     case 6:
-        machine->board.type = BOARD_COLECO;
+        machine->board.type = BOARD_SVI;
         setSubSlotsEnable(hDlg, 0);
         break;
     case 7:
-        machine->board.type = BOARD_COLECOADAM;
+        machine->board.type = BOARD_COLECO;
         setSubSlotsEnable(hDlg, 0);
         break;
     case 8:
+        machine->board.type = BOARD_COLECOADAM;
+        setSubSlotsEnable(hDlg, 0);
+        break;
+    case 9:
         machine->board.type = BOARD_SG1000;
+        setSubSlotsEnable(hDlg, 0);
+        break;
+    case 10:
+        machine->board.type = BOARD_SC3000;
+        setSubSlotsEnable(hDlg, 0);
+        break;
+    case 11:
+        machine->board.type = BOARD_SF7000;
         setSubSlotsEnable(hDlg, 0);
         break;
     }
@@ -491,13 +529,13 @@ static void getSizeControl(HWND hDlg)
     }
 
     if (editSlotInfo.romType == RAM_NORMAL) {
-        if (value == 8 || value == 16 || value == 32 || value == 64) {
+        if (value == 8 || value == 16 || value == 24 || value == 32 || value == 64) {
             editRamNormalSize = 1024 * value;
             editSlotInfo.startPage = 8 - editRamNormalSize / 0x2000;
         }
     }
 
-    if (editSlotInfo.romType == RAM_1KB_MIRRORED) {
+    if (editSlotInfo.romType == RAM_1KB_MIRRORED || editSlotInfo.romType == RAM_2KB_MIRRORED) {
         if (value ==  8 || value == 16 || value == 24 || value == 32 || 
             value == 40 || value == 48 || value == 56 || value == 64) {
             editRamMirroredSize = 1024 * value;
@@ -531,6 +569,39 @@ static void getSizeControl(HWND hDlg)
             editMegaRamSize = 1024 * value;
         }
     }
+
+    if (editSlotInfo.romType == SRAM_MEGASCSI) {
+        if (value == 1) {
+            editMegaSCSISize = 0x100000;
+        }
+        if (value == 128 || value == 256 || value == 512) {
+            editMegaSCSISize = 1024 * value;
+        }
+    }
+
+    if (editSlotInfo.romType == SRAM_ESERAM) {
+        if (value == 1) {
+            editEseRamSize = 0x100000;
+        }
+        if (value == 128 || value == 256 || value == 512) {
+            editEseRamSize = 1024 * value;
+        }
+    }
+
+    if (editSlotInfo.romType == SRAM_WAVESCSI) {
+        if (value == 1) {
+            editWaveSCSISize = 0x100000;
+        }
+        if (value == 128 || value == 256 || value == 512) {
+            editWaveSCSISize = 1024 * value;
+        }
+    }
+
+    if (editSlotInfo.romType == SRAM_ESESCC) {
+        if (value == 128 || value == 256 || value == 512) {
+            editEseSCCSize = 1024 * value;
+        }
+    }
 }
 
 static void getSlotControl(HWND hDlg)
@@ -541,16 +612,20 @@ static void getSlotControl(HWND hDlg)
     int j;
 
     if (editSlotInfo.romType == SRAM_MATSUCHITA || editSlotInfo.romType == ROM_GIDE ||
+        editSlotInfo.romType == SRAM_MATSUCHITA_INV ||
         editSlotInfo.romType == ROM_TURBORTIMER || editSlotInfo.romType == ROM_TURBORIO ||
         editSlotInfo.romType == SRAM_S1985 || editSlotInfo.romType == ROM_S1990 ||
         editSlotInfo.romType == ROM_F4INVERTED || editSlotInfo.romType == ROM_F4DEVICE ||
-        editSlotInfo.romType == ROM_NMS8280DIGI || 
+        editSlotInfo.romType == ROM_NMS8280DIGI || editSlotInfo.romType == ROM_NMS1210 || 
         editSlotInfo.romType == ROM_MOONSOUND || editSlotInfo.romType == ROM_MSXMIDI ||
+        editSlotInfo.romType == ROM_MSXMIDI_EXTERNAL ||
         editSlotInfo.romType == ROM_KANJI || editSlotInfo.romType == ROM_KANJI12 ||
         editSlotInfo.romType == ROM_JISYO || editSlotInfo.romType == ROM_MSXAUDIODEV ||
         editSlotInfo.romType == ROM_TURBORPCM || editSlotInfo.romType == ROM_SVI328FDC ||
-        editSlotInfo.romType == ROM_SVI80COL || editSlotInfo.romType == ROM_SVI328PRN ||
-        editSlotInfo.romType == ROM_SVI727 ||
+        editSlotInfo.romType == ROM_JOYREXPSG || 
+        editSlotInfo.romType == ROM_OPCODEPSG || editSlotInfo.romType == ROM_OPCODESLOT ||
+        editSlotInfo.romType == ROM_SVI328COL80 || editSlotInfo.romType == ROM_SVI328PRN ||
+        editSlotInfo.romType == ROM_SVI727COL80 || editSlotInfo.romType == ROM_SVI328RSIDE ||
         editSlotInfo.romType == ROM_MSXPRN || editSlotInfo.romType == ROM_SVI328RS232) {
         return;
     }
@@ -575,13 +650,16 @@ static void getAddressControl(HWND hDlg)
 {
     if (editSlotInfo.romType == RAM_NORMAL       || 
         editSlotInfo.romType == RAM_1KB_MIRRORED || 
+        editSlotInfo.romType == RAM_2KB_MIRRORED || 
         editSlotInfo.romType == ROM_NORMAL       || 
+        editSlotInfo.romType == ROM_DRAM         ||
         editSlotInfo.romType == ROM_MSXMUSIC     ||
         editSlotInfo.romType == ROM_DISKPATCH    || 
         editSlotInfo.romType == ROM_CASPATCH     ||
         editSlotInfo.romType == ROM_MICROSOL     ||
         editSlotInfo.romType == ROM_NATIONALFDC  ||
         editSlotInfo.romType == ROM_PHILIPSFDC   ||
+        editSlotInfo.romType == ROM_SVI707FDC    ||
         editSlotInfo.romType == ROM_SVI738FDC    ||
         editSlotInfo.romType == ROM_BEERIDE      ||
         editSlotInfo.romType == ROM_FMPAC        ||
@@ -607,8 +685,13 @@ static void getAddressControl(HWND hDlg)
 
 static void endEditControls(HWND hDlg)
 {
+    char fileName[512];
+    GetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), fileName, sizeof(fileName));
+    strcpy(editSlotInfo.name, fileName);
+
     switch (editSlotInfo.romType) {
     case RAM_1KB_MIRRORED:
+    case RAM_2KB_MIRRORED:
         strcpy(editSlotInfo.name, "");
         editSlotInfo.pageCount = editRamMirroredSize / 0x2000;
         break;
@@ -644,6 +727,28 @@ static void endEditControls(HWND hDlg)
         editSlotInfo.startPage = 0;
         break;
 
+    case SRAM_MEGASCSI:
+        editSlotInfo.pageCount = editMegaSCSISize / 0x2000;
+        editSlotInfo.startPage = 2;
+        break;
+
+    case SRAM_ESERAM:
+        editSlotInfo.pageCount = editEseRamSize / 0x2000;
+        editSlotInfo.startPage = 2;
+        break;
+
+    case SRAM_WAVESCSI:
+        editSlotInfo.pageCount = editWaveSCSISize / 0x2000;
+        editSlotInfo.startPage = 2;
+        break;
+
+    case SRAM_ESESCC:
+        editSlotInfo.pageCount = editEseSCCSize / 0x2000;
+        editSlotInfo.startPage = 2;
+        break;
+
+    case ROM_GOUDASCSI:
+        editSlotInfo.startPage = 2;
     case ROM_PAC:
     case ROM_FMPAC:
     case ROM_BEERIDE:
@@ -653,6 +758,7 @@ static void endEditControls(HWND hDlg)
 
     case ROM_NATIONALFDC:
     case ROM_PHILIPSFDC:
+    case ROM_SVI707FDC:
     case ROM_SVI738FDC:
         editSlotInfo.pageCount = 4;
         break;
@@ -660,19 +766,26 @@ static void endEditControls(HWND hDlg)
     case SRAM_S1985:
     case ROM_S1990:
     case SRAM_MATSUCHITA:
+    case SRAM_MATSUCHITA_INV:
     case ROM_F4INVERTED:
     case ROM_F4DEVICE:
     case ROM_NMS8280DIGI:
     case ROM_MSXMIDI:
+    case ROM_MSXMIDI_EXTERNAL:
     case ROM_MSXAUDIODEV:
     case ROM_TURBORPCM:
+    case ROM_JOYREXPSG:
+    case ROM_OPCODEPSG:
+    case ROM_OPCODESLOT:
     case ROM_TURBORTIMER:
     case ROM_TURBORIO:
+    case ROM_SVI328RSIDE:
     case ROM_SVI328FDC:
     case ROM_SVI328PRN:
     case ROM_SVI328RS232:
     case ROM_MSXPRN:
     case ROM_GIDE:
+    case ROM_NMS1210:
         strcpy(editSlotInfo.name, "");
         editSlotInfo.slot      = 0;
         editSlotInfo.subslot   = 0;
@@ -684,8 +797,8 @@ static void endEditControls(HWND hDlg)
     case ROM_KANJI:
     case ROM_KANJI12:
     case ROM_MOONSOUND:
-    case ROM_SVI80COL:
-    case ROM_SVI727:
+    case ROM_SVI328COL80:
+    case ROM_SVI727COL80:
         editSlotInfo.slot      = 0;
         editSlotInfo.subslot   = 0;
         editSlotInfo.startPage = 0;
@@ -697,15 +810,23 @@ static void endEditControls(HWND hDlg)
     case ROM_ASCII8SRAM:
     case ROM_ASCII16:
     case ROM_TC8566AF:
+    case ROM_TC8566AF_TR:
     case ROM_ASCII16SRAM:
     case ROM_KONAMI4:
     case ROM_KONAMI5:
+    case ROM_MANBOW2:
+    case ROM_MANBOW2_V2:
+    case ROM_HAMARAJANIGHT:
+    case ROM_MEGAFLSHSCC:
+    case ROM_MEGAFLSHSCCPLUS:
+    case ROM_OBSONET:
+    case ROM_DUMAS:
     case ROM_SCC:
     case ROM_SCCPLUS:
+    case ROM_MUPACK:
     case ROM_KOEI:
     case ROM_GAMEMASTER2:
     case ROM_RTYPE:
-    case ROM_HALNOTE:
     case ROM_MAJUTSUSHI:
     case ROM_CROSSBLAIM:
     case ROM_HARRYFOX:
@@ -714,14 +835,37 @@ static void endEditControls(HWND hDlg)
     case ROM_KOREAN126:
     case ROM_HOLYQURAN:
     case ROM_SONYHBIV1:
+    case ROM_PLAYBALL:
+    case ROM_DOOLY:
+    case ROM_NETTOUYAKYUU:
+    case ROM_YAMAHANET:
         editSlotInfo.startPage = 2;
         editSlotInfo.pageCount = 4;
+        break;
+
+    case ROM_HALNOTE:
+    case ROM_NOWIND:
+    case ROM_PANASONIC8:
+    case ROM_PANASONICWX16:
+        editSlotInfo.startPage = 0;
+        editSlotInfo.pageCount = 6;
         break;
 
     case ROM_LODERUNNER:
     case ROM_BASIC:
         editSlotInfo.startPage = 4;
         editSlotInfo.pageCount = 2;
+        break;
+
+    case ROM_OPCODEBIOS:
+        editSlotInfo.startPage = 0;
+        editSlotInfo.pageCount = 1;
+        break;
+
+    case ROM_OPCODEMEGA:
+    case ROM_OPCODESAVE:
+        editSlotInfo.startPage = 4;
+        editSlotInfo.pageCount = 4;
         break;
 
     case ROM_0x4000:
@@ -734,8 +878,14 @@ static void endEditControls(HWND hDlg)
         editSlotInfo.pageCount = 2;
         break;
 
+    case ROM_SF7000IPL:
     case ROM_YAMAHASFG01:
         editSlotInfo.startPage = 0;
+        editSlotInfo.pageCount = 2;
+        break;
+
+    case ROM_FSA1FMMODEM:
+        editSlotInfo.startPage = 2;
         editSlotInfo.pageCount = 2;
         break;
 
@@ -747,10 +897,12 @@ static void endEditControls(HWND hDlg)
     case ROM_MSXAUDIO:
     case ROM_NATIONAL:
     case ROM_PLAIN:
+    case ROM_MATRAINK:
+    case ROM_FORTEII:
     case ROM_FMDAS:
     case ROM_FMPAK:
-    case ROM_PANASONIC16:
     case ROM_SUNRISEIDE:
+    case ROM_PANASONIC16:
     case ROM_PANASONIC32:
     case ROM_GAMEREADER:
         editSlotInfo.startPage = 0;
@@ -798,14 +950,20 @@ static void setEditControls(HWND hDlg)
     }
     romPages = romSize / 0x2000;
 
-    if (romType != RAM_1KB_MIRRORED && romType != RAM_NORMAL && romType != RAM_MAPPER && 
+    if (romType != RAM_1KB_MIRRORED && romType != RAM_2KB_MIRRORED && 
+        romType != RAM_NORMAL && romType != RAM_MAPPER && 
         romType != ROM_MEGARAM && romType != ROM_EXTRAM &&
         romType != SRAM_MATSUCHITA && romType != SRAM_S1985 && romType != ROM_S1990 && 
+        romType != SRAM_MATSUCHITA_INV &&
         romType != ROM_F4INVERTED && romType != ROM_F4DEVICE && romType != ROM_NMS8280DIGI && 
-        romType != ROM_TURBORTIMER && romType != ROM_TURBORIO && romType != ROM_GIDE &&
+        romType != ROM_TURBORTIMER && romType != ROM_TURBORIO && romType != ROM_GIDE && romType != ROM_NMS1210 && 
         romType != ROM_MSXAUDIODEV && romType != ROM_TURBORPCM && romType != ROM_SVI328FDC &&
-        romType != ROM_MSXMIDI && romType != ROM_MSXPRN &&
-        romType != ROM_SVI727 && romType != ROM_SVI80COL && romType != ROM_SVI328PRN && romType != ROM_SVI328RS232)
+        romType != ROM_MSXMIDI && romType != ROM_MSXMIDI_EXTERNAL &&
+        romType != ROM_MSXPRN && romType != ROM_JOYREXPSG && 
+        romType != ROM_OPCODEPSG && romType != ROM_OPCODESLOT && romType != ROM_OPCODEMEGA &&
+        romType != SRAM_MEGASCSI && romType != SRAM_ESERAM && romType != SRAM_WAVESCSI && romType != SRAM_ESESCC &&
+        romType != ROM_SVI328RSIDE &&
+        romType != ROM_SVI727COL80 && romType != ROM_SVI328COL80 && romType != ROM_SVI328PRN && romType != ROM_SVI328RS232)
     {
         if (romSize == 0) {
             sprintf(buffer, langTextUnknown());
@@ -822,15 +980,17 @@ static void setEditControls(HWND hDlg)
 
     // Set ram slot
     if (romType == SRAM_MATSUCHITA || romType == SRAM_S1985 || 
+        romType == SRAM_MATSUCHITA_INV ||
         romType == ROM_S1990 || romType == ROM_KANJI ||  romType == ROM_GIDE ||
-        romType == ROM_TURBORTIMER || romType == ROM_TURBORIO ||
+        romType == ROM_TURBORTIMER || romType == ROM_TURBORIO || romType == ROM_NMS1210 ||
         romType == ROM_F4INVERTED || romType == ROM_F4DEVICE ||
-        romType == ROM_NMS8280DIGI ||
-        romType == ROM_MOONSOUND || romType == ROM_MSXMIDI ||
-        romType == ROM_MSXAUDIODEV || romType == ROM_TURBORPCM ||
-        romType == ROM_KANJI12 || romType == ROM_JISYO ||
-        romType == ROM_SVI328FDC || romType == ROM_SVI80COL || romType == ROM_SVI727 ||
-        romType == ROM_SVI328PRN || romType == ROM_MSXPRN || romType == ROM_SVI328RS232)
+        romType == ROM_NMS8280DIGI || 
+        romType == ROM_MOONSOUND || romType == ROM_MSXMIDI || romType == ROM_MSXMIDI_EXTERNAL ||
+        romType == ROM_MSXAUDIODEV || romType == ROM_TURBORPCM || romType == ROM_JOYREXPSG ||
+        romType == ROM_KANJI12 || romType == ROM_JISYO || 
+        romType == ROM_OPCODEPSG || romType == ROM_OPCODESLOT ||
+        romType == ROM_SVI328FDC || romType == ROM_SVI328COL80 || romType == ROM_SVI727COL80 ||
+        romType == ROM_SVI328PRN || romType == ROM_MSXPRN || romType == ROM_SVI328RS232 || romType == ROM_SVI328RSIDE)
     {
         EnableWindow(GetDlgItem(hDlg, IDC_ROMSLOT), FALSE);
         SetWindowText(GetDlgItem(hDlg, IDC_ROMSLOT), "Unmapped");
@@ -864,15 +1024,17 @@ static void setEditControls(HWND hDlg)
     }
 
     // Set address
-    if (romType == RAM_NORMAL || romType == RAM_1KB_MIRRORED ||
+    if (romType == RAM_NORMAL || romType == RAM_1KB_MIRRORED || romType == RAM_2KB_MIRRORED ||
         romType == ROM_NORMAL || romType == ROM_DISKPATCH || romType == ROM_CASPATCH ||
         romType == ROM_MICROSOL || romType == ROM_NATIONALFDC || romType == ROM_PHILIPSFDC || 
-        romType == ROM_SVI738FDC || romType == ROM_MSXMUSIC || romType == ROM_BEERIDE || 
-        romType == ROM_FMPAC || romType == ROM_PAC || romType == ROM_BUNSETU || romType == ROM_MICROSOL80)
+        romType == ROM_SVI707FDC || romType == ROM_SVI738FDC || romType == ROM_MSXMUSIC || 
+		romType == ROM_BEERIDE || romType == ROM_DRAM || romType == ROM_FMPAC || romType == ROM_PAC || 
+		romType == ROM_BUNSETU || romType == ROM_MICROSOL80)
     {
         int size = romType == RAM_NORMAL ? editRamNormalSize / 0x2000 : 
                    romType == RAM_1KB_MIRRORED ? editRamMirroredSize / 0x2000 : 
-                   (romType == ROM_NATIONALFDC || romType == ROM_PHILIPSFDC || romType == ROM_SVI738FDC) ? 4 : 
+                   romType == RAM_2KB_MIRRORED ? editRamMirroredSize / 0x2000 : 
+                   (romType == ROM_NATIONALFDC || romType == ROM_PHILIPSFDC ||  romType == ROM_SVI707FDC || romType == ROM_SVI738FDC) ? 4 : 
                    romType == ROM_FMPAC || romType == ROM_PAC ? 2 : 
                    romPages > 8 ? 8 : romPages < 1 ? 1 : romPages;
         int end = 8 - size;
@@ -890,6 +1052,7 @@ static void setEditControls(HWND hDlg)
 
     switch (romType) {
     case RAM_1KB_MIRRORED:
+    case RAM_2KB_MIRRORED:
         {
             int index = 0;
             for (i = 8; i <= 64; i += 8) {
@@ -908,11 +1071,12 @@ static void setEditControls(HWND hDlg)
 
     case RAM_NORMAL:
         {
+            static int RamSizes[] = { 8, 16, 24, 32, 48, 64 };
             int index = 0;
-            for (i = 8; i <= 64; i *= 2) {
-                sprintf(buffer, "%d kB", i);
+            for (i = 0; i < sizeof(RamSizes) / sizeof(RamSizes[0]); i++) {
+                sprintf(buffer, "%d kB", RamSizes[i]);
                 SendDlgItemMessage(hDlg, IDC_ROMSIZE, CB_ADDSTRING, 0, (LPARAM)buffer);
-                if (index == 0 || i == editRamNormalSize / 1024) {
+                if (index == 0 || RamSizes[i] == editRamNormalSize / 1024) {
                     SendDlgItemMessage(hDlg, IDC_ROMSIZE, CB_SETCURSEL, index, 0);
                 }
                 index++;
@@ -1000,12 +1164,63 @@ static void setEditControls(HWND hDlg)
         }            
         break;
 
+    case SRAM_MEGASCSI:
+    case SRAM_ESERAM:
+    case SRAM_WAVESCSI:
+    case SRAM_ESESCC:
+        {
+            int src_size;
+            INT max;
+            int index = 0;
+
+            switch (romType) {
+            case SRAM_MEGASCSI:
+                src_size = editMegaSCSISize / 1024;
+                max = 1024;
+                break;
+            case SRAM_ESERAM:
+                src_size = editEseRamSize / 1024;
+                max = 1024;
+                break;
+            case SRAM_WAVESCSI:
+                src_size = editWaveSCSISize / 1024;
+                max = 1024;
+                break;
+            case SRAM_ESESCC:
+                src_size = editEseSCCSize / 1024;
+                max = 512;
+                break;
+            }
+
+            for (i = 128; i <= max; i *= 2) {
+                int size = i;
+                if (size < 1000) {
+                    sprintf(buffer, "%d kB", size);
+                }
+                else {
+                    sprintf(buffer, "%d MB", size / 1024);
+                }
+                SendDlgItemMessage(hDlg, IDC_ROMSIZE, CB_ADDSTRING, 0, (LPARAM)buffer);
+                if ((index == 0) || (size == src_size)) {
+                    SendDlgItemMessage(hDlg, IDC_ROMSIZE, CB_SETCURSEL, index, 0);
+                }
+                index++;
+            }
+            EnableWindow(GetDlgItem(hDlg, IDC_ROMSIZE), editSlotInfo.name[0] ? FALSE : TRUE);
+            SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
+            EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
+            SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x4000 - 0xBFFF");
+        }
+        break;
+
     case ROM_NORMAL:
+    case ROM_DRAM:
     case ROM_DISKPATCH:
     case ROM_CASPATCH:
     case ROM_MICROSOL:
     case ROM_NATIONALFDC:
     case ROM_PHILIPSFDC:
+    case ROM_SVI707FDC:
     case ROM_SVI738FDC:
     case ROM_BEERIDE:
     case ROM_FMPAC:
@@ -1015,9 +1230,16 @@ static void setEditControls(HWND hDlg)
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
         break;
 
+    case ROM_SF7000IPL:
     case ROM_YAMAHASFG01:
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
         SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x0000 - 0x3FFF");
+        EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
+        break;
+
+    case ROM_FSA1FMMODEM:
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x4000 - 0x7FFF");
         EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
         break;
 
@@ -1032,9 +1254,11 @@ static void setEditControls(HWND hDlg)
     case ROM_PANASONIC32:
     case ROM_NATIONAL:
     case ROM_PLAIN:
+    case ROM_MATRAINK:
     case ROM_FMPAK:
     case ROM_MSXAUDIO:
     case ROM_FMDAS:
+    case ROM_FORTEII:
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
         SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x0000 - 0xFFFF");
         EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
@@ -1044,6 +1268,19 @@ static void setEditControls(HWND hDlg)
     case ROM_BASIC:
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
         SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x8000 - 0xBFFF");
+        EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
+        break;
+
+    case ROM_OPCODEBIOS:
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x0000 - 0x1FFF");
+        EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
+        break;
+
+    case ROM_OPCODEMEGA:
+    case ROM_OPCODESAVE:
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x8000 - 0xFFFF");
         EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
         break;
 
@@ -1069,15 +1306,23 @@ static void setEditControls(HWND hDlg)
     case ROM_ASCII8SRAM:
     case ROM_ASCII16:
     case ROM_TC8566AF:
+    case ROM_TC8566AF_TR:
     case ROM_ASCII16SRAM:
     case ROM_KONAMI4:
     case ROM_KONAMI5:
+    case ROM_MANBOW2:
+    case ROM_MANBOW2_V2:
+    case ROM_HAMARAJANIGHT:
+    case ROM_MEGAFLSHSCC:
+    case ROM_MEGAFLSHSCCPLUS:
+    case ROM_MUPACK:
+    case ROM_OBSONET:
+    case ROM_DUMAS:
     case ROM_SCC:
     case ROM_SCCPLUS:
     case ROM_KOEI:
     case ROM_GAMEMASTER2:
     case ROM_RTYPE:
-    case ROM_HALNOTE:
     case ROM_CROSSBLAIM:
     case ROM_HARRYFOX:
     case ROM_MAJUTSUSHI:
@@ -1086,8 +1331,22 @@ static void setEditControls(HWND hDlg)
     case ROM_KOREAN126:
     case ROM_HOLYQURAN:
     case ROM_SONYHBIV1:
+    case ROM_PLAYBALL:
+    case ROM_DOOLY:
+    case ROM_NETTOUYAKYUU:
+    case ROM_YAMAHANET:
+    case ROM_ARC:
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
         SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x4000 - 0xBFFF");
+        EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
+        break;
+
+    case ROM_HALNOTE:
+    case ROM_NOWIND:
+    case ROM_PANASONIC8:
+    case ROM_PANASONICWX16:
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x0000 - 0xBFFF");
         EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
         break;
 
@@ -1102,6 +1361,12 @@ static void setEditControls(HWND hDlg)
         EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), "");
         EnableWindow(GetDlgItem(hDlg, IDC_ROMIMAGE), FALSE);
+        break;
+
+    case ROM_GOUDASCSI:
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
+        SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "0x4000 - 0x7FFF");
+        EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
         break;
 
     case ROM_SNATCHER:
@@ -1119,8 +1384,8 @@ static void setEditControls(HWND hDlg)
     case ROM_KANJI:
     case ROM_KANJI12:
     case ROM_MOONSOUND:
-    case ROM_SVI80COL:
-    case ROM_SVI727:
+    case ROM_SVI328COL80:
+    case ROM_SVI727COL80:
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), editSlotInfo.name);
         SetWindowText(GetDlgItem(hDlg, IDC_ROMADDR), "n/a");
         EnableWindow(GetDlgItem(hDlg, IDC_ROMADDR), FALSE);
@@ -1129,19 +1394,26 @@ static void setEditControls(HWND hDlg)
     case SRAM_S1985:
     case ROM_S1990:
     case SRAM_MATSUCHITA:
+    case SRAM_MATSUCHITA_INV:
     case ROM_F4INVERTED:
     case ROM_F4DEVICE:
     case ROM_NMS8280DIGI:
     case ROM_MSXMIDI:
+    case ROM_MSXMIDI_EXTERNAL:
     case ROM_TURBORTIMER:
     case ROM_TURBORIO:
     case ROM_MSXAUDIODEV:
     case ROM_TURBORPCM:
+    case ROM_JOYREXPSG:
+    case ROM_OPCODEPSG:
+    case ROM_OPCODESLOT:
     case ROM_SVI328FDC:
     case ROM_SVI328PRN:
     case ROM_SVI328RS232:
+    case ROM_SVI328RSIDE:
     case ROM_MSXPRN:
     case ROM_GIDE:
+    case ROM_NMS1210:
         SetWindowText(GetDlgItem(hDlg, IDC_ROMIMAGE), "");
         EnableWindow(GetDlgItem(hDlg, IDC_ROMIMAGE), FALSE);
         EnableWindow(GetDlgItem(hDlg, IDC_ROMBROWSE), FALSE);
@@ -1154,93 +1426,144 @@ static void setEditControls(HWND hDlg)
 }
 
 static RomType romTypeList[] = {
-    ROM_GAMEREADER,
     RAM_NORMAL,
     RAM_1KB_MIRRORED,
+    RAM_2KB_MIRRORED,
     RAM_MAPPER,
     ROM_EXTRAM,
     ROM_MEGARAM,
     ROM_NORMAL,
-    ROM_DISKPATCH,
+    
     ROM_CASPATCH,
+    ROM_DISKPATCH,
     ROM_TC8566AF,
+    ROM_TC8566AF_TR,
     ROM_MICROSOL,
     ROM_NATIONALFDC,
     ROM_PHILIPSFDC,
+    ROM_SVI707FDC,
+    ROM_SVI738FDC,
+    ROM_MSXDOS2, /* related */
+    ROM_BEERIDE,
     ROM_GIDE,
     ROM_SUNRISEIDE,
-    ROM_BEERIDE,
-    ROM_SVI738FDC,
-    ROM_SVI328FDC,
-    ROM_SVI328PRN,
-    ROM_SVI328RS232,
-    ROM_SVI80COL,
-    ROM_SVI727,
-    ROM_KANJI,
-    ROM_KANJI12,
-    SRAM_MATSUCHITA,
+    ROM_GOUDASCSI,
+    SRAM_MEGASCSI,
+    SRAM_WAVESCSI,
+
+    ROM_NMS1210, /* related ? */
+    
+    ROM_NMS8280DIGI,
     SRAM_S1985,
     ROM_S1990,
     ROM_F4DEVICE,
-    ROM_NMS8280DIGI,
     ROM_F4INVERTED,
     ROM_TURBORTIMER,
     ROM_TURBORIO,
-    ROM_NATIONAL,
-    ROM_BUNSETU,
-    ROM_JISYO,
+    ROM_MSXPRN,
+    
+    ROM_PAC, /* related */
+    ROM_FMPAC,
+    ROM_FMPAK,
+    ROM_MSXMIDI,
+    ROM_MSXMIDI_EXTERNAL,
+    ROM_MUPACK,
+    ROM_MSXMUSIC,
+    ROM_MSXAUDIO,
+    ROM_MSXAUDIODEV,
+    ROM_MOONSOUND,
+    ROM_TURBORPCM,
+    ROM_YAMAHASFG01,
+    ROM_YAMAHASFG05,
+    ROM_JOYREXPSG,
+    ROM_OPCODEPSG,
+    
+    ROM_GAMEREADER,
+    ROM_NOWIND,
+    ROM_OBSONET,
+    ROM_YAMAHANET,
+    
+    SRAM_MATSUCHITA,
+    SRAM_MATSUCHITA_INV,
+    ROM_DRAM,
+    ROM_PANASONIC8,
+    ROM_PANASONICWX16,
     ROM_PANASONIC16,
     ROM_PANASONIC32,
-    ROM_PLAIN,
-    ROM_BASIC,
+    ROM_FSA1FMMODEM,
+    
+    ROM_BUNSETU,
+    ROM_JISYO,
+    ROM_KANJI,
+    ROM_KANJI12,
+    ROM_NATIONAL,
+    ROM_SONYHBI55,
+    ROM_SONYHBIV1,
+    ROM_SVI727COL80,
+    ROM_MICROSOL80,
+    ROM_FMDAS,
+    
+    ROM_FORTEII,
+    
+    /* normally used with games */
+    ROM_PLAIN, /* mirror */
     ROM_0x4000,
+    ROM_BASIC, /* 8000 */
     ROM_0xC000,
-    ROM_MSXDOS2,
     ROM_ASCII8,
     ROM_ASCII8SRAM,
     ROM_ASCII16,
     ROM_ASCII16SRAM,
-    ROM_KONAMI4,
-    ROM_KONAMI5,
-    ROM_SCC,
-    ROM_SCCPLUS,
     ROM_KOEI,
     ROM_GAMEMASTER2,
-    ROM_RTYPE,
-    ROM_CROSSBLAIM,
-    ROM_HARRYFOX,
-    ROM_LODERUNNER,
-    ROM_HALNOTE,
-    ROM_KONAMISYNTH,
+    ROM_KONAMI4NF,
     ROM_KONAMKBDMAS,
-    ROM_KONWORDPRO,
     ROM_MAJUTSUSHI,
+    ROM_KONAMISYNTH,
+    ROM_KONWORDPRO,
+    ROM_KONAMI4,
+    ROM_KONAMI5, /* SCC */
+    ROM_SCC,
+    ROM_SCCMIRRORED,
+    ROM_SCCEXTENDED,
+    ROM_SCCPLUS, /* SCC-I */
+    ROM_SNATCHER, /* SCC-I */
+    ROM_SDSNATCHER, /* SCC-I */
+    ROM_MANBOW2, /* contains SCC */
+    ROM_MANBOW2_V2, /* contains SCC */
+    ROM_HAMARAJANIGHT, /* contains SCC */
+    ROM_MEGAFLSHSCC, /* contains SCC */
+    ROM_MEGAFLSHSCCPLUS, /* contains SCC */
+    SRAM_ESESCC, /* contains SCC */
+    SRAM_ESERAM,
+    ROM_CROSSBLAIM,
+    ROM_HALNOTE,
+    ROM_HARRYFOX,
+    ROM_HOLYQURAN,
+    ROM_NETTOUYAKYUU, /* jaleco */
+    ROM_LODERUNNER,
+    ROM_MATRAINK,
+    ROM_RTYPE,
+    ROM_PLAYBALL,
+    ROM_DOOLY,
+    ROM_ASCII16NF, /* super pierrot */
     ROM_KOREAN80,
     ROM_KOREAN90,
     ROM_KOREAN126,
-    ROM_HOLYQURAN,
-    ROM_FMPAC,
-    ROM_FMPAK,
-    ROM_PAC,
-    ROM_MSXMUSIC,
-    ROM_MSXAUDIO,
-    ROM_MSXPRN,
-    ROM_MOONSOUND,
-    ROM_MSXMIDI,
-    ROM_KONAMI4NF, 
-    ROM_ASCII16NF,
-    ROM_SNATCHER,
-    ROM_SDSNATCHER,
-    ROM_SCCMIRRORED,
-    ROM_SCCEXTENDED,
-    ROM_SONYHBI55,
-    ROM_MSXAUDIODEV,
-    ROM_TURBORPCM,
-    ROM_MICROSOL80,
-    ROM_SONYHBIV1,
-    ROM_FMDAS,
-    ROM_YAMAHASFG01,
-    ROM_YAMAHASFG05,
+    ROM_ARC,
+    
+    /* no msx */
+    ROM_SVI328RSIDE,
+    ROM_SVI328FDC,
+    ROM_SVI328PRN,
+    ROM_SVI328RS232,
+    ROM_SVI328COL80,
+    ROM_SF7000IPL,
+    ROM_OPCODEBIOS,
+    ROM_OPCODEMEGA,
+    ROM_OPCODESAVE,
+    ROM_OPCODESLOT,
+    
     ROM_UNKNOWN,
 };
 
@@ -1249,6 +1572,32 @@ static void setEditProps(HWND hDlg, char* fileName)
     int size;
     int idx = 0;
     char* buf = romLoad(fileName, NULL, &size);
+
+    if ((buf != NULL) &&
+       ((editSlotInfo.romType == SRAM_MEGASCSI) ||
+        (editSlotInfo.romType == SRAM_ESERAM)   ||
+        (editSlotInfo.romType == SRAM_WAVESCSI) ||
+        (editSlotInfo.romType == SRAM_ESESCC))) {
+        if (((size == 0x100000) && (editSlotInfo.romType != SRAM_ESESCC)) ||
+              size == 0x80000 || size == 0x40000 || size == 0x20000) {
+            switch (editSlotInfo.romType) {
+            case SRAM_MEGASCSI:
+                editMegaSCSISize = size;
+                break;
+            case SRAM_ESERAM:
+                editEseRamSize   = size;
+                break;
+            case SRAM_WAVESCSI:
+                editWaveSCSISize = size;
+                break;
+            case SRAM_ESESCC:
+                editEseSCCSize   = size;
+                break;
+            }
+            free(buf);
+            return;
+        }
+    }
 
     editSlotInfo.romType = ROM_NORMAL;
 
@@ -1300,9 +1649,14 @@ static BOOL CALLBACK slotEditProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lP
 
         editRamNormalSize   = editSlotInfo.romType == RAM_NORMAL       ? editSlotInfo.pageCount * 0x2000 : 0x10000;
         editRamMirroredSize = editSlotInfo.romType == RAM_1KB_MIRRORED ? editSlotInfo.pageCount * 0x2000 : 0x2000;
+        editRamMirroredSize = editSlotInfo.romType == RAM_2KB_MIRRORED ? editSlotInfo.pageCount * 0x2000 : editRamMirroredSize;
         editRamMapperSize   = editSlotInfo.romType == RAM_MAPPER       ? editSlotInfo.pageCount * 0x2000 : 0x10000;
         editMegaRamSize     = editSlotInfo.romType == ROM_MEGARAM      ? editSlotInfo.pageCount * 0x2000 : 0xc0000;
         editExtRamSize      = editSlotInfo.romType == ROM_EXTRAM       ? editSlotInfo.pageCount * 0x2000 : 0x400000;
+        editMegaSCSISize    = editSlotInfo.romType == SRAM_MEGASCSI    ? editSlotInfo.pageCount * 0x2000 : 0x100000;
+        editEseRamSize      = editSlotInfo.romType == SRAM_ESERAM      ? editSlotInfo.pageCount * 0x2000 : 0x100000;
+        editWaveSCSISize    = editSlotInfo.romType == SRAM_WAVESCSI    ? editSlotInfo.pageCount * 0x2000 : 0x100000;
+        editEseSCCSize      = editSlotInfo.romType == SRAM_ESESCC      ? editSlotInfo.pageCount * 0x2000 : 0x80000;
 
         setEditControls(hDlg);
 
@@ -1342,7 +1696,7 @@ static BOOL CALLBACK slotEditProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lP
                 if (strlen(defDir) == 0) {
                     strcpy(defDir, curDir);
                 }
-                sprintf(extensionList, "%s   (*.rom, *.ri, *.mx1, *.mx2, *.col, *.sg, *.sc, *.zip)#*.rom; *.ri; *.mx1; *.mx2; *.col; *.sg; *.sc; *.zip#%s   (*.*)#*.*#", langFileRom(), langFileAll());
+                sprintf(extensionList, "%s   (*.rom, *.ri, *.mx1, *.mx2, *.col, *.sms, *.sg, *.sc, *.sram, *.zip)#*.rom; *.ri; *.mx1; *.mx2; *.col; *.sg; *.sc; *.sram; *.zip#%s   (*.*)#*.*#", langFileRom(), langFileAll());
                 replaceCharInString(extensionList, '#', 0);
 
                 fileName = openFile(hDlg, langConfOpenRom(), extensionList, defDir, -1, NULL, NULL);
@@ -1406,7 +1760,7 @@ static void addMachineEntry(HWND hwnd, int entry) {
     lvi.mask       = LVIF_IMAGE;
     lvi.iItem      = entry;
     lvi.pszText    = buffer;
-	lvi.cchTextMax = 512;
+    lvi.cchTextMax = 512;
 
     lvi.iImage = machine->slotInfo[entry].error;
 
@@ -1437,9 +1791,19 @@ static void addMachineEntry(HWND hwnd, int entry) {
         sprintf(buffer, "");
     }
     else {
+        if  (machine->slotInfo[entry].romType == SRAM_MEGASCSI ||
+             machine->slotInfo[entry].romType == SRAM_ESERAM   ||
+             machine->slotInfo[entry].romType == SRAM_WAVESCSI ||
+             machine->slotInfo[entry].romType == SRAM_ESESCC)
+        {
+            start = 0x4000;
+            end   = 0xbfff;
+        }
+        else {
         start = machine->slotInfo[entry].startPage * 0x2000;
         end   = start + machine->slotInfo[entry].pageCount * 0x2000 - 1;
         if (end > 0xffff) end = 0xffff;
+        }
         sprintf(buffer, "%.4X-%.4X", start, end);
     }
     ListView_SetItem(hwnd, &lvi);
@@ -1448,7 +1812,11 @@ static void addMachineEntry(HWND hwnd, int entry) {
     if (machine->slotInfo[entry].romType == RAM_MAPPER ||
         machine->slotInfo[entry].romType == RAM_NORMAL ||
         machine->slotInfo[entry].romType == ROM_EXTRAM ||
-        machine->slotInfo[entry].romType == ROM_MEGARAM)
+        machine->slotInfo[entry].romType == ROM_MEGARAM ||
+        machine->slotInfo[entry].romType == SRAM_MEGASCSI ||
+        machine->slotInfo[entry].romType == SRAM_ESERAM ||
+        machine->slotInfo[entry].romType == SRAM_WAVESCSI ||
+        machine->slotInfo[entry].romType == SRAM_ESESCC)
     {
         int size = machine->slotInfo[entry].pageCount * 8;
         if (size < 1024) {
@@ -1534,7 +1902,7 @@ static BOOL CALLBACK memoryProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPar
             lvc.fmt        = LVCFMT_LEFT;
             lvc.cx         = 100;
             lvc.pszText    = buffer;
-	        lvc.cchTextMax = 32;
+            lvc.cchTextMax = 32;
 
             sprintf(buffer, "");
             lvc.cx = 20;
@@ -1878,6 +2246,9 @@ static BOOL CALLBACK chipsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPara
         SendDlgItemMessage(hDlg, IDC_CONF_VIDEOCHIP, CB_ADDSTRING, 0, (LPARAM)"V9938");
         SendDlgItemMessage(hDlg, IDC_CONF_VIDEOCHIP, CB_ADDSTRING, 0, (LPARAM)"V9958");
 
+        SetWindowText(GetDlgItem(hDlg, IDC_AUDIOGROUPBOX), langConfChipSoundGB());
+        SetWindowText(GetDlgItem(hDlg, IDC_AUDIOPSGSTEREO), langConfChipPsgStereoText());
+        
         SendMessage(hDlg, WM_UPDATEMAHCINE, 0, 0);
 
         return FALSE;
@@ -1926,6 +2297,9 @@ static BOOL CALLBACK chipsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPara
             case IDC_CONF_VRAM:
                 change = getVramList(hDlg);
                 break;
+            case IDC_AUDIOPSGSTEREO:
+                machine->audio.psgstereo = getBtCheck(hDlg, IDC_AUDIOPSGSTEREO);
+                break;
             default:
                 change = 0;
             }
@@ -1944,6 +2318,7 @@ static BOOL CALLBACK chipsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPara
         case VDP_V9958: SendDlgItemMessage(hDlg, IDC_CONF_VIDEOCHIP, CB_SETCURSEL, 3, 0); break;
         }
         updateVramList(hDlg);
+        setBtCheck(hDlg, IDC_AUDIOPSGSTEREO, machine->audio.psgstereo, 1);
         return TRUE;
     }
 
@@ -2047,8 +2422,9 @@ static BOOL CALLBACK discardProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPa
 
 static BOOL CALLBACK saveAsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam) 
 {
-    static char **machineNameList;
-    switch (iMsg) {        
+    static ArrayList *machineList = NULL;
+
+    switch (iMsg) {
     case WM_INITDIALOG:
         SetWindowText(hDlg, langConfSaveAsTitle());
         SetWindowText(GetDlgItem(hDlg, IDC_MACHINENAMETEXT), langConfSaveAsMachineName());
@@ -2056,25 +2432,27 @@ static BOOL CALLBACK saveAsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPar
         SetWindowText(GetDlgItem(hDlg, IDCANCEL), langDlgCancel());
 
         {
-            char** machineNames;
             int index = 0;
+			ArrayListIterator *iterator;
 
-            machineNameList = machineGetAvailable(0);
-            machineNames = machineNameList;
+            machineList = arrayListCreate();
+            machineFillAvailable(machineList, 0);
 
             EnableWindow(GetDlgItem(hDlg, IDOK), FALSE);
 
-            while (*machineNames != NULL) {
-                SendDlgItemMessage(hDlg, IDC_MACHINELIST, LB_ADDSTRING, 0, (LPARAM)*machineNames);
+            iterator = arrayListCreateIterator(machineList);
+            while (arrayListCanIterate(iterator)) {
+                char *machineInList = (char *)arrayListIterate(iterator);
+                SendDlgItemMessage(hDlg, IDC_MACHINELIST, LB_ADDSTRING, 0, (LPARAM)machineInList);
 
-                if (0 == strcmpnocase(*machineNames, machineName)) {
+                if (0 == strcmpnocase(machineInList, machineName)) {
                     SetWindowText(GetDlgItem(hDlg, IDC_MACHINENAME), machineName);
                     SendDlgItemMessage(hDlg, IDC_MACHINELIST, LB_SETCURSEL, index, 0);
                     EnableWindow(GetDlgItem(hDlg, IDOK), TRUE);
                 }
-                machineNames++;
                 index++;
             }
+            arrayListDestroyIterator(iterator);
         }
 
         return FALSE;
@@ -2096,8 +2474,8 @@ static BOOL CALLBACK saveAsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPar
         case IDC_MACHINENAME:
             {
                 char buffer[64];
-                char** machineNames = machineNameList;
                 int index = 0;
+				ArrayListIterator *iterator;
 
                 GetWindowText(GetDlgItem(hDlg, IDC_MACHINENAME), buffer, 63);
 
@@ -2105,13 +2483,15 @@ static BOOL CALLBACK saveAsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPar
 
                 SendDlgItemMessage(hDlg, IDC_MACHINELIST, LB_SETCURSEL, -1, 0);
 
-                while (*machineNames != NULL) {
-                    if (0 == strcmpnocase(*machineNames, buffer)) {
+                iterator = arrayListCreateIterator(machineList);
+                while (arrayListCanIterate(iterator)) {
+                    char *machineInList = (char *)arrayListIterate(iterator);
+                    if (0 == strcmpnocase(machineInList, buffer)) {
                         SendDlgItemMessage(hDlg, IDC_MACHINELIST, LB_SETCURSEL, index, 0);
                     }
-                    machineNames++;
                     index++;
                 }
+                arrayListDestroyIterator(iterator);
             }
             return TRUE;
         case IDOK:
@@ -2125,6 +2505,7 @@ static BOOL CALLBACK saveAsProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPar
         break;
 
     case WM_CLOSE:
+        arrayListDestroy(machineList);
         DestroyWindow(hDlgSlots);
         EndDialog(hDlg, FALSE);
         return TRUE;
@@ -2175,6 +2556,9 @@ static BOOL CALLBACK configProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPar
             tcItem.pszText = langConfChipExtras();
             TabCtrl_InsertItem(GetDlgItem(hDlg, IDC_CONF_TAB), 3, &tcItem);
         }
+
+        if (CB_ERRSPACE == SendMessage(GetDlgItem(hDlg, IDC_CONF_CONFIGS), CB_INITSTORAGE, (WPARAM)256, (LPARAM)64))
+            MessageBox(NULL, "Error allocating machine config", "blueMSX Error", MB_OK |  MB_ICONERROR);
 
         updateMachineList(hDlg);
 
@@ -2235,17 +2619,26 @@ static BOOL CALLBACK configProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPar
                             }
 
                             if (machineModified != 0) {
-                                char** machineNames = machineGetAvailable(0);
                                 int index = 0;
+                                ArrayList *machineList;
+								ArrayListIterator *iterator;
 
-                                while (*machineNames != NULL) {
-                                    if (0 == strcmp(*machineNames, machineName)) {
+								machineList = arrayListCreate();
+                                machineFillAvailable(machineList, 0);
+
+                                iterator = arrayListCreateIterator(machineList);
+                                while (arrayListCanIterate(iterator)) {
+                                    char *machineInList = (char *)arrayListIterate(iterator);
+
+                                    if (0 == strcmp(machineInList, machineName)) {
                                         SendDlgItemMessage(hDlg, IDC_CONF_CONFIGS, CB_SETCURSEL, index, 0);
                                         break;
                                     }
-                                    machineNames++;
                                     index++;
                                 }
+                                arrayListDestroyIterator(iterator);
+
+                                arrayListDestroy(machineList);
                             }
                             else {
                                 Machine* newMachine = machineCreate(machineNameSel);

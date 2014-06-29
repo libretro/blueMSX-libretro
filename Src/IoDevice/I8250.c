@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/I8250.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/I8250.c,v $
 **
-** $Revision: 1.7 $
+** $Revision: 1.10 $
 **
-** $Date: 2005/05/04 18:00:07 $
+** $Date: 2008-03-31 19:42:19 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -76,8 +74,9 @@ struct I8250
 
     UInt8 reg[11];
 
-    BoardTimer*      timerBaudRate;   
-    UInt32           timeBaudRate;
+    UInt32        baudRate;
+    BoardTimer*   timerBaudRate;   
+    UInt32        timeBaudRate;
 };
 
 static int transmitDummy(void* ref, UInt8 value) {
@@ -272,6 +271,7 @@ static void i8250CounterOnTimer(I8250* i8250, UInt32 time)
         if (i8250RxBufferGetByte(&value))
             i8250Receive(i8250, value);
     }
+    i8250->timeBaudRate = time + boardFrequency() / i8250->baudRate;
     boardTimerAdd(i8250->timerBaudRate, i8250->timeBaudRate);
 }
 
@@ -289,8 +289,11 @@ static void i8250CounterCreate(I8250* i8250, UInt32 frequency)
 
     i8250->timerBaudRate = boardTimerCreate(i8250CounterOnTimer, i8250);
     // Fixme: start + stop + parity bit
-    i8250->timeBaudRate = (frequency/16/divisor/10)*1000;
-    boardTimerAdd(i8250->timerBaudRate, i8250->timeBaudRate);
+    i8250->baudRate = (frequency/16/divisor/10);
+    if (i8250->baudRate > 0) {
+        i8250->timeBaudRate = boardSystemTime() + boardFrequency() / i8250->baudRate;
+        boardTimerAdd(i8250->timerBaudRate, i8250->timeBaudRate);
+    }
 }
 
 void i8250SaveState(I8250* uart)

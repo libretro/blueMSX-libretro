@@ -1,34 +1,32 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Sdl/SdlShortcuts.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Sdl/SdlShortcuts.c,v $
 **
-** $Revision: 1.4 $
+** $Revision: 1.7 $
 **
-** $Date: 2006/06/24 02:27:08 $
+** $Date: 2008-03-30 18:38:45 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
 #include "SdlShortcuts.h"
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include "IniFileParser.h"
 #include "StrcmpNoCase.h"
 #include "Actions.h"
@@ -90,7 +88,7 @@ struct Shortcuts {
 };
 
 
-#define LOAD_SHORTCUT(hotkey) loadShortcut(#hotkey, &shortcuts->hotkey)
+#define LOAD_SHORTCUT(hotkey) loadShortcut(iniFile, #hotkey, &shortcuts->hotkey)
 
 #define HOTKEY_EQ(hotkey1, hotkey2) (*(UInt32*)&hotkey1 == *(UInt32*)&hotkey2)
 
@@ -122,7 +120,7 @@ static int stringToMod(const char* name)
     return 0;
 }
 
-static void loadShortcut(char* name, ShotcutHotkey* hotkey)
+static void loadShortcut(IniFile *iniFile, char* name, ShotcutHotkey* hotkey)
 {
     char buffer[512];
     char* token;
@@ -132,7 +130,7 @@ static void loadShortcut(char* name, ShotcutHotkey* hotkey)
     hotkey->mods = 0;
     hotkey->key  = 0;
 
-    if (!iniFileGetString("Shortcuts", name, "", buffer, sizeof(buffer))) {
+    if (!iniFileGetString(iniFile, "Shortcuts", name, "", buffer, sizeof(buffer))) {
         return;
     }
 
@@ -163,7 +161,7 @@ Shortcuts* shortcutsCreate()
 
     sprintf(filename, "%s/blueMSX.shortcuts", shortcutsDir);
 
-    iniFileOpen(filename);
+    IniFile *iniFile = iniFileOpen(filename);
 
     LOAD_SHORTCUT(switchMsxAudio);
     LOAD_SHORTCUT(spritesEnable);
@@ -209,7 +207,7 @@ Shortcuts* shortcutsCreate()
     LOAD_SHORTCUT(volumeMute);
     LOAD_SHORTCUT(volumeStereo);
 
-    iniFileClose();
+    iniFileClose(iniFile);
 
     return shortcuts;
 }

@@ -16,7 +16,9 @@ typedef unsigned long  EmuTime;
 typedef unsigned char  byte;
 typedef unsigned short word;
 
-#define MAX_BUFFER_SIZE 10000
+extern "C" {
+#include "AudioMixer.h"
+}
 
 
 class TimerCallback
@@ -217,7 +219,7 @@ class YMF262 : public SoundDevice, public TimerCallback
 		void checkMute();
 		bool checkMuteHelper();
 
-        int buffer[MAX_BUFFER_SIZE];
+        int buffer[AUDIO_MONO_BUFFER_SIZE];
 		IRQHelper irq;
 		Timer<12500, STATUS_T1> timer1;	//  80us
 		Timer< 3125, STATUS_T2> timer2;	// 320us

@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32file.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32file.c,v $
 **
-** $Revision: 1.42 $
+** $Revision: 1.71 $
 **
-** $Date: 2006/06/26 19:35:55 $
+** $Date: 2009-04-30 03:53:28 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -43,72 +41,133 @@
 #define WM_DIALOGRESIZE (WM_USER + 1500)
 
 static RomType romTypeList[] = {
+    ROM_PLAIN, /* mirror */
+    ROM_0x4000,
+    ROM_BASIC, /* 8000 */
+    ROM_0xC000,
     ROM_ASCII8,
     ROM_ASCII8SRAM,
     ROM_ASCII16,
     ROM_ASCII16SRAM,
-    ROM_KONAMI4,
-    ROM_KONAMI5,
-    ROM_PLAIN,
-    ROM_BASIC,
-    ROM_0x4000,
-    ROM_0xC000,
     ROM_KOEI,
-    ROM_RTYPE,
-    ROM_CROSSBLAIM,
-    ROM_HARRYFOX,
-    ROM_LODERUNNER,
-    ROM_HALNOTE,
-    ROM_KONAMISYNTH,
-    ROM_KONAMKBDMAS,
-    ROM_KONWORDPRO,
-    ROM_MAJUTSUSHI,
-    ROM_SCC,
-    ROM_SCCPLUS,
-    ROM_KONAMI4NF, 
-    ROM_ASCII16NF,
     ROM_GAMEMASTER2,
+    ROM_KONAMI4NF,
+    ROM_KONAMKBDMAS,
+    ROM_MAJUTSUSHI,
+    ROM_KONAMISYNTH,
+    ROM_KONWORDPRO,
+    ROM_KONAMI4,
+    ROM_KONAMI5, /* SCC */
+    ROM_SCC,
+    ROM_SCCPLUS, /* SCC-I */
+    ROM_MANBOW2, /* contains SCC */
+    ROM_MANBOW2_V2, /* contains SCC */
+    ROM_HAMARAJANIGHT, /* contains SCC */
+    ROM_MEGAFLSHSCC, /* contains SCC */
+    ROM_MEGAFLSHSCCPLUS, /* contains SCC */
+    SRAM_ESESCC, /* contains SCC */
+    SRAM_ESERAM,
+    ROM_CROSSBLAIM,
+    ROM_HALNOTE,
+    ROM_HARRYFOX,
+    ROM_HOLYQURAN,
+    ROM_NETTOUYAKYUU, /* jaleco */
+    ROM_LODERUNNER,
+    ROM_MATRAINK,
+    ROM_RTYPE,
+    ROM_PLAYBALL,
+    ROM_DOOLY,
+    ROM_ASCII16NF, /* super pierrot */
     ROM_KOREAN80,
     ROM_KOREAN90,
     ROM_KOREAN126,
-    ROM_HOLYQURAN,
+    ROM_ARC,
+    
+    ROM_DISKPATCH,
+    ROM_TC8566AF,
+    ROM_TC8566AF_TR,
+    ROM_MICROSOL,
+    ROM_NATIONALFDC,
+    ROM_PHILIPSFDC,
+    ROM_SVI707FDC,
+    ROM_SVI738FDC,
+    ROM_MSXDOS2, /* related */
+    ROM_BEERIDE,
+    ROM_GIDE,
+    ROM_SUNRISEIDE,
+    ROM_GOUDASCSI,
+    SRAM_MEGASCSI,
+    SRAM_WAVESCSI,
+
+    ROM_NMS1210, /* related */
+    
     ROM_FMPAC,
     ROM_FMPAK,
     ROM_MSXMUSIC,
     ROM_MSXAUDIO,
-    ROM_MOONSOUND,
-    ROM_DISKPATCH,
-    ROM_TC8566AF,
-    ROM_MICROSOL,
-    ROM_NATIONALFDC,
-    ROM_PHILIPSFDC,
-    ROM_GIDE,
-    ROM_SUNRISEIDE,
-    ROM_BEERIDE,
-    ROM_KANJI,
-    ROM_KANJI12,
-    ROM_JISYO,
-    ROM_BUNSETU,
-    ROM_MSXDOS2,
-    ROM_NATIONAL,
-    ROM_PANASONIC16,
-    ROM_PANASONIC32,
-    ROM_SONYHBI55,
     ROM_MSXAUDIODEV,
+    ROM_MOONSOUND,
     ROM_TURBORPCM,
-    ROM_SVI328,
-    ROM_SVI738FDC,
-    ROM_COLECO,
-    ROM_SG1000,
-    ROM_SG1000CASTLE,
-    ROM_MICROSOL80,
-    ROM_SVI727,
-    ROM_SONYHBIV1,
-    ROM_FMDAS,
     ROM_YAMAHASFG01,
     ROM_YAMAHASFG05,
+    ROM_JOYREXPSG,
+    ROM_OPCODEPSG,
+    ROM_MUPACK,
+    
+    ROM_NOWIND,
+    ROM_OBSONET,
+    ROM_YAMAHANET,
+    
+    ROM_PANASONIC8,
+    ROM_PANASONICWX16,
+    ROM_PANASONIC16,
+    ROM_PANASONIC32,
+    ROM_FSA1FMMODEM,
+    
+    ROM_BUNSETU,
+    ROM_JISYO,
+    ROM_KANJI,
+    ROM_KANJI12,
+    ROM_NATIONAL,
+    ROM_SONYHBI55,
+    ROM_SONYHBIV1,
+    ROM_SVI727COL80,
+    ROM_MICROSOL80,
+    ROM_FMDAS,
+    
+    /* no msx */
+    ROM_SVI328CART,
+    ROM_COLECO,
+    ROM_CVMEGACART,
+    ROM_ACTIVISIONPCB,
+    ROM_ACTIVISIONPCB_2K,
+    ROM_ACTIVISIONPCB_16K,
+    ROM_ACTIVISIONPCB_256K,
+    ROM_OPCODEBIOS,
+    ROM_OPCODEMEGA,
+    ROM_OPCODESAVE,
+    ROM_OPCODESLOT,
+    ROM_SG1000,
+    ROM_SC3000,
+    ROM_SF7000IPL,
+    ROM_SG1000CASTLE,
+    ROM_SG1000_RAMEXPANDER_A,
+    ROM_SG1000_RAMEXPANDER_B,
+    ROM_SEGABASIC,
+    
     ROM_UNKNOWN,
 };
+
+RomType opendialog_getromtype(int i)
+{
+	int last;
+	
+	/* prevent overflow */
+	for (last=0;romTypeList[last]!=ROM_UNKNOWN;last++) { ; }
+	if (i>=last) return ROM_UNKNOWN;
+	
+	return romTypeList[i];
+}
 
 static RomType openRomType;
 
@@ -191,6 +250,7 @@ UINT_PTR CALLBACK hookRomProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam
                         int countRi;
                         int countMx1;
                         int countMx2;
+                        int countSms;
                         int countCol;
                         int countSg;
                         int countSc;
@@ -198,10 +258,11 @@ UINT_PTR CALLBACK hookRomProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam
                         char* fileListRi  = zipGetFileList(fileName, ".ri",  &countRi);
                         char* fileListMx1 = zipGetFileList(fileName, ".mx1", &countMx1);
                         char* fileListMx2 = zipGetFileList(fileName, ".mx2", &countMx2);
+                        char* fileListSms = zipGetFileList(fileName, ".sms", &countSms);
                         char* fileListCol = zipGetFileList(fileName, ".col", &countCol);
                         char* fileListSg  = zipGetFileList(fileName, ".sg", &countSg);
                         char* fileListSc  = zipGetFileList(fileName, ".sc", &countSc);
-                        int count = countRom + countRi + countMx1 + countMx2 + countCol + countSg;
+                        int count = countRom + countRi + countMx1 + countMx2 + countSms + countCol + countSg + countSc;
 
                         if (count == 1) {
                             if (countRom == 1) {
@@ -215,6 +276,9 @@ UINT_PTR CALLBACK hookRomProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam
                             }
                             if (countMx2 == 1) {
                                 buf = romLoad(fileName, fileListMx2, &size);
+                            }
+                            if (countSms == 1) {
+                                buf = romLoad(fileName, fileListSms, &size);
                             }
                             if (countCol == 1) {
                                 buf = romLoad(fileName, fileListCol, &size);
@@ -231,6 +295,7 @@ UINT_PTR CALLBACK hookRomProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam
                         if (fileListRi)  free(fileListRi);
                         if (fileListMx1) free(fileListMx1);
                         if (fileListMx2) free(fileListMx2);
+                        if (fileListSms) free(fileListSms);
                         if (fileListCol) free(fileListCol);
                         if (fileListSg)  free(fileListSg);
                         if (fileListSc)  free(fileListSc);
@@ -242,9 +307,12 @@ UINT_PTR CALLBACK hookRomProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam
                     if (buf != NULL) {
 
                         MediaType* mediaType = mediaDbLookupRom(buf, size);
-                        RomType romType = mediaType != NULL ? mediaDbGetRomType(mediaType) : ROM_UNKNOWN;
+                        RomType romType;
                         int idx = 0;
-
+                        
+                        if (!mediaType) mediaType=mediaDbGuessRom(buf, size);
+                        romType = mediaType != NULL ? mediaDbGetRomType(mediaType) : ROM_UNKNOWN;
+			
                         while (romTypeList[idx] != romType) {
                             idx++;
                         }
@@ -683,7 +751,7 @@ UINT_PTR CALLBACK hookHdProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     SendDlgItemMessage(hDlg, IDC_OPEN_HDSIZE, CB_SETCURSEL, i, 0);
                 }
             }
-//            SetWindowText(GetDlgItem(hDlg, IDC_OPEN_HDSIZETEXT), langDlgRomType());
+            SetWindowText(GetDlgItem(hDlg, IDC_OPEN_HDSIZETEXT), langDlgDiskSize());
         }
         return 0;
 
@@ -847,6 +915,7 @@ static const struct {
     { 320 * ONEKB, langEnumDiskMsx35Sgl8Sect },
     { 338 * ONEKB, langEnumDiskSvi525Dbl },
     { 168 * ONEKB, langEnumDiskSvi525Sgl },
+    { 160 * ONEKB, langEnumDiskSf3Sgl },
     { 0, NULL }
 };
 
@@ -862,11 +931,14 @@ UINT_PTR CALLBACK hookDskProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam
             int i;
 
             for (i = 0; dskFileSizes[i].size; i++) {
-                SendDlgItemMessage(hDlg, IDC_OPEN_HDSIZE, CB_ADDSTRING, 0, (LPARAM)dskFileSizes[i].translation());
+                char text[128];
+                sprintf(text, "%dkB - %s", dskFileSizes[i].size / ONEKB, dskFileSizes[i].translation());
+                SendDlgItemMessage(hDlg, IDC_OPEN_HDSIZE, CB_ADDSTRING, 0, (LPARAM)text);
                 if (newDskFileSize == dskFileSizes[i].size || i == 0) {
                     SendDlgItemMessage(hDlg, IDC_OPEN_HDSIZE, CB_SETCURSEL, i, 0);
                 }
             }
+            SetWindowText(GetDlgItem(hDlg, IDC_OPEN_HDSIZETEXT), langDlgDiskSize());
         }
         return 0;
 
@@ -1118,7 +1190,7 @@ char* openFile(HWND hwndOwner, char* pTitle, char* pFilter, char* pDir,
     return pFileName; 
 } 
 
-char* saveFile(HWND hwndOwner, char* pTitle, char* pFilter, int* pFilterIndex, char* pDir) { 
+char* saveFile(HWND hwndOwner, char* pTitle, char* pFilter, int* pFilterIndex, char* pDir, char* defExt) { 
     OPENFILENAME ofn; 
     BOOL rv; 
     static char pFileName[MAX_PATH]; 
@@ -1159,6 +1231,24 @@ char* saveFile(HWND hwndOwner, char* pTitle, char* pFilter, int* pFilterIndex, c
         GetCurrentDirectory(MAX_PATH - 1, pDir);
     }
 
+    if (defExt) {
+        if (strlen(pFileName) <= strlen(defExt)) {
+            strcat(pFileName, defExt);
+        }
+        else {
+            char* pos = pFileName + strlen(pFileName) - strlen(defExt);
+            int  len  = strlen(defExt);
+            while (len--) {
+                if (toupper(pos[len]) != toupper(defExt[len])) {
+                    break;
+                }
+            }
+            if (len >= 0) {
+                strcat(pFileName, defExt);
+            }
+        }
+    }
+
     return pFileName; 
 } 
 
@@ -1166,17 +1256,11 @@ char* saveFile(HWND hwndOwner, char* pTitle, char* pFilter, int* pFilterIndex, c
 ///////////////////////////////////////////////////////////////////////////
 
 typedef struct {
-
     char*  title;
-
     char*  description;
-
     char** itemList;
-
     char*  defaultName;
-
     char*  returnName;
-
 } SaveAsDlgInfo;
 
 
@@ -1271,6 +1355,3 @@ char* openConfigFile(HWND parent, char* title, char* description,
     return rv ? returnName : NULL;
 
 }
-
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      

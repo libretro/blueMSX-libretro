@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Input/ColecoJoystick.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Input/ColecoJoystick.c,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.4 $
 **
-** $Date: 2005/11/02 06:58:20 $
+** $Date: 2008-03-30 18:38:40 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -37,8 +35,8 @@ struct ColecoJoystick {
     int controller;
 };
 
-static UInt8 read(ColecoJoystick* joystick) {
-    UInt8 state;
+static UInt16 read(ColecoJoystick* joystick) {
+    UInt8 state = 16;
 
     if (joystick->controller == 0) {
         state = (inputEventGetState(EC_JOY1_UP)      << 0) |
@@ -57,7 +55,7 @@ static UInt8 read(ColecoJoystick* joystick) {
                 (inputEventGetState(EC_JOY2_BUTTON2) << 5);
     }
 
-    return ~state & 0x3f;
+    return ~state;
 }
 
 ColecoJoystickDevice* colecoJoystickCreate(int controller)

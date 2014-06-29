@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/SviPPI.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/SviPPI.c,v $
 **
-** $Revision: 1.11 $
+** $Revision: 1.18 $
 **
-** $Date: 2006/07/07 15:18:43 $
+** $Date: 2009-04-20 05:07:32 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -42,6 +40,8 @@
 #include "Led.h"
 #include "InputEvent.h"
 #include "Language.h"
+#include "DAC.h"
+#include "Casette.h"
 #include <stdlib.h>
 
 
@@ -121,10 +121,10 @@ typedef struct {
 
     SviJoyIo* joyIO;
     AudioKeyClick* keyClick;
+    DAC*   dac;
 
     UInt8 row;
     Int32 regCHi;
-    UInt8 mode;
 } SviPPI;
 
 static void destroy(SviPPI* ppi)
@@ -139,6 +139,8 @@ static void destroy(SviPPI* ppi)
     deviceManagerUnregister(ppi->deviceHandle);
     debugDeviceUnregister(ppi->debugHandle);
 
+    dacDestroy(ppi->dac);
+
     i8255Destroy(ppi->i8255);
 
     free(ppi);
@@ -148,7 +150,6 @@ static void reset(SviPPI* ppi)
 {
     ppi->row    = 0;
     ppi->regCHi = -1;
-    ppi->mode   = 0;
 
     i8255Reset(ppi->i8255);
 }
@@ -158,7 +159,6 @@ static void loadState(SviPPI* ppi)
     SaveState* state = saveStateOpenForRead("SviPPI");
 
     ppi->row    = (UInt8)saveStateGet(state, "row", 0);
-    ppi->mode   = (UInt8)saveStateGet(state, "mode", 0);
     ppi->regCHi =        saveStateGet(state, "regCHi", -1);
 
     saveStateClose(state);
@@ -171,7 +171,6 @@ static void saveState(SviPPI* ppi)
     SaveState* state = saveStateOpenForWrite("SviPPI");
     
     saveStateSet(state, "row", ppi->row);
-    saveStateSet(state, "mode", ppi->mode);
     saveStateSet(state, "regCHi", ppi->regCHi);
 
     saveStateClose(state);
@@ -179,32 +178,18 @@ static void saveState(SviPPI* ppi)
     i8255SaveState(ppi->i8255);
 }
 
-static UInt8 read(SviPPI* ppi, UInt16 ioPort)
+static UInt8 readRow(SviPPI* ppi, UInt16 ioPort)
 {
-    if (ioPort == 0x9A) {
-        //return ppi->mode;
-        return i8255Read(ppi->i8255, 2);
-    }
-
-    return i8255Read(ppi->i8255, ioPort);
+    return ppi->row;
 }
 
 static UInt8 peek(SviPPI* ppi, UInt16 ioPort)
 {
     if (ioPort == 0x9A) {
-        return ppi->mode;
+        return ppi->row;
     }
 
     return i8255Peek(ppi->i8255, ioPort);
-}
-
-static void write(SviPPI* ppi, UInt16 ioPort, UInt8 value)
-{
-    if (ioPort == 0x97) {
-        ppi->mode = value;
-    }
-
-    i8255Write(ppi->i8255, ioPort, value);
 }
 
 static void writeCLo(SviPPI* ppi, UInt8 value)
@@ -218,18 +203,46 @@ static void writeCHi(SviPPI* ppi, UInt8 value)
         ppi->regCHi = value;
 
         audioKeyClick(ppi->keyClick, value & 0x08);
+        dacWrite(ppi->dac, DAC_CH_MONO, (value & 0x02) ? 0 : 255);
     }
 }
 
-static UInt8 readA(SviPPI* ppi)
+static UInt8 peekA(SviPPI* ppi)
 {
     return sviJoyIoReadTrigger(ppi->joyIO) | 
            (boardGetCassetteInserted() ? 0:0x40);
 }
 
-static UInt8 readB(SviPPI* ppi)
+static UInt8 readA(SviPPI* ppi)
+{
+#if 1
+    // dvik: reverted to 2.8 since wav support is not finished yet
+    return boardCaptureUInt8(16, sviJoyIoReadTrigger(ppi->joyIO)) | 
+        (boardGetCassetteInserted() ? 0:0x40);
+#else
+    UInt8 value;
+    UInt8 casdat = 0;
+
+    value = boardCaptureUInt8(16, sviJoyIoReadTrigger(ppi->joyIO));
+    value |= boardGetCassetteInserted() ? 0:0x40; 
+
+    tapeRead(&casdat);
+    value |= (casdat) ? 0:0x80;
+
+    dacWrite(ppi->dac, DAC_CH_MONO, (casdat & 0x01) ? 0 : 255);
+
+    return value;
+#endif
+}
+
+static UInt8 peekB(SviPPI* ppi)
 {
     return getKeyState(ppi->row);
+}
+
+static UInt8 readB(SviPPI* ppi)
+{
+    return boardCaptureUInt8(ppi->row, getKeyState(ppi->row));
 }
 
 static void getDebugInfo(SviPPI* ppi, DbgDevice* dbgDevice)
@@ -254,19 +267,21 @@ void sviPPICreate(SviJoyIo* joyIO)
     ppi->debugHandle = debugDeviceRegister(DBGTYPE_BIOS, langDbgDevPpi(), &dbgCallbacks, ppi);
 
     ppi->joyIO = joyIO;
-    ppi->i8255 = i8255Create(readA, readA, NULL,
-                             readB, readB, NULL,
+    ppi->i8255 = i8255Create(peekA, readA, NULL,
+                             peekB, readB, NULL,
                              NULL,  NULL,  writeCLo,
                              NULL,  NULL,  writeCHi,
                              ppi);
 
     ppi->keyClick = audioKeyClickCreate(boardGetMixer());
 
-    ioPortRegister(0x98, read, write, ppi); // PPI Port A
-    ioPortRegister(0x99, read, write, ppi); // PPI Port B
-    ioPortRegister(0x96, read, write, ppi); // PPI Port C
-    ioPortRegister(0x97, read, write, ppi); // PPI Mode
-    ioPortRegister(0x9A, read, NULL,  ppi); // PPI Return Mode
+    ppi->dac = dacCreate(boardGetMixer(), DAC_MONO);
+
+    ioPortRegister(0x98, i8255Read, i8255Write, ppi->i8255); // PPI Port A
+    ioPortRegister(0x99, i8255Read, i8255Write, ppi->i8255); // PPI Port B
+    ioPortRegister(0x96, i8255Read, i8255Write, ppi->i8255); // PPI Port C
+    ioPortRegister(0x97, i8255Read, i8255Write, ppi->i8255); // PPI Mode
+    ioPortRegister(0x9A, readRow, NULL,  ppi); // PPI Return Port C (Low)
 
     reset(ppi);
 }

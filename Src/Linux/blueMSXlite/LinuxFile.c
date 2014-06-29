@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxFile.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxFile.c,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.3 $
 **
-** $Date: 2006/06/13 18:50:45 $
+** $Date: 2008-03-31 19:42:21 $
 **
 ** More info: http://www.bluemsx.com
 **
@@ -54,6 +54,11 @@ int archFileExists(const char* fileName)
 {
     struct stat s;
     return stat(fileName, &s) == 0;
+}
+
+int archFileDelete(const char *fileName)
+{
+    return remove(fileName) == 0;
 }
 
 /* File dialogs: */

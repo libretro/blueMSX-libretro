@@ -25,6 +25,7 @@
 
 extern void	y8950TimerSet(void* ref, int timer, int count);
 extern void	y8950TimerStart(void* ref, int timer, int start);
+extern int  y8950GetNoteOn(void* ref, int row);
 
 /* --------------------	preliminary	define section --------------------- */
 /* attack/decay	rate time rate */
@@ -538,7 +539,7 @@ void OPL_CALC_RH( OPL_CH *CH )
 static void	init_timetables( FM_OPL	*OPL , int ARRATE ,	int	DRRATE )
 {
 	int	i;
-	double rate;
+	DoubleT rate;
 
 	/* make	attack rate	& decay	rate tables	*/
 	for	(i = 0;i < 4;i++) OPL->AR_TABLE[i] = OPL->DR_TABLE[i] =	0;
@@ -546,7 +547,7 @@ static void	init_timetables( FM_OPL	*OPL , int ARRATE ,	int	DRRATE )
 		rate  =	OPL->freqbase;						/* frequency rate */
 		if(	i <	60 ) rate *= 1.0+(i&3)*0.25;		/* b0-1	: x1 , x1.25 , x1.5	, x1.75	*/
 		rate *=	1<<((i>>2)-1);						/* b2-5	: shift	bit	*/
-		rate *=	(double)(EG_ENT<<ENV_BITS);
+		rate *=	(DoubleT)(EG_ENT<<ENV_BITS);
 		OPL->AR_TABLE[i] = (INT32)(rate	/ ARRATE);
 		OPL->DR_TABLE[i] = (INT32)(rate	/ DRRATE);
 	}
@@ -561,9 +562,9 @@ static void	init_timetables( FM_OPL	*OPL , int ARRATE ,	int	DRRATE )
 static int OPLOpenTable( void )
 {
 	int	s,t;
-	double rate;
+	DoubleT rate;
 	int	i,j;
-	double pom;
+	DoubleT pom;
 
 	/* allocate	dynamic	tables */
 	if(	(TL_TABLE =	malloc(TL_MAX*2*sizeof(INT32)))	== NULL)
@@ -621,7 +622,7 @@ static int OPLOpenTable( void )
 	for	(i=0; i<EG_ENT;	i++)
 	{
 		/* ATTACK curve	*/
-		pom	= pow( ((double)(EG_ENT-1-i)/EG_ENT) , 8 ) * EG_ENT;
+		pom	= pow( ((DoubleT)(EG_ENT-1-i)/EG_ENT) , 8 ) * EG_ENT;
 		/* if( pom >= EG_ENT ) pom = EG_ENT-1; */
 		ENV_CURVE[i] = (int)pom;
 		/* DECAY ,RELEASE curve	*/
@@ -640,7 +641,7 @@ static int OPLOpenTable( void )
 	for	(i=0; i<VIB_ENT; i++)
 	{
 		/* 100cent = 1seminote = 6%	?? */
-		pom	= (double)VIB_RATE*0.06*sin(2*PI*i/VIB_ENT); /*	+-100sect step */
+		pom	= (DoubleT)VIB_RATE*0.06*sin(2*PI*i/VIB_ENT); /*	+-100sect step */
 		VIB_TABLE[i]		 = (INT32)(VIB_RATE	+ (pom*0.07)); /* +- 7cent */
 		VIB_TABLE[VIB_ENT+i] = (INT32)(VIB_RATE	+ (pom*0.14)); /* +-14cent */
 	}
@@ -680,17 +681,17 @@ static void	OPL_initalize(FM_OPL *OPL)
 
 #if 0
 	/* frequency base */
-	OPL->freqbase =	(OPL->rate)	? ((double)OPL->clock /	OPL->rate) / 72	 : 0;
+	OPL->freqbase =	(OPL->rate)	? ((DoubleT)OPL->clock /	OPL->rate) / 72	 : 0;
 	/* Timer base time */
-	OPL->TimerBase = 1.0/((double)OPL->clock / 72.0	);
+	OPL->TimerBase = 1.0/((DoubleT)OPL->clock / 72.0	);
 #else
     if (OPL->baseRate == OPL->clock / 72) {
 	    OPL->freqbase =	OPL->baseRate / OPL->rate;
 	    OPL->TimerBase = 1.0 / OPL->baseRate;
     }
     else {
-	    OPL->freqbase =	(OPL->rate)	? ((double)OPL->clock /	OPL->rate) / 72	 : 0;
-	    OPL->TimerBase = 1.0/((double)OPL->clock / 72.0	);
+	    OPL->freqbase =	(OPL->rate)	? ((DoubleT)OPL->clock /	OPL->rate) / 72	 : 0;
+	    OPL->TimerBase = 1.0/((DoubleT)OPL->clock / 72.0	);
     }
 #endif
 	/* make	time tables	*/
@@ -701,8 +702,8 @@ static void	OPL_initalize(FM_OPL *OPL)
 		OPL->FN_TABLE[fn] =	(UINT32)(OPL->freqbase * fn	* FREQ_RATE	* (1<<7) / 2);
 	}
 	/* LFO freq.table */
-	OPL->amsIncr = (INT32)(OPL->rate ? (double)AMS_ENT*(1<<AMS_SHIFT) /	OPL->rate *	3.7	* ((double)OPL->clock/3600000) : 0);
-	OPL->vibIncr = (INT32)(OPL->rate ? (double)VIB_ENT*(1<<VIB_SHIFT) /	OPL->rate *	6.4	* ((double)OPL->clock/3600000) : 0);
+	OPL->amsIncr = (INT32)(OPL->rate ? (DoubleT)AMS_ENT*(1<<AMS_SHIFT) /	OPL->rate *	3.7	* ((DoubleT)OPL->clock/3600000) : 0);
+	OPL->vibIncr = (INT32)(OPL->rate ? (DoubleT)VIB_ENT*(1<<VIB_SHIFT) /	OPL->rate *	6.4	* ((DoubleT)OPL->clock/3600000) : 0);
 }
 
 /* ---------- write	a OPL registers	---------- */
@@ -760,6 +761,7 @@ void OPLWriteReg(FM_OPL	*OPL, int r, int v)
 		case 0x06:		/* Key Board OUT */
 			if(OPL->type&OPL_TYPE_KEYBOARD)
 			{
+                OPL->reg6 = v;
 			}
 			return;
 		case 0x07:	/* DELTA-T controll	: START,REC,MEMDATA,REPT,SPOFF,x,x,RST */
@@ -1095,6 +1097,7 @@ void OPLResetChip(FM_OPL *OPL)
     OPL->dacDaVolume = 0;
     OPL->dacEnabled = 0;
 
+    OPL->reg6  = 0;
     OPL->reg15 = 0;
     OPL->reg16 = 0;
     OPL->reg17 = 0;
@@ -1199,6 +1202,7 @@ unsigned char OPLRead(FM_OPL *OPL,int a)
 	case 0x05: /* KeyBoard IN */
 		if(OPL->type&OPL_TYPE_KEYBOARD)
 		{
+            return y8950GetNoteOn(OPL->ref, OPL->reg6);
 		}
 		return 0xff;
 	case 0x14:
@@ -1290,6 +1294,7 @@ void Y8950LoadState(FM_OPL *OPL)
     OPL->dacCtrlVolume      = saveStateGet(state, "dacCtrlVolume",      0);
     OPL->dacDaVolume        = saveStateGet(state, "dacDaVolume",        0);
     OPL->dacEnabled         = saveStateGet(state, "dacEnabled",         0);
+    OPL->reg6               = saveStateGet(state, "reg6",               0);
     OPL->reg15              = saveStateGet(state, "reg15",              0);
     OPL->reg16              = saveStateGet(state, "reg16",              0);
     OPL->reg17              = saveStateGet(state, "reg17",              0);
@@ -1439,6 +1444,7 @@ void Y8950SaveState(FM_OPL *OPL)
     saveStateSet(state, "dacCtrlVolume",      OPL->dacCtrlVolume);
     saveStateSet(state, "dacDaVolume",        OPL->dacDaVolume);
     saveStateSet(state, "dacEnabled",         OPL->dacEnabled);
+    saveStateSet(state, "reg6",               OPL->reg6);
     saveStateSet(state, "reg15",              OPL->reg15);
     saveStateSet(state, "reg16",              OPL->reg16);
     saveStateSet(state, "reg17",              OPL->reg17);

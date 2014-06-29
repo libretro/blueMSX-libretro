@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxThread.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Linux/blueMSXlite/LinuxThread.c,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.7 $
 **
-** $Date: 2006/06/18 07:55:10 $
+** $Date: 2008-03-31 19:42:21 $
 **
 ** More info: http://www.bluemsx.com
 **
@@ -101,7 +101,7 @@ void  archThreadDestroy(void* thread)
     free(thread);
 }
 
-void archThreadSleep(int milliseconds)
+void archThreadSleep(int milliseconds) 
 {
     struct timeval tv;
 

@@ -1,47 +1,43 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/Casette.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/Casette.c,v $
 **
-** $Revision: 1.8 $
+** $Revision: 1.18 $
 **
-** $Date: 2006/06/16 19:30:25 $
+** $Date: 2008-11-23 20:26:12 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
 #include "Casette.h"
+#include "Led.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include "Properties.h"
 #include "SaveState.h"
 #include "ziphelper.h"
 
-#ifdef WIN32
-#include <io.h>
-#else
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
-#endif
+
+// PacketFileSystem.h Need to be included after all other includes
+#include "PacketFileSystem.h"
 
 static UInt8 hdrSVICAS[17] = { 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x7F};
 static UInt8 hdrFMSX98[17] = { 0x5f, 0x5f, 0x5f, 0x5f, 0x5f, 0x5f, 0x5f, 0x5f, 0x5f, 0x5f, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x5f };
@@ -59,8 +55,7 @@ static int    tapeHeaderSize;
 static char*  ramImageBuffer = NULL;
 static int    ramImageSize = 0;
 static int    ramImagePos = 0;
-static int    casBusy;
-static int    autoRewind = 0;
+static int    rewindNextInsert = 0;
 
 static char* stripPath(char* filename) {
     char* ptr = filename + strlen(filename) - 1;
@@ -110,13 +105,9 @@ void tapeSaveState() {
 UInt8 tapeRead(UInt8* value) 
 {
     if (ramImageBuffer != NULL) {
-        if (autoRewind && ramImagePos == ramImageSize) {
-            ramImagePos = 0;
-        }
-
         if (ramImagePos < ramImageSize) {
             *value = ramImageBuffer[ramImagePos++];
-            casBusy = 1;
+            ledSetCas(1);
             return 1;
         }
         return 0;
@@ -139,7 +130,7 @@ UInt8 tapeWrite(UInt8 value)
 
         if (ramImagePos < ramImageSize) {
             ramImageBuffer[ramImagePos++] = value;
-            casBusy = 1;
+            ledSetCas(1);
             return 1;
         }
         return 0;
@@ -199,7 +190,8 @@ void tapeSetReadOnly(int readOnly)
 int tapeInsert(char *name, const char *fileInZipFile) 
 {
     FILE* file;
-
+    Properties* pProperties = propGetGlobalProperties();
+    
     if (ramImageBuffer != NULL) {
         file = fopen(tapePosName, "w");
         if (file != NULL) {
@@ -267,6 +259,9 @@ int tapeInsert(char *name, const char *fileInZipFile)
             fclose(file);
         }
     }
+    
+    if (rewindNextInsert&&pProperties->cassette.rewindAfterInsert) ramImagePos=0;
+    rewindNextInsert=0;
 
     if (ramImageBuffer != NULL) {
         UInt8* ptr = ramImageBuffer + ramImageSize - 17;
@@ -461,12 +456,7 @@ void tapeSetCurrentPos(int pos)
     }
 }
 
-int tapeIsBusy()
+void tapeRewindNextInsert(void)
 {
-    return casBusy;
-}
-
-void tapeSetBusy(int busy)
-{
-    casBusy = busy;
+	rewindNextInsert=1;
 }

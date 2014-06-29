@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperBeerIDE.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperBeerIDE.c,v $
 **
-** $Revision: 1.7 $
+** $Revision: 1.9 $
 **
-** $Date: 2006/06/14 19:59:52 $
+** $Date: 2008-03-31 19:42:22 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2005 Daniel Vik, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -148,7 +146,7 @@ static UInt8 readA(RomMapperBeerIde* rm)
 
 static UInt8 readB(RomMapperBeerIde* rm)
 {
-    return (UInt8)rm->ideData >>8;
+    return (UInt8)(rm->ideData >> 8);
 }
 
 static void writeA(RomMapperBeerIde* rm, UInt8 value)
@@ -217,13 +215,13 @@ static void getDebugInfo(RomMapperBeerIde* rm, DbgDevice* dbgDevice)
     DbgIoPorts* ioPorts;
     int i;
 
-    ioPorts = dbgDeviceAddIoPorts(dbgDevice, langDbgDevIdeBeer(), 12);
-    for (i = 0; i < 12; i++) {
-        dbgIoPortsAddPort(ioPorts, i, 0x44 + i, DBG_IO_READWRITE, peekIo(rm, 0x44 + i));
+    ioPorts = dbgDeviceAddIoPorts(dbgDevice, langDbgDevIdeBeer(), 4);
+    for (i = 0; i < 4; i++) {
+        dbgIoPortsAddPort(ioPorts, i, 0x30 + i, DBG_IO_READWRITE, i8255Peek(rm->i8255, 0x30 + i));
     }
 }
 
-int romMapperBeerIdeCreate(int hdId, char* fileName, UInt8* romData, 
+int romMapperBeerIdeCreate(int hdId, const char* fileName, UInt8* romData, 
                            int size, int slot, int sslot, int startPage)
 {
     DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };

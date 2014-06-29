@@ -1,31 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/WD2793.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/WD2793.c,v $
 **
-** $Revision: 1.7 $
+** $Revision: 1.16 $
 **
-** $Date: 2006/06/30 00:52:53 $
-**
-** Based on the Mircosol FDC emulation in BRMSX by Ricardo Bittencourt.
+** $Date: 2009-07-18 15:08:04 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik, Ricardo Bittencourt
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -63,6 +59,7 @@ struct WD2793 {
     int    diskSide;
 	int    diskDensity;
     FdcAudio* fdcAudio;
+    Wd2793FdcType type;
     UInt8  sectorBuf[512];
 };
 
@@ -103,7 +100,7 @@ struct WD2793 {
 
 static void wd2793ReadSector(WD2793* wd)
 {
-    int rv = 0;
+    DSKE rv = 0;
     int sectorSize = 0;
 
     if (wd->drive >= 0) {
@@ -111,12 +108,15 @@ static void wd2793ReadSector(WD2793* wd)
         fdcAudioSetReadWrite(wd->fdcAudio);
         boardSetFdcActive();
     }
-    if (!rv || wd->diskTrack != wd->regTrack) {
+    if (rv == DSKE_NO_DATA || wd->diskTrack != wd->regTrack) {
 	    wd->regStatus |= ST_RECORD_NOT_FOUND;
 	    wd->intRequest = 1;
 	    wd->regStatus &= ~ST_BUSY;
     }
     else {
+        if (rv == DSKE_CRC_ERROR) {
+            wd->regStatus |= ST_CRC_ERROR;
+        }
 		wd->sectorOffset    = 0;
 		wd->dataRequest     = 0;
         wd->dataReady       = 0;
@@ -285,7 +285,9 @@ int wd2793GetSide(WD2793* wd)
 void wd2793SetSide(WD2793* wd, int side)
 {
     sync(wd);
-    wd->diskSide = side;
+    if (wd->type != FDC_TYPE_WD1772) {
+        wd->diskSide = side;
+    }
 }
 
 void wd2793SetDensity(WD2793* wd, int density)
@@ -592,7 +594,7 @@ UInt8 wd2793GetStatusReg(WD2793* wd)
 		wd->regStatus |=  ST_NOT_READY;
 	}
 
-	wd->intRequest = wd->immediateInt;
+    wd->intRequest = wd->immediateInt;
 
 	return wd->regStatus;
 }
@@ -603,6 +605,7 @@ void wd2793SetCommandReg(WD2793* wd, UInt8 value)
 	wd->regCommand = value;
 	wd->intRequest = wd->immediateInt;
 
+//    printf("WD2793 Cmd : %d\n", wd->regCommand >> 4);
 	switch (wd->regCommand >> 4) {
 	case CMD_RESTORE:
 	case CMD_SEEK:
@@ -668,11 +671,14 @@ void wd2793Reset(WD2793* wd)
     fdcAudioReset(wd->fdcAudio);
 }
 
-WD2793* wd2793Create()
+WD2793* wd2793Create(Wd2793FdcType type)
 {
     WD2793* wd = malloc(sizeof(WD2793));
 
     wd->fdcAudio = fdcAudioCreate(FA_WESTERN_DIGITAL);
+
+    wd->type = type;
+
     wd2793Reset(wd);
 
     return wd;

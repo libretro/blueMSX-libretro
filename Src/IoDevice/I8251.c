@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/I8251.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/I8251.c,v $
 **
-** $Revision: 1.10 $
+** $Revision: 1.12 $
 **
-** $Date: 2006/06/11 07:53:24 $
+** $Date: 2008-03-30 18:38:40 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -110,7 +108,7 @@ static void onRxPoll(I8251* i8251, UInt32 time);
 #define PHASE_SYNC2         2
 #define PHASE_CMD           3
 
-#define RX_QUEUE_SIZE 256
+#define RX_QUEUE_SIZE 16
 
 struct I8251
 {
@@ -246,7 +244,6 @@ static void writeCommand(I8251* i8251, UInt8 value)
 	if (value & CMD_RSTERR) {
 		i8251->status &= ~(STAT_PE | STAT_OE | STAT_FE);
 	}
-
 	if ((value ^ oldCommand) & CMD_RXE) {
 		if (value & CMD_RXE) {
 			i8251->status &= ~(STAT_PE | STAT_OE | STAT_FE);
@@ -447,6 +444,7 @@ void i8251SaveState(I8251* i8251)
 void i8251Reset(I8251* i8251)
 {	
     i8251->charLength = 1024;
+    i8251->rxPending = 0;
 
     i8251->status = STAT_TXRDY | STAT_TXEMPTY;
 	i8251->command = 0xff;
@@ -456,7 +454,7 @@ void i8251Reset(I8251* i8251)
 
 static void onRxPoll(I8251* i8251, UInt32 time)
 {
-    UInt8 value;
+    UInt8 value = 0;
 
     if (i8251->timeRxPoll != 0) {
         boardTimerRemove(i8251->timerRxPoll);
@@ -468,20 +466,16 @@ static void onRxPoll(I8251* i8251, UInt32 time)
         boardTimerAdd(i8251->timerRxPoll, i8251->timeRxPoll);
         return;
     }
-
-	if (i8251->status & STAT_RXRDY) {
-		i8251->status |= STAT_OE;
-	} 
-    else {
+    
+    if (i8251->rxPending != 0) {
         archSemaphoreWait(i8251->semaphore, -1);
         value = i8251->rxQueue[(i8251->rxHead - i8251->rxPending) & (RX_QUEUE_SIZE - 1)];
         i8251->rxPending--;
         archSemaphoreSignal(i8251->semaphore);
-
-		i8251->recvBuf = value;
-		i8251->status |= STAT_RXRDY;
-		i8251->setRxReady(i8251->ref, 1);
-	}
+    }
+	i8251->recvBuf = value;
+	i8251->status |= STAT_RXRDY;
+	i8251->setRxReady(i8251->ref, 1);
 	i8251->recvReady = 0;
 
     i8251->timeRecv = (UInt32)(boardSystemTime() + (UInt64)i8251->charLength * boardFrequency() / 4000000);
@@ -500,10 +494,14 @@ static void onRecv(I8251* i8251, UInt32 time)
 void i8251RxData(I8251* i8251, UInt8 value)
 {
     archSemaphoreWait(i8251->semaphore, -1);
+
     if (i8251->rxPending < RX_QUEUE_SIZE) {
         i8251->rxQueue[i8251->rxHead & (RX_QUEUE_SIZE - 1)] = value;
         i8251->rxHead++;
         i8251->rxPending++;
+    }
+    else {
+        i8251->status |= STAT_OE;
     }
     archSemaphoreSignal(i8251->semaphore);
 }

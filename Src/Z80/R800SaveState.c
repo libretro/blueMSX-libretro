@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Z80/R800SaveState.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Z80/R800SaveState.c,v $
 **
-** $Revision: 1.3 $
+** $Revision: 1.5 $
 **
-** $Date: 2005/09/15 03:33:14 $
+** $Date: 2008-03-30 18:38:48 $
 **
 ** Author: Daniel Vik
 **
@@ -11,24 +11,21 @@
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
-**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -90,15 +87,17 @@ void r800LoadState(R800* r800)
     SaveState* state = saveStateOpenForRead("r800");
     char tag[32];
     int i;
-
+    
+    r800->systemTime =         saveStateGet(state, "systemTime", 0);
     r800->systemTime =         saveStateGet(state, "systemTime", 0);
     r800->vdpTime    =         saveStateGet(state, "vdpTime",    0);
     r800->cachePage  = (UInt16)saveStateGet(state, "cachePage",  0);
     r800->dataBus    = (UInt8) saveStateGet(state, "dataBus",    0);
     r800->intState   =         saveStateGet(state, "intState",   0);
     r800->nmiState   =         saveStateGet(state, "nmiState",   0);
-    r800->cpuMode    =         saveStateGet(state, "cpuMode",    0);
-    r800->oldCpuMode =         saveStateGet(state, "oldCpuMode", 0);
+    r800->nmiEdge    =         saveStateGet(state, "nmiEdge",    0);
+    r800->cpuMode    = (CpuMode)saveStateGet(state, "cpuMode",    0);
+    r800->oldCpuMode = (CpuMode)saveStateGet(state, "oldCpuMode", 0);
     
     for (i = 0; i < sizeof(r800->delay) / sizeof(r800->delay[0]); i++) {
         sprintf(tag, "delay%d", i);
@@ -109,6 +108,12 @@ void r800LoadState(R800* r800)
     r800LoadRegisterState(state, r800->regBanks[0], 01);
     r800LoadRegisterState(state, r800->regBanks[1], 02);
 
+#if TIME_TRACE_SIZE > 0
+    saveStateGetBuffer(state, "timeTraceBuffer", r800->timeTraceBuffer, TIME_TRACE_SIZE * sizeof(SystemTime));
+    r800->timeTraceIndex = saveStateGet(state, "timeTraceIndex", 0);
+    r800->lastPC = (UInt16)saveStateGet(state, "lastPC", 0);
+#endif
+
     saveStateClose(state);
 }
 
@@ -117,13 +122,14 @@ void r800SaveState(R800* r800)
     SaveState* state = saveStateOpenForWrite("r800");
     char tag[32];
     int i;
-
+    
     saveStateSet(state, "systemTime", r800->systemTime);
     saveStateSet(state, "vdpTime",    r800->vdpTime);
     saveStateSet(state, "cachePage",  r800->cachePage);
     saveStateSet(state, "dataBus",    r800->dataBus);
     saveStateSet(state, "intState",   r800->intState);
     saveStateSet(state, "nmiState",   r800->nmiState);
+    saveStateSet(state, "nmiEdge",    r800->nmiEdge);
     saveStateSet(state, "cpuMode",    r800->cpuMode);
     saveStateSet(state, "oldCpuMode", r800->oldCpuMode);
 
@@ -135,6 +141,12 @@ void r800SaveState(R800* r800)
     r800SaveRegisterState(state, r800->regs,        00);
     r800SaveRegisterState(state, r800->regBanks[0], 01);
     r800SaveRegisterState(state, r800->regBanks[1], 02);
+    
+#if TIME_TRACE_SIZE > 0
+    saveStateSetBuffer(state, "timeTraceBuffer", r800->timeTraceBuffer, TIME_TRACE_SIZE * sizeof(SystemTime));
+    saveStateSet(state, "timeTraceIndex", r800->timeTraceIndex);
+    saveStateSet(state, "lastPC", r800->lastPC);
+#endif
 
     saveStateClose(state);
 }

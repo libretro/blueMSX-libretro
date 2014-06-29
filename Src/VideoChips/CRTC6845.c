@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/VideoChips/CRTC6845.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/VideoChips/CRTC6845.c,v $
 **
-** $Revision: 1.41 $
+** $Revision: 1.46 $
 **
-** $Date: 2006/06/14 19:59:52 $
+** $Date: 2008-03-31 19:42:23 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -35,7 +33,6 @@
 #include "Language.h"
 #include <stdlib.h>
 #include <string.h>
-#include <memory.h>
 
 /*
    AR Address Register
@@ -80,7 +77,7 @@ static void loadState(CRTC6845* crtc);
 
 static void crtcRenderVideoBuffer(CRTC6845* crtc)
 {
-    UInt16 color[2];
+    Pixel color[2];
     int x, y;
     int charWidth, charHeight;
     int Nr  = crtc->registers.reg[CRTC_R9] + 1; // Number of rasters per character
@@ -100,7 +97,7 @@ static void crtcRenderVideoBuffer(CRTC6845* crtc)
     color[1] = videoGetColor(255, 255, 255); // must be updated (also for the VDP)
 
     for (y = 0; y < DISPLAY_HEIGHT; y++) {
-        UInt16* linePtr = crtcFrameBuffer->line[y].buffer;
+        Pixel* linePtr = frameBufferGetLine(crtcFrameBuffer, y);
         int charRaster = y % Nr;
         int vadjust = 2; // Fix vertical adjust from regs (the value 4)
         int hadjust = 2; // Fix horizontal adjust from regs (the value 1)
@@ -351,7 +348,7 @@ CRTC6845* crtc6845Create(int frameRate, UInt8* romData, int size, int vramSize,
     {
         DeviceCallbacks callbacks = { crtc6845Destroy, crtc6845Reset, saveState, loadState };
         DebugCallbacks dbgCallbacks = { getDebugInfo, dbgWriteMemory, dbgWriteRegister, NULL };
-        crtc->deviceHandle = deviceManagerRegister(ROM_SVI80COL, &callbacks, crtc);
+        crtc->deviceHandle = deviceManagerRegister(ROM_SVI328COL80, &callbacks, crtc);
         crtc->debugHandle = debugDeviceRegister(DBGTYPE_VIDEO, langDbgDevCrtc6845(), &dbgCallbacks, crtc);
     }
 

@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32Window.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32Window.c,v $
 **
-** $Revision: 1.19 $
+** $Revision: 1.23 $
 **
-** $Date: 2006/06/03 19:20:49 $
+** $Date: 2008-05-09 17:21:04 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -171,6 +169,7 @@ typedef struct WindowInfo {
     Theme* theme;
     
     HBITMAP hBitmap;
+    HDC hdc;
     
     HRGN     hrgn;
     int      clipAlways;
@@ -305,6 +304,7 @@ static void windowCreateClipRegion(WindowInfo* wi)
                 int width  = themePage->width  + 2 * GetSystemMetrics(SM_CXFIXEDFRAME);
                 int height = themePage->height + 2 * GetSystemMetrics(SM_CYFIXEDFRAME) + wi->captionHeight;
 
+                if (wi->hrgn) { DeleteObject(wi->hrgn); wi->hrgn=NULL; }
                 wi->hrgn = CreateRectRgn(0, 0, width, height);
                 CombineRgn(wi->hrgn, wi->hrgn, hrgn, RGN_XOR);
             }
@@ -466,9 +466,12 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
     case WM_TIMER:
         if (wi != NULL) {
             switch(wParam) {
-            case TIMER_STATUSBAR_UPDATE:
-                themePageUpdate(themeGetCurrentPage(wi->theme), GetDC(hwnd));
+            case TIMER_STATUSBAR_UPDATE: {
+                HDC hdc = GetDC(hwnd);
+                themePageUpdate(themeGetCurrentPage(wi->theme), hdc);
+                ReleaseDC(hwnd, hdc);
                 break;
+            }
             case TIMER_CLIP_REGION:
                 windowUpdateClipRegion(wi);
                 break;
@@ -498,8 +501,10 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
 
     case WM_ACTIVATE:
         if (wi != NULL) {
+            HDC hdc = GetDC(hwnd);
             ThemePage* themePage = themeGetCurrentPage(wi->theme);
-            themePageSetActive(themePage, GetDC(hwnd), LOWORD(wParam) != WA_INACTIVE);
+            themePageSetActive(themePage, hdc, LOWORD(wParam) != WA_INACTIVE);
+            ReleaseDC(hwnd, hdc);
         }
         if (LOWORD(wParam) != WA_INACTIVE) {
             inputReset(hwnd);
@@ -515,10 +520,10 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
             width  = themePage->width  + 2 * GetSystemMetrics(SM_CXFIXEDFRAME);
             height = themePage->height + 2 * GetSystemMetrics(SM_CYFIXEDFRAME) + wi->captionHeight;
             
-            if (wi->hBitmap) {
-                DeleteObject(wi->hBitmap);
-            }
-            wi->hBitmap = CreateCompatibleBitmap(GetDC(hwnd), width, height);
+            if (wi->hBitmap) { DeleteObject(wi->hBitmap); wi->hBitmap=NULL; }
+            if (wi->hdc) { ReleaseDC(hwnd,wi->hdc); wi->hdc=NULL; }
+            wi->hdc=GetDC(hwnd);
+            wi->hBitmap = CreateCompatibleBitmap(wi->hdc, width, height);
             themePageActivate(themePage, NULL);
 
             SetWindowPos(hwnd, NULL, 0, 0, width, height, 
@@ -548,10 +553,12 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         archWindowMove();
         if (wi != NULL) {
             ThemePage* themePage = themeGetCurrentPage(wi->theme);
+            HDC hdc = GetDC(hwnd);
             POINT pt;
             GetCursorPos(&pt);
             ScreenToClient(hwnd, &pt);
-            themePageMouseMove(themePage, GetDC(hwnd), pt.x, pt.y);
+            themePageMouseMove(themePage, hdc, pt.x, pt.y);
+            ReleaseDC(hwnd, hdc);
             windowCheckClipRegion(wi);
         }
         SetTimer(hwnd, TIMER_THEME, 250, NULL);
@@ -561,24 +568,28 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
     case WM_LBUTTONDOWN:
         if (wi != NULL) {
             ThemePage* themePage = themeGetCurrentPage(wi->theme);
+            HDC hdc = GetDC(hwnd);
             POINT pt;
             SetCapture(hwnd);
             SetCurrentWindow(hwnd);
             GetCursorPos(&pt);
             ScreenToClient(hwnd, &pt);
-            themePageMouseButtonDown(themePage, GetDC(hwnd), pt.x, pt.y);
+            themePageMouseButtonDown(themePage, hdc, pt.x, pt.y);
+            ReleaseDC(hwnd, hdc);
         }
         break;
 
     case WM_LBUTTONUP:
         if (wi != NULL) {
             ThemePage* themePage = themeGetCurrentPage(wi->theme);
+            HDC hdc = GetDC(hwnd);
             POINT pt;
             
             ReleaseCapture();
             GetCursorPos(&pt);
             ScreenToClient(hwnd, &pt);
-            themePageMouseButtonUp(themePage, GetDC(hwnd), pt.x, pt.y);
+            themePageMouseButtonUp(themePage, hdc, pt.x, pt.y);
+            ReleaseDC(hwnd, hdc);
             SetCurrentWindow(NULL);
         }
 
@@ -619,6 +630,9 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
             KillTimer(hwnd, TIMER_STATUSBAR_UPDATE);
             windowDataSet(hwnd, 0, NULL);
             themePageActivate(themeGetCurrentPage(wi->theme), NULL);
+            if (wi->hrgn) { DeleteObject(wi->hrgn); wi->hrgn=NULL; }
+            if (wi->hBitmap) { DeleteObject(wi->hBitmap); wi->hBitmap=NULL; }
+            if (wi->hdc) { ReleaseDC(hwnd,wi->hdc); wi->hdc=NULL; }
             wi->theme->reference = NULL;
             free(wi);
             wi = NULL;
@@ -841,7 +855,26 @@ static BOOL CALLBACK dropdownProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 
             switch (oi->notifyId) {
             case WM_DROPDOWN_MACHINECONFIG:
-                items = machineGetAvailable(0);
+                {
+                    ArrayList *machineList;
+					ArrayListIterator *iterator;
+
+					machineList = arrayListCreate();
+                    machineFillAvailable(machineList, 1);
+
+                    iterator = arrayListCreateIterator(machineList);
+                    while (arrayListCanIterate(iterator)) {
+                        char *machineInList = (char *)arrayListIterate(iterator);
+                        SendDlgItemMessage(hwnd, IDC_CONTROL, CB_ADDSTRING, 0, (LPARAM)machineInList);
+
+                        if (index == 0 || 0 == strcmp(machineInList, oi->text))
+                            SendDlgItemMessage(hwnd, IDC_CONTROL, CB_SETCURSEL, index, 0);
+                        index++;
+                    }
+                    arrayListDestroyIterator(iterator);
+
+                    arrayListDestroy(machineList);
+                }
                 break;
             case WM_DROPDOWN_KEYBOARDCONFIG:
                 items = keyboardGetConfigs();

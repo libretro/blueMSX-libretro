@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperPlain.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperPlain.c,v $
 **
-** $Revision: 1.4 $
+** $Revision: 1.8 $
 **
-** $Date: 2005/02/13 21:20:01 $
+** $Date: 2008-03-30 18:38:44 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -57,8 +55,6 @@ static void destroy(void* arg)
     free(rm);
 }
 
-
-
 static UInt16 getRomStart(UInt8* romData, int size) 
 {
     int pages[3] = { 0, 0, 0 };
@@ -68,6 +64,9 @@ static UInt16 getRomStart(UInt8* romData, int size)
     for (startPage = 0; startPage < 2; startPage++) {
         UInt8* romPtr = romData + 0x4000 * startPage;
 
+        if (size < 0x4000 * startPage + 0x10) {
+            continue;
+        }
 	    if (romPtr[0] == 'A' && romPtr[1] =='B') {
 		    for (i = 0; i < 4; i++) {
                 UInt16 address = romPtr[2 * i + 2] + 256 * (UInt16)romPtr[2 * i + 3];
@@ -95,10 +94,11 @@ static UInt16 getRomStart(UInt8* romData, int size)
 		return 0x8000;
 	}
 
-    return 0x4000;
+    return 0x0000;
 }
 
-int romMapperPlainCreate(char* filename, UInt8* romData, 
+
+int romMapperPlainCreate(const char* filename, UInt8* romData, 
                          int size, int slot, int sslot, int startPage) 
 {
     DeviceCallbacks callbacks = { destroy, NULL, NULL, NULL };
@@ -143,10 +143,16 @@ int romMapperPlainCreate(char* filename, UInt8* romData,
         
     case 0x8000:
         if (getRomStart(romData, size) == 0x4000) {
+#if 1
+            for (i = 0; i < 8; i++) {
+                romMapper[i] = (i + 2) & 3;
+            }
+#else
             for (i = 0; i < 4; i++) {
                 romMapper[i] = i & 1;
                 romMapper[i + 4] = 2 + (i & 1);
             }
+#endif
         }
         else {
             for (i = 0; i < 8; i++) {
@@ -181,6 +187,7 @@ int romMapperPlainCreate(char* filename, UInt8* romData,
         break;
         
     default:
+        free(rm->romData);
         free(rm);
         return 0;
     }

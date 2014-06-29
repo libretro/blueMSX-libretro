@@ -1,40 +1,40 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32snd.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32snd.c,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.5 $
 **
-** $Date: 2004/12/06 07:32:03 $
+** $Date: 2008-03-30 18:38:48 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
 #include "Win32Sound.h"
 #include "Win32directXSound.h"
 #include "Win32wmmSound.h"
+#include "Win32Avi.h"
 
 #include "ArchSound.h"
 
 static DxSound* dxSound = NULL;
 static WmmSound* wmmSound = NULL;
+static AviSound* aviSound = NULL;
 
 static HWND        cfgHwnd   = NULL;
 static SoundDriver cfgDriver = SOUND_DRV_NONE;
@@ -58,6 +58,9 @@ void archSoundCreate(Mixer* mixer, UInt32 sampleRate, UInt32 bufferSize, Int16 c
     case SOUND_DRV_WMM:
         wmmSound = wmmSoundCreate(cfgHwnd, mixer, sampleRate, bufferSize, channels);
         break;
+    case SOUND_DRV_AVI:
+        aviSound = aviSoundCreate(cfgHwnd, mixer, sampleRate, bufferSize, channels);
+        break;
     }
 }
 
@@ -71,6 +74,10 @@ void archSoundDestroy(void)
         wmmSoundDestroy(wmmSound);
         wmmSound = NULL;
     }
+    if (aviSound) {
+        aviSoundDestroy(aviSound);
+        aviSound = NULL;
+    }
 }
 
 void archSoundResume(void) 
@@ -80,6 +87,9 @@ void archSoundResume(void)
     }
     if (wmmSound) {
         wmmSoundResume(wmmSound);
+    }
+    if (aviSound) {
+        aviSoundResume(aviSound);
     }
 }
 
@@ -91,5 +101,8 @@ void archSoundSuspend(void)
     }
     if (wmmSound) {
         wmmSoundSuspend(wmmSound);
+    }
+    if (aviSound) {
+        aviSoundSuspend(aviSound);
     }
 }

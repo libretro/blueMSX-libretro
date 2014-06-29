@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Sdl/SdlFile.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Sdl/SdlFile.c,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.5 $
 **
-** $Date: 2006/06/24 02:27:08 $
+** $Date: 2008-03-31 19:42:23 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -60,6 +58,11 @@ int archFileExists(const char* fileName)
     return PathFileExists(fileName);
 }
 
+int archFileDelete(const char* fileName)
+{
+    return DeleteFile(fileName);
+}
+
 #else
 
 #include <sys/stat.h>
@@ -87,6 +90,12 @@ int archFileExists(const char* fileName)
     struct stat s;
     return stat(fileName, &s) == 0;
 }
+
+int archFileDelete(const char* fileName)
+{
+    return remove(fileName) == 0;
+}
+
 #endif
 
 /* File dialogs: */
@@ -96,6 +105,7 @@ char* archFilenameGetOpenHarddisk(Properties* properties, int drive, int allowCr
 char* archFilenameGetOpenCas(Properties* properties) { return NULL; }
 char* archFilenameGetSaveCas(Properties* properties, int* type) { return NULL; }
 char* archFilenameGetOpenState(Properties* properties) { return NULL; }
+char* archFilenameGetOpenCapture(Properties* properties) { return NULL; }
 char* archFilenameGetSaveState(Properties* properties) { return NULL; }
 char* archDirnameGetOpenDisk(Properties* properties, int drive) { return NULL; }
 char* archFilenameGetOpenRomZip(Properties* properties, int cartSlot, const char* fname, const char* fileList, int count, int* autostart, int* romType) { return NULL; }

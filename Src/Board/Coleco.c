@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Board/Coleco.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Board/Coleco.c,v $
 **
-** $Revision: 1.39 $
+** $Revision: 1.50 $
 **
-** $Date: 2006/05/30 20:02:43 $
+** $Date: 2008-11-23 20:26:12 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Tomas Karlsson, Maarten ter Huurne
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson, Maarten ter Huurne
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -49,7 +47,8 @@
 #include "MegaromCartridge.h"
 #include "JoystickPort.h"
 #include "ColecoJoystick.h"
-
+#include "ColecoSuperAction.h"
+#include "ColecoSteeringWheel.h"
 
 /* Hardware */
 static SN76489*    sn76489;
@@ -62,6 +61,12 @@ static R800*       r800;
 static ColecoJoystickDevice* joyDevice[2];
 static int joyDeviceHandle;
 static int joyMode;
+static BoardTimer* rollerTimer;
+
+
+static UInt8 sliderVal[2] = { 0x30, 0x30 };
+static UInt32 joyIntState = 0;
+
 
 static void colecoSN76489Write(void* dummy, UInt16 ioPort, UInt8 value) 
 {
@@ -75,8 +80,10 @@ static void colecoJoyIoWrite(void* dummy, UInt16 ioPort, UInt8 value)
 
 static UInt8 colecoJoyIoRead(void* dummy, UInt16 ioPort)
 {
-    ColecoJoystickDevice* device = joyDevice[(ioPort >> 1) & 1];
-    UInt8 joyState = 0x3f;
+    int devNo = (ioPort >> 1) & 1;
+    ColecoJoystickDevice* device = joyDevice[devNo];
+    UInt16 joyState = 0xffff;
+    static UInt8 oldValue[2] = { 0, 0 };
     UInt8 value;
 
     if (device != NULL && device->read != NULL) {
@@ -84,44 +91,56 @@ static UInt8 colecoJoyIoRead(void* dummy, UInt16 ioPort)
     }
 
     if (joyMode != 0) {
-        return ((joyState & 0x01) ? 0x01 : 0) |
-               ((joyState & 0x08) ? 0x02 : 0) |
-               ((joyState & 0x02) ? 0x04 : 0) |
-               ((joyState & 0x04) ? 0x08 : 0) |
-               ((joyState & 0x10) ? 0x40 : 0) |
-               0x30;
-    }
-
-    value = 0x30 | ((joyState & 0x20) ? 0x40 : 0);
-
-	if (ioPort & 2) {
-		if      (inputEventGetState(EC_COLECO2_0))    value |= 0x0A;
-		else if (inputEventGetState(EC_COLECO2_1))    value |= 0x0D;
-		else if (inputEventGetState(EC_COLECO2_2))    value |= 0x07;
-		else if (inputEventGetState(EC_COLECO2_3))    value |= 0x0C;
-		else if (inputEventGetState(EC_COLECO2_4))    value |= 0x02;
-		else if (inputEventGetState(EC_COLECO2_5))    value |= 0x03;
-		else if (inputEventGetState(EC_COLECO2_6))    value |= 0x0E;
-		else if (inputEventGetState(EC_COLECO2_7))    value |= 0x05;
-		else if (inputEventGetState(EC_COLECO2_8))    value |= 0x01;
-		else if (inputEventGetState(EC_COLECO2_9))    value |= 0x0B;
-		else if (inputEventGetState(EC_COLECO2_STAR)) value |= 0x09;
-		else if (inputEventGetState(EC_COLECO2_HASH)) value |= 0x06;
+        value =  boardCaptureUInt8(2 * devNo, sliderVal[devNo] |
+                                              ((joyState & 0x001) ? 0x01 : 0) |
+                                              ((joyState & 0x008) ? 0x02 : 0) |
+                                              ((joyState & 0x002) ? 0x04 : 0) |
+                                              ((joyState & 0x004) ? 0x08 : 0) |
+                                              ((joyState & 0x010) ? 0x40 : 0));
     }
     else {
-		if      (inputEventGetState(EC_COLECO1_0))    value |= 0x0A;
-		else if (inputEventGetState(EC_COLECO1_1))    value |= 0x0D;
-		else if (inputEventGetState(EC_COLECO1_2))    value |= 0x07;
-		else if (inputEventGetState(EC_COLECO1_3))    value |= 0x0C;
-		else if (inputEventGetState(EC_COLECO1_4))    value |= 0x02;
-		else if (inputEventGetState(EC_COLECO1_5))    value |= 0x03;
-		else if (inputEventGetState(EC_COLECO1_6))    value |= 0x0E;
-		else if (inputEventGetState(EC_COLECO1_7))    value |= 0x05;
-		else if (inputEventGetState(EC_COLECO1_8))    value |= 0x01;
-		else if (inputEventGetState(EC_COLECO1_9))    value |= 0x0B;
-		else if (inputEventGetState(EC_COLECO1_STAR)) value |= 0x09;
-		else if (inputEventGetState(EC_COLECO1_HASH)) value |= 0x06;
-	}
+        value = sliderVal[devNo] | ((joyState & 0x020) ? 0x40 : 0) | 0x0f;
+
+	    if (devNo == 1) {
+		    if (inputEventGetState(EC_COLECO2_0))    value &= 0xFA;
+		    if (inputEventGetState(EC_COLECO2_1))    value &= 0xFD;
+		    if (inputEventGetState(EC_COLECO2_2))    value &= 0xF7;
+		    if (inputEventGetState(EC_COLECO2_3))    value &= 0xFC;
+		    if (inputEventGetState(EC_COLECO2_4))    value &= 0xF2;
+		    if (inputEventGetState(EC_COLECO2_5))    value &= 0xF3;
+		    if (inputEventGetState(EC_COLECO2_6))    value &= 0xFE;
+		    if (inputEventGetState(EC_COLECO2_7))    value &= 0xF5;
+		    if (inputEventGetState(EC_COLECO2_8))    value &= 0xF1;
+		    if (inputEventGetState(EC_COLECO2_9))    value &= 0xFB;
+		    if (inputEventGetState(EC_COLECO2_STAR)) value &= 0xF9;
+		    if (inputEventGetState(EC_COLECO2_HASH)) value &= 0xF6;
+		    if ((joyState & 0x040) == 0)             value &= 0xF8;
+		    if ((joyState & 0x080) == 0)             value &= 0xF4;
+        }
+        else {
+		    if (inputEventGetState(EC_COLECO1_0))    value &= 0xFA;
+		    if (inputEventGetState(EC_COLECO1_1))    value &= 0xFD;
+		    if (inputEventGetState(EC_COLECO1_2))    value &= 0xF7;
+		    if (inputEventGetState(EC_COLECO1_3))    value &= 0xFC;
+		    if (inputEventGetState(EC_COLECO1_4))    value &= 0xF2;
+		    if (inputEventGetState(EC_COLECO1_5))    value &= 0xF3;
+		    if (inputEventGetState(EC_COLECO1_6))    value &= 0xFE;
+		    if (inputEventGetState(EC_COLECO1_7))    value &= 0xF5;
+		    if (inputEventGetState(EC_COLECO1_8))    value &= 0xF1;
+		    if (inputEventGetState(EC_COLECO1_9))    value &= 0xFB;
+		    if (inputEventGetState(EC_COLECO1_STAR)) value &= 0xF9;
+		    if (inputEventGetState(EC_COLECO1_HASH)) value &= 0xF6;
+		    if ((joyState & 0x040) == 0)             value &= 0xF8;
+		    if ((joyState & 0x080) == 0)             value &= 0xF4;
+	    }
+
+        value = boardCaptureUInt8(4 + 2 * devNo, value);
+    }
+
+    joyIntState &= ~(1 << devNo);
+    if (joyIntState == 0) {
+        r800ClearInt(r800);
+    }
 
     return value;
 }
@@ -144,11 +163,44 @@ static void colecoJoyIoHandler(void* dummy, int port, JoystickPortType type)
     case JOYSTICK_PORT_COLECOJOYSTICK:
         joyDevice[port] = colecoJoystickCreate(port);
         break;
+    case JOYSTICK_PORT_SUPERACTION:
+        joyDevice[port] = colecoSuperActionCreate(port);
+        break;
+    case JOYSTICK_PORT_STEERINGWHEEL:
+        joyDevice[port] = colecoSteeringWheelCreate(port);
+        break;
     }
+}
+
+static void onRollerPoll(void* ref, UInt32 time)
+{
+    int devNo;
+
+    for (devNo = 0; devNo < 2; devNo++) {
+        ColecoJoystickDevice* device = joyDevice[devNo];
+        if (device != NULL && device->read != NULL) {
+            UInt8 val = (UInt8)(device->read(device) >> 4) & 0x30;
+            if ((sliderVal[devNo] & 0x10) != 0 && (val & 0x10) == 0) {
+                joyIntState |= 1 << devNo;
+            }
+            sliderVal[devNo] =  val;
+        }
+    }
+    if (joyIntState != 0) {
+        r800SetInt(r800);
+    }
+    
+    boardTimerAdd(rollerTimer, boardSystemTime() + boardFrequency() / 1000);
 }
 
 static void colecoJoyIoLoadState(void* dummy)
 {
+    SaveState* state = saveStateOpenForRead("colecoJoyIo");
+    sliderVal[0] = (UInt8)saveStateGet(state, "sliderVal0", 0);
+    sliderVal[1] = (UInt8)saveStateGet(state, "sliderVal1", 0);
+    joyIntState  =        saveStateGet(state, "joyIntState", 0);
+    saveStateClose(state);
+
     if (joyDevice[0] != NULL && joyDevice[0]->loadState != NULL) {
         joyDevice[0]->loadState(joyDevice[0]);
     }
@@ -159,6 +211,12 @@ static void colecoJoyIoLoadState(void* dummy)
 
 static void colecoJoyIoSaveState(void* dummy)
 {
+    SaveState* state = saveStateOpenForWrite("colecoJoyIo");
+    saveStateSet(state, "sliderVal0", sliderVal[0]);
+    saveStateSet(state, "sliderVal1", sliderVal[1]);
+    saveStateSet(state, "joyIntState", joyIntState);
+    saveStateClose(state);
+
     if (joyDevice[0] != NULL && joyDevice[0]->saveState != NULL) {
         joyDevice[0]->saveState(joyDevice[0]);
     }
@@ -169,6 +227,10 @@ static void colecoJoyIoSaveState(void* dummy)
 
 static void colecoJoyIoReset(void* dummy)
 {
+    sliderVal[0] = 0x30;
+    sliderVal[1] = 0x30;
+    joyIntState = 0;
+
     if (joyDevice[0] != NULL && joyDevice[0]->reset != NULL) {
         joyDevice[0]->reset(joyDevice[0]);
     }
@@ -194,6 +256,8 @@ static void colecoJoyIoDestroy(void* dummy)
     joystickPortUpdateHandlerUnregister();
 
     deviceManagerUnregister(joyDeviceHandle);
+
+    boardTimerDestroy(rollerTimer);
 }
 
 static void colecoJoyIoCreate()
@@ -202,6 +266,10 @@ static void colecoJoyIoCreate()
                                   colecoJoyIoSaveState, colecoJoyIoLoadState };
 
     int i;
+    
+    // Initialize joyMode
+    joyMode = 1;
+
     for (i = 0xe0; i <= 0xff; i++) {
         ioPortRegister(i, colecoJoyIoRead, colecoSN76489Write, NULL);
     }
@@ -214,6 +282,10 @@ static void colecoJoyIoCreate()
     
     joystickPortUpdateHandlerRegister(colecoJoyIoHandler, NULL);
     joyDeviceHandle = deviceManagerRegister(ROM_UNKNOWN, &callbacks, NULL);
+
+    rollerTimer = boardTimerCreate(onRollerPoll, NULL);
+        
+    boardTimerAdd(rollerTimer, boardSystemTime() + boardFrequency() / 200);
 }
 
 static void reset()
@@ -268,6 +340,10 @@ static void loadState()
     sn76489LoadState(sn76489);
 }
 
+static UInt32 getTimeTrace(int offset) {
+    return r800GetTimeTrace(r800, offset);
+}
+
 int colecoCreate(Machine* machine, 
                  VdpSyncMode vdpSyncMode,
                  BoardInfo* boardInfo)
@@ -275,7 +351,7 @@ int colecoCreate(Machine* machine,
     int success;
     int i;
 
-    r800 = r800Create(0, slotRead, slotWrite, ioPortRead, ioPortWrite, NULL, boardTimerCheckTimeout, NULL, NULL, NULL);
+    r800 = r800Create(CPU_ENABLE_M1, slotRead, slotWrite, ioPortRead, ioPortWrite, NULL, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
     boardInfo->cartridgeCount   = 1;
     boardInfo->diskdriveCount   = 0;
@@ -296,6 +372,9 @@ int colecoCreate(Machine* machine,
     boardInfo->setCpuTimeout    = r800SetTimeoutAt;
     boardInfo->setBreakpoint    = r800SetBreakpoint;
     boardInfo->clearBreakpoint  = r800ClearBreakpoint;
+    boardInfo->setDataBus       = r800SetDataBus;
+    
+    boardInfo->getTimeTrace     = getTimeTrace;
 
     deviceManagerCreate();
 
@@ -327,7 +406,7 @@ int colecoCreate(Machine* machine,
         cartridgeSetSlotInfo(i, machine->cart[i].slot, 0);
     }
 
-    success = machineInitialize(machine, NULL, NULL);
+    success = machineInitialize(machine, NULL, NULL, NULL);
 
     for (i = 0; i < 8; i++) {
         slotMapRamPage(0, 0, i);

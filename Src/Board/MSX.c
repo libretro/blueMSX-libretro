@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Board/MSX.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Board/MSX.c,v $
 **
-** $Revision: 1.62 $
+** $Revision: 1.71 $
 **
-** $Date: 2006/06/15 23:26:11 $
+** $Date: 2008-04-18 04:09:54 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -51,6 +49,7 @@
 #include "SlotManager.h"
 #include "DeviceManager.h"
 #include "ramMapperIo.h"
+#include "CoinDevice.h"
 
 void PatchZ80(void* ref, CpuRegs* cpuRegs);
 
@@ -60,6 +59,7 @@ static R800*           r800;
 static RTC*            rtc;
 static UInt8*          msxRam;
 static UInt32          msxRamSize;
+static UInt32          msxRamStart;
 static UInt32          z80Frequency;
 
 void msxSetCpu(int mode)
@@ -105,6 +105,8 @@ static void destroy() {
     slotManagerDestroy();
 
     r800DebugDestroy();
+    
+	ioPortUnregister(0x2e);
 
     deviceManagerDestroy();
 
@@ -118,14 +120,27 @@ static int getRefreshRate()
     return vdpGetRefreshRate();
 }
 
+static UInt32 getTimeTrace(int offset) {
+    return r800GetTimeTrace(r800, offset);
+}
+
 static UInt8* getRamPage(int page) {
-    static UInt8 emptyRam[0x2000];
+    int start;
 
     if (msxRam == NULL) {
-        return emptyRam;
+        return NULL;
     }
 
-	return msxRam + ((page * 0x2000) & (msxRamSize - 1));
+    start = page * 0x2000 - (int)msxRamStart;
+    if (page < 0) {
+        start += msxRamSize;
+    }
+
+    if (start < 0 || start >= (int)msxRamSize) {
+        return NULL;
+    }
+
+	return msxRam + start;
 }
     
 static void saveState()
@@ -158,6 +173,11 @@ static void loadState()
     rtcLoadState(rtc);
 }
 
+static UInt8 testPort(void* dummy, UInt16 ioPort)
+{
+    return 0x27;
+}
+
 int msxCreate(Machine* machine, 
               VdpSyncMode vdpSyncMode,
               BoardInfo* boardInfo)
@@ -174,11 +194,11 @@ int msxCreate(Machine* machine,
         cpuFlags |= CPU_VDP_IO_DELAY;
     }
 
-    r800 = r800Create(cpuFlags, slotRead, slotWrite, ioPortRead, ioPortWrite, PatchZ80, boardTimerCheckTimeout, NULL, NULL, NULL);
+    r800 = r800Create(cpuFlags, slotRead, slotWrite, ioPortRead, ioPortWrite, PatchZ80, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
-    boardInfo->cartridgeCount   = 2;
-    boardInfo->diskdriveCount   = 2;
-    boardInfo->casetteCount     = 1;
+    boardInfo->cartridgeCount   = machine->board.type == BOARD_MSX_FORTE_II ? 0 : 2;
+    boardInfo->diskdriveCount   = machine->board.type == BOARD_MSX_FORTE_II ? 0 : 2;
+    boardInfo->casetteCount     = machine->board.type == BOARD_MSX_FORTE_II ? 0 : 1;
     boardInfo->cpuRef           = r800;
 
     boardInfo->destroy          = destroy;
@@ -195,6 +215,9 @@ int msxCreate(Machine* machine,
     boardInfo->setCpuTimeout    = r800SetTimeoutAt;
     boardInfo->setBreakpoint    = r800SetBreakpoint;
     boardInfo->clearBreakpoint  = r800ClearBreakpoint;
+    boardInfo->setDataBus       = r800SetDataBus;
+    
+    boardInfo->getTimeTrace     = getTimeTrace;
 
     deviceManagerCreate();
     boardInit(&r800->systemTime);
@@ -205,10 +228,12 @@ int msxCreate(Machine* machine,
     r800Reset(r800, 0);
     mixerReset(boardGetMixer());
 
-    msxPPICreate();
+    msxPPICreate(machine->board.type == BOARD_MSX_FORTE_II);
     slotManagerCreate();
 
     r800DebugCreate(r800);
+    
+	ioPortRegister(0x2e, testPort, NULL, NULL);
 
     sprintf(cmosName, "%s" DIR_SEPARATOR "%s.cmos", boardGetBaseDirectory(), machine->name);
     rtc = rtcCreate(machine->cmos.enable, machine->cmos.batteryBacked ? cmosName : 0);
@@ -225,9 +250,19 @@ int msxCreate(Machine* machine,
         cartridgeSetSlotInfo(i, machine->cart[i].slot, machine->cart[i].subslot);
     }
 
-    success = machineInitialize(machine, &msxRam, &msxRamSize);
+    success = machineInitialize(machine, &msxRam, &msxRamSize, &msxRamStart);
 
-    msxPsg = msxPsgCreate(machine->board.type == BOARD_MSX ? PSGTYPE_AY8910 : PSGTYPE_YM2149);
+    msxPsg = msxPsgCreate(machine->board.type == BOARD_MSX || 
+                          machine->board.type == BOARD_MSX_FORTE_II 
+                          ? PSGTYPE_AY8910 : PSGTYPE_YM2149,
+                          machine->audio.psgstereo,
+                          machine->audio.psgpan,
+                          machine->board.type == BOARD_MSX_FORTE_II ? 1 : 2);
+
+    if (machine->board.type == BOARD_MSX_FORTE_II) {
+        CoinDevice* coinDevice = coinDeviceCreate(msxPsg);
+        msxPsgRegisterCassetteRead(msxPsg, coinDeviceRead, coinDevice);
+    }
 
     for (i = 0; i < 8; i++) {
         slotMapRamPage(0, 0, i);

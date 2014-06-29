@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Board/Board.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Board/Board.h,v $
 **
-** $Revision: 1.27 $
+** $Revision: 1.40 $
 **
-** $Date: 2006/06/13 17:40:07 $
+** $Date: 2007-03-20 02:30:31 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -72,6 +70,7 @@ typedef struct {
     void   (*saveState)();
     int    (*getRefreshRate)();
     UInt8* (*getRamPage)(int);
+    void   (*setDataBus)(void*, UInt8, UInt8, int);
 
     void   (*run)(void*);
     void   (*stop)(void*);
@@ -80,6 +79,10 @@ typedef struct {
     void   (*setCpuTimeout)(void*, UInt32);
     void   (*setBreakpoint)(void*, UInt16);
     void   (*clearBreakpoint)(void*, UInt16);
+
+    void   (*changeCartridge)(void*, int, int);
+
+    UInt32   (*getTimeTrace)(int);
 } BoardInfo;
 
 void boardInit(UInt32* systemTime);
@@ -89,16 +92,33 @@ int boardRun(Machine* machine,
              Mixer* mixer,
              char* stateFile,
              int frequency,
+             int reversePeriod,
+             int reverseBufferCnt,
              int (*syncCallback)(int, int));
+
+int boardRewind();
+int boardRewindOne();
+void boardEnableSnapshots(int enable);
 
 BoardType boardGetType();
 
 void boardSetMachine(Machine* machine);
 void boardReset();
 
+void boardSetDataBus(UInt8 value, UInt8 defaultValue, int setDefault);
+
 UInt64 boardSystemTime64();
 
-void boardSaveState(const char* stateFile);
+void boardCaptureStart(const char* filename);
+void boardCaptureStop();
+int boardCaptureHasData();
+int boardCaptureIsRecording();
+int boardCaptureIsPlaying();
+int boardCaptureCompleteAmount();
+
+UInt8 boardCaptureUInt8(UInt8 logId, UInt8 value);
+
+void boardSaveState(const char* stateFile, int screenshot);
 
 void boardSetFrequency(int frequency);
 int  boardGetRefreshRate();
@@ -119,11 +139,16 @@ int boardUseMegaRom();
 int boardUseMegaRam();
 int boardUseFmPac();
 
-typedef enum { HD_NONE, HD_SUNRISEIDE, HD_BEERIDE, HD_GIDE } HdType;
+void boardSetNoSpriteLimits(int enable);
+int boardGetNoSpriteLimits();
+
+RomType boardGetRomType(int cartNo);
+
+typedef enum { HD_NONE, HD_SUNRISEIDE, HD_BEERIDE, HD_GIDE, HD_RSIDE,
+               HD_MEGASCSI, HD_WAVESCSI, HD_GOUDASCSI, HD_NOWIND } HdType;
 HdType boardGetHdType(int hdIndex);
 
-
-char* boardGetBaseDirectory();
+const char* boardGetBaseDirectory();
 
 Mixer* boardGetMixer();
 
@@ -150,7 +175,7 @@ BoardTimer* boardTimerCreate(BoardTimerCb callback, void* ref);
 void boardTimerDestroy(BoardTimer* timer);
 void boardTimerAdd(BoardTimer* timer, UInt32 timeout);
 void boardTimerRemove(BoardTimer* timer);
-UInt32 boardTimerCheckTimeout(void* dummy);
+void boardTimerCheckTimeout(void* dummy);
 UInt32 boardCalcRelativeTimeout(UInt32 timerFrequency, UInt32 nextTimeout);
 
 void   boardOnBreakpoint(UInt16 pc);
@@ -181,6 +206,8 @@ void boardSetMoonsoundEnable(int value);
 int  boardGetMoonsoundEnable();
 void boardSetVideoAutodetect(int value);
 int  boardGetVideoAutodetect();
+
+void boardSetPeriodicCallback(BoardTimerCb cb, void* reference, UInt32 frequency);
 
 #endif /* BOARD_H */
 

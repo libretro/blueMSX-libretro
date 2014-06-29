@@ -39,15 +39,17 @@
 ** Other useful defines
 **************************************************************
 */
+static UInt8 scratch[1];
+static int tmp;
 #define VDP_VRMP5R(s, X, Y) ((s)->vramRead + (((Y & 1023) << 7) + (((X & 255) >> 1)) & (s)->maskRead))
 #define VDP_VRMP6R(s, X, Y) ((s)->vramRead + (((Y & 1023) << 7) + (((X & 511) >> 2)) & (s)->maskRead))
 #define VDP_VRMP7R(s, X, Y) ((s)->vramRead + (((Y &  511) << 7) + ((((X & 511) >> 2) + ((X & 2) << 15))) & (s)->maskRead))
 #define VDP_VRMP8R(s, X, Y) ((s)->vramRead + (((Y &  511) << 7) + ((((X & 255) >> 1) + ((X & 1) << 16))) & (s)->maskRead))
 
-#define VDP_VRMP5W(s, X, Y) ((s)->vramWrite + (((Y & 1023) << 7) + (((X & 255) >> 1)) & (s)->maskWrite))
-#define VDP_VRMP6W(s, X, Y) ((s)->vramWrite + (((Y & 1023) << 7) + (((X & 511) >> 2)) & (s)->maskWrite))
-#define VDP_VRMP7W(s, X, Y) ((s)->vramWrite + (((Y &  511) << 7) + ((((X & 511) >> 2) + ((X & 2) << 15))) & (s)->maskWrite))
-#define VDP_VRMP8W(s, X, Y) ((s)->vramWrite + (((Y &  511) << 7) + ((((X & 255) >> 1) + ((X & 1) << 16))) & (s)->maskWrite))
+#define VDP_VRMP5W(s, X, Y) (tmp = ((Y & 1023) << 7) + (((X & 255) >> 1)), (tmp & ~(s)->maskRead) ? scratch : ((s)->vramWrite + (tmp & (s)->maskWrite)))
+#define VDP_VRMP6W(s, X, Y) (tmp = ((Y & 1023) << 7) + (((X & 511) >> 2)), (tmp & ~(s)->maskRead) ? scratch : ((s)->vramWrite + (tmp & (s)->maskWrite)))
+#define VDP_VRMP7W(s, X, Y) (tmp = ((Y &  511) << 7) + ((((X & 511) >> 2) + ((X & 2) << 15))), (tmp & ~(s)->maskRead) ? scratch : ((s)->vramWrite + (tmp & (s)->maskWrite)))
+#define VDP_VRMP8W(s, X, Y) (tmp = ((Y &  511) << 7) + ((((X & 255) >> 1) + ((X & 1) << 16))), (tmp & ~(s)->maskRead) ? scratch : ((s)->vramWrite + (tmp & (s)->maskWrite)))
 
 #define CM_ABRT  0x0
 #define CM_NOOP1 0x1
@@ -523,13 +525,13 @@ static void LineEngine(VdpCmdState* vdpCmd)
 
 #define post_linexmaj(MX) \
     DX+=TX; \
+    if (ADX++==NX || (DX&MX)) \
+    break; \
     if ((ASX-=NY)<0) { \
     ASX+=NX; \
     DY+=TY; \
     } \
     ASX&=1023; /* Mask to 10 bits range */ \
-    if (ADX++==NX || (DX&MX)) \
-    break; \
         cnt-=delta; \
 }
 #define post_lineymaj(MX) \
@@ -636,8 +638,6 @@ static void LmmvEngine(VdpCmdState* vdpCmd)
         /* Command execution done */
         vdpCmd->status &= ~VDPSTATUS_CE;
         vdpCmd->CM=0;
-        if (!NY)
-            DY+=TY;
         vdpCmd->DY=DY & 0x03ff;
         vdpCmd->NY=NY & 0x03ff;
     }
@@ -694,15 +694,6 @@ static void LmmmEngine(VdpCmdState* vdpCmd)
         /* Command execution done */
         vdpCmd->status &= ~VDPSTATUS_CE;
         vdpCmd->CM=0;
-        if (!NY) {
-            SY+=TY;
-            DY+=TY;
-        }
-        else {
-            if (SY==-1) {
-                DY+=TY;
-            }
-        }
         vdpCmd->DY=DY & 0x03ff;
         vdpCmd->SY=SY & 0x03ff;
         vdpCmd->NY=NY & 0x03ff;
@@ -731,11 +722,10 @@ static void LmcmEngine(VdpCmdState* vdpCmd)
         vdpCmd->status |= VDPSTATUS_TR;
 
         if (!--vdpCmd->ANX || ((vdpCmd->ASX+=vdpCmd->TX)&vdpCmd->MX)) {
-            if (!(--vdpCmd->NY & 1023) || (vdpCmd->SY+=vdpCmd->TY)==-1) {
+            vdpCmd->SY+=vdpCmd->TY;
+            if (!(--vdpCmd->NY & 1023) || vdpCmd->SY==-1) {
                 vdpCmd->status &= ~VDPSTATUS_CE;
                 vdpCmd->CM = 0;
-                if (!vdpCmd->NY)
-                    vdpCmd->DY+=vdpCmd->TY;
             }
             else {
                 vdpCmd->ASX=vdpCmd->SX;
@@ -762,11 +752,10 @@ static void LmmcEngine(VdpCmdState* vdpCmd)
         vdpCmd->status |= VDPSTATUS_TR;
 
         if (!--vdpCmd->ANX || ((vdpCmd->ADX+=vdpCmd->TX)&vdpCmd->MX)) {
-            if (!(--vdpCmd->NY&1023) || (vdpCmd->DY+=vdpCmd->TY)==-1) {
+            vdpCmd->DY+=vdpCmd->TY;
+            if (!(--vdpCmd->NY&1023) || vdpCmd->DY==-1) {
                 vdpCmd->status &= ~VDPSTATUS_CE;
                 vdpCmd->CM = 0;
-                if (!vdpCmd->NY)
-                    vdpCmd->DY+=vdpCmd->TY;
             }
             else {
                 vdpCmd->ADX=vdpCmd->DX;
@@ -818,9 +807,6 @@ static void HmmvEngine(VdpCmdState* vdpCmd)
         /* Command execution done */
         vdpCmd->status &= ~VDPSTATUS_CE;
         vdpCmd->CM = 0;
-        if (!NY) {
-            DY+=TY;
-        }
         vdpCmd->DY=DY & 0x03ff;
         vdpCmd->NY=NY & 0x03ff;
     }
@@ -862,15 +848,6 @@ static void HmmmEngine(VdpCmdState* vdpCmd)
         /* Command execution done */
         vdpCmd->status &= ~VDPSTATUS_CE;
         vdpCmd->CM = 0;
-        if (!vdpCmd->NY) {
-            vdpCmd->SY += vdpCmd->TY;
-            vdpCmd->DY += vdpCmd->TY;
-        }
-        else {
-            if (vdpCmd->SY == -1) {
-                vdpCmd->DY += vdpCmd->TY;
-            }
-        }
     }
 }
 
@@ -914,15 +891,6 @@ static void YmmmEngine(VdpCmdState* vdpCmd)
         /* Command execution done */
         vdpCmd->status &=~VDPSTATUS_CE;
         vdpCmd->CM = 0;
-        if (!NY) {
-            SY+=TY;
-            DY+=TY;
-        }
-        else {
-            if (SY==-1) {
-                DY+=TY;
-            }
-        }
         vdpCmd->DY=DY & 0x03ff;
         vdpCmd->SY=SY & 0x03ff;
         vdpCmd->NY=NY & 0x03ff;
@@ -950,12 +918,10 @@ static void HmmcEngine(VdpCmdState* vdpCmd)
         vdpCmd->status |= VDPSTATUS_TR;
 
         if (!--vdpCmd->ANX || ((vdpCmd->ADX+=vdpCmd->TX)&vdpCmd->MX)) {
-            if (!(--vdpCmd->NY&1023) || (vdpCmd->DY+=vdpCmd->TY)==-1) {
+            vdpCmd->DY += vdpCmd->TY;
+            if (!(--vdpCmd->NY&1023) || vdpCmd->DY==-1) {
                 vdpCmd->status &= ~VDPSTATUS_CE;
                 vdpCmd->CM = 0;
-                if (!vdpCmd->NY) {
-                    vdpCmd->DY+=vdpCmd->TY;
-                }
             }
             else {
                 vdpCmd->ADX=vdpCmd->DX;
@@ -1160,7 +1126,7 @@ UInt8 vdpCmdPeek(VdpCmdState* vdpCmd, UInt8 reg, UInt32 systemTime)
 	case 0x0b: return vdpCmd->NY >> 8;
     case 0x0c: return vdpCmd->CL;
     case 0x0d: return vdpCmd->ARG;
-    case 0x0e: return vdpCmd->LO | vdpCmd->CM;
+    case 0x0e: return vdpCmd->LO | (vdpCmd->CM << 4);
     }
     return 0xff;
 }
@@ -1343,6 +1309,7 @@ void vdpCmdLoadState(VdpCmdState* vdpCmd)
     vdpCmd->DX            =         saveStateGet(state, "DX",         0);
     vdpCmd->DY            =         saveStateGet(state, "DY",         0);
     vdpCmd->NX            =         saveStateGet(state, "NX",         0);
+    vdpCmd->kNX            =        saveStateGet(state, "kNX",        0);
     vdpCmd->NY            =         saveStateGet(state, "NY",         0);
     vdpCmd->ASX           =         saveStateGet(state, "ASX",        0);
     vdpCmd->ADX           =         saveStateGet(state, "ADX",        0);
@@ -1387,6 +1354,7 @@ void vdpCmdSaveState(VdpCmdState* vdpCmd)
     saveStateSet(state, "DX",         vdpCmd->DX);
     saveStateSet(state, "DY",         vdpCmd->DY);
     saveStateSet(state, "NX",         vdpCmd->NX);
+    saveStateSet(state, "kNX",        vdpCmd->kNX);
     saveStateSet(state, "NY",         vdpCmd->NY);
     saveStateSet(state, "ASX",        vdpCmd->ASX);
     saveStateSet(state, "ADX",        vdpCmd->ADX);
@@ -1402,10 +1370,9 @@ void vdpCmdSaveState(VdpCmdState* vdpCmd)
     saveStateSet(state, "MX",         vdpCmd->MX);
     saveStateSet(state, "VdpOpsCnt",  vdpCmd->VdpOpsCnt);
     saveStateSet(state, "systemTime", vdpCmd->systemTime);
+    saveStateSet(state, "newScrMode", vdpCmd->newScrMode);
     saveStateSet(state, "screenMode", vdpCmd->screenMode);
     saveStateSet(state, "timingMode", vdpCmd->timingMode);
     
     saveStateClose(state);
 }
-
-
