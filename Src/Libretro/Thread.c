@@ -33,7 +33,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <stdlib.h>
-
+#include "thread.h"
 
 
 static void* threadEntry(void* data) 
@@ -102,18 +102,7 @@ void  archThreadDestroy(void* thread)
 }
 
 
-#ifdef __WIN32__
 void archThreadSleep(int milliseconds)
 {
-    Sleep(milliseconds);
+   retro_sleep(milliseconds);
 }
-#else
-void archThreadSleep(int milliseconds)
-{
-    struct timeval tv;
-
-    tv.tv_sec = 0;
-    tv.tv_usec = milliseconds * 1000;
-    select(0, NULL, NULL, NULL, &tv);
-}
-#endif
