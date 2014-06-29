@@ -453,7 +453,7 @@ INCDIRS += -ISrc/Input
 
 INCDIRS += -ISrc/Libretro
 
-LIBS := -lsdl
+LIBS := 
 
 
 all: $(TARGET)
