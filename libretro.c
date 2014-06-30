@@ -31,6 +31,9 @@
 
 #include "InputEvent.h"
 
+#define MAX_PADS 2
+static unsigned input_devices[2];
+
 #ifdef PSP
 #include "pspthreadman.h"
 static SceUID main_thread;
@@ -352,7 +355,19 @@ void retro_set_environment(retro_environment_t cb)
       { NULL, NULL },
    };
 
+   static const struct retro_controller_description port[] = {
+      { "RetroPad", RETRO_DEVICE_JOYPAD },
+      { "RetroKeyboard", RETRO_DEVICE_KEYBOARD },
+   };
+
+   static const struct retro_controller_info ports[] = {
+      { port, 2 },
+      { port, 2 },
+      { 0 },
+   };
+
    cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
+   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 }
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
@@ -360,7 +375,22 @@ void retro_set_audio_sample(retro_audio_sample_t unused) { }
 void retro_set_input_poll(retro_input_poll_t cb) { input_poll_cb = cb; }
 void retro_set_input_state(retro_input_state_t cb) { input_state_cb = cb; }
 
-void retro_set_controller_port_device(unsigned a, unsigned b) {}
+void retro_set_controller_port_device(unsigned port, unsigned device)
+{
+   switch (device)
+   {
+      case RETRO_DEVICE_JOYPAD:
+         input_devices[port] = RETRO_DEVICE_JOYPAD;
+         break;
+      case RETRO_DEVICE_KEYBOARD:
+         input_devices[port] = RETRO_DEVICE_KEYBOARD;
+         break;
+      default:
+         if (log_cb)
+            log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_KEYBOARD ...\n");
+         input_devices[port] = RETRO_DEVICE_KEYBOARD;
+   }
+}
 
 void retro_reset(void)
 {
@@ -452,7 +482,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    video = videoCreate();
    videoSetColors(video, properties->video.saturation, properties->video.brightness,
-                 properties->video.contrast, properties->video.gamma);
+         properties->video.contrast, properties->video.gamma);
    videoSetScanLines(video, properties->video.scanlinesEnable, properties->video.scanlinesPct);
    videoSetColorSaturation(video, properties->video.colorSaturationEnable, properties->video.colorSaturationWidth);
 
@@ -479,9 +509,9 @@ bool retro_load_game(const struct retro_game_info *info)
 
    for (i = 0; i < MIXER_CHANNEL_TYPE_COUNT; i++)
    {
-       mixerSetChannelTypeVolume(mixer, i, properties->sound.mixerChannel[i].volume);
-       mixerSetChannelTypePan(mixer, i, properties->sound.mixerChannel[i].pan);
-       mixerEnableChannelType(mixer, i, properties->sound.mixerChannel[i].enable);
+      mixerSetChannelTypeVolume(mixer, i, properties->sound.mixerChannel[i].volume);
+      mixerSetChannelTypePan(mixer, i, properties->sound.mixerChannel[i].pan);
+      mixerEnableChannelType(mixer, i, properties->sound.mixerChannel[i].enable);
    }
 
    mixerSetMasterVolume(mixer, properties->sound.masterVolume);
@@ -495,32 +525,32 @@ bool retro_load_game(const struct retro_game_info *info)
 
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
-       if (properties->media.carts[i].fileName[0])
-          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
-       updateExtendedRomName(i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip);
+      if (properties->media.carts[i].fileName[0])
+         insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+      updateExtendedRomName(i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip);
    }
 
    for (i = 0; i < PROP_MAX_DISKS; i++)
    {
-       if (properties->media.disks[i].fileName[0])
-          insertDiskette(properties, i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip, -1);
-       updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
+      if (properties->media.disks[i].fileName[0])
+         insertDiskette(properties, i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip, -1);
+      updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
    }
 
    for (i = 0; i < PROP_MAX_TAPES; i++)
    {
-       if (properties->media.tapes[i].fileName[0])
-          insertCassette(properties, i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip, 0);
-       updateExtendedCasName(i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip);
+      if (properties->media.tapes[i].fileName[0])
+         insertCassette(properties, i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip, 0);
+      updateExtendedCasName(i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip);
    }
 
    {
-       Machine* machine = machineCreate(properties->emulation.machineName);
-       if (machine != NULL)
-       {
-           boardSetMachine(machine);
-           machineDestroy(machine);
-       }
+      Machine* machine = machineCreate(properties->emulation.machineName);
+      if (machine != NULL)
+      {
+         boardSetMachine(machine);
+         machineDestroy(machine);
+      }
    }
    boardSetFdcTimingEnable(properties->emulation.enableFdcTiming);
    boardSetY8950Enable(properties->sound.chip.enableY8950);
@@ -528,10 +558,7 @@ bool retro_load_game(const struct retro_game_info *info)
    boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
-   //emulatorStart(NULL);
-   //retro_set_controller_port_device(0, RETRO_DEVICE_KEYBOARD);
-
-  return true;
+   return true;
 }
 
 
@@ -581,15 +608,24 @@ void retro_run(void)
    int i,j;
    input_poll_cb();
 
-   for (i=0; i < EC_KEYBOARD_KEYCOUNT; i++)
-      eventMap[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[i]) ? 1 : 0;
-
-   for (i = EC_JOY1_UP; i <= (EC_JOY1_BUTTON6); i++)
-      eventMap[i] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
-
-   for (i = EC_JOY2_UP; i <= (EC_JOY2_BUTTON6); i++)
-      eventMap[i] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
-
+   for (i = 0; i < MAX_PADS; i++)
+   {
+      switch (input_devices[i])
+      {
+         case RETRO_DEVICE_JOYPAD:
+            if (i == 0)
+               for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON6); j++)
+                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+            else if (i == 1)
+               for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON6); j++)
+                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+            break;
+         case RETRO_DEVICE_KEYBOARD:
+            for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
+               eventMap[j] = input_state_cb(i, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
+            break;
+      }
+   }
 
    switch_to_cpu_thread();
 
