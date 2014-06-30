@@ -71,37 +71,31 @@ static inline void deinit_context_switch(void)
 
 #else
 
-#include "ucontext.h"
-static ucontext_t main_thread;
-static ucontext_t cpu_thread;
+#include "Src/Libretro/libco/libco.h"
+cothread_t main_thread;
+cothread_t cpu_thread;
 
 #define CPU_THREAD_STACK_SIZE    (2 * 1024 * 1024)
 
 void switch_to_main_thread(void)
 {
-   swapcontext(&cpu_thread, &main_thread);
+   co_switch(main_thread);
 }
 
 static inline void switch_to_cpu_thread(void)
 {
-   swapcontext(&main_thread, &cpu_thread);
+   co_switch(cpu_thread);
 }
 
 static inline void init_context_switch(void)
 {
-   getcontext(&main_thread);
-
-   getcontext(&cpu_thread);
-   cpu_thread.uc_stack.ss_size = CPU_THREAD_STACK_SIZE;
-   cpu_thread.uc_stack.ss_sp = malloc(cpu_thread.uc_stack.ss_size);
-
-   makecontext(&cpu_thread, emulatorStart, 2, NULL);
+   main_thread = co_active();
+   cpu_thread = co_create(CPU_THREAD_STACK_SIZE, emulatorStart);
 }
 
 static inline void deinit_context_switch(void)
 {
-   if (cpu_thread.uc_stack.ss_sp)
-      free(cpu_thread.uc_stack.ss_sp);
+   co_delete(cpu_thread);
 }
 
 #endif
