@@ -44,7 +44,6 @@ else ifneq (,$(findstring rpi,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    LDFLAGS += -shared -Wl,--version-script=libretro/link.T
    fpic = -fPIC
-   OBJS += Src/Libretro/libco/armeabi_asm.o
    SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
@@ -59,7 +58,6 @@ else ifeq ($(platform), ios)
    fpic := -fPIC
    SHARED := -dynamiclib
 
-   OBJECTS += Src/Libretro/libco/armeabi_asm.o
 
    CC = clang -arch armv7 -isysroot $(IOSSDK)
    CC_AS = perl ./tools/gas-preprocessor.pl $(CC)
@@ -80,7 +78,6 @@ else ifeq ($(platform), qnx)
 	CXX = QCC -Vgcc_ntoarmv7le_cpp
 	AR = QCC -Vgcc_ntoarmv7le
    PLATFORM_DEFINES := -D__BLACKBERRY_QNX__ -fexceptions -marm -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=softfp
-   OBJS += libretro/libco/armeabi_asm.o
 else ifeq ($(platform), ps3)
    TARGET := $(TARGET_NAME)_libretro_ps3.a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
@@ -155,7 +152,6 @@ else ifneq (,$(findstring armv,$(platform)))
    CC = gcc
    CC_AS = gcc
    CXX = g++
-   OBJS += libretro/libco/armeabi_asm.o
 ifneq (,$(findstring cortexa8,$(platform)))
    PLATFORM_DEFINES += -marm -mcpu=cortex-a8
 else ifneq (,$(findstring cortexa9,$(platform)))
