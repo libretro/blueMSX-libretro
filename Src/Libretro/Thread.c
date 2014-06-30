@@ -27,6 +27,11 @@
 **
 ******************************************************************************
 */
+#ifdef PSP
+#include <pspthreadman.h>
+#endif
+#include "thread.h"
+
 #ifndef PSP
 
 #include "ArchThread.h"
@@ -36,7 +41,6 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <stdlib.h>
-#include "thread.h"
 
 
 static void* threadEntry(void* data) 
@@ -105,14 +109,9 @@ void archThreadDestroy(void* thread)
 }
 
 
-void archThreadSleep(int milliseconds)
-{
-   retro_sleep(milliseconds);
-}
 
 #else
 
-#include <pspthreadman.h>
 
 typedef void (*entryPoint_type)();
 
@@ -151,11 +150,9 @@ void archThreadDestroy(void* thread)
    SceUID thread_uid = (SceUID)thread;
    sceKernelDeleteThread((SceUID)thread);
 }
-
+#endif
 
 void archThreadSleep(int milliseconds)
 {
-   sceKernelDelayThread(1000 * milliseconds);
+   retro_sleep(milliseconds);
 }
-
-#endif
