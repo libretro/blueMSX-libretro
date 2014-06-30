@@ -394,11 +394,6 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_reset(void)
 {
-   if (image_buffer)
-      free(image_buffer);
-   image_buffer = NULL;
-   image_buffer_width = 0;
-   image_buffer_height = 0;
 }
 
 size_t retro_serialize_size(void)
