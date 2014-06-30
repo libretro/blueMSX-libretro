@@ -882,7 +882,7 @@ static int WaitForSync(int maxSpeed, int breakpointHit) {
 
    swapcontext(&cpu_thread, &main_thread);
 
-   return 10;
+   return 20;
 }
 
 #else
