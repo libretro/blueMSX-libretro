@@ -232,7 +232,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version = "v0.0.1";
    info->need_fullpath = true;
    info->block_extract = false;
-   info->valid_extensions = "rom";
+   info->valid_extensions = "rom|mx2";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
@@ -356,6 +356,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
    properties->video.monitorType           = P_VIDEO_PALNONE;
+//   strcpy(properties->emulation.machineName, "MSX2+");
 
    video = videoCreate();
    videoSetColors(video, properties->video.saturation, properties->video.brightness,
