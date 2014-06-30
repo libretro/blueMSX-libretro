@@ -356,7 +356,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
    properties->video.monitorType           = P_VIDEO_PALNONE;
-//   strcpy(properties->emulation.machineName, "MSX2+");
+   strcpy(properties->emulation.machineName, "MSX2+");
 
    video = videoCreate();
    videoSetColors(video, properties->video.saturation, properties->video.brightness,
