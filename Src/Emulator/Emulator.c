@@ -872,6 +872,21 @@ UInt32 getHiresTimer() {
 #else
 #define getHiresTimer archGetHiresTimer
 #endif
+#if 1
+#include "ucontext.h"
+
+extern ucontext_t main_thread;
+extern ucontext_t cpu_thread;
+
+static int WaitForSync(int maxSpeed, int breakpointHit) {
+
+   swapcontext(&cpu_thread, &main_thread);
+
+   return 10;
+}
+
+#else
+
 static UInt32 busy, total, oldTime;
 
 static int WaitForSync(int maxSpeed, int breakpointHit) {
@@ -915,6 +930,8 @@ static int WaitForSync(int maxSpeed, int breakpointHit) {
 
     return emuExitFlag ? -1 : 10;
 }
+#endif
+
 
 #endif // #ifndef NO_TIMERS
 

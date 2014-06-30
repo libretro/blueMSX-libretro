@@ -31,6 +31,11 @@
 
 #include "InputEvent.h"
 
+#include "ucontext.h"
+
+ucontext_t main_thread;
+ucontext_t cpu_thread;
+
 extern int eventMap[256];
 
 static unsigned btn_map[EC_KEYCOUNT] =
@@ -421,7 +426,18 @@ bool retro_load_game(const struct retro_game_info *info)
    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
 
-   emulatorStart(NULL);
+//   emulatorStart(NULL);
+
+   getcontext(&main_thread);
+   getcontext(&cpu_thread);
+
+
+   cpu_thread.uc_stack.ss_size = 10*1024*1024;
+   cpu_thread.uc_stack.ss_sp = malloc(cpu_thread.uc_stack.ss_size);
+
+   makecontext(&cpu_thread, emulatorStart, 2, NULL);
+
+
 
 
 
@@ -462,6 +478,8 @@ UInt8 archJoystickGetState(int joystickNo) {
    ; }
 void retro_run(void)
 {
+
+   swapcontext(&main_thread, &cpu_thread);
 
    int i,j;
    input_poll_cb();
