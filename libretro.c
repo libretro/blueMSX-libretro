@@ -60,7 +60,7 @@ static int cpu_thread_entry(SceSize args, void* argp)
 static inline void init_context_switch(void)
 {
    main_thread = sceKernelGetThreadId();
-   cpu_thread = sceKernelCreateThread ("CPU thread", cpu_thread_entry, 0x10, 0x10000, 0, NULL);
+   cpu_thread = sceKernelCreateThread ("CPU thread", cpu_thread_entry, 0x10, 0x10000, PSP_THREAD_ATTR_VFPU, NULL);
    sceKernelStartThread(cpu_thread, 0, NULL);
 }
 
