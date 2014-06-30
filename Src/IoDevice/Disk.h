@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/Disk.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/Disk.h,v $
 **
-** $Revision: 1.13 $
+** $Revision: 1.20 $
 **
-** $Date: 2006/06/24 17:15:57 $
+** $Date: 2009-07-18 15:08:04 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -39,24 +37,39 @@
 
 #define MAX_DRIVES_PER_HD        8
 
+#define DISK_CDROM               "CD-Rom"
+
 #define MAXDRIVES (MAX_FDC_COUNT + MAX_DRIVES_PER_HD * MAX_HD_COUNT)
 
-UInt8 diskChange(int driveId, char* fileName, const char* fileInZipFile);
+typedef enum {
+    DSKE_OK,
+    DSKE_NO_DATA,
+    DSKE_CRC_ERROR
+} DSKE;
+
+UInt8 diskChange(int driveId, const char* fileName, const char* fileInZipFile);
+void diskSetInfo(int driveId, char* fileName, const char* fileInZipFile);
 void  diskEnable(int driveId, int enable);
 UInt8 diskEnabled(int driveId);
 UInt8 diskReadOnly(int driveId);
 UInt8 diskPresent(int driveId);
-UInt8 diskRead(int driveId, UInt8* buffer, int sector);
-UInt8 diskReadSector(int driveId, UInt8* buffer, int sector, int side, int track, int density, int *sectorSize);
+DSKE  diskRead(int driveId, UInt8* buffer, int sector);
+DSKE  diskReadSector(int driveId, UInt8* buffer, int sector, int side, int track, int density, int *sectorSize);
 UInt8 diskWrite(int driveId, UInt8* buffer, int sector);
 UInt8 diskWriteSector(int driveId, UInt8 *buffer, int sector, int side, int track, int density);
 int   diskGetSectorsPerTrack(int driveId);
 int   diskGetSectorSize(int driveId, int side, int track, int density);
+int   diskIsCdrom(int driveId);
 int   diskGetSides(int driveId);
 int   diskChanged(int driveId);
-
+int   _diskRead2(int driveId, UInt8* buffer, int sector, int numSectors);
+int   _diskWrite2(int driveId, UInt8* buffer, int sector, int numSectors);
+int   _diskGetTotalSectors(int driveId);
 static int diskGetHdDriveId(int hdId, int driveNo) {
     return MAX_FDC_COUNT + MAX_DRIVES_PER_HD * hdId + driveNo;
+}
+static int diskGetUsbDriveId(int driveId, int driveNo) { 
+    return MAX_FDC_COUNT + MAX_DRIVES_PER_HD * driveId + driveNo;
 }
 
 #endif

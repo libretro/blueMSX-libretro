@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Board/Machine.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Board/Machine.c,v $
 **
-** $Revision: 1.32 $
+** $Revision: 1.69 $
 **
-** $Date: 2006/06/26 19:35:53 $
+** $Date: 2008-11-23 20:26:12 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -38,6 +36,9 @@
 #include "MediaDb.h"
 #include "TokenExtract.h"
 #include "Disk.h"
+#include "unzip.h"
+
+#include "AppConfig.h"
 
 #include "RomLoader.h"
 #include "MSXMidi.h"
@@ -63,6 +64,7 @@
 #include "romMapperMicrosol.h"
 #include "romMapperNationalFdc.h"
 #include "romMapperPhilipsFdc.h"
+#include "romMapperSvi707Fdc.h"
 #include "romMapperSvi738Fdc.h"
 #include "romMapperGameMaster2.h"
 #include "romMapperASCII8sram.h"
@@ -110,11 +112,50 @@
 #include "romMapperSunriseIDE.h"
 #include "romMapperBeerIDE.h"
 #include "romMapperGIDE.h"
+#include "romMapperSvi328RsIDE.h"
 #include "romMapperMicrosolVmx80.h"
 #include "romMapperNms8280VideoDa.h"
 #include "romMapperSonyHBIV1.h"
 #include "romMapperFmDas.h"
 #include "romMapperSfg05.h"
+#include "romMapperSf7000Ipl.h"
+#include "romMapperPlayBall.h"
+#include "romMapperObsonet.h"
+#include "romMapperSg1000Castle.h"
+#include "romMapperSg1000.h"
+#include "romMapperSg1000RamExpander.h"
+#include "romMapperSegaBasic.h"
+#include "romMapperDumas.h"
+#include "sramMapperMegaSCSI.h"
+#include "sramMapperEseSCC.h"
+#include "romMapperNoWind.h"
+#include "romMapperGoudaSCSI.h"
+#include "romMapperMegaFlashRomScc.h"
+#include "romMapperForteII.h"
+#include "romMapperA1FMModem.h"
+#include "romMapperA1FM.h"
+#include "romMapperDRAM.h"
+#include "romMapperMatraINK.h"
+#include "romMapperNettouYakyuu.h"
+#include "romMapperNet.h"
+#include "romMapperJoyrexPsg.h"
+#include "romMapperOpcodePsg.h"
+#include "romMapperArc.h"
+#include "romMapperOpcodeBios.h"
+#include "romMapperOpcodeMegaRam.h"
+#include "romMapperOpcodeSaveRam.h"
+#include "romMapperOpcodeSlotManager.h"
+#include "romMapperDooly.h"
+#include "romMapperMuPack.h"
+
+
+// PacketFileSystem.h Need to be included after all other includes
+#include "PacketFileSystem.h"
+
+
+#include "romExclusion.h"
+
+static char machinesDir[PROP_MAXPATH]  = "";
 
 int toint(char* buffer) 
 {
@@ -131,124 +172,192 @@ int toint(char* buffer)
     return atoi(buffer);
 }
 
+#ifdef WIN32
+
+char *strcasestr(const char *str1, const char *str2)
+{
+	char *str1copy;
+	char *str2copy;
+	char *ptr;
+	int offset;
+
+	if (str1 == NULL || str2 == NULL)
+		return NULL;
+
+	// Create a copy of each
+	str1copy = _strdup(str1);
+	str2copy = _strdup(str2);
+
+	// Convert both to lowercase
+	_strlwr(str1copy);
+	_strlwr(str2copy);
+
+	// Find the occurrence in the lowercased version
+	ptr = strstr(str1copy, str2copy);
+
+	// Now that we have the position, contents are not needed
+	free(str1copy);
+	free(str2copy);
+	
+	if (ptr == NULL)
+		return NULL; // No match
+
+	// Compute the offset in the lowercased version
+	offset = ptr - str1copy;
+
+	return (char *)(str1 + offset); // Return the original version + offset
+}
+
+#endif
+
 static int readMachine(Machine* machine, const char* machineName, const char* file)
 {
     static char buffer[10000];
     char* slotBuf;
     int value;
     int i = 0;
-
+    IniFile *configIni;
+    
+    if (machine->isZipped)
+        configIni = iniFileOpenZipped(machine->zipFile, "config.ini");
+    else
+        configIni = iniFileOpen(file);
+    
+    if (configIni == NULL)
+        return 0;
+    
     strcpy(machine->name, machineName);
-
-    iniFileOpen(file);
-
+    
     // Read board info
-    iniFileGetString("Board", "type", "none", buffer, 10000);
+    iniFileGetString(configIni, "Board", "type", "none", buffer, 10000);
     if      (0 == strcmp(buffer, "MSX"))          machine->board.type = BOARD_MSX;
     else if (0 == strcmp(buffer, "MSX-S3527"))    machine->board.type = BOARD_MSX_S3527;
     else if (0 == strcmp(buffer, "MSX-S1985"))    machine->board.type = BOARD_MSX_S1985;
     else if (0 == strcmp(buffer, "MSX-T9769B"))   machine->board.type = BOARD_MSX_T9769B;
     else if (0 == strcmp(buffer, "MSX-T9769C"))   machine->board.type = BOARD_MSX_T9769C;
+    else if (0 == strcmp(buffer, "MSX-ForteII"))  machine->board.type = BOARD_MSX_FORTE_II;
     else if (0 == strcmp(buffer, "SVI"))          machine->board.type = BOARD_SVI;
     else if (0 == strcmp(buffer, "ColecoVision")) machine->board.type = BOARD_COLECO;
     else if (0 == strcmp(buffer, "ColecoAdam"))   machine->board.type = BOARD_COLECOADAM;
     else if (0 == strcmp(buffer, "SG-1000"))      machine->board.type = BOARD_SG1000;
+    else if (0 == strcmp(buffer, "SF-7000"))      machine->board.type = BOARD_SF7000;
+    else if (0 == strcmp(buffer, "SC-3000"))      machine->board.type = BOARD_SC3000;
     else                                          machine->board.type = BOARD_MSX;
 
     // Read video info
-    iniFileGetString("Video", "version", "none", buffer, 10000);
+    iniFileGetString(configIni, "Video", "version", "none", buffer, 10000);
     if      (0 == strcmp(buffer, "V9938"))    machine->video.vdpVersion = VDP_V9938;
     else if (0 == strcmp(buffer, "V9958"))    machine->video.vdpVersion = VDP_V9958;
     else if (0 == strcmp(buffer, "TMS9929A")) machine->video.vdpVersion = VDP_TMS9929A;
     else if (0 == strcmp(buffer, "TMS99x8A")) machine->video.vdpVersion = VDP_TMS99x8A;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
 
-    iniFileGetString("Video", "vram size", "none", buffer, 10000);
+    iniFileGetString(configIni, "Video", "vram size", "none", buffer, 10000);
     if (0 == strcmp(buffer, "16kB")) machine->video.vramSize = 16 * 1024;
     else if (0 == strcmp(buffer, "64kB")) machine->video.vramSize = 64 * 1024;
     else if (0 == strcmp(buffer, "128kB")) machine->video.vramSize = 128 * 1024;
     else if (0 == strcmp(buffer, "192kB")) machine->video.vramSize = 192 * 1024;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
 
     // Read CMOS info
-    iniFileGetString("CMOS", "Enable CMOS", "none", buffer, 10000);
+    iniFileGetString(configIni, "CMOS", "Enable CMOS", "none", buffer, 10000);
     if (0 == strcmp(buffer, "none")) machine->cmos.enable = 1;
     else if (0 == strcmp(buffer, "0")) machine->cmos.enable = 0;
     else if (0 == strcmp(buffer, "1")) machine->cmos.enable = 1;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
 
     // Read CPU info
-    iniFileGetString("CPU", "Z80 Frequency", "none", buffer, 10000);
+    iniFileGetString(configIni, "CPU", "Z80 Frequency", "none", buffer, 10000);
     if (0 == sscanf(buffer, "%dHz", &value)) {
         value = 3579545;
     }
     machine->cpu.freqZ80 = value;
 
     // Read CPU info
-    iniFileGetString("CPU", "R800 Frequency", "none", buffer, 10000);
+    iniFileGetString(configIni, "CPU", "R800 Frequency", "none", buffer, 10000);
     if (0 == sscanf(buffer, "%dHz", &value)) {
         value = 7159090;
     }
     machine->cpu.freqR800 = value;
 
     // Read FDC info
-    iniFileGetString("FDC", "Count", "none", buffer, 10000);
+    iniFileGetString(configIni, "FDC", "Count", "none", buffer, 10000);
     if (0 == strcmp(buffer, "none")) machine->fdc.count = 2;
     else if (0 == strcmp(buffer, "0")) machine->fdc.count = 0;
     else if (0 == strcmp(buffer, "1")) machine->fdc.count = 1;
     else if (0 == strcmp(buffer, "2")) machine->fdc.count = 2;
     else if (0 == strcmp(buffer, "3")) machine->fdc.count = 3;
     else if (0 == strcmp(buffer, "4")) machine->fdc.count = 4;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
     
-    iniFileGetString("CMOS", "Battery Backed", "none", buffer, 10000);
+    iniFileGetString(configIni, "CMOS", "Battery Backed", "none", buffer, 10000);
     if (0 == strcmp(buffer, "none")) machine->cmos.batteryBacked = 1;
     else if (0 == strcmp(buffer, "0")) machine->cmos.batteryBacked = 0;
     else if (0 == strcmp(buffer, "1")) machine->cmos.batteryBacked = 1;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
+
+    // Read audio info
+    iniFileGetString(configIni, "AUDIO", "PSG Stereo", "none", buffer, 10000);
+    if (0 == strcmp(buffer, "none")) machine->audio.psgstereo = 0;
+    else if (0 == strcmp(buffer, "0")) machine->audio.psgstereo = 0;
+    else if (0 == strcmp(buffer, "1")) machine->audio.psgstereo = 1;
+    else { iniFileClose(configIni); return 0; }
+
+    for (i = 0; i < sizeof(machine->audio.psgpan) / sizeof(machine->audio.psgpan[0]); i++) {
+        char s[32];
+        sprintf(s, "PSG Pan channel %d", i);
+        iniFileGetString(configIni, "AUDIO", s, "none", buffer, 10000);
+        if (0 == strcmp(buffer, "none")) machine->audio.psgpan[i] = i == 0 ? 0 : i == 1 ? -1 : 1;
+        else if (0 == strcmp(buffer, "left")) machine->audio.psgpan[i] = -1;
+        else if (0 == strcmp(buffer, "center")) machine->audio.psgpan[i] = 0;
+        else if (0 == strcmp(buffer, "right")) machine->audio.psgpan[i] = 1;
+        else { iniFileClose(configIni); return 0; }
+    }
 
     // Read subslot info
-    iniFileGetString("Subslotted Slots", "slot 0", "none", buffer, 10000);
+    iniFileGetString(configIni, "Subslotted Slots", "slot 0", "none", buffer, 10000);
     if (0 == strcmp(buffer, "0")) machine->slot[0].subslotted = 0;
     else if (0 == strcmp(buffer, "1")) machine->slot[0].subslotted = 1;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
     
-    iniFileGetString("Subslotted Slots", "slot 1", "none", buffer, 10000);
+    iniFileGetString(configIni, "Subslotted Slots", "slot 1", "none", buffer, 10000);
     if (0 == strcmp(buffer, "0")) machine->slot[1].subslotted = 0;
     else if (0 == strcmp(buffer, "1")) machine->slot[1].subslotted = 1;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
     
-    iniFileGetString("Subslotted Slots", "slot 2", "none", buffer, 10000);
+    iniFileGetString(configIni, "Subslotted Slots", "slot 2", "none", buffer, 10000);
     if (0 == strcmp(buffer, "0")) machine->slot[2].subslotted = 0;
     else if (0 == strcmp(buffer, "1")) machine->slot[2].subslotted = 1;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
     
-    iniFileGetString("Subslotted Slots", "slot 3", "none", buffer, 10000);
+    iniFileGetString(configIni, "Subslotted Slots", "slot 3", "none", buffer, 10000);
     if (0 == strcmp(buffer, "0")) machine->slot[3].subslotted = 0;
     else if (0 == strcmp(buffer, "1")) machine->slot[3].subslotted = 1;
-    else { iniFileClose(); return 0; }
+    else { iniFileClose(configIni); return 0; }
 
     // Read external slot info
-    iniFileGetString("External Slots", "slot A", "none", buffer, 10000);
+    iniFileGetString(configIni, "External Slots", "slot A", "none", buffer, 10000);
     machine->cart[0].slot = toint(extractToken(buffer, 0));        
     machine->cart[0].subslot = toint(extractToken(buffer, 1));    
-    if (machine->cart[0].slot < 0 || machine->cart[0].slot >= 4) { iniFileClose(); return 0; }
-    if (machine->cart[0].subslot < 0 || machine->cart[0].subslot >= 4) { iniFileClose(); return 0; }  
+    if (machine->cart[0].slot < 0 || machine->cart[0].slot >= 4) { iniFileClose(configIni); return 0; }
+    if (machine->cart[0].subslot < 0 || machine->cart[0].subslot >= 4) { iniFileClose(configIni); return 0; }  
 
-    iniFileGetString("External Slots", "slot B", "none", buffer, 10000);
+    iniFileGetString(configIni, "External Slots", "slot B", "none", buffer, 10000);
     machine->cart[1].slot = toint(extractToken(buffer, 0));        
     machine->cart[1].subslot = toint(extractToken(buffer, 1));    
-    if (machine->cart[1].slot < 0 || machine->cart[1].slot >= 4) { iniFileClose(); return 0; }
-    if (machine->cart[1].subslot < 0 || machine->cart[1].subslot >= 4) { iniFileClose(); return 0; }   
+    if (machine->cart[1].slot < 0 || machine->cart[1].slot >= 4) { iniFileClose(configIni); return 0; }
+    if (machine->cart[1].subslot < 0 || machine->cart[1].subslot >= 4) { iniFileClose(configIni); return 0; }   
 
     // Read slots
-    iniFileGetSection("Slots", buffer, 10000);
+    iniFileGetSection(configIni, "Slots", buffer, 10000);
 
     slotBuf = buffer;
     machine->cpu.hasR800 = 0;
     machine->fdc.enabled = 0;
     for (i = 0; i < sizeof(machine->slotInfo) / sizeof(SlotInfo) && *slotBuf; i++) {
         char* arg;
+        char slotInfoName[512];
+		char *slotFilename;
 
         machine->slotInfo[i].slot = toint(extractToken(slotBuf, 0));    
         machine->slotInfo[i].subslot = toint(extractToken(slotBuf, 1));
@@ -258,28 +367,80 @@ static int readMachine(Machine* machine, const char* machineName, const char* fi
         machine->cpu.hasR800 |= machine->slotInfo[i].romType == ROM_S1990;
         machine->fdc.enabled |= machine->slotInfo[i].romType == ROM_DISKPATCH   ||
                                 machine->slotInfo[i].romType == ROM_TC8566AF    ||
+                                machine->slotInfo[i].romType == ROM_TC8566AF_TR ||
                                 machine->slotInfo[i].romType == ROM_MICROSOL    ||
                                 machine->slotInfo[i].romType == ROM_NATIONALFDC ||
                                 machine->slotInfo[i].romType == ROM_PHILIPSFDC  ||
                                 machine->slotInfo[i].romType == ROM_SVI328FDC   ||
+                                machine->slotInfo[i].romType == ROM_SVI707FDC   ||
                                 machine->slotInfo[i].romType == ROM_SVI738FDC;
+
         arg = extractToken(slotBuf, 5);
         strcpy(machine->slotInfo[i].name, arg ? arg : "");
+
         arg = extractToken(slotBuf, 6);
         strcpy(machine->slotInfo[i].inZipName, arg ? arg : "");
 
-        if (machine->slotInfo[i].slot < 0 || machine->slotInfo[i].slot >= 4) { iniFileClose(); return 0; }
-        if (machine->slotInfo[i].subslot < 0 || machine->slotInfo[i].subslot >= 4) { iniFileClose(); return 0; }
-        if (machine->slotInfo[i].startPage < 0 || machine->slotInfo[i].startPage >= 8) { iniFileClose(); return 0; }
-        if (machine->slotInfo[i].pageCount == -1) { iniFileClose(); return 0; }
-        if (machine->slotInfo[i].romType < 1 || machine->slotInfo[i].romType > ROM_MAXROMID) { iniFileClose(); return 0; }
+        if (machine->slotInfo[i].slot < 0 || machine->slotInfo[i].slot >= 4) { iniFileClose(configIni); return 0; }
+        if (machine->slotInfo[i].subslot < 0 || machine->slotInfo[i].subslot >= 4) { iniFileClose(configIni); return 0; }
+        if (machine->slotInfo[i].startPage < 0 || machine->slotInfo[i].startPage >= 8) { iniFileClose(configIni); return 0; }
+        if (machine->slotInfo[i].pageCount == -1) { iniFileClose(configIni); return 0; }
+        if (machine->slotInfo[i].romType < 1 || machine->slotInfo[i].romType > ROM_MAXROMID) { iniFileClose(configIni); return 0; }
 
         slotBuf += strlen(slotBuf) + 1;
+        
+        strcpy(slotInfoName, machine->slotInfo[i].name);
+        
+        slotFilename = strrchr(slotInfoName, '/');
+        if (slotFilename == NULL)
+            slotFilename = strrchr(slotInfoName, '\\');
+        if (slotFilename == NULL)
+            slotFilename = slotInfoName;
+        else
+            slotFilename++;
+        
+        if (!machine->isZipped)
+        {
+            // Convert the relative path into absolute
+			
+            if (strcasestr(machine->slotInfo[i].name, "Machines/") == machine->slotInfo[i].name ||
+                strcasestr(machine->slotInfo[i].name, "Machines\\") == machine->slotInfo[i].name)
+            {
+                char expandedPath[1024];
+                sprintf(expandedPath, "%s/%s", machinesDir, machine->slotInfo[i].name + 9);
+                strcpy(machine->slotInfo[i].name, expandedPath);
+            }
+        }
+        else if (*machine->slotInfo[i].name)
+        {
+            char iniFilePath[512];
+			char *parentDir;
+
+            strcpy(iniFilePath, iniFileGetFilePath(configIni));
+            
+            parentDir = strrchr(iniFilePath, '/');
+            if (parentDir == NULL)
+                parentDir = strrchr(iniFilePath, '\\');
+            if (parentDir == NULL)
+                parentDir = iniFilePath;
+            else
+                *(parentDir + 1) = '\0';
+            
+            strcpy(machine->slotInfo[i].name, machine->zipFile);
+            sprintf(machine->slotInfo[i].inZipName, "%s%s",
+                    iniFilePath, slotFilename);
+        }
+        
+#ifdef __APPLE__
+        // On OS X, replace all backslashes with slashes
+        for (char *ch = machine->slotInfo[i].name; *ch; ch++)
+            if (*ch == '\\') *ch = '/';
+#endif
     }
 
     machine->slotInfoCount = i;
  
-    iniFileClose();
+    iniFileClose(configIni);
 
     return 1;
 }
@@ -291,65 +452,83 @@ void machineSave(Machine* machine)
     char buffer[10000];
     int size = 0;
     int i;
+    IniFile *configIni;
 
-    sprintf(dir, "Machines/%s", machine->name);
+    sprintf(dir, "%s/%s", machinesDir, machine->name);
     archCreateDirectory(dir);
 
-    sprintf(file, "Machines/%s/config.ini", machine->name);
+    sprintf(file, "%s/%s/config.ini", machinesDir, machine->name);
 
-    iniFileOpen(file);
+    configIni = iniFileOpen(file);
+    if (configIni == NULL)
+        return;
 
     // Write CMOS info
-    iniFileWriteString("CMOS", "Enable CMOS", machine->cmos.enable ? "1" : "0");
-    iniFileWriteString("CMOS", "Battery Backed", machine->cmos.batteryBacked ? "1" : "0");
+    iniFileWriteString(configIni, "CMOS", "Enable CMOS", machine->cmos.enable ? "1" : "0");
+    iniFileWriteString(configIni, "CMOS", "Battery Backed", machine->cmos.batteryBacked ? "1" : "0");
+
+    // Write Audio info
+    iniFileWriteString(configIni, "AUDIO", "PSG Stereo", machine->audio.psgstereo ? "1" : "0");
+    
+    if (machine->audio.psgstereo) {
+        for (i = 0; i < sizeof(machine->audio.psgpan) / sizeof(machine->audio.psgpan[0]); i++) {
+            char s[32];
+            int pan = machine->audio.psgpan[i];
+            sprintf(s, "PSG Pan channel %d", i);
+            iniFileWriteString(configIni, "AUDIO", s,  pan < 0 ? "left" : pan > 0 ? "right" : "center");
+        }
+    }
 
     // Write FDC info
     sprintf(buffer, "%d", machine->fdc.count);
-    iniFileWriteString("FDC", "Count", buffer);
+    iniFileWriteString(configIni, "FDC", "Count", buffer);
 
     // Write CPU info
     sprintf(buffer, "%dHz", machine->cpu.freqZ80);
-    iniFileWriteString("CPU", "Z80 Frequency", buffer);
+    iniFileWriteString(configIni, "CPU", "Z80 Frequency", buffer);
     if (machine->cpu.hasR800) {
         sprintf(buffer, "%dHz", machine->cpu.freqR800);
-        iniFileWriteString("CPU", "R800 Frequency", buffer);
+        iniFileWriteString(configIni, "CPU", "R800 Frequency", buffer);
     }
 
     // Write Board info
     switch (machine->board.type) {
-    case BOARD_MSX:        iniFileWriteString("Board", "type", "MSX"); break;
-    case BOARD_MSX_S3527:  iniFileWriteString("Board", "type", "MSX-S3527"); break;
-    case BOARD_MSX_S1985:  iniFileWriteString("Board", "type", "MSX-S1985"); break;
-    case BOARD_MSX_T9769B: iniFileWriteString("Board", "type", "MSX-T9769B"); break;
-    case BOARD_MSX_T9769C: iniFileWriteString("Board", "type", "MSX-T9769C"); break;
-    case BOARD_SVI:        iniFileWriteString("Board", "type", "SVI"); break;
-    case BOARD_COLECO:     iniFileWriteString("Board", "type", "ColecoVision"); break;
-    case BOARD_COLECOADAM: iniFileWriteString("Board", "type", "ColecoAdam"); break;
-    case BOARD_SG1000:     iniFileWriteString("Board", "type", "SG-1000"); break;
+    case BOARD_MSX:          iniFileWriteString(configIni, "Board", "type", "MSX"); break;
+    case BOARD_MSX_S3527:    iniFileWriteString(configIni, "Board", "type", "MSX-S3527"); break;
+    case BOARD_MSX_S1985:    iniFileWriteString(configIni, "Board", "type", "MSX-S1985"); break;
+    case BOARD_MSX_T9769B:   iniFileWriteString(configIni, "Board", "type", "MSX-T9769B"); break;
+    case BOARD_MSX_T9769C:   iniFileWriteString(configIni, "Board", "type", "MSX-T9769C"); break;
+    case BOARD_MSX_FORTE_II: iniFileWriteString(configIni, "Board", "type", "MSX-ForteII"); break;
+    case BOARD_SVI:          iniFileWriteString(configIni, "Board", "type", "SVI"); break;
+    case BOARD_COLECO:       iniFileWriteString(configIni, "Board", "type", "ColecoVision"); break;
+    case BOARD_COLECOADAM:   iniFileWriteString(configIni, "Board", "type", "ColecoAdam"); break;
+    case BOARD_SG1000:       iniFileWriteString(configIni, "Board", "type", "SG-1000"); break;
+    case BOARD_SF7000:       iniFileWriteString(configIni, "Board", "type", "SF-7000"); break;
+    case BOARD_SC3000:       iniFileWriteString(configIni, "Board", "type", "SC-3000"); break;
     }
 
     // Write video info
     switch (machine->video.vdpVersion) {
-    case VDP_V9958:     iniFileWriteString("Video", "version", "V9958"); break;
-    case VDP_V9938:     iniFileWriteString("Video", "version", "V9938"); break;
-    case VDP_TMS9929A:  iniFileWriteString("Video", "version", "TMS9929A"); break;
-    case VDP_TMS99x8A:  iniFileWriteString("Video", "version", "TMS99x8A"); break;
+    case VDP_V9958:     iniFileWriteString(configIni, "Video", "version", "V9958"); break;
+    case VDP_V9938:     iniFileWriteString(configIni, "Video", "version", "V9938"); break;
+    case VDP_TMS9929A:  iniFileWriteString(configIni, "Video", "version", "TMS9929A"); break;
+    case VDP_TMS99x8A:  iniFileWriteString(configIni, "Video", "version", "TMS99x8A"); break;
     }
 
     sprintf(buffer, "%dkB", machine->video.vramSize / 0x400);
-    iniFileWriteString("Video", "vram size", buffer);
+    iniFileWriteString(configIni, "Video", "vram size", buffer);
 
     // Write subslot info
-    iniFileWriteString("Subslotted Slots", "slot 0", machine->slot[0].subslotted ? "1" : "0");
-    iniFileWriteString("Subslotted Slots", "slot 1", machine->slot[1].subslotted ? "1" : "0");
-    iniFileWriteString("Subslotted Slots", "slot 2", machine->slot[2].subslotted ? "1" : "0");
-    iniFileWriteString("Subslotted Slots", "slot 3", machine->slot[3].subslotted ? "1" : "0");
+    iniFileWriteString(configIni, "Subslotted Slots", "slot 0", machine->slot[0].subslotted ? "1" : "0");
+    iniFileWriteString(configIni, "Subslotted Slots", "slot 1", machine->slot[1].subslotted ? "1" : "0");
+    iniFileWriteString(configIni, "Subslotted Slots", "slot 2", machine->slot[2].subslotted ? "1" : "0");
+    iniFileWriteString(configIni, "Subslotted Slots", "slot 3", machine->slot[3].subslotted ? "1" : "0");
 
     // Write external slot info
     sprintf(buffer, "%d %d", machine->cart[0].slot, machine->cart[0].subslot);
-    iniFileWriteString("External Slots", "slot A", buffer);
+    iniFileWriteString(configIni, "External Slots", "slot A", buffer);
     sprintf(buffer, "%d %d", machine->cart[1].slot, machine->cart[1].subslot);
-    iniFileWriteString("External Slots", "slot B", buffer);
+    iniFileWriteString(configIni, "External Slots", "slot B", buffer);
 
     // Write slots
     for (i = 0; i < machine->slotInfoCount; i++) {
@@ -368,33 +547,71 @@ void machineSave(Machine* machine)
     buffer[size++] = 0;
 
 //    iniFileWriteString("Slots", NULL, NULL);
-    iniFileWriteSection("Slots", buffer);
+    iniFileWriteSection(configIni, "Slots", buffer);
 
-    iniFileClose();
+    iniFileClose(configIni);
 }
 
 Machine* machineCreate(const char* machineName)
 {
-    char fileName[512];
+    char configIni[512];
     Machine* machine;
     int success;
+    FILE *file;
+    
+    machine = (Machine *)malloc(sizeof(Machine));
+    if (machine == NULL)
+        return NULL;
+    
+    machine->zipFile = NULL;
+    machine->isZipped = 0;
+    
+    sprintf(configIni, "%s/%s/config.ini", machinesDir, machineName);
+    file = fopen(configIni, "rb");
+    
+    if (file != NULL)
+    {
+        fclose(file);
+    }
+    else
+    {
+        // No config.ini. Is it compressed?
+        char zipFile[512];
+        
+        sprintf(zipFile, "%s/%s.zip", machinesDir, machineName);
+        file = fopen(zipFile, "rb");
+        
+        if (file == NULL)
+        {
+		    machineDestroy(machine);
+            return NULL; // Not compressed and no config.ini
+        }
+        
+        fclose(file);
 
-    machine = malloc(sizeof(Machine));
-
-    sprintf(fileName, "Machines/%s/config.ini", machineName);
-    success = readMachine(machine, machineName, fileName);
-    if (!success) {
-        free(machine);
+        machine->zipFile = (char *)calloc(strlen(zipFile) + 1, sizeof(char));
+        strcpy(machine->zipFile, zipFile);
+        
+        machine->isZipped = 1;
+    }
+    
+    success = readMachine(machine, machineName, configIni);
+    if (!success)
+    {
+		machineDestroy(machine);
         return NULL;
     }
-
+    
     machineUpdate(machine);
-
+    
     return machine;
 }
 
 void machineDestroy(Machine* machine)
 {
+    if (machine->zipFile)
+        free(machine->zipFile);
+    
     free(machine);
 }
 
@@ -408,74 +625,164 @@ int machineIsValid(const char* machineName, int checkRoms)
     if (machine == NULL) {
         return 0;
     }
-
-    if (!checkRoms) {
-        return 1;
-    }
-
-    for (i = 0; i < machine->slotInfoCount; i++) {
-        if (strlen(machine->slotInfo[i].name) || 
-            strlen(machine->slotInfo[i].inZipName))
-        {        
-            FILE* file = fopen(machine->slotInfo[i].name, "r");
-            if (file == NULL) {
-                if (success) {
-//                    printf("\n%s: Cant find rom:\n", machineName);
-                }
-//                printf("     %s\n", machine->slotInfo[i].name);
-                success = 0;
-                continue;
+    
+    if (checkRoms)
+    {
+        unzFile zippedMachine = 0;
+        
+#ifdef COCOAMSX
+        if ((machine->board.type & BOARD_MASK) != BOARD_MSX)
+            success = 0;
+#endif
+        if (success)
+        {
+            if (machine->isZipped)
+            {
+                zippedMachine = unzOpen(machine->zipFile);
+                if (!zippedMachine)
+                    success = 0;
             }
-            fclose(file);
+            
+            if (success)
+            {
+                for (i = 0; i < machine->slotInfoCount; i++) {
+                    if (strlen(machine->slotInfo[i].name) ||
+                        strlen(machine->slotInfo[i].inZipName))
+                    {
+                        if (machine->isZipped)
+                        {
+#ifdef __APPLE__
+                            int location = unzLocateFile(zippedMachine,
+                                                         machine->slotInfo[i].inZipName, 2);
+#else
+                            int location = unzLocateFile(zippedMachine,
+                                                         machine->slotInfo[i].inZipName, 0);
+#endif
+                            if (location == UNZ_END_OF_LIST_OF_FILE)
+                                success = 0;
+                        }
+                        else
+                        {
+                            FILE* file = fopen(machine->slotInfo[i].name, "r");
+                            if (file == NULL)
+                            {
+                                success = 0;
+                                continue;
+                            }
+                            fclose(file);
+                        }
+                    }
+                }
+            }
+            
+            if (zippedMachine)
+                unzClose(zippedMachine);
         }
     }
-
-    free(machine);
+    
+    machineDestroy(machine);
 
     return success;
 }
 
-char** machineGetAvailable(int checkRoms)
+void machineFillAvailable(ArrayList *list, int checkRoms)
 {
-    static char* machineNames[256];
-    static char  names[256][64];
-    ArchGlob* glob = archGlob("Machines/*", ARCH_GLOB_DIRS);
-    int index = 0;
-    int i;
-
-    if (glob == NULL) {
-        machineNames[0] = NULL;
-        return machineNames;
-    }
-
-    for (i = 0; i < glob->count; i++) {
-        char fileName[512];
+    const char* machineName = appConfigGetString("singlemachine", NULL);
+    const int maxNameLength = 512;
+ 
+    if (machineName != NULL) {
+        char filename[128];
+        
         FILE* file;
-		sprintf(fileName, "%s/config.ini", glob->pathVector[i]);
-        file = fopen(fileName, "rb");
+        
+        sprintf(filename, "%s/%s/config.ini", machinesDir, machineName);
+        file = fopen(filename, "rb");
         if (file != NULL) {
-            const char* name = strrchr(glob->pathVector[i], '/');
-            if (name == NULL) {
-                name = strrchr(glob->pathVector[i], '\\');
-            }
-            if (name == NULL) {
-                name = glob->pathVector[i] - 1;
-            }
-            name++;
-            if (machineIsValid(name, checkRoms)) {
-                strcpy(names[index], name);
-                machineNames[index] = names[index];
-                index++;
+            if (machineIsValid(machineName, checkRoms)) {
+                char *name = (char *)calloc(512, sizeof(char));
+                strncpy(name, machineName, maxNameLength - 1);
+                arrayListAppend(list, name, 1);
             }
             fclose(file);
         }
     }
+    else {
+        char globPath[PROP_MAXPATH];
+        ArchGlob* glob;
+        int i;
+        
+        sprintf(globPath, "%s/*", machinesDir);
+        
+        glob = archGlob(globPath, ARCH_GLOB_DIRS);
+        if (glob == NULL)
+            return;
+        
+        for (i = 0; i < glob->count; i++) {
+            char fileName[512];
+            FILE* file;
+		    sprintf(fileName, "%s/config.ini", glob->pathVector[i]);
+            file = fopen(fileName, "rb");
+            if (file != NULL) {
+                const char* machineName = strrchr(glob->pathVector[i], '/');
+                if (machineName == NULL) {
+                    machineName = strrchr(glob->pathVector[i], '\\');
+                }
+                if (machineName == NULL) {
+                    machineName = glob->pathVector[i] - 1;
+                }
+                machineName++;
+                if (machineIsValid(machineName, checkRoms)) {
+                    char *name = (char *)calloc(512, sizeof(char));
+                    strncpy(name, machineName, maxNameLength - 1);
+                    arrayListAppend(list, name, 1);
+                }
+                
+                fclose(file);
+            }
+        }
+        
+        archGlobFree(glob);
+        
+        // Check ZIP sets
+        
+        sprintf(globPath, "%s/*.zip", machinesDir);
+        
+        glob = archGlob(globPath, ARCH_GLOB_FILES);
+        
+        if (glob == NULL)
+            return;
+        
+        for (i = 0; i < glob->count; i++) {
+            char buffer[512];
+			char *extension;
+			char *machineName;
 
-    archGlobFree(glob);
-    
-    machineNames[index] = NULL;
-
-    return machineNames;
+            strcpy(buffer, glob->pathVector[i]);
+            
+            extension = strrchr(buffer, '.');
+            if (extension != NULL)
+                *extension = '\0';
+            
+            machineName = strrchr(buffer, '/');
+            if (machineName == NULL) {
+                machineName = strrchr(buffer, '\\');
+            }
+            if (machineName == NULL) {
+                machineName = buffer - 1;
+            }
+            
+            machineName++;
+            
+            if (machineIsValid(machineName, checkRoms))
+            {
+                char *name = (char *)calloc(512, sizeof(char));
+                strncpy(name, machineName, maxNameLength - 1);
+                arrayListAppend(list, name, 1);
+            }
+        }
+        
+        archGlobFree(glob);
+    }
 }
 
 void machineUpdate(Machine* machine)
@@ -534,10 +841,12 @@ void machineUpdate(Machine* machine)
         machine->cpu.hasR800 |= machine->slotInfo[i].romType == ROM_S1990;
         machine->fdc.enabled |= machine->slotInfo[i].romType == ROM_DISKPATCH     ||
                                 machine->slotInfo[i].romType == ROM_TC8566AF      ||
+                                machine->slotInfo[i].romType == ROM_TC8566AF_TR   ||
                                 machine->slotInfo[i].romType == ROM_MICROSOL      ||
                                 machine->slotInfo[i].romType == ROM_NATIONALFDC   ||
                                 machine->slotInfo[i].romType == ROM_PHILIPSFDC    ||
                                 machine->slotInfo[i].romType == ROM_SVI328FDC     ||
+                                machine->slotInfo[i].romType == ROM_SVI707FDC     ||
                                 machine->slotInfo[i].romType == ROM_SVI738FDC;
     }
 
@@ -595,7 +904,15 @@ void machineLoadState(Machine* machine)
     
     machine->cmos.enable           = saveStateGet(state, "cmosEnable",        0);
     machine->cmos.batteryBacked    = saveStateGet(state, "cmosBatteryBacked", 0);
-    
+
+    machine->audio.psgstereo       = saveStateGet(state, "audioPsgStereo", 0);
+
+    for (i = 0; i < sizeof(machine->audio.psgpan) / sizeof(machine->audio.psgpan[0]); i++) {
+        char s[32];
+        sprintf(s, "audioPsgStereo%d", i);
+        machine->audio.psgpan[i] = saveStateGet(state, s, i == 0 ? 0 : i == 1 ? -1 : 1);
+    }
+
     machine->fdc.count             = saveStateGet(state, "fdcCount",          2);
     machine->cpu.freqZ80           = saveStateGet(state, "cpuFreqZ80",        3579545);
     machine->cpu.freqR800          = saveStateGet(state, "cpuFreqR800",       7159090);
@@ -664,6 +981,15 @@ void machineSaveState(Machine* machine)
 
     saveStateSet(state, "cmosEnable",        machine->cmos.enable);
     saveStateSet(state, "cmosBatteryBacked", machine->cmos.batteryBacked);
+
+    saveStateSet(state, "audioPsgStereo",    machine->audio.psgstereo);
+
+    for (i = 0; i < sizeof(machine->audio.psgpan) / sizeof(machine->audio.psgpan[0]); i++) {
+        char s[32];
+        sprintf(s, "audioPsgStereo%d", i);
+        saveStateSet(state, s, machine->audio.psgpan[i]);
+    }
+
     
     saveStateSet(state, "fdcCount",          machine->fdc.count);
     saveStateSet(state, "cpuFreqZ80",        machine->cpu.freqZ80);
@@ -702,11 +1028,15 @@ void machineSaveState(Machine* machine)
     saveStateClose(state);
 }
 
-int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
+int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize, UInt32* mainRamStart)
 {
-    UInt8* ram     = NULL;
-    UInt32 ramSize = 0;
-    void* jisyoRom = NULL;
+    UInt8* ram       = NULL;
+    UInt32 ramSize   = 0;
+    UInt32 ramStart  = 0;
+    UInt8* ram2      = NULL;
+    UInt32 ram2Size  = 0;
+    UInt32 ram2Start = 0;
+    void* jisyoRom   = NULL;
     int jisyoRomSize = 0;
     int success = 1;
     int hdId = FIRST_INTERNAL_HD_INDEX;
@@ -734,7 +1064,14 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
         size      = 0x2000 * machine->slotInfo[i].pageCount;
 
         if (machine->slotInfo[i].romType == RAM_1KB_MIRRORED) {
-            success &= ram1kBMirroredCreate(size, slot, subslot, startPage, &ram, &ramSize);
+            success &= ramMirroredCreate(size, slot, subslot, startPage, 0x400, &ram, &ramSize);
+            ramStart = startPage * 0x2000;
+            continue;
+        }
+
+        if (machine->slotInfo[i].romType == RAM_2KB_MIRRORED) {
+            success &= ramMirroredCreate(size, slot, subslot, startPage, 0x800, &ram, &ramSize);
+            ramStart = startPage * 0x2000;
             continue;
         }
     }
@@ -758,17 +1095,19 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
         size      = 0x2000 * machine->slotInfo[i].pageCount;
 
         if (machine->slotInfo[i].romType == RAM_NORMAL) {
-            if (ram == NULL) {
+            if (ram == NULL && startPage == 0) {
                 success &= ramNormalCreate(size, slot, subslot, startPage, &ram, &ramSize);
+                ramStart = startPage * 0x2000;
             }
             else {
-                success &= ramNormalCreate(size, slot, subslot, startPage, NULL, NULL);
+                success &= ramNormalCreate(size, slot, subslot, startPage, &ram2, &ram2Size);
+                ram2Start = startPage * 0x2000;
             }
             continue;
         }
 
         if (machine->slotInfo[i].romType == RAM_MAPPER) {
-            if (ram == NULL) {
+            if (ram == NULL && startPage == 0) {
                 success &= ramMapperCreate(size, slot, subslot, startPage, &ram, &ramSize);
             }
             else {
@@ -788,6 +1127,12 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             }
             continue;
         }
+    }
+
+    if (ram == NULL) {
+        ram = ram2;
+        ramSize = ram2Size;
+        ramStart = ram2Start;
     }
 
     if (ram == NULL) {
@@ -812,6 +1157,10 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
         size      = 0x2000 * machine->slotInfo[i].pageCount;
         
         if (machine->slotInfo[i].romType == RAM_1KB_MIRRORED) {
+            continue;
+        }
+        
+        if (machine->slotInfo[i].romType == RAM_2KB_MIRRORED) {
             continue;
         }
 
@@ -863,7 +1212,12 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
         }
 
         if (machine->slotInfo[i].romType == SRAM_MATSUCHITA) {
-            success &= sramMapperMatsushitaCreate();
+            success &= sramMapperMatsushitaCreate(0);
+            continue;
+        }
+
+        if (machine->slotInfo[i].romType == SRAM_MATSUCHITA_INV) {
+            success &= sramMapperMatsushitaCreate(1);
             continue;
         }
 
@@ -893,7 +1247,12 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
         }
 
         if (machine->slotInfo[i].romType == ROM_MSXMIDI) {
-            success &= MSXMidiCreate();
+            success &= MSXMidiCreate(0);
+            continue;
+        }
+
+        if (machine->slotInfo[i].romType == ROM_MSXMIDI_EXTERNAL) {
+            success &= MSXMidiCreate(1);
             continue;
         }
 
@@ -922,6 +1281,16 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             continue;
         }
 
+        if (machine->slotInfo[i].romType == ROM_JOYREXPSG) {
+            success &= romMapperJoyrexPsgCreate();
+            continue;
+        }
+
+        if (machine->slotInfo[i].romType == ROM_OPCODEPSG) {
+            success &= romMapperOpcodePsgCreate();
+            continue;
+        }
+
         if (machine->slotInfo[i].romType == ROM_TURBORPCM) {
             success &= romMapperTurboRPcmCreate();
             continue;
@@ -929,6 +1298,22 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
 
         if (machine->slotInfo[i].romType == ROM_MSXPRN) {
             success &= romMapperMsxPrnCreate();
+            continue;
+        }
+
+        // --------- ColecoVision Super Expansion Module specific mappers
+        if (machine->slotInfo[i].romType == ROM_OPCODEMEGA) {
+            success &= romMapperOpcodeMegaRamCreate(slot, subslot, startPage);
+            continue;
+        }
+
+        if (machine->slotInfo[i].romType == ROM_OPCODESAVE) {
+            success &= romMapperOpcodeSaveRamCreate(slot, subslot, startPage);
+            continue;
+        }
+        
+        if (machine->slotInfo[i].romType == ROM_OPCODESLOT) {
+            success &= romMapperOpcodeSlotManagerCreate();
             continue;
         }
 
@@ -947,12 +1332,62 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             success &= romMapperSvi328Rs232Create(SVI328_RS232);
             continue;
         }
+
+        if (machine->slotInfo[i].romType == ROM_SVI328RSIDE) {
+            success &= romMapperSvi328RsIdeCreate(hdId++);
+            continue;
+        }
+        
         // -------------------------------
         
+        // MEGA-SCSI etc
+        switch (machine->slotInfo[i].romType) {
+        case SRAM_MEGASCSI:
+        case SRAM_ESERAM:
+        case SRAM_WAVESCSI:
+        case SRAM_ESESCC:
+            buf = NULL;
+            if (strlen(romName)) {
+                buf = romLoad(machine->slotInfo[i].name, machine->slotInfo[i].inZipName, &size);
+                if (buf == NULL) {
+                    success = 0;
+                    continue;
+                }
+            }
+            {
+                int mode = strlen(machine->slotInfo[i].inZipName) ? 0x80 : 0;
+                if (machine->slotInfo[i].romType == SRAM_MEGASCSI ||
+                    machine->slotInfo[i].romType == SRAM_WAVESCSI) {
+                    mode++;
+                }
+                if (machine->slotInfo[i].romType == SRAM_WAVESCSI ||
+                    machine->slotInfo[i].romType == SRAM_ESESCC) {
+                    success &= sramMapperEseSCCCreate
+                                (romName, buf, size, slot, subslot, startPage,
+                                machine->slotInfo[i].romType == SRAM_WAVESCSI ? hdId++ : 0, mode);
+                } else {
+                    success &= sramMapperMegaSCSICreate
+                                (romName, buf, size, slot, subslot, startPage,
+                                machine->slotInfo[i].romType == SRAM_MEGASCSI ? hdId++ : 0, mode);
+                }
+                if (buf) free(buf);
+            }
+            continue;
+        }
+        // -------------------------------
+
         buf = romLoad(machine->slotInfo[i].name, machine->slotInfo[i].inZipName, &size);
 
         if (buf == NULL) {
-            success = 0;
+
+            switch (machine->slotInfo[i].romType) {
+            case ROM_MEGAFLSHSCC:
+                success &= romMapperMegaFlashRomSccCreate("Manbow2.rom", NULL, 0, slot, subslot, startPage, 0, 0x80000, 0);
+                break;
+            default:
+                success = 0;
+                break;
+            }
             continue;
         }
 
@@ -973,6 +1408,18 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             success &= romMapperPlainCreate(romName, buf, size, slot, subslot, startPage);
             break;
 
+        case ROM_NETTOUYAKYUU:
+            success &= romMapperNettouYakyuuCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_MATRAINK:
+            success &= romMapperMatraINKCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_FORTEII:
+            success &= romMapperForteIICreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
         case ROM_FMDAS:
             success &= romMapperFmDasCreate(romName, buf, size, slot, subslot, startPage);
             break;
@@ -985,12 +1432,67 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             success &= romMapperMsxDos2Create(romName, buf, size, slot, subslot, startPage);
             break;
             
+        case ROM_MUPACK:
+            success &= romMapperMuPackCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+            
         case ROM_KONAMI5:
             success &= romMapperKonami5Create(romName, buf, size, slot, subslot, startPage);
             break;
 
+        case ROM_MANBOW2:
+            if (size > 0x70000) size = 0x70000;
+            success &= romMapperMegaFlashRomSccCreate(romName, buf, size, slot, subslot, startPage, 0x7f, 0x80000, 0);
+            break;
+
+        case ROM_MANBOW2_V2:
+            success &= romMapperMegaFlashRomSccCreate(romName, buf, size, slot, subslot, startPage, 0x7f, 0x100000, 1);
+            break;
+
+        case ROM_HAMARAJANIGHT:
+            success &= romMapperMegaFlashRomSccCreate(romName, buf, size, slot, subslot, startPage, 0xcf, 0x100000, 1);
+            break;
+
+        case ROM_MEGAFLSHSCC:
+            success &= romMapperMegaFlashRomSccCreate(romName, buf, size, slot, subslot, startPage, 0, 0x80000, 0);
+            break;
+
+        case ROM_MEGAFLSHSCCPLUS:
+            success &= romMapperMegaFlashRomSccCreate(romName, buf, size, slot, subslot, startPage, 0, 0x100000, 1);
+            break;
+
+        case ROM_OBSONET:
+            success &= romMapperObsonetCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_NOWIND:
+            success &= romMapperNoWindCreate(hdId++, romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_DUMAS:
+            {
+                char eepromName[512];
+                int eepromSize = 0;
+                UInt8* eepromData;
+                int j;
+
+                strcpy(eepromName, machine->slotInfo[i].name);
+                for (j = strlen(eepromName); j > 0 && eepromName[j] != '.'; j--);
+                eepromName[j] = 0;
+                strcat(eepromName, "_eeprom.rom");
+                    
+                eepromData = romLoad(eepromName, NULL, &eepromSize);
+                success &= romMapperDumasCreate(romName, buf, size, slot, subslot, startPage,
+                                                eepromData, eepromSize);
+                if (eepromData != NULL) {
+                    free(eepromData);
+                }
+            }
+            break;
+
         case ROM_MOONSOUND:
             success &= romMapperMoonsoundCreate(romName, buf, size, 640);
+            buf = NULL; // Ownership transferred to emulation of moonsound
             break;
 
         case ROM_SCC:
@@ -1057,12 +1559,24 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             success &= romMapperASCII16Create(romName, buf, size, slot, subslot, startPage);
             break;
 
+        case ROM_PANASONIC8:
+            success &= romMapperA1FMCreate(romName, buf, size, slot, subslot, startPage, 0x2000);
+            break;
+
+        case ROM_PANASONICWX16:
+            success &= romMapperPanasonicCreate(romName, buf, size, slot, subslot, startPage, 0x4000, 6);
+            break;
+
         case ROM_PANASONIC16:
-            success &= romMapperPanasonicCreate(romName, buf, size, slot, subslot, startPage, 0x4000);
+            success &= romMapperPanasonicCreate(romName, buf, size, slot, subslot, startPage, 0x4000, 8);
             break;
 
         case ROM_PANASONIC32:
-            success &= romMapperPanasonicCreate(romName, buf, size, slot, subslot, startPage, 0x8000);
+            success &= romMapperPanasonicCreate(romName, buf, size, slot, subslot, startPage, 0x8000, 8);
+            break;
+
+        case ROM_FSA1FMMODEM:
+            success &= romMapperA1FMModemCreate(romName, buf, size, slot, subslot, startPage);
             break;
             
         case ROM_ASCII8SRAM:
@@ -1083,6 +1597,14 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
 
         case ROM_YAMAHASFG05:
             success &= romMapperSfg05Create(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_YAMAHANET:
+            success &= romMapperNetCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_SF7000IPL:
+            success &= romMapperSf7000IplCreate(romName, buf, size, slot, subslot, startPage);
             break;
 
         case ROM_KOEI:
@@ -1153,6 +1675,31 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             success &= romMapperNormalCreate(romName, buf, size, slot, subslot, startPage);
             break;
 
+        case ROM_DRAM:
+            success &= romMapperDramCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_SG1000:
+        case ROM_SC3000:
+            success &= romMapperSg1000Create(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_SG1000_RAMEXPANDER_A:
+            success &= romMapperSg1000RamExpanderCreate(romName, buf, size, slot, subslot, startPage, ROM_SG1000_RAMEXPANDER_A);
+            break;
+
+        case ROM_SG1000_RAMEXPANDER_B:
+            success &= romMapperSg1000RamExpanderCreate(romName, buf, size, slot, subslot, startPage, ROM_SG1000_RAMEXPANDER_B);
+            break;
+
+        case ROM_SG1000CASTLE:
+            success &= romMapperSg1000CastleCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_SEGABASIC:
+            success &= romMapperSegaBasicCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
         case ROM_CASPATCH:
             success &= romMapperCasetteCreate(romName, buf, size, slot, subslot, startPage);
             break;
@@ -1162,11 +1709,18 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
            break;
 
         case ROM_TC8566AF:
-            success &= romMapperTC8566AFCreate(romName, buf, size, slot, subslot, startPage);
+            success &= romMapperTC8566AFCreate(romName, buf, size, slot, subslot, startPage, ROM_TC8566AF);
+            break;
+        case ROM_TC8566AF_TR:
+            success &= romMapperTC8566AFCreate(romName, buf, size, slot, subslot, startPage, ROM_TC8566AF_TR);
             break;
 
         case ROM_MICROSOL:
             success &= romMapperMicrosolCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_ARC:
+            success &= romMapperArcCreate(romName, buf, size, slot, subslot, startPage);
             break;
 
         case ROM_NATIONALFDC:
@@ -1175,6 +1729,10 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
 
         case ROM_PHILIPSFDC:
             success &= romMapperPhilipsFdcCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_SVI707FDC:
+            success &= romMapperSvi707FdcCreate(romName, buf, size, slot, subslot, startPage);
             break;
 
         case ROM_SVI738FDC:
@@ -1201,8 +1759,23 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             success &= romMapperBeerIdeCreate(hdId++, romName, buf, size, slot, subslot, startPage);
             break;
 
+        case ROM_GOUDASCSI:
+            success &= romMapperGoudaSCSICreate(hdId++, romName, buf, size, slot, subslot, startPage);
+            break;
+
         case ROM_SONYHBIV1:
             success &= romMapperSonyHbiV1Create(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_PLAYBALL:
+            success &= romMapperPlayBallCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_DOOLY:
+            success &= romMapperDoolyCreate(romName, buf, size, slot, subslot, startPage);
+
+        case ROM_OPCODEBIOS:
+            success &= romMapperOpcodeBiosCreate(romName, buf, size, slot, subslot, startPage);
             break;
 
         case ROM_MICROSOL80:
@@ -1227,11 +1800,13 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
             }
             break;
 
-        case ROM_SVI727:
-            success &= romMapperSvi727Create(romName, buf, size, slot, subslot, startPage);
+        case ROM_SVI727COL80:
+            success &= romMapperSvi727Col80Create(romName, buf, size, slot, subslot, startPage);
             break;
         }
-        free(buf);
+        if( buf != NULL ) {
+            free(buf);
+        }
     }
 
     if (jisyoRom != NULL) {
@@ -1246,6 +1821,14 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize)
         *mainRamSize = ramSize;
     }
 
+    if (mainRamStart != NULL) {
+        *mainRamStart = ramStart;
+    }
+
     return success;
 }
 
+void machineSetDirectory(const char* dir)
+{
+    strcpy(machinesDir, dir);
+}

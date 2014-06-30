@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperMsxRs232.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperMsxRs232.c,v $
 **
-** $Revision: 1.7 $
+** $Revision: 1.11 $
 **
-** $Date: 2006/06/14 19:59:52 $
+** $Date: 2008-12-21 08:40:24 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2005 Daniel Vik, Tomas Karlsson, Johan van Leur
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson, Johan van Leur
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -40,7 +38,7 @@
 #include "ArchUart.h"
 #include "Language.h"
 #include <stdlib.h>
-#include <memory.h>
+#include <string.h>
 
 /*
   80H  R/W  8251 data port
@@ -240,11 +238,11 @@ static void writeIo(MSXRs232* msxRs232, UInt16 ioPort, UInt8 value)
 ** I8251 callbacks
 ******************************************
 */
-static int transmit(MSXRs232* msxRs232, UInt8 value) {
+static int rs232transmit(MSXRs232* msxRs232, UInt8 value) {
     return 0;
 }
 
-static int signal(MSXRs232* msxRs232) {
+static int rs232signal(MSXRs232* msxRs232) {
     return 0;
 }
 
@@ -329,7 +327,7 @@ static void getDebugInfo(MSXRs232* msxRs232, DbgDevice* dbgDevice)
 ** MSX RS-232 Create Method
 ******************************************
 */
-int romMapperMsxRs232Create(char* filename, UInt8* romData, int size, int slot, int sslot, int startPage)
+int romMapperMsxRs232Create(const char* filename, UInt8* romData, int size, int slot, int sslot, int startPage)
 {
     DeviceCallbacks callbacks = {destroy, reset, saveState, loadState};
     DebugCallbacks dbgCallbacks = { getDebugInfo, NULL, NULL, NULL };
@@ -358,7 +356,7 @@ int romMapperMsxRs232Create(char* filename, UInt8* romData, int size, int slot, 
         slotMapPage(slot, sslot, i + startPage, NULL, 0, 0);
     }
 
-    msxRs232->i8251 = i8251Create(transmit, signal, setDataBits, setStopBits, setParity, 
+    msxRs232->i8251 = i8251Create(rs232transmit, rs232signal, setDataBits, setStopBits, setParity, 
                                  setRxReady, setDtr, setRts, getDtr, getRts, msxRs232);
 
     msxRs232->i8254 = i8254Create(1843200, pitOut0, pitOut1, pitOut2, msxRs232);

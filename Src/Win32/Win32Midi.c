@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32Midi.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32Midi.c,v $
 **
-** $Revision: 1.10 $
+** $Revision: 1.15 $
 **
-** $Date: 2006/06/11 19:02:49 $
+** $Date: 2008-03-31 19:42:24 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -80,6 +78,7 @@ typedef struct DevInfo {
     struct {
         int count;
         int remain;
+        int runningStatus;
         UInt8 data[MAX_MIDI_SYSMES_LENGTH + 1];
     } buffer;
 } DevInfo;
@@ -210,7 +209,7 @@ void midiEnableMt32ToGmMapping(int enable)
         DevInfo* di = midi.out.current[0];
         UInt32 i;
         for (i = 0; i < HISTORY_SIZE; i++) {
-            UInt32 msg = midi.out.history.data[(i + midi.out.history.head - 1) & (HISTORY_SIZE - 1)];
+            UInt32 msg = midi.out.history.data[(i + midi.out.history.head) & (HISTORY_SIZE - 1)];
             if ((msg & 0xf0) == 0xc0) {
                 if (midi.out.mt32ToGm) {
                     msg = (msg & 0xffff80ff) | (MT32toGM[di->buffer.data[1] & 0x7f] << 8);
@@ -278,7 +277,7 @@ void archMidiLoadState(void)
     int i;
 
     // Get history
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < HISTORY_SIZE; i++) {
         char buf[32];
         sprintf(buf, "history_%d", i);
         midi.out.history.data[i] = saveStateGet(state, buf, 0);
@@ -298,6 +297,9 @@ void archMidiLoadState(void)
             di->buffer.count = saveStateGet(state, buf, 0);
             sprintf(buf, "buffer_%d_remain", i);
             di->buffer.remain = saveStateGet(state, buf, 0);
+            // status byte must be resent from di->buffer.data[0]
+            // even if di->buffer.runningStatus was 1 when state saved.
+            di->buffer.runningStatus = 0;
             sprintf(buf, "buffer_%d_data", i);
             saveStateGetBuffer(state, buf, di->buffer.data, sizeof(di->buffer.data));
         }
@@ -315,7 +317,7 @@ void archMidiSaveState(void)
     int i;
 
     // Set history
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < HISTORY_SIZE; i++) {
         char buf[32];
         sprintf(buf, "history_%d", i);
         saveStateSet(state, buf, midi.out.history.data[i]);
@@ -332,9 +334,11 @@ void archMidiSaveState(void)
         }
         if (di != NULL) {
             sprintf(buf, "buffer_%d_count", i);
-            saveStateGet(state, buf, di->buffer.count);
+            saveStateSet(state, buf, di->buffer.count);
             sprintf(buf, "buffer_%d_remain", i);
-            saveStateGet(state, buf, di->buffer.remain);
+            saveStateSet(state, buf, di->buffer.remain);
+            // no need to save di->buffer.runningStatus
+            // (set 0 at archMidiLoadState())
             sprintf(buf, "buffer_%d_data", i);
             saveStateSetBuffer(state, buf, di->buffer.data, sizeof(di->buffer.data));
         }
@@ -417,13 +421,22 @@ void archMidiOutTransmit(ArchMidi* archMidi, UInt8 value)
         return;
     }
 
-    di->buffer.data[di->buffer.count] = value;
-
     if (di->buffer.count == 0) {
+        UInt8 status;
+
+        if ((value & 0x080) != 0x00) {
+            status = value;
+        } else {
+            // running status
+            status = di->buffer.data[0];
+            di->buffer.count++;
+            di->buffer.runningStatus = 1;
+        }
+
         di->buffer.data[1] = 0;
         di->buffer.data[2] = 0;
 
-		switch (value & 0x0f0) {
+		switch (status & 0x0f0) {
 		case 0x090:	// Note On
             di->noteOn = 1;
 		case 0x080:	// Note Off
@@ -457,7 +470,12 @@ void archMidiOutTransmit(ArchMidi* archMidi, UInt8 value)
             di->buffer.remain = 1;
             break;
         }
+        if (di->buffer.runningStatus) {
+            di->buffer.remain--;
+        }
     }
+
+    di->buffer.data[di->buffer.count] = value;
 
     if (di->buffer.count < MAX_MIDI_SYSMES_LENGTH) {
         di->buffer.count++;
@@ -469,18 +487,23 @@ void archMidiOutTransmit(ArchMidi* archMidi, UInt8 value)
         DWORD msg = (di->buffer.data[0] <<  0) | (di->buffer.data[1] <<  8) | (di->buffer.data[2] << 16);
 
         if ((di->buffer.data[0] & 0xf0) == 0xc0) {
-            midi.out.history.data[++midi.out.history.head] = msg;
+            midi.out.history.data[midi.out.history.head] = msg;
+            midi.out.history.head = (midi.out.history.head + 1) & (HISTORY_SIZE - 1);
             if (midi.out.mt32ToGm) {
                 msg = (msg & 0xffff80ff) | (MT32toGM[di->buffer.data[1] & 0x7f] << 8);
             }
         }
-
+        if (di->buffer.runningStatus) {
+            // omit status byte
+            msg >>= 8;
+            di->buffer.runningStatus = 0;
+        }
         midiOutShortMsg((HMIDIOUT)di->handle, msg);
         di->buffer.count = 0;
     }
 
     // End of long message
-    if (di->buffer.remain < 0 && value == 0x7f) {
+    if (di->buffer.remain < 0 && value == 0xf7) {
         // Only send message if data was not truncated
         if (di->buffer.count < MAX_MIDI_SYSMES_LENGTH) {
             MIDIHDR header;
@@ -668,6 +691,9 @@ void archMidiInDestroy(ArchMidi* archMidi)
 int archMidiInGetNoteOn(ArchMidi* archMidi, int note)
 {
     if (archMidi->devInfo == NULL) {
+        return 0;
+    }
+    if (note >= 256) {
         return 0;
     }
     return archMidi->devInfo->notes[note];

@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32ToolLoader.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32ToolLoader.c,v $
 **
-** $Revision: 1.18 $
+** $Revision: 1.26 $
 **
-** $Date: 2006/06/14 18:15:42 $
+** $Date: 2009-07-01 05:00:23 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vikl, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -32,16 +30,18 @@
 #include "BlueMSXToolInterface.h"
 #include "Debugger.h"
 #include "Actions.h"
+#include "AppConfig.h"
 #include "build_number.h"
 #include "version.h"
 
+#ifndef NO_TOOL_SUPPORT
 
 #define MAX_TOOLS 16
 
 struct ToolInfo {
     char description[32];
     HINSTANCE library;
-    Debugger* debugger;
+    BlueDebugger* debugger;
 
     struct {
         NotifyFn  show;
@@ -196,6 +196,11 @@ void __stdcall toolStep()
     dbgStep();
 }
 
+void __stdcall toolStepBack()
+{
+    dbgStepBack();
+}
+
 void __stdcall toolSetBreakpoint(UInt16 address)
 {
     dbgSetBreakpoint(address);
@@ -204,6 +209,21 @@ void __stdcall toolSetBreakpoint(UInt16 address)
 void __stdcall toolClearBreakpoint(UInt16 address)
 {
     dbgClearBreakpoint(address);
+}
+
+void __stdcall toolEnableVramAccessCheck(int enable)
+{
+    dbgEnableVramAccessCheck(enable);
+}
+
+void __stdcall toolSetWatchpoint(DeviceType devType, int address, DbgWatchpointCondition condition, UInt32 referenceValue, int size)
+{
+    dbgSetWatchpoint((DbgDeviceType)devType, address, condition, referenceValue, size);
+}
+
+void __stdcall toolClearWatchpoint(DeviceType devType, int address)
+{
+    dbgClearWatchpoint((DbgDeviceType)devType, address);
 }
 
 int __stdcall toolWriteMemory(MemoryBlock* memoryBlock, void* data, int startAddr, int size)
@@ -258,6 +278,10 @@ static Interface toolInterface = {
     toolClearBreakpoint,
     toolGetPath,
     toolGetEmulatorVersion,
+    toolEnableVramAccessCheck,
+    toolSetWatchpoint,
+    toolClearWatchpoint,
+    toolStepBack,
 };
 
 void toolLoadAll(const char* path, int languageId)
@@ -265,6 +289,10 @@ void toolLoadAll(const char* path, int languageId)
     WIN32_FIND_DATA wfd;
     char  curDir[MAX_PATH];
     HANDLE handle;
+
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return;
+    }
 
     GetCurrentDirectory(MAX_PATH, curDir);
     strcat(toolDir, curDir);
@@ -287,7 +315,7 @@ void toolLoadAll(const char* path, int languageId)
 
         if (lib != NULL) {
             char description[32] = "Unknown";
-            CreateFn  create   = (CreateFn) GetProcAddress(lib, "Create11");
+            CreateFn  create   = (CreateFn) GetProcAddress(lib, "Create12");
             NotifyFn  destroy  = (NotifyFn) GetProcAddress(lib, "Destroy");
             NotifyFn  show     = (NotifyFn) GetProcAddress(lib, "Show");
             NotifyFn  onStart  = (NotifyFn) GetProcAddress(lib, "NotifyEmulatorStart");
@@ -300,6 +328,21 @@ void toolLoadAll(const char* path, int languageId)
             SetLgFn   onSetLg  = (SetLgFn)  GetProcAddress(lib, "SetLanguage");
             GetNameFn onGetNm  = (GetNameFn)GetProcAddress(lib, "GetName");
 
+            if (create == NULL) {
+                // Check old style dll exports (of blueMSX 2.8.1)
+                create   = (CreateFn) GetProcAddress(lib, "Create11");
+                destroy  = (NotifyFn) GetProcAddress(lib, "Destroy");
+                show     = (NotifyFn) GetProcAddress(lib, "Show");
+                onStart  = (NotifyFn) GetProcAddress(lib, "NotifyEmulatorStart");
+                onStop   = (NotifyFn) GetProcAddress(lib, "NotifyEmulatorStop");
+                onPause  = (NotifyFn) GetProcAddress(lib, "NotifyEmulatorPause");
+                onResume = (NotifyFn) GetProcAddress(lib, "NotifyEmulatorResume");
+                onReset  = (NotifyFn) GetProcAddress(lib, "NotifyEmulatorReset");
+                onTrace  = (TraceFn)  GetProcAddress(lib, "EmulatorTrace");
+                onSetBp  = (SetBpFn)  GetProcAddress(lib, "EmulatorSetBreakpoint");
+                onSetLg  = (SetLgFn)  GetProcAddress(lib, "SetLanguage");
+                onGetNm  = (GetNameFn)GetProcAddress(lib, "GetName");
+            }
             if (create == NULL) {
                 // Check old style dll exports (of blueMSX 2.2)
                 create   = (CreateFn)GetProcAddress(lib, (LPCSTR)1);
@@ -365,6 +408,10 @@ void toolUnLoadAll()
 {
     int i;
 
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return;
+    }
+
     for (i = 0; i < toolListCount; i++) {
         if (toolList[i]->callbacks.destroy != NULL) {
             toolList[i]->callbacks.destroy();
@@ -375,11 +422,19 @@ void toolUnLoadAll()
 }
 
 int toolGetCount() {
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return 0;
+    }
+
     return toolListCount;
 }
 
 ToolInfo* toolInfoGet(int index)
 {
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return NULL;
+    }
+
     if (index < 0 || index >= toolListCount) {
         return NULL;
     }
@@ -391,6 +446,11 @@ ToolInfo* toolInfoGet(int index)
 ToolInfo* toolInfoFind(char* name)
 {
     int i;
+
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return NULL;
+    }
+
     for (i = 0; i < toolListCount; i++) {
         if (strcmp(toolList[i]->description, name) == 0) {
             return toolList[i];
@@ -401,6 +461,10 @@ ToolInfo* toolInfoFind(char* name)
 
 const char* toolInfoGetName(ToolInfo* toolInfo)
 {
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return "";
+    }
+
     if (toolInfo->callbacks.getName != NULL) {
         return toolInfo->callbacks.getName();
     }
@@ -409,6 +473,10 @@ const char* toolInfoGetName(ToolInfo* toolInfo)
 
 void toolInfoShowTool(ToolInfo* toolInfo)
 {
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return;
+    }
+
     if (toolInfo->callbacks.show != NULL) {
         toolInfo->callbacks.show();
     }
@@ -416,8 +484,13 @@ void toolInfoShowTool(ToolInfo* toolInfo)
 
 void toolInfoSetLanguage(ToolInfo* toolInfo, int langId) 
 {
+    if (appConfigGetInt("toolsenable", 1) == 0) {
+        return;
+    }
+
     if (toolInfo->callbacks.onEmulatorSetLg != NULL) {
         toolInfo->callbacks.onEmulatorSetLg(langId);
     }
 }
 
+#endif

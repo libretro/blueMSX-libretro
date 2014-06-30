@@ -1,31 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/wd33c93.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/wd33c93.h,v $
 **
-** $Revision: 1.3 $
+** $Revision: 1.7 $
 **
-** $Date: 2006/06/13 17:13:27 $
-**
-** Based on the Mircosol FDC emulation in BRMSX by Ricardo Bittencourt.
+** $Date: 2008-03-30 18:38:41 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2007 Daniel Vik, Ricardo Bittencourt, white cat
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -36,23 +32,15 @@
 
 typedef struct WD33C93 WD33C93;
 
-typedef struct {
-    UInt32 (*execCommand)(void*, UInt8, UInt8);
-    void   (*read)(void*, void*, UInt32);
-    void   (*write)(void*, void*, UInt32);
-} IoDeviceCallbacks;
-
-WD33C93* wd33c93Create();
+WD33C93* wd33c93Create(int hdId);
+void	 wd33c93Reset(WD33C93* wd33c93, int scsireset);
 void     wd33c93Destroy(WD33C93* wd33c93);
 
-void     wd33c93ReadData(WD33C93* wd33c93, int bytes, UInt8* data);
-void     wd33c93WriteData(WD33C93* wd33c93, int bytes, UInt8* data);
-void*    wd33c93GetDevice(WD33C93* wd33c93, int id);
-int      wd33c93SetDevice(WD33C93* wd33c93, int id, IoDeviceCallbacks* cb, void* ref);
-void     wd33c93ClearDma(WD33C93* wd33c93);
-int      wd33c93GetDmaCount(WD33C93* wd33c93);
-UInt8    wd33c93Read(WD33C93* wd33c93, int offset);
-void     wd33c93Write(WD33C93* wd33c93, int offset, unsigned char data);
+UInt8    wd33c93ReadAuxStatus(WD33C93* wd33c93, UInt16 port);
+UInt8    wd33c93ReadCtrl(WD33C93* wd33c93, UInt16 port);
+UInt8    wd33c93Peek(WD33C93* wd33c93, UInt16 port);
+void     wd33c93WriteAdr(WD33C93* wd33c93, UInt16 port, UInt8 value);
+void     wd33c93WriteCtrl(WD33C93* wd33c93, UInt16 port, UInt8 value);
 
 void     wd33c93LoadState(WD33C93* wd33c93);
 void     wd33c93SaveState(WD33C93* wd33c93);

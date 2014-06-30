@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperMsxMusic.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperMsxMusic.c,v $
 **
-** $Revision: 1.7 $
+** $Revision: 1.11 $
 **
-** $Date: 2006/06/14 19:59:52 $
+** $Date: 2009-07-18 14:35:59 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -76,10 +74,6 @@ static void reset(MsxMusic* rm)
 
 static void loadState(MsxMusic* rm)
 {
-    SaveState* state = saveStateOpenForRead("MsxMusic");
-
-    saveStateClose(state);
-    
     if (rm->ym2413 != NULL) {
         ym2413LoadState(rm->ym2413);
     }
@@ -87,10 +81,6 @@ static void loadState(MsxMusic* rm)
 
 static void saveState(MsxMusic* rm)
 {
-    SaveState* state = saveStateOpenForWrite("MsxMusic");
-
-    saveStateClose(state);
-
     if (rm->ym2413 != NULL) {
         ym2413SaveState(rm->ym2413);
     }
@@ -112,6 +102,10 @@ static void getDebugInfo(MsxMusic* rm, DbgDevice* dbgDevice)
 {
     DbgIoPorts* ioPorts;
 
+    if (rm->ym2413 == NULL) {
+        return;
+    }
+
     ioPorts = dbgDeviceAddIoPorts(dbgDevice, langDbgDevMsxMusic(), 2);
     dbgIoPortsAddPort(ioPorts, 0, 0x7c, DBG_IO_WRITE, 0);
     dbgIoPortsAddPort(ioPorts, 1, 0x7d, DBG_IO_WRITE, 0);
@@ -119,7 +113,7 @@ static void getDebugInfo(MsxMusic* rm, DbgDevice* dbgDevice)
     ym2413GetDebugInfo(rm->ym2413, dbgDevice);
 }
 
-int romMapperMsxMusicCreate(char* filename, UInt8* romData, 
+int romMapperMsxMusicCreate(const char* filename, UInt8* romData, 
                             int size, int slot, int sslot, int startPage) 
 {
     DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };
@@ -129,6 +123,7 @@ int romMapperMsxMusicCreate(char* filename, UInt8* romData,
     int i;
 
     if (pages == 0 || (startPage + pages) > 8) {
+        free(rm);
         return 0;
     }
 

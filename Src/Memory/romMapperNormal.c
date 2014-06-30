@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperNormal.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperNormal.c,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.11 $
 **
-** $Date: 2005/05/13 19:57:17 $
+** $Date: 2008-03-30 18:38:44 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -32,7 +30,6 @@
 #include "SlotManager.h"
 #include "DeviceManager.h"
 #include "SaveState.h"
-#include "ArchPrinter.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -55,13 +52,15 @@ static void destroy(RomMapperNormal* rm)
     free(rm);
 }
 
-int romMapperNormalCreate(char* filename, UInt8* romData, 
+int romMapperNormalCreate(const char* filename, UInt8* romData, 
                           int size, int slot, int sslot, int startPage) 
 {
     DeviceCallbacks callbacks = { destroy, NULL, NULL, NULL };
     RomMapperNormal* rm;
-    int pages = size / 0x2000 + ((size & 0x1fff) ? 1 : 0);
+    int pages;
     int i;
+
+    pages = (size + 0x1fff) / 0x2000;
 
     if (pages == 0 || (startPage + pages) > 8) {
         return 0;
@@ -74,10 +73,6 @@ int romMapperNormalCreate(char* filename, UInt8* romData,
 
     rm->romData = malloc(pages * 0x2000);
     memcpy(rm->romData, romData, size);
-
-    if (slot == 0 && sslot == 0 && startPage == 0) {
-        archPrinterSetMsxFont(romData, size);
-    }
 
     rm->slot  = slot;
     rm->sslot = sslot;

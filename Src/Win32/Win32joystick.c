@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32joystick.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32joystick.c,v $
 **
-** $Revision: 1.3 $
+** $Revision: 1.5 $
 **
-** $Date: 2005/11/02 06:58:20 $
+** $Date: 2008-05-15 08:52:53 $
 **
 ** More info: http://www.bluemsx.com
 **
@@ -30,7 +30,7 @@
 #include "Win32joystick.h"
 #include "Win32keyboard.h"
 #include <mmsystem.h>
-#define DIRECTINPUT_VERSION 0x0800
+#define DIRECTINPUT_VERSION 0x0500
 #include <dinput.h>
  
 static JoyType joyType[2]    = { JOY_NONE, JOY_NONE };

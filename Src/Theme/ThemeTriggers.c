@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Theme/ThemeTriggers.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Theme/ThemeTriggers.c,v $
 **
-** $Revision: 1.41 $
+** $Revision: 1.53 $
 **
-** $Date: 2006/07/07 00:20:20 $
+** $Date: 2008-05-06 12:52:10 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -65,6 +63,13 @@ static void createAboutInfo(char* buffer, int length, unsigned int clk)
         sprintf(text, 
                 "                                 "
                 "%s"
+                "Tim Brugman,  "
+                "Oleg Malyshev,  "
+                "Manuel Soler,  "
+                "Alexandre Souza,  "
+                "Luciano Sturaro,  "
+                "Sjoerd de Vries,  "
+                "Johan van Leur,  "
                 "Albert Beevendorp,  "
                 "Rudolf Lechleitner,  "
                 "Hiro,  "
@@ -75,11 +80,13 @@ static void createAboutInfo(char* buffer, int length, unsigned int clk)
                 "Tobias Keizer,  "
                 "Sandy Pleyte,  "
                 "Marco Casali,  "
+                "Takayoshi Sasano,  "
                 "UC_ARS,  "
                 "nhlay,  "
                 "Rob Hiep,  "
                 "Fabio Albergaria Dias,  "
                 "SLotman,  "
+                "Marcelo Tini,  "
                 "Tanni,  "
                 "Eduardo Mello,  "
                 "Jon Cortázar Abraido,  "
@@ -145,6 +152,10 @@ int themeTriggerFdcTiming() {
     return boardGetFdcTimingEnable();
 }
 
+int themeTriggerNoSpriteLimits() {
+    return boardGetNoSpriteLimits();
+}
+
 int themeTriggerLedDiskA() {
     return ledGetFdd1(); 
 }
@@ -154,7 +165,11 @@ int themeTriggerLedDiskB() {
 }
 
 int themeTriggerLedCas() {
-    return tapeIsBusy();
+    return ledGetCas();
+}
+
+int themeTriggerLedHd() {
+    return ledGetHd();
 }
 
 int themeTriggerLedAudioSwitch() {
@@ -469,6 +484,10 @@ int themeTriggerConfCasRO() {
     return propGetGlobalProperties()->cassette.readOnly;
 }
 
+int themeTriggerKeyboardEnabled() {
+    return joystickPortKeyboardEnabled();
+}
+
 int themeTriggerJoyPort1Enabled() {
     return joystickPortGetType(0) != JOYSTICK_PORT_NONE ? 1 : 0;
 }
@@ -483,6 +502,10 @@ int themeTriggerJoyPort1IsJoystick() {
 
 int themeTriggerJoyPort1IsMouse() {
     return joystickPortGetType(0) == JOYSTICK_PORT_MOUSE ? 1 : 0;
+}
+
+int themeTriggerJoyPort1IsArkanoidPad() {
+    return joystickPortGetType(0) == JOYSTICK_PORT_ARKANOID_PAD ? 1 : 0;
 }
 
 int themeTriggerJoyPort1IsTetris2Dongle() {
@@ -505,6 +528,14 @@ int themeTriggerJoyPort1IsColecoJoystick() {
     return joystickPortGetType(0) == JOYSTICK_PORT_COLECOJOYSTICK ? 1 : 0;
 }
 
+int themeTriggerJoyPort1IsSuperAction() {
+    return joystickPortGetType(0) == JOYSTICK_PORT_SUPERACTION ? 1 : 0;
+}
+
+int themeTriggerJoyPort1IsSteeringWheel() {
+    return joystickPortGetType(0) == JOYSTICK_PORT_STEERINGWHEEL ? 1 : 0;
+}
+
 int themeTriggerJoyPort2Enabled() {
     return joystickPortGetType(1) != JOYSTICK_PORT_NONE ? 1 : 0;
 }
@@ -519,6 +550,10 @@ int themeTriggerJoyPort2IsJoystick() {
 
 int themeTriggerJoyPort2IsMouse() {
     return joystickPortGetType(1) == JOYSTICK_PORT_MOUSE ? 1 : 0;
+}
+
+int themeTriggerJoyPort2IsArkanoidPad() {
+    return joystickPortGetType(1) == JOYSTICK_PORT_ARKANOID_PAD ? 1 : 0;
 }
 
 int themeTriggerJoyPort2IsTetris2Dongle() {
@@ -539,6 +574,14 @@ int themeTriggerJoyPort2IsAsciiLaser() {
 
 int themeTriggerJoyPort2IsColecoJoystick() {
     return joystickPortGetType(1) == JOYSTICK_PORT_COLECOJOYSTICK ? 1 : 0;
+}
+
+int themeTriggerJoyPort2IsSuperAction() {
+    return joystickPortGetType(1) == JOYSTICK_PORT_SUPERACTION ? 1 : 0;
+}
+
+int themeTriggerJoyPort2IsSteeringWheel() {
+    return joystickPortGetType(1) == JOYSTICK_PORT_STEERINGWHEEL ? 1 : 0;
 }
 
 
@@ -564,6 +607,18 @@ int themeTriggerVideoBlendFramesEn() {
 
 int themeTriggerVideoRfModulatorEn() {
     return propGetGlobalProperties()->video.colorSaturationEnable;
+}
+
+int themeTriggerVideoCaptureNone() {
+    return !boardCaptureIsRecording() && !boardCaptureIsPlaying() ? 1 : 0;
+}
+
+int themeTriggerVideoCapturePlay() {
+    return boardCaptureIsPlaying() ? 1 : 0;
+}
+
+int themeTriggerVideoCaptureRec() {
+    return boardCaptureIsRecording() ? 1 : 0;
 }
 
 int themeTriggerVideoGamma() {
@@ -807,19 +862,19 @@ char* themeTriggerPerfTimerString(int timer) {
 }
 
 const char* themeTriggerRomMapper1() {
-    return propGetGlobalProperties()->media.carts[0].fileName[0] ? romTypeToString(propGetGlobalProperties()->media.carts[0].type) : "";
+    return propGetGlobalProperties()->media.carts[0].fileName[0] ? romTypeToString(boardGetRomType(0)) : "";
 }
 
 const char* themeTriggerRomMapper2() {
-    return propGetGlobalProperties()->media.carts[1].fileName[0] ? romTypeToString(propGetGlobalProperties()->media.carts[1].type) : ""; 
+    return propGetGlobalProperties()->media.carts[1].fileName[0] ? romTypeToString(boardGetRomType(1)) : ""; 
 }
 
 const char* themeTriggerRomMapper1Short() {
-    return propGetGlobalProperties()->media.carts[0].fileName[0] ? romTypeToShortString(propGetGlobalProperties()->media.carts[0].type) : "";
+    return propGetGlobalProperties()->media.carts[0].fileName[0] ? romTypeToShortString(boardGetRomType(0)) : "";
 }
 
 const char* themeTriggerRomMapper2Short() {
-    return propGetGlobalProperties()->media.carts[1].fileName[0] ? romTypeToShortString(propGetGlobalProperties()->media.carts[1].type) : "";
+    return propGetGlobalProperties()->media.carts[1].fileName[0] ? romTypeToShortString(boardGetRomType(1)) : "";
 }
 
 char* themeTriggerMachineName() {
@@ -827,7 +882,9 @@ char* themeTriggerMachineName() {
 }
 
 char* themeTriggerRunningName() {
-    return createSaveFileBaseName(propGetGlobalProperties(), 1);
+	static char baseName[128];
+	createSaveFileBaseName(baseName, propGetGlobalProperties(), 1);
+	return baseName;
 }
 
 char* themeTriggerBuildNumber() {
@@ -883,29 +940,9 @@ char* themeTriggerMappedKey() {
 }
 
 char* themeTriggerJoyPort1() {
-    switch (joystickPortGetType(0)) {
-    case JOYSTICK_PORT_NONE:            return langEnumControlsJoyNone();
-    case JOYSTICK_PORT_JOYSTICK:        return langEnumControlsJoy2Button();
-    case JOYSTICK_PORT_MOUSE:           return langEnumControlsJoyMouse();
-    case JOYSTICK_PORT_TETRIS2DONGLE:   return langEnumControlsJoyTetrisDongle();
-    case JOYSTICK_PORT_GUNSTICK:        return langEnumControlsJoyGunStick();
-    case JOYSTICK_PORT_ASCIILASER:      return langEnumControlsJoyAsciiLaser();
-    case JOYSTICK_PORT_COLECOJOYSTICK:  return langEnumControlsJoyColeco();
-    case JOYSTICK_PORT_MAGICKEYDONGLE:  return langEnumControlsJoyMagicKeyDongle();
-    }
-    return langTextUnknown();
+    return joystickPortTypeToName(0, 1);
 }
 
 char* themeTriggerJoyPort2() {
-    switch (joystickPortGetType(1)) {
-    case JOYSTICK_PORT_NONE:            return langEnumControlsJoyNone();
-    case JOYSTICK_PORT_JOYSTICK:        return langEnumControlsJoy2Button();
-    case JOYSTICK_PORT_MOUSE:           return langEnumControlsJoyMouse();
-    case JOYSTICK_PORT_TETRIS2DONGLE:   return langEnumControlsJoyTetrisDongle();
-    case JOYSTICK_PORT_GUNSTICK:        return langEnumControlsJoyGunStick();
-    case JOYSTICK_PORT_ASCIILASER:      return langEnumControlsJoyAsciiLaser();
-    case JOYSTICK_PORT_COLECOJOYSTICK:  return langEnumControlsJoyColeco();
-    case JOYSTICK_PORT_MAGICKEYDONGLE:  return langEnumControlsJoyMagicKeyDongle();
-    }
-    return langTextUnknown();
+    return joystickPortTypeToName(1, 1);
 }

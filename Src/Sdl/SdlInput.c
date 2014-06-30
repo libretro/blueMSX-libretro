@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Sdl/SdlInput.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Sdl/SdlInput.c,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.11 $
 **
-** $Date: 2006/06/24 02:27:08 $
+** $Date: 2008-03-31 19:42:23 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -34,7 +32,7 @@
 #include "InputEvent.h"
 #include "IniFileParser.h"
 #include <stdio.h>
-#include "SDL/SDL.h"
+#include <SDL.h>
 
 #define MAX_JOYSTICKS 8
 
@@ -76,12 +74,133 @@ static char currentConfigFile[512];
 #define SDLK_JOY2_RIGHT    (SDLK_LAST + 12)
 
 
+
+
+
+
+
+#if 0
+
+char* dik2str(int dikKey) 
+{
+    if (dikKey < 0 || dikKey >= KBD_TABLE_LEN) {
+        return "";
+    }
+    return dikStrings[dikKey];
+}
+
+void keyboardSaveConfig(char* configName)
+{
+    char fileName[512];
+    int i, n;
+    
+    if (configName[0] == 0) {
+        return;
+    }
+
+    sprintf(fileName, "%s/%s.config", keyboardConfigDir, configName);
+    
+    iniFileOpen(fileName);
+    for (n = 0; n < KBD_TABLE_NUM; n++) {
+        char profString[32];
+        sprintf(profString, "Keymapping-%d", n);
+        for (i = 0; i < EC_KEYCOUNT; i++) {
+            const char* keyCode = inputEventCodeToString(i);
+            const char* dikName = "";
+            int j;
+            for (j = 0; j < KBD_TABLE_LEN; j++) {
+                if (kbdTable[n][j] == i) {
+                    dikName = dik2str(j);
+                    break;
+                }
+            }
+            if (keyCode != NULL) {
+                char key[32] = { 0 };
+                strcat(key, keyCode);
+                strcat(key, " ");
+                iniFileWriteString(profString, key, (char*)dikName);
+//            WritePrivateProfileString(profString, keyCode, dikName, fileName);
+            }
+        }
+    
+        memcpy(kbdTableBackup[n], kbdTable[n], sizeof(kbdTableBackup[n]));
+    }
+    sprintf(currentConfigFile, configName);
+    iniFileClose();
+}
+int keyboardLoadConfig(char* configName)
+{
+    char fileName[MAX_PATH];
+    FILE* file;
+    int i;
+    int n;
+
+    keyboardResetKbd();
+
+    if (configName[0] == 0) {
+        sprintf(fileName, "%s/%s.config", keyboardConfigDir, DefaultConfigName);
+    }
+    else {
+        sprintf(fileName, "%s/%s.config", keyboardConfigDir, configName);
+    }
+
+    file = fopen(fileName, "r");
+    if (file == NULL) {
+        if (kbdTable[0][DIK_NUMPADENTER] == 0) {
+            kbdTable[0][DIK_NUMPADENTER] = kbdTable[0][DIK_RETURN];
+        }
+        return 0;
+    }
+    fclose(file);
+
+    sprintf(currentConfigFile, *configName ? configName : DefaultConfigName);
+
+    iniFileOpen(fileName);
+
+    for (n = 0; n < KBD_TABLE_NUM; n++) {
+        char profString[32];
+        sprintf(profString, "Keymapping-%d", n);
+        for (i = 0; i < EC_KEYCOUNT; i++) {
+            const char* keyCode = inputEventCodeToString(i);
+            if (keyCode != NULL && *keyCode != 0) {
+                char dikName[256];
+                int dikKey;
+                char key[32] = { 0 };
+                strcat(key, keyCode);
+                strcat(key, " ");
+                iniFileGetString(profString, key, "", dikName, sizeof(dikName));
+//                GetPrivateProfileString(profString, keyCode, "", dikName, sizeof(dikName), fileName);
+                dikKey = str2dik(dikName);
+                if (dikKey > 0) {
+                    int j;
+                    for (j = 0; j < KBD_TABLE_LEN; j++) {
+                        if (kbdTable[n][j] == i) {
+                            kbdTable[n][j] = 0;
+                        }
+                    }
+                    kbdTable[n][dikKey] = i;
+                }
+            }
+        }
+    }
+    iniFileClose();
+
+    if (kbdTable[0][DIK_NUMPADENTER] == 0) {
+        kbdTable[0][DIK_NUMPADENTER] = kbdTable[0][DIK_RETURN];
+    }
+
+    return 1;
+}
+
+#endif
+
+
+
+
 // initKbdTable initializes the keyboard table with default keys
 static void initKbdTable()
 {
-    memset (kbdTable[0], 0, sizeof(kbdTable));
-    memset (kbdTable[1], 0, sizeof(kbdTable));
-    memset (kbdTable[2], 0, sizeof(kbdTable));
+    memset (kbdTable, 0, sizeof(kbdTable));
 
     kbdTable[0][SDLK_0          ] = EC_0;
     kbdTable[0][SDLK_1          ] = EC_1;

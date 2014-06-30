@@ -1,4 +1,5 @@
-// $Id: OpenMsxY8950Adpcm.cpp,v 1.3 2006/06/17 21:42:32 vincent_van_dam Exp $
+// $Id: OpenMsxY8950Adpcm.cpp,v 1.6 2009-04-02 22:20:19 hap-hap Exp $
+#include <string.h>
 
 #include "OpenMsxY8950Adpcm.h"
 #include "OpenMsxY8950.h"
@@ -59,7 +60,7 @@ int Y8950Adpcm::CLAP(int min, int x, int max)
 //                                                          //
 //**********************************************************//
 
-extern "C" unsigned long boardSystemTime();
+extern "C" UInt32 boardSystemTime();
 
 
 Y8950Adpcm::Y8950Adpcm(Y8950& y8950_, const string& name_, int sampleRam)
@@ -118,7 +119,7 @@ void Y8950Adpcm::restart()
 	diff = DDEF;
 	nextLeveling = 0;
 	sampleStep = 0;
-	volumeWStep = (int)((double)volume * step / MAX_STEP);
+	volumeWStep = (int)((DoubleT)volume * step / MAX_STEP);
 }
 #if 0
 void Y8950Adpcm::schedule(const EmuTime &time)
@@ -240,23 +241,23 @@ void Y8950Adpcm::writeReg(byte rg, byte data, const EmuTime &time)
 		case 0x10: // DELTA-N (L) 
 			delta = (delta & 0xFF00) | data;
 			step = Y8950::rate_adjust(delta<<GETA_BITS, sampleRate);
-			volumeWStep = (int)((double)volume * step / MAX_STEP);
+			volumeWStep = (int)((DoubleT)volume * step / MAX_STEP);
 			break;
 		case 0x11: // DELTA-N (H) 
 			delta = (delta & 0x00FF) | (data << 8);
 			step = Y8950::rate_adjust(delta<<GETA_BITS, sampleRate);
-			volumeWStep = (int)((double)volume * step / MAX_STEP);
+			volumeWStep = (int)((DoubleT)volume * step / MAX_STEP);
 			break;
 
 		case 0x12: { // ENVELOP CONTROL 
 			int oldVol = volume;
 			volume = (data * ADPCM_VOLUME) >> 8;
 			if (oldVol != 0) {
-				double factor = (double)volume / (double)oldVol;
-				output =     (int)((double)output     * factor);
-				sampleStep = (int)((double)sampleStep * factor);
+				DoubleT factor = (DoubleT)volume / (DoubleT)oldVol;
+				output =     (int)((DoubleT)output     * factor);
+				sampleStep = (int)((DoubleT)sampleStep * factor);
 			}
-			volumeWStep = (int)((double)volume * step / MAX_STEP);
+			volumeWStep = (int)((DoubleT)volume * step / MAX_STEP);
 			break;
 		}
 		case 0x0D: // PRESCALE (L) 
@@ -351,7 +352,7 @@ int Y8950Adpcm::calcSample()
 		} while (nowStep >= MAX_STEP);
 		sampleStep = (nextLeveling - nowLeveling) * volumeWStep;
 		output = nowLeveling * volume;
-		output += (int)((double)sampleStep * ((double)nowStep/(double)step));
+		output += (int)((DoubleT)sampleStep * ((DoubleT)nowStep/(DoubleT)step));
 	}
 	output += sampleStep;
 	return output >> 12;

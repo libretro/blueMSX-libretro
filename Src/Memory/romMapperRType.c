@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperRType.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperRType.c,v $
 **
-** $Revision: 1.4 $
+** $Revision: 1.8 $
 **
-** $Date: 2005/02/13 21:20:01 $
+** $Date: 2009-04-02 22:32:06 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -64,20 +62,20 @@ static void loadState(RomMapperRType* rm)
 {
     SaveState* state = saveStateOpenForRead("mapperRType");
     char tag[16];
-    int i;
+    int bank = 2;
+    UInt8* bankData;
 
-    for (i = 0; i < 4; i++) {
-        sprintf(tag, "romMapper%d", i);
-        rm->romMapper[i] = saveStateGet(state, tag, 0);
+    for (bank = 0; bank < 4; bank++) {
+        sprintf(tag, "romMapper%d", bank);
+        rm->romMapper[bank] = saveStateGet(state, tag, 0);
     }
 
     saveStateClose(state);
-
-    for (i = 0; i < 4; i += 2) {
-        UInt8* bankData = rm->romData + (rm->romMapper[i] << 14);
-        slotMapPage(rm->slot, rm->sslot, rm->startPage + i,     bankData, 1, 0);
-        slotMapPage(rm->slot, rm->sslot, rm->startPage + i + 1, bankData + 0x2000, 1, 0);
-    }
+    //DINK: Nov 27, 2013 - fix for save state load at level2+
+    bank = 2;
+    bankData = rm->romData + (rm->romMapper[bank] << 14);
+    slotMapPage(rm->slot, rm->sslot, rm->startPage + bank,     bankData, 1, 0);
+    slotMapPage(rm->slot, rm->sslot, rm->startPage + bank + 1, bankData + 0x2000, 1, 0);
 }
 
 static void destroy(RomMapperRType* rm)
@@ -95,7 +93,7 @@ static void write(RomMapperRType* rm, UInt16 address, UInt8 value)
 
     address += 0x4000;
 
-    if (address < 0x7000 || address >= 0x8000) {
+    if (address < 0x4000 || address >= 0xc000) {
         return;
     }
     
@@ -112,7 +110,7 @@ static void write(RomMapperRType* rm, UInt16 address, UInt8 value)
     }
 }
 
-int romMapperRTypeCreate(char* filename, UInt8* romData, 
+int romMapperRTypeCreate(const char* filename, UInt8* romData, 
                          int size, int slot, int sslot, int startPage) 
 {
     DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };

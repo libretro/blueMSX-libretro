@@ -1,29 +1,27 @@
 /*****************************************************************************
 ** $Source: /cvsroot/bluemsx/blueMSX/Src/Utils/SaveState.c,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.5 $
 **
-** $Date: 2004/12/06 08:02:49 $
+** $Date: 2008/06/25 22:26:17 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -33,16 +31,20 @@
 #include <string.h>
 #include <stdio.h>
 
+// Must be power of 2
+#define ALLOC_BLOCK_SIZE 256
+
 struct SaveState {
+    UInt32 allocSize;
     UInt32 size;
     UInt32 offset;
-    UInt32 buffer[0x100000];
+    UInt32 *buffer;
     char   fileName[64];
 };
 
 static char stateFile[512];
 
-static UInt32 tagFromName(char* tagName)
+static UInt32 tagFromName(const char* tagName)
 {
     UInt32 tag = 0;
     UInt32 mod = 1;
@@ -56,7 +58,7 @@ static UInt32 tagFromName(char* tagName)
 }
 
 #if 0
-static void checkTag(SaveState* state, char* tagName)
+static void checkTag(SaveState* state, const char* tagName)
 {
     UInt32 tag = tagFromName(tagName);
     UInt32 offset = 0;
@@ -101,23 +103,31 @@ static char* getIndexedFilename(const char* fileName)
     return indexedFileName;
 }
 
-void saveStateCreate(const char* fileName) {
+void saveStateCreateForRead(const char* fileName)
+{
+    tableCount = 0;
+    strcpy(stateFile, fileName);
+    zipCacheReadOnlyZip(fileName);
+}
+
+void saveStateCreateForWrite(const char* fileName)
+{
     tableCount = 0;
     strcpy(stateFile, fileName);
 }
 
-SaveState* saveStateOpenForRead(char* fileName) {
+void saveStateDestroy(void)
+{
+    zipCacheReadOnlyZip(NULL);
+}
+
+SaveState* saveStateOpenForRead(const char* fileName) {
     SaveState* state = (SaveState*)malloc(sizeof(SaveState));
     Int32 size = 0;
     void* buffer = zipLoadFile(stateFile, getIndexedFilename(fileName), &size);
-    if (buffer != 0) {
-        memcpy(state->buffer, buffer, size);
-        free(buffer);
-    }
-    else {
-        memset(state->buffer, 0, 32);
-    }
 
+    state->allocSize = size;
+    state->buffer = buffer;
     state->size = size / sizeof(UInt32);
     state->offset = 0;
     state->fileName[0] = 0;
@@ -125,14 +135,16 @@ SaveState* saveStateOpenForRead(char* fileName) {
     return state;
 }
 
-SaveState* saveStateOpenForWrite(char* fileName) {
+SaveState* saveStateOpenForWrite(const char* fileName) {
     SaveState* state = (SaveState*)malloc(sizeof(SaveState));
 
     state->size      = 0;
     state->offset    = 0;
-    
+    state->buffer    = NULL;
+    state->allocSize = 0;
+
     strcpy(state->fileName, getIndexedFilename(fileName));
-    
+
     return state;
 }
 
@@ -140,29 +152,44 @@ void saveStateClose(SaveState* state) {
     if (state->fileName[0]) {
         zipSaveFile(stateFile, state->fileName, 1, state->buffer, state->offset * sizeof(UInt32));
     }
+    if (state->buffer != NULL) {
+        free(state->buffer);
+    }
+    state->allocSize = 0;
     free(state);
 }
 
-void saveStateSet(SaveState* state, char* tagName, UInt32 value) 
+static void stateExtendBuffer(SaveState* state, UInt32 extend) {
+    state->size += extend;
+    if (state->size > state->allocSize)
+    {
+        state->allocSize = (state->size + ALLOC_BLOCK_SIZE - 1) & ~(ALLOC_BLOCK_SIZE - 1);
+        state->buffer = realloc(state->buffer, state->allocSize * sizeof(UInt32));
+    }
+}
+
+void saveStateSet(SaveState* state, const char* tagName, UInt32 value)
 {
     checkTag(state, tagName);
 
+    stateExtendBuffer(state, 3);
     state->buffer[state->offset++] = tagFromName(tagName);
     state->buffer[state->offset++] = sizeof(UInt32);
     state->buffer[state->offset++] = value;
 }
 
-void saveStateSetBuffer(SaveState* state, char* tagName, void* buffer, UInt32 length) 
+void saveStateSetBuffer(SaveState* state, const char* tagName, void* buffer, UInt32 length)
 {
     checkTag(state, tagName);
 
+    stateExtendBuffer(state, 2 + (length + sizeof(UInt32) - 1) / sizeof(UInt32));
     state->buffer[state->offset++] = tagFromName(tagName);
     state->buffer[state->offset++] = length;
     memcpy(state->buffer + state->offset, buffer, length);
     state->offset += (length + sizeof(UInt32) - 1) / sizeof(UInt32);
 }
 
-UInt32 saveStateGet(SaveState* state, char* tagName, UInt32 defValue)
+UInt32 saveStateGet(SaveState* state, const char* tagName, UInt32 defValue)
 {
     UInt32 tag = tagFromName(tagName);
     UInt32 startOffset = state->offset;
@@ -194,7 +221,7 @@ UInt32 saveStateGet(SaveState* state, char* tagName, UInt32 defValue)
     return value;
 }
 
-void saveStateGetBuffer(SaveState* state, char* tagName, void* buffer, UInt32 length)
+void saveStateGetBuffer(SaveState* state, const char* tagName, void* buffer, UInt32 length)
 {
     UInt32 tag = tagFromName(tagName);
     UInt32 startOffset = state->offset;

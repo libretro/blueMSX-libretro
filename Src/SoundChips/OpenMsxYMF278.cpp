@@ -1,10 +1,14 @@
-// This file is taken from the openMSX project. 
+// This file is taken from the openMSX project.
 // The file has been modified to be built in the blueMSX environment.
 
-// $Id: OpenMsxYMF278.cpp,v 1.3 2005/09/24 00:09:50 dvik Exp $
+// $Id: OpenMsxYMF278.cpp,v 1.6 2008/03/31 22:07:05 hap-hap Exp $
 
 #include "OpenMsxYMF278.h"
+
+#include <stdio.h>
 #include <cmath>
+#include <cstring>
+#include <stdlib.h>
 
 extern "C" {
 #include "SaveState.h"
@@ -16,7 +20,7 @@ const unsigned int EG_TIMER_OVERFLOW = 1 << EG_SH;
 // envelope output entries
 const int ENV_BITS      = 10;
 const int ENV_LEN       = 1 << ENV_BITS;
-const double ENV_STEP   = 128.0 / ENV_LEN;
+const DoubleT ENV_STEP   = 128.0 / ENV_LEN;
 const int MAX_ATT_INDEX = (1 << (ENV_BITS - 1)) - 1; //511
 const int MIN_ATT_INDEX = 0;
 
@@ -222,7 +226,7 @@ void YMF278Slot::set_lfo(int newlfo)
 void YMF278::advance()
 {
 	eg_timer += eg_timer_add;
-    
+
     if (eg_timer > 4 * EG_TIMER_OVERFLOW) {
         eg_timer = EG_TIMER_OVERFLOW;
     }
@@ -230,10 +234,10 @@ void YMF278::advance()
 	while (eg_timer >= EG_TIMER_OVERFLOW) {
 		eg_timer -= EG_TIMER_OVERFLOW;
 		eg_cnt++;
-		
+
 		for (int i = 0; i < 24; i++) {
 			YMF278Slot &op = slots[i];
-			
+
 			if (op.lfo_active) {
 				op.lfo_cnt++;
 				if (op.lfo_cnt < op.lfo_max) {
@@ -247,7 +251,7 @@ void YMF278::advance()
 					}
 				}
 			}
-			
+
 			// Envelope Generator
 			switch(op.state) {
 			case EG_ATT: {	// attack phase
@@ -271,7 +275,7 @@ void YMF278::advance()
 				}
 				break;
 			}
-			case EG_DEC: {	// decay phase 
+			case EG_DEC: {	// decay phase
 				byte rate = op.compute_rate(op.D1R);
 				if (rate < 4) {
 					break;
@@ -280,7 +284,7 @@ void YMF278::advance()
 				if (!(eg_cnt & ((1 << shift) -1))) {
 					byte select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
-					
+
 					if (((unsigned int)op.env_vol > dl_tab[6]) && op.PRVB) {
 						op.state = EG_REV;
 					} else {
@@ -288,10 +292,10 @@ void YMF278::advance()
 							op.state = EG_SUS;
 						}
 					}
-				} 
+				}
 				break;
 			}
-			case EG_SUS: {	// sustain phase 
+			case EG_SUS: {	// sustain phase
 				byte rate = op.compute_rate(op.D2R);
 				if (rate < 4) {
 					break;
@@ -300,7 +304,7 @@ void YMF278::advance()
 				if (!(eg_cnt & ((1 << shift) -1))) {
 					byte select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
-					
+
 					if (((unsigned int)op.env_vol > dl_tab[6]) && op.PRVB) {
 						op.state = EG_REV;
 					} else {
@@ -313,7 +317,7 @@ void YMF278::advance()
 				}
 				break;
 			}
-			case EG_REL: {	// release phase 
+			case EG_REL: {	// release phase
 				byte rate = op.compute_rate(op.RR);
 				if (rate < 4) {
 					break;
@@ -322,7 +326,7 @@ void YMF278::advance()
 				if (!(eg_cnt & ((1 << shift) -1))) {
 					byte select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
-					
+
 					if (((unsigned int)op.env_vol > dl_tab[6]) && op.PRVB) {
 						op.state = EG_REV;
 					} else {
@@ -345,7 +349,7 @@ void YMF278::advance()
 				if (!(eg_cnt & ((1 << shift) - 1))) {
 					byte select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
-					
+
 					if (op.env_vol >= MAX_ATT_INDEX) {
 						op.env_vol = MAX_ATT_INDEX;
 						op.active = false;
@@ -361,7 +365,7 @@ void YMF278::advance()
 				if (!(eg_cnt & ((1 << shift) - 1))) {
 					byte select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
-					
+
 					if (op.env_vol >= MAX_ATT_INDEX) {
 						op.env_vol = MAX_ATT_INDEX;
 						op.active = false;
@@ -373,7 +377,7 @@ void YMF278::advance()
 			case EG_OFF:
 				// nothing
 				break;
-			
+
 			default:
 				break;
 			}
@@ -468,7 +472,7 @@ int* YMF278::updateBuffer(int length)
 
 			    left  += (sample * volume[volLeft] ) >> 10;
 			    right += (sample * volume[volRight]) >> 10;
-    			
+
 			    if (sl.lfo_active && sl.vib) {
 				    int oct = sl.OCT;
 				    if (oct & 8) {
@@ -490,7 +494,7 @@ int* YMF278::updateBuffer(int length)
 					    sl.pos = sl.loopaddr;
 				    }
 				    sl.sample2 = getSample(sl);
-			    }           
+			    }
 		    }
 		    advance();
         }
@@ -504,7 +508,7 @@ void YMF278::keyOnHelper(YMF278Slot& slot)
 {
 	slot.active = true;
 	setInternalMute(false);
-	
+
 	int oct = slot.OCT;
 	if (oct & 8) {
 		oct |= -8;
@@ -522,7 +526,7 @@ void YMF278::keyOnHelper(YMF278Slot& slot)
 void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 {
 	BUSY_Time = time + 88 * 6 / 9;
-	
+
 	// Handle slot registers specifically
 	if (reg >= 0x08 && reg <= 0xF7) {
 		int snum = (reg - 8) % 24;
@@ -548,7 +552,7 @@ void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 			slot.RC   = buf[10] >> 4;
 			slot.RR   = buf[10] & 0xF;
 			slot.AM   = buf[11] & 7;
-			slot.startaddr = buf[2] | (buf[1] << 8) | 
+			slot.startaddr = buf[2] | (buf[1] << 8) |
 			                 ((buf[0] & 0x3F) << 16);
 			slot.loopaddr = buf[4] + (buf[3] << 8);
 			slot.endaddr  = (((buf[6] + (buf[5] << 8)) ^ 0xFFFF) + 1);
@@ -592,7 +596,14 @@ void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 			}
 			break;
 		case 4:
-			slot.pan = data & 0x0F;
+			if (data & 0x10) {
+				// output to DO1 pin:
+				// this pin is not used in moonsound
+				// we emulate this by muting the sound
+				slot.pan = 8; // both left/right -inf dB
+			} else {
+				slot.pan = data & 0x0F;
+			}
 
 			if (data & 0x020) {
 				// LFO reset
@@ -611,14 +622,12 @@ void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 					slot.state = EG_REL;
 				}
 				break;
-			case 1:	//tone off, damp
-				slot.state = EG_DMP;
-				break;
 			case 2:	//tone on, no damp
 				if (!(regs[reg] & 0x080)) {
 					keyOnHelper(slot);
 				}
 				break;
+			case 1:	//tone off, damp
 			case 3:	//tone on, damp
 				slot.state = EG_DMP;
 				break;
@@ -673,7 +682,7 @@ void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 			writeMem(memadr, data);
 			memadr = (memadr + 1) & 0xFFFFFF;
 			break;
-		
+
 		case 0xF8:
 			// TODO use these
 			fm_l = data & 0x7;
@@ -686,20 +695,20 @@ void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 			break;
 		}
 	}
-	
+
 	regs[reg] = data;
 }
 
 byte YMF278::peekRegOPL4(byte reg, const EmuTime &time)
 {
 	BUSY_Time = time;
-	
+
 	byte result;
 	switch(reg) {
 		case 2: // 3 upper bits are device ID
 			result = (regs[2] & 0x1F) | 0x20;
 			break;
-			
+
 		case 6: // Memory Data Register
 			result = readMem(memadr);
 			break;
@@ -714,13 +723,13 @@ byte YMF278::peekRegOPL4(byte reg, const EmuTime &time)
 byte YMF278::readRegOPL4(byte reg, const EmuTime &time)
 {
 	BUSY_Time = time;
-	
+
 	byte result;
 	switch(reg) {
 		case 2: // 3 upper bits are device ID
 			result = (regs[2] & 0x1F) | 0x20;
 			break;
-			
+
 		case 6: // Memory Data Register
 			BUSY_Time += 38 * 6 / 9;
 			result = readMem(memadr);
@@ -758,7 +767,7 @@ byte YMF278::readStatus(const EmuTime &time)
 	return result;
 }
 
-YMF278::YMF278(short volume, int ramSize, void* romData, int romSize, 
+YMF278::YMF278(short volume, int ramSize, void* romData, int romSize,
                const EmuTime &time)
 {
     LD_Time = 0;
@@ -768,22 +777,20 @@ YMF278::YMF278(short volume, int ramSize, void* romData, int romSize,
 	ramSize *= 1024;	// in kb
 
     this->ramSize = ramSize;
-	rom = new byte[romSize];
-    ram = new byte[4096 * 1024];
+	rom = (byte*)romData;
+    ram = (byte*)calloc(1, ramSize);
 
     oplOversampling = 1;
 
-    memcpy(rom, romData, romSize);
-
 	endRam = endRom + ramSize;
-	
+
 	reset(time);
 }
 
 YMF278::~YMF278()
 {
-	delete[] ram;
-	delete[] rom;
+	free(ram);
+	free(rom);
 }
 
 void YMF278::reset(const EmuTime &time)
@@ -817,7 +824,7 @@ void YMF278::setInternalVolume(short newVolume)
 	// Volume table, 1 = -0.375dB, 8 = -3dB, 256 = -96dB
     int i;
 	for (i = 0; i < 256; i++) {
-		volume[i] = (int)(4.0 * (double)newVolume * pow(2.0, (-0.375 / 6) * i));
+		volume[i] = (int)(4.0 * (DoubleT)newVolume * pow(2.0, (-0.375 / 6) * i));
 	}
 	for (i = 256; i < 256 * 4; i++) {
 		volume[i] = 0;
@@ -857,11 +864,11 @@ void YMF278::loadState()
     eg_timer          = saveStateGet(state, "eg_timer",          0);
     eg_timer_add      = saveStateGet(state, "eg_timer_add",      0);
     eg_timer_overflow = saveStateGet(state, "eg_timer_overflow", 0);
-    
+
     wavetblhdr        = (char)saveStateGet(state, "wavetblhdr",        0);
     memmode           = (char)saveStateGet(state, "memmode",           0);
     memadr            = saveStateGet(state, "memadr",            0);
-    
+
     fm_l              = saveStateGet(state, "fm_l",              0);
     fm_r              = saveStateGet(state, "fm_r",              0);
     pcm_l             = saveStateGet(state, "pcm_l",             0);
@@ -869,7 +876,7 @@ void YMF278::loadState()
 
     endRom            = saveStateGet(state, "endRom",            0);
     endRam            = saveStateGet(state, "endRam",            0);
-    
+
     LD_Time           = saveStateGet(state, "LD_Time",           0);
     BUSY_Time         = saveStateGet(state, "BUSY_Time",         0);
 
@@ -896,88 +903,88 @@ void YMF278::loadState()
 
         sprintf(tag, "TL%d", i);
         slots[i].TL = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "pan%d", i);
         slots[i].pan = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "lfo%d", i);
         slots[i].lfo = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "vib%d", i);
         slots[i].vib = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "AM%d", i);
         slots[i].AM = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "AR%d", i);
         slots[i].AR = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "D1R%d", i);
         slots[i].D1R = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "DL%d", i);
         slots[i].DL = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "D2R%d", i);
         slots[i].D2R = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "RC%d", i);
         slots[i].RC = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "RR%d", i);
         slots[i].RR = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "step%d", i);
         slots[i].step = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "stepptr%d", i);
         slots[i].stepptr = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "pos%d", i);
         slots[i].pos = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "sample1%d", i);
         slots[i].sample1 = (short)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "sample2%d", i);
         slots[i].sample2 = (short)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "active%d", i);
         slots[i].active = saveStateGet(state, tag, 0) != 0;
-        
+
         sprintf(tag, "bits%d", i);
         slots[i].bits = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "startaddr%d", i);
         slots[i].startaddr = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "loopaddr%d", i);
         slots[i].loopaddr = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "endaddr%d", i);
         slots[i].endaddr = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "state%d", i);
         slots[i].state = (char)saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "env_vol%d", i);
         slots[i].env_vol = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "env_vol_step%d", i);
         slots[i].env_vol_step = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "env_vol_lim%d", i);
         slots[i].env_vol_lim = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "lfo_active%d", i);
         slots[i].lfo_active = saveStateGet(state, tag, 0) != 0;
-        
+
         sprintf(tag, "lfo_cnt%d", i);
         slots[i].lfo_cnt = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "lfo_step%d", i);
         slots[i].lfo_step = saveStateGet(state, tag, 0);
-        
+
         sprintf(tag, "lfo_max%d", i);
         slots[i].lfo_max = saveStateGet(state, tag, 0);
     }
@@ -994,11 +1001,11 @@ void YMF278::saveState()
     saveStateSet(state, "eg_timer",          eg_timer);
     saveStateSet(state, "eg_timer_add",      eg_timer_add);
     saveStateSet(state, "eg_timer_overflow", eg_timer_overflow);
-    
+
     saveStateSet(state, "wavetblhdr",        wavetblhdr);
     saveStateSet(state, "memmode",           memmode);
     saveStateSet(state, "memadr",            memadr);
-    
+
     saveStateSet(state, "fm_l",              fm_l);
     saveStateSet(state, "fm_r",              fm_r);
     saveStateSet(state, "pcm_l",             pcm_l);
@@ -1006,7 +1013,7 @@ void YMF278::saveState()
 
     saveStateSet(state, "endRom",            endRom);
     saveStateSet(state, "endRam",            endRam);
-    
+
     saveStateSet(state, "LD_Time",           LD_Time);
     saveStateSet(state, "BUSY_Time",         BUSY_Time);
 
@@ -1033,88 +1040,88 @@ void YMF278::saveState()
 
         sprintf(tag, "TL%d", i);
         saveStateSet(state, tag, slots[i].TL);
-        
+
         sprintf(tag, "pan%d", i);
         saveStateSet(state, tag, slots[i].pan);
-        
+
         sprintf(tag, "lfo%d", i);
         saveStateSet(state, tag, slots[i].lfo);
-        
+
         sprintf(tag, "vib%d", i);
         saveStateSet(state, tag, slots[i].vib);
-        
+
         sprintf(tag, "AM%d", i);
         saveStateSet(state, tag, slots[i].AM);
-        
+
         sprintf(tag, "AR%d", i);
         saveStateSet(state, tag, slots[i].AR);
-        
+
         sprintf(tag, "D1R%d", i);
         saveStateSet(state, tag, slots[i].D1R);
-        
+
         sprintf(tag, "DL%d", i);
         saveStateSet(state, tag, slots[i].DL);
-        
+
         sprintf(tag, "D2R%d", i);
         saveStateSet(state, tag, slots[i].D2R);
-        
+
         sprintf(tag, "RC%d", i);
         saveStateSet(state, tag, slots[i].RC);
-        
+
         sprintf(tag, "RR%d", i);
         saveStateSet(state, tag, slots[i].RR);
-        
+
         sprintf(tag, "step%d", i);
         saveStateSet(state, tag, slots[i].step);
-        
+
         sprintf(tag, "stepptr%d", i);
         saveStateSet(state, tag, slots[i].stepptr);
-        
+
         sprintf(tag, "pos%d", i);
         saveStateSet(state, tag, slots[i].pos);
-        
+
         sprintf(tag, "sample1%d", i);
         saveStateSet(state, tag, slots[i].sample1);
-        
+
         sprintf(tag, "sample2%d", i);
         saveStateSet(state, tag, slots[i].sample2);
-        
+
         sprintf(tag, "active%d", i);
         saveStateSet(state, tag, slots[i].active);
-        
+
         sprintf(tag, "bits%d", i);
         saveStateSet(state, tag, slots[i].bits);
-        
+
         sprintf(tag, "startaddr%d", i);
         saveStateSet(state, tag, slots[i].startaddr);
-        
+
         sprintf(tag, "loopaddr%d", i);
         saveStateSet(state, tag, slots[i].loopaddr);
-        
+
         sprintf(tag, "endaddr%d", i);
         saveStateSet(state, tag, slots[i].endaddr);
-        
+
         sprintf(tag, "state%d", i);
         saveStateSet(state, tag, slots[i].state);
-        
+
         sprintf(tag, "env_vol%d", i);
         saveStateSet(state, tag, slots[i].env_vol);
-        
+
         sprintf(tag, "env_vol_step%d", i);
         saveStateSet(state, tag, slots[i].env_vol_step);
-        
+
         sprintf(tag, "env_vol_lim%d", i);
         saveStateSet(state, tag, slots[i].env_vol_lim);
-        
+
         sprintf(tag, "lfo_active%d", i);
         saveStateSet(state, tag, slots[i].lfo_active);
-        
+
         sprintf(tag, "lfo_cnt%d", i);
         saveStateSet(state, tag, slots[i].lfo_cnt);
-        
+
         sprintf(tag, "lfo_step%d", i);
         saveStateSet(state, tag, slots[i].lfo_step);
-        
+
         sprintf(tag, "lfo_max%d", i);
         saveStateSet(state, tag, slots[i].lfo_max);
     }

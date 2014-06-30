@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Board/SVI.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Board/SVI.c,v $
 **
-** $Revision: 1.55 $
+** $Revision: 1.64 $
 **
-** $Date: 2006/06/17 21:43:22 $
+** $Date: 2009-07-01 21:13:04 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik, Tomas Karlsson
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -59,29 +57,30 @@ static R800*           r800;
 static SviJoyIo*       joyIO;
 static UInt8           KeyboardMap[16];
 static UInt32          sviRamSize;
+static UInt32          sviRamStart;
 static UInt8*          sviRam;
 static UInt8           psgAYReg15;
-static int             svi80ColEnabled;
+static int             svi328Col80Enabled;
 static UInt8           lastJoystickValue;
 
 extern void PatchZ80(void* ref, CpuRegs* cpu);
 
 static void sviMemWrite(void* ref, UInt16 address, UInt8 value)
 {
-    if ((svi80ColEnabled && svi80colMemBankCtrlStatus()) && (address & 0xf800) == 0xf000)
+    if ((svi328Col80Enabled && svi328Col80MemBankCtrlStatus()) && (address & 0xf800) == 0xf000)
     {
-        svi80colMemWrite(address & 0xfff, value);
+        svi328Col80MemWrite(address & 0xfff, value);
     }
     else
-        slotWrite(&ref, address, value);
+        slotWrite(ref, address, value);
 }
 
 static UInt8 sviMemRead(void* ref, UInt16 address)
 {
-    if ((svi80ColEnabled && svi80colMemBankCtrlStatus()) && (address & 0xf800) == 0xf000) 
-        return svi80colMemRead(address & 0xfff);
+    if ((svi328Col80Enabled && svi328Col80MemBankCtrlStatus()) && (address & 0xf800) == 0xf000) 
+        return svi328Col80MemRead(address & 0xfff);
     else
-        return slotRead(&ref, address);
+        return slotRead(ref, address);
 }
 
 /*
@@ -89,7 +88,7 @@ static UInt8 sviMemRead(void* ref, UInt16 address)
 FFFF +---------+---------+---------+---------+
      | BANK 02 | BANK 12 | BANK 22 | BANK 32 | PAGE 3
      |   RAM   |ROM CART |   RAM   |   RAM   |
-8000 |00000000 |00000000 |10100000 |11110000 | PAGE 2
+8000 |00000000 |01010000 |10100000 |11110000 | PAGE 2
      +---------+---------+---------+---------+
 7FFF | BANK 01 | BANK 11 | BANK 21 | BANK 31 | PAGE 1
      |ROM BASIC|ROM CART |   RAM   |   RAM   |
@@ -97,22 +96,44 @@ FFFF +---------+---------+---------+---------+
 0000 +---------+---------+---------+---------+
 */
 
-typedef enum { BANK_02=0x00, BANK_12=0x00, BANK_22=0xa0, BANK_32=0xf0 } sviBanksHigh;
-typedef enum { BANK_01=0x00, BANK_11=0x05, BANK_21=0x0a, BANK_31=0x0f } sviBanksLow;
-
 static void sviMemSetBank(UInt8 value)
 {
-    UInt8 pages;
+    UInt8 psreg;
     int i;
     psgAYReg15 = value;
 
-    /* Map the SVI-328 bank to pages */
-    pages = (value&1)?(value&2)?(value&8)?BANK_01:BANK_31:BANK_21:BANK_11;
-    pages |= (value&4)?(value&16)?BANK_02:BANK_32:BANK_22;
+    // Default to bank 1 and 2
+    psreg = 0;
 
+    switch (~value & 0x14) {
+    case 4: // bk22
+        psreg = 0xa0;
+        break;
+    case 16: // bk32
+        psreg = 0xf0;
+        break;
+    }
+
+    switch (~value & 0x0B) {
+    case 1: // bk12 (cart)?
+        if ((~value & 0x80) || (~value & 0x40)) {
+            psreg = 0x50;
+        }
+        // bk11 (cart)
+        psreg |= 0x05;
+        break;
+    case 2: // bk21
+        psreg |= 0x0a;
+        break;
+    case 8: // bk31
+        psreg |= 0x0f;
+        break;
+    }
+
+    /* Map the SVI-328 bank to slot and page */
     for (i = 0; i < 4; i++) {
-        slotSetRamSlot(i, pages & 3);
-        pages >>= 2;
+        slotSetRamSlot(i, psreg & 3);
+        psreg >>= 2;
     }
 }
 
@@ -148,7 +169,7 @@ static UInt8 sviPsgReadHandler(void* arg, UInt16 address)
 
     switch (address) {
         case 0:
-            value = sviJoyIoRead(joyIO);
+            value = boardCaptureUInt8(17, sviJoyIoRead(joyIO));
             lastJoystickValue = value;
             break;
         case 1:
@@ -201,10 +222,10 @@ static int sviLoad80Col(Machine* machine, VdpSyncMode vdpSyncMode)
             UInt8* buf = romLoad(machine->slotInfo[i].name, machine->slotInfo[i].inZipName, &size);
 
             if (buf != NULL) {
-                if (machine->slotInfo[i].romType == ROM_SVI80COL) {
+                if (machine->slotInfo[i].romType == ROM_SVI328COL80) {
                     int frameRate = (vdpSyncMode == VDP_SYNC_60HZ) ? 60 : 50;
-                    svi80ColEnabled = romMapperSvi80ColCreate(frameRate, buf, size);
-                    success &= svi80ColEnabled;
+                    svi328Col80Enabled = romMapperSvi328Col80Create(frameRate, buf, size);
+                    success &= svi328Col80Enabled;
                 }
                 free(buf);
             }
@@ -252,11 +273,15 @@ static int getRefreshRate()
     return vdpGetRefreshRate();
 }
 
+static UInt32 getTimeTrace(int offset) {
+    return r800GetTimeTrace(r800, offset);
+}
+
 static void saveState()
 {
     SaveState* state = saveStateOpenForWrite("svi");
 
-    saveStateSet(state, "svi80ColEnabled", svi80ColEnabled);
+    saveStateSet(state, "svi328Col80Enabled", svi328Col80Enabled);
     saveStateSet(state, "psgAYReg15", psgAYReg15);
 
     saveStateClose(state);
@@ -271,7 +296,7 @@ static void loadState()
 {
     SaveState* state = saveStateOpenForRead("svi");
 
-    svi80ColEnabled = saveStateGet(state, "svi80ColEnabled", 0);
+    svi328Col80Enabled = saveStateGet(state, "svi328Col80Enabled", 0);
     psgAYReg15      = (UInt8)saveStateGet(state, "psgAYReg15", 0);
 
     saveStateClose(state);
@@ -290,7 +315,7 @@ int sviCreate(Machine* machine,
     int success;
     int i;
 
-    r800 = r800Create(0, sviMemRead, sviMemWrite, ioPortRead, ioPortWrite, PatchZ80, boardTimerCheckTimeout, NULL, NULL, NULL);
+    r800 = r800Create(CPU_ENABLE_M1, sviMemRead, sviMemWrite, ioPortRead, ioPortWrite, PatchZ80, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
     boardInfo->cartridgeCount   = 1;
     boardInfo->diskdriveCount   = 2;
@@ -311,6 +336,9 @@ int sviCreate(Machine* machine,
     boardInfo->setCpuTimeout    = r800SetTimeoutAt;
     boardInfo->setBreakpoint    = r800SetBreakpoint;
     boardInfo->clearBreakpoint  = r800ClearBreakpoint;
+    boardInfo->setDataBus       = r800SetDataBus;
+    
+    boardInfo->getTimeTrace     = getTimeTrace;
 
     deviceManagerCreate();
     boardInit(&r800->systemTime);
@@ -320,7 +348,7 @@ int sviCreate(Machine* machine,
 
     r800DebugCreate(r800);
 
-    ay8910 = ay8910Create(boardGetMixer(), AY8910_SVI, PSGTYPE_AY8910);
+    ay8910 = ay8910Create(boardGetMixer(), AY8910_SVI, PSGTYPE_AY8910, 0, machine->audio.psgpan);
     ay8910SetIoPort(ay8910, sviPsgReadHandler, sviPsgPollHandler, sviPsgWriteHandler, NULL);
 
     keyClick  = audioKeyClickCreate(boardGetMixer());
@@ -330,7 +358,7 @@ int sviCreate(Machine* machine,
     sviPPICreate(joyIO);
     slotManagerCreate();
 
-    svi80ColEnabled = 0;
+    svi328Col80Enabled = 0;
 
     /* Initialize VDP */
     vdpCreate(VDP_SVI, machine->video.vdpVersion, vdpSyncMode, machine->video.vramSize / 0x4000);
@@ -343,7 +371,7 @@ int sviCreate(Machine* machine,
         cartridgeSetSlotInfo(i, machine->cart[i].slot, 0);
     }
 
-    success = machineInitialize(machine, &sviRam, &sviRamSize);
+    success = machineInitialize(machine, &sviRam, &sviRamSize, &sviRamStart);
     success &= sviLoad80Col(machine, vdpSyncMode);
 
     for (i = 0; i < 8; i++) {

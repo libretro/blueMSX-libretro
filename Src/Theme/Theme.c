@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Theme/Theme.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Theme/Theme.c,v $
 **
-** $Revision: 1.38 $
+** $Revision: 1.44 $
 **
-** $Date: 2006/06/16 01:19:18 $
+** $Date: 2008-03-22 05:24:37 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -65,6 +63,7 @@ static int actionTypeToInt(ThemeTrigger actionType)
     case THEME_TRIGGER_IMG_DISKA:       idx = TEST(actionType, themeTriggerLedDiskA()); break;
     case THEME_TRIGGER_IMG_DISKB:       idx = TEST(actionType, themeTriggerLedDiskB()); break;
     case THEME_TRIGGER_IMG_CAS:         idx = TEST(actionType, themeTriggerLedCas()); break;
+    case THEME_TRIGGER_IMG_HD:          idx = TEST(actionType, themeTriggerLedHd()); break;
     case THEME_TRIGGER_IMG_AS:          idx = TEST(actionType, themeTriggerLedAudioSwitch()); break;
     case THEME_TRIGGER_IMG_FS:          idx = TEST(actionType, themeTriggerLedFrontSwitch()); break;
     case THEME_TRIGGER_IMG_PS:          idx = TEST(actionType, themeTriggerLedPauseSwitch()); break;
@@ -78,6 +77,7 @@ static int actionTypeToInt(ThemeTrigger actionType)
     case THEME_TRIGGER_IMG_RUNNING:     idx = TEST(actionType, themeTriggerEmuRunning()); break;
 
     case THEME_TRIGGER_IMG_FDCTIMING:   idx = TEST(actionType, themeTriggerFdcTiming()); break;
+    case THEME_TRIGGER_IMG_NOSPRITELIMITS:   idx = TEST(actionType, themeTriggerNoSpriteLimits()); break;
     case THEME_TRIGGER_IMG_KBD:         idx = TEST(actionType, themeTriggerAudioKbd()); break;
     case THEME_TRIGGER_IMG_MOON:        idx = TEST(actionType, themeTriggerAudioMoonsound()); break;
     case THEME_TRIGGER_IMG_SFG:         idx = TEST(actionType, themeTriggerAudioYamahaSfg()); break;
@@ -186,26 +186,36 @@ static int actionTypeToInt(ThemeTrigger actionType)
     case THEME_TRIGGER_VIDEO_RFMODULATION_EN: idx = TEST(actionType, themeTriggerVideoRfModulatorEn()); break;
     case THEME_TRIGGER_VIDEO_HSTRETCH_EN:  idx = TEST(actionType, themeTriggerVideoHstretchEn()); break;
     case THEME_TRIGGER_VIDEO_VSTRETCH_EN:  idx = TEST(actionType, themeTriggerVideoVstretchEn()); break;
+    case THEME_TRIGGER_VIDEO_CAPTURE_NONE: idx = TEST(actionType, themeTriggerVideoCaptureNone()); break;
+    case THEME_TRIGGER_VIDEO_CAPTURE_PLAY: idx = TEST(actionType, themeTriggerVideoCapturePlay()); break;
+    case THEME_TRIGGER_VIDEO_CAPTURE_REC:  idx = TEST(actionType, themeTriggerVideoCaptureRec()); break;
 
+    case THEME_TRIGGER_KEYBOARD_ENABLE:idx = TEST(actionType, themeTriggerKeyboardEnabled()); break;
     case THEME_TRIGGER_JOY1_ENABLE:    idx = TEST(actionType, themeTriggerJoyPort1Enabled()); break;
     case THEME_TRIGGER_JOY1_NONE:      idx = TEST(actionType, themeTriggerJoyPort1IsNone()); break;
     case THEME_TRIGGER_JOY1_JOYSTICK:  idx = TEST(actionType, themeTriggerJoyPort1IsJoystick()); break;
     case THEME_TRIGGER_JOY1_MOUSE:     idx = TEST(actionType, themeTriggerJoyPort1IsMouse()); break;
+    case THEME_TRIGGER_JOY1_ARK_PAD:   idx = TEST(actionType, themeTriggerJoyPort1IsArkanoidPad()); break;
     case THEME_TRIGGER_JOY1_TETRIS:    idx = TEST(actionType, themeTriggerJoyPort1IsTetris2Dongle()); break;
     case THEME_TRIGGER_JOY1_MAGICKEY:  idx = TEST(actionType, themeTriggerJoyPort1IsMagicKeyDongle()); break;
     case THEME_TRIGGER_JOY1_GUNSTICK:  idx = TEST(actionType, themeTriggerJoyPort1IsGunstick()); break;
     case THEME_TRIGGER_JOY1_ASCIILASER:idx = TEST(actionType, themeTriggerJoyPort1IsAsciiLaser()); break;
     case THEME_TRIGGER_JOY1_COLECOJOY: idx = TEST(actionType, themeTriggerJoyPort1IsColecoJoystick()); break;
+    case THEME_TRIGGER_JOY1_SUPERACTION: idx = TEST(actionType, themeTriggerJoyPort1IsSuperAction()); break;
+    case THEME_TRIGGER_JOY1_STEERINGWHEEL: idx = TEST(actionType, themeTriggerJoyPort1IsSteeringWheel()); break;
 
     case THEME_TRIGGER_JOY2_ENABLE:    idx = TEST(actionType, themeTriggerJoyPort2Enabled()); break;
     case THEME_TRIGGER_JOY2_NONE:      idx = TEST(actionType, themeTriggerJoyPort2IsNone()); break;
     case THEME_TRIGGER_JOY2_JOYSTICK:  idx = TEST(actionType, themeTriggerJoyPort2IsJoystick()); break;
     case THEME_TRIGGER_JOY2_MOUSE:     idx = TEST(actionType, themeTriggerJoyPort2IsMouse()); break;
+    case THEME_TRIGGER_JOY2_ARK_PAD:   idx = TEST(actionType, themeTriggerJoyPort2IsArkanoidPad()); break;
     case THEME_TRIGGER_JOY2_TETRIS:    idx = TEST(actionType, themeTriggerJoyPort2IsTetris2Dongle()); break;
     case THEME_TRIGGER_JOY2_MAGICKEY:  idx = TEST(actionType, themeTriggerJoyPort2IsMagicKeyDongle()); break;
     case THEME_TRIGGER_JOY2_GUNSTICK:  idx = TEST(actionType, themeTriggerJoyPort2IsGunstick()); break;
     case THEME_TRIGGER_JOY2_ASCIILASER:idx = TEST(actionType, themeTriggerJoyPort2IsAsciiLaser()); break;
     case THEME_TRIGGER_JOY2_COLECOJOY: idx = TEST(actionType, themeTriggerJoyPort2IsColecoJoystick()); break;
+    case THEME_TRIGGER_JOY2_SUPERACTION: idx = TEST(actionType, themeTriggerJoyPort2IsSuperAction()); break;
+    case THEME_TRIGGER_JOY2_STEERINGWHEEL: idx = TEST(actionType, themeTriggerJoyPort2IsSteeringWheel()); break;
     }
 
     key = (actionType & THEME_TRIGGER_MASK) - THEME_TRIGGER_FIRST_KEY_PRESSED;
@@ -853,7 +863,7 @@ ThemePage* themeGetPage(Theme* theme, int index)
     return NULL;
 }
 
-UInt32 themeGetNameHash(const char* name)
+unsigned long themeGetNameHash(const char* name)
 {
     UInt32 tag = 0;
     UInt32 mod = 1;

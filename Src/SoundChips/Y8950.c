@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/SoundChips/Y8950.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/SoundChips/Y8950.c,v $
 **
-** $Revision: 1.17 $
+** $Revision: 1.21 $
 **
-** $Date: 2006/06/15 00:18:16 $
+** $Date: 2008-03-31 19:42:23 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -33,6 +31,7 @@
 #include "SaveState.h"
 #include "IoPort.h"
 #include "MediaDb.h"
+#include "MidiIO.h"
 #include "DeviceManager.h"
 #include "Language.h"
 #include <stdlib.h>
@@ -40,16 +39,16 @@
 
 #define FREQUENCY        3579545
 #define SAMPLERATE       (FREQUENCY / 72)
-#define SAMPLERATE_OUT   44100
-#define BUFFER_SIZE      10000
 #define TIMER_FREQUENCY  (4 * boardFrequency() / SAMPLERATE)
 
 
 struct Y8950 {
     Mixer* mixer;
     Int32  handle;
+    UInt32 rate;
 
     FM_OPL* opl;
+    MidiIO* ykIo; 
     BoardTimer* timer1;
     BoardTimer* timer2;
     UInt32 timerValue1;
@@ -63,7 +62,7 @@ struct Y8950 {
     Int32  off;
     Int32  s1;
     Int32  s2;
-    Int32  buffer[BUFFER_SIZE];
+    Int32  buffer[AUDIO_MONO_BUFFER_SIZE];
 };
 
 extern INT32 outd;
@@ -131,6 +130,30 @@ void y8950TimerStart(void* ptr, int timer, int start)
             }
         }
     }
+}
+
+#define Y8950_KEY_START 36
+
+int y8950GetNoteOn(void* ref, int kbdLatch)
+{
+    Y8950* y8950 = (Y8950*)ref;
+    UInt8 val = 0xff;
+    int row;
+
+    for (row = 0; row < 8; row++) {
+        if ((1 << row) & kbdLatch) {
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 0) ? ~0x01 : 0xff;
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 1) ? ~0x02 : 0xff;
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 2) ? ~0x04 : 0xff;
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 3) ? ~0x08 : 0xff;
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 4) ? ~0x10 : 0xff;
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 5) ? ~0x20 : 0xff;
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 6) ? ~0x40 : 0xff;
+            val &= ykIoGetKeyState(y8950->ykIo, Y8950_KEY_START + row * 8 + 7) ? ~0x80 : 0xff;
+        }
+    }
+
+    return val;
 }
 
 UInt8 y8950Peek(Y8950* y8950, UInt16 ioPort)
@@ -227,19 +250,19 @@ static Int32* y8950Sync(void* ref, UInt32 count)
     UInt32 i;
 
     for (i = 0; i < count; i++) {
-#if SAMPLERATE > SAMPLERATE_OUT
-        y8950->off -= SAMPLERATE - SAMPLERATE_OUT;
-        y8950->s1 = y8950->s2;
-        y8950->s2 = Y8950UpdateOne(y8950->opl);
-        if (y8950->off < 0) {
-            y8950->off += SAMPLERATE_OUT;
+        if(SAMPLERATE > y8950->rate) {
+            y8950->off -= SAMPLERATE - y8950->rate;
             y8950->s1 = y8950->s2;
             y8950->s2 = Y8950UpdateOne(y8950->opl);
+            if (y8950->off < 0) {
+                y8950->off += y8950->rate;
+                y8950->s1 = y8950->s2;
+                y8950->s2 = Y8950UpdateOne(y8950->opl);
+            }
+            y8950->buffer[i] = (y8950->s1 * (y8950->off / 256) + y8950->s2 * ((SAMPLERATE - y8950->off) / 256)) / (SAMPLERATE / 256);
         }
-        y8950->buffer[i] = (y8950->s1 * (y8950->off / 256) + y8950->s2 * ((SAMPLERATE - y8950->off) / 256)) / (SAMPLERATE / 256);
-#else
-        y8950->buffer[i] = Y8950UpdateOne(y8950->opl);
-#endif
+        else
+            y8950->buffer[i] = Y8950UpdateOne(y8950->opl);
     }
 
     return y8950->buffer;
@@ -306,6 +329,10 @@ void y8950Destroy(Y8950* y8950)
     boardTimerDestroy(y8950->timer2);
     OPLDestroy(y8950->opl);
 
+    if (y8950->ykIo != NULL) {
+        ykIoDestroy(y8950->ykIo);
+    }
+
     free(y8950);
 }
 
@@ -317,6 +344,12 @@ void y8950Reset(Y8950* y8950)
     y8950->off = 0;
     y8950->s1 = 0;
     y8950->s2 = 0;
+}
+
+void y8950SetSampleRate(void* ref, UInt32 rate)
+{
+    Y8950* y8950 = (Y8950*)ref;
+    y8950->rate = rate;
 }
 
 Y8950* y8950Create(Mixer* mixer)
@@ -331,12 +364,16 @@ Y8950* y8950Create(Mixer* mixer)
 
     y8950->timer1 = boardTimerCreate(onTimeout1, y8950);
     y8950->timer2 = boardTimerCreate(onTimeout2, y8950);
+    
+    y8950->ykIo = ykIoCreate();
 
-    y8950->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_MSXAUDIO, 0, y8950Sync, y8950);
+    y8950->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_MSXAUDIO, 0, y8950Sync, y8950SetSampleRate, y8950);
 
     y8950->opl = OPLCreate(OPL_TYPE_Y8950, FREQUENCY, SAMPLERATE, 256, y8950);
     OPLSetOversampling(y8950->opl, boardGetY8950Oversampling());
     OPLResetChip(y8950->opl);
+
+	y8950->rate = mixerGetSampleRate(mixer);
 
     return y8950;
 }

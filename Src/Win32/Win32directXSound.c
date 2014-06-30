@@ -1,33 +1,33 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32directXSound.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32directXSound.c,v $
 **
-** $Revision: 1.2 $
+** $Revision: 1.7 $
 **
-** $Date: 2004/12/06 07:32:02 $
+** $Date: 2008-05-19 12:41:13 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
 #include "Win32directXSound.h"
+#include "Win32Timer.h"
+#include "Properties.h"
 #include <stdio.h>
 #define DIRECTSOUND_VERSION 0x0500
 #include <dsound.h>
@@ -47,12 +47,11 @@ struct DxSound {
     UInt32 fragmentSize;
     Int16  bytesPerSample;
     Int32  skipCount;
+    UInt32 cur_writepos;
     LPDIRECTSOUNDBUFFER primaryBuffer;
     LPDIRECTSOUNDBUFFER secondaryBuffer;
     LPDIRECTSOUND directSound;
 };
-
-static Int16 tmpBuffer[20000];
 
 static void dxClear(DxSound* dxSound)
 {
@@ -88,7 +87,9 @@ static int dxCanWrite(DxSound* dxSound, UInt32 start, UInt32 size)
     if (writePos < readPos) writePos += dxSound->bufferSize;
     if (start    < readPos) start    += dxSound->bufferSize;
     if (end      < readPos) end      += dxSound->bufferSize;
-
+    
+    dxSound->cur_writepos=writePos;
+    
     if (start < writePos || end < writePos) {
         return (dxSound->bufferSize - (writePos - readPos)) / 2 - dxSound->fragmentSize;
     }
@@ -145,6 +146,9 @@ static int dxWriteOne(DxSound* dxSound, Int16 *buffer, UInt32 lockSize)
 
 static Int32 dxWrite(DxSound* dxSound, Int16 *buffer, UInt32 count)
 {
+    LONGLONG qpf=win32timer_get_uptime_freq();
+    Properties* prop=propGetGlobalProperties();
+    
     if (dxSound->state == DX_SOUND_ENABLED) {
         HRESULT result;
         UInt32 readPos;
@@ -175,7 +179,17 @@ static Int32 dxWrite(DxSound* dxSound, Int16 *buffer, UInt32 count)
     if (dxSound->skipCount > 0) {
         return 0;
     }
-
+    
+    if (qpf&&prop&&prop->sound.stabilizeDSoundTiming&&prop->sound.bufSize>=50) {
+	UInt32 diff=dxSound->bufferOffset;
+	if (diff<dxSound->cur_writepos) diff+=dxSound->bufferSize;
+	diff-=dxSound->cur_writepos;
+	
+	/* force a short delay/speedup to prevent asynchronous timing */
+    if (diff<(500UL<<(prop->sound.stereo!=0?1:0))) win32timer_uptime_offset((int)(qpf/333));
+	else if (diff>(dxSound->bufferSize>>1)) win32timer_uptime_offset((int)(qpf/-333));
+    }
+    
     return dxWriteOne(dxSound, buffer, count);
 }
 
@@ -318,9 +332,8 @@ void dxSoundSuspend(DxSound* dxSound)
         return;
     }
 
-    dxClear(dxSound);
-
     IDirectSoundBuffer_Stop(dxSound->primaryBuffer);
+    dxClear(dxSound);
     dxSound->state = DX_SOUND_DISABLED;
 }
 

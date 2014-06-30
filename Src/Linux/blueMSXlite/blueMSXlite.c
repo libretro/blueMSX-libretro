@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Linux/blueMSXlite/blueMSXlite.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Linux/blueMSXlite/blueMSXlite.c,v $
 **
-** $Revision: 1.13 $
+** $Revision: 1.14 $
 **
-** $Date: 2006/06/21 08:23:15 $
+** $Date: 2008-03-31 19:42:21 $
 **
 ** More info: http://www.bluemsx.com
 **
@@ -300,11 +300,11 @@ int main(int argc, char **argv)
     boardSetY8950Enable(properties->sound.chip.enableY8950);
     boardSetYm2413Enable(properties->sound.chip.enableYM2413);
     boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
-    boardSetVideoAutodetect(properties->video.chipAutodetect);
+    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
     XSync(display, 0);
     
-    i = emuTryStartWithArguments(properties, szLine);
+    i = emuTryStartWithArguments(properties, szLine, NULL);
     if (i < 0) {
         printf("Failed to parse command line\n");
         return 0;

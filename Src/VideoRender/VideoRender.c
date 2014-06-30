@@ -1,30 +1,28 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/VideoRender/VideoRender.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/VideoRender/VideoRender.c,v $
 **
-** $Revision: 1.33 $
+** $Revision: 1.36 $
 **
-** $Date: 2006/06/23 03:33:36 $
-** $Date: 2006/06/23 03:33:36 $
+** $Date: 2007-05-22 06:23:18 $
+** $Date: 2007-05-22 06:23:18 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -37,8 +35,242 @@
 #include "hq3x.h"
 #include <stdlib.h>
 #include <math.h>
-#include <memory.h>
+#include <string.h>
  
+#ifdef WII
+static UInt16 empty_line_buffer[FB_MAX_LINE_WIDTH];
+
+static int videoRender240(Video* pVideo, FrameBuffer* frame, int bitDepth, int zoom,
+                          void* pDst, int dstOffset, int dstPitch, int canChangeZoom)
+{
+    UInt16* pDst1;
+    int height          = frame->lines;
+    int srcWidth        = frame->maxWidth;
+    int h;
+
+    //dstOffset = (dstOffset & ~3) << 2;
+    pDst = (char*)pDst;// + zoom * dstOffset;
+    pDst1 = (UInt16*)pDst;
+
+    dstPitch /= (int)sizeof(UInt16);
+
+    for (h = 0; h < height; h+=2) {
+        UInt16* pDst1old = pDst1;
+        UInt16* pSrc1;
+        UInt16* pSrc2;
+        UInt16* pSrc3;
+        UInt16* pSrc4;
+        if (frame->interlace != INTERLACE_ODD) {
+            pSrc1 = frame->line[h].buffer;
+            pSrc2 = frame->line[h].buffer;
+            pSrc3 = frame->line[h+1].buffer;
+            pSrc4 = frame->line[h+1].buffer;
+        }else{
+            pSrc1 = h? frame->line[h-1].buffer : empty_line_buffer;
+            pSrc2 = frame->line[h].buffer;
+            pSrc3 = frame->line[h].buffer;
+            pSrc4 = frame->line[h+1].buffer;
+        }
+
+        if (frame->line[h].doubleWidth) {
+            int width = srcWidth / 4 * 2;
+            while (width--) {
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4++;
+            }
+        }
+        else {
+            int width = srcWidth / 4;
+            while (width--) {
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+            }
+        }
+
+        pDst1 = pDst1old + dstPitch * 4;
+    }
+    return zoom;
+}
+
+static int videoRender480(Video* pVideo, FrameBuffer* frame, int bitDepth, int zoom,
+                          void* pDst, int dstOffset, int dstPitch, int canChangeZoom)
+{
+    UInt16* pDst1;
+    int height          = frame->lines;
+    int srcWidth        = frame->maxWidth;
+    int h;
+
+    //dstOffset = (dstOffset & ~3) << 2;
+    pDst = (char*)pDst;// + zoom * dstOffset;
+    pDst1 = (UInt16*)pDst;
+
+    dstPitch /= (int)sizeof(UInt16);
+
+    for (h = 0; h < height; h+=4) {
+        UInt16* pDst1old = pDst1;
+        UInt16* pSrc1 = frame->line[h].buffer;
+        UInt16* pSrc2 = frame->line[h+1].buffer;
+        UInt16* pSrc3 = frame->line[h+2].buffer;
+        UInt16* pSrc4 = frame->line[h+3].buffer;
+
+        if (frame->line[h].doubleWidth) {
+            int width = srcWidth / 4 * 2;
+            while (width--) {
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4++;
+            }
+        }
+        else {
+            int width = srcWidth / 4;
+            while (width--) {
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc1;
+                *pDst1++ = *pSrc1++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc2;
+                *pDst1++ = *pSrc2++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc3;
+                *pDst1++ = *pSrc3++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+                *pDst1++ = *pSrc4;
+                *pDst1++ = *pSrc4++;
+            }
+        }
+
+        pDst1 = pDst1old + dstPitch * 4;
+    }
+    return zoom;
+}
+
+/*****************************************************************************
+**
+** Public interface methods
+**
+******************************************************************************
+*/
+
+int videoRender(Video* pVideo, FrameBuffer* frame, int bitDepth, int zoom,
+                void* pDst, int dstOffset, int dstPitch, int canChangeZoom)
+{
+    if (frame == NULL) {
+        return zoom;
+    }
+
+    if (frame->interlace != INTERLACE_NONE && pVideo->deInterlace) {
+        frame = frameBufferDeinterlace(frame);
+    }
+
+    if (frame->lines <= 240) {
+        zoom = videoRender240(pVideo, frame, bitDepth, zoom, pDst, dstOffset, dstPitch, canChangeZoom);
+    }
+    else {
+        zoom = videoRender480(pVideo, frame, bitDepth, zoom, pDst, dstOffset, dstPitch, canChangeZoom);
+    }
+    return zoom;
+}
+
+Video* videoCreate()
+{
+    Video* pVideo = (Video*)calloc(1, sizeof(Video));
+
+    pVideo->deInterlace = 0;
+
+    return pVideo;
+}
+
+void videoDestroy(Video* pVideo)
+{
+    free(pVideo);
+}
+
+void videoUpdateAll(Video* video, Properties* properties)
+{
+    video->deInterlace = properties->video.deInterlace;
+}
+
+#else
+
 #define RGB_MASK 0x7fff
 
 #define MAX_RGB_COLORS (1 << 16)
@@ -63,11 +295,11 @@ static void generateGammaTable(Video* pVideo)
 {
     int i;
     for (i = 0; i < 3 * 256; i++) {
-        double value = (i - 256 + pVideo->brightness) * pVideo->contrast;
+        DoubleT value = (i - 256 + pVideo->brightness) * pVideo->contrast;
         gammaTable[i] = 6;
         if (value > 0) {
-            double factor = pow(255., pVideo->gamma - 1.);
-            value = (double)(factor * pow(value, pVideo->gamma));
+            DoubleT factor = pow(255., pVideo->gamma - 1.);
+            value = (DoubleT)(factor * pow(value, pVideo->gamma));
             if (value > 0) {
                 int gamma = (int)value;
                 gammaTable[i] = MAX(6, MIN(247, gamma));
@@ -1441,6 +1673,63 @@ static void copy_2x2_16(FrameBuffer* frame, void* pDestination, int dstPitch, UI
 /* 7500 units -> 4100 units */
 static void copy_2x2_32_core1_SSE(UInt32* rgbTable, UInt16* pSrc, UInt32* pDst1, UInt32* pDst2, int width, int hint) {
 
+#ifdef __GNUC__
+    __asm__(
+        "movl   $0,%%esi                \n\t"
+        "movl   %4,%%ecx                \n\t"   // width
+        "movl   %1,%%eax                \n\t"   // pSrc
+        "movl   %2,%%ebx                \n\t"   // pDst1
+        "movl   %0,%%edi                \n\t"   // rgbTable
+"inner_loop1:                           \n\t"
+        "movw   (%%eax),%%si            \n\t"
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "movw   2(%%eax),%%si           \n\t"
+        "movd   (%%edi,%%esi,4),%%mm1   \n\t"
+        "movw   6(%%eax),%%si           \n\t"
+        "punpckldq %%mm1,%%mm0          \n\t"
+        "movd   (%%edi,%%esi,4),%%mm3   \n\t"
+        "movw   4(%%eax),%%si           \n\t"
+        "movntq %%mm0,0(%%ebx)          \n\t"
+        "addl   $8,%%eax                \n\t"
+        "movd   (%%edi,%%esi,4),%%mm2   \n\t"
+        "addl   $16,%%ebx               \n\t"
+        "punpckldq %%mm3,%%mm2          \n\t"
+        "decl   %%ecx                   \n\t"
+        "movntq %%mm2,-8(%%ebx)         \n\t"
+        "jnz    inner_loop1             \n\t"
+
+        //#-- second line
+
+        "movl   %4,%%ecx                \n\t"   // width
+        "movl   %1,%%eax                \n\t"   // pSrc
+        "movl   %5,%%ebx                \n\t"   // hint
+        "movl   %3,%%edx                \n\t"   // pDst2
+        "movl   %0,%%edi                \n\t"   // rgbTable
+"inner_loop2:                           \n\t"
+        "movw   (%%eax),%%si            \n\t"
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "movw   2(%%eax),%%si           \n\t"
+        "movd   (%%edi,%%esi,4),%%mm1   \n\t"
+        "movw   6(%%eax),%%si           \n\t"
+        "punpckldq %%mm1,%%mm0          \n\t"
+        "movd   (%%edi,%%esi,4),%%mm3   \n\t"
+        "movw   4(%%eax),%%si           \n\t"
+        "prefetcht0 (%%eax,%%ebx)       \n\t"
+        "movntq %%mm0,0(%%edx)          \n\t"
+        "addl   $8,%%eax                \n\t"
+        "movd   (%%edi,%%esi,4),%%mm2   \n\t"
+        "addl   $16,%%edx               \n\t"
+        "punpckldq %%mm3,%%mm2          \n\t"
+        "decl   %%ecx                   \n\t"
+        "movntq %%mm2,-8(%%edx)         \n\t"
+        "jnz    inner_loop2             \n\t"
+
+        "emms                           \n\t"
+        :
+        : "m" (rgbTable), "m" (pSrc), "m" (pDst1), "m" (pDst2), "m" (width), "m" (hint)
+        : "%eax", "%ebx", "%ecx", "%edx", "%edi", "%esi"
+    );
+#else
 	__asm{
         mov     esi,0
 		mov		ecx,width
@@ -1494,6 +1783,7 @@ inner_loop2:
 		emms 
 
 	}
+#endif
 }
 #endif
 
@@ -1524,6 +1814,79 @@ void copy_2x2_32_core1(UInt32* rgbTable, UInt16* pSrc, UInt32* pDst1, UInt32* pD
 /* 6000 units -> 2500 units */
 void copy_2x2_32_core2_SSE(UInt32* rgbTable, UInt16* pSrc, UInt32* pDst1, UInt32* pDst2, int width, int hint) {
 
+#ifdef __GNUC__
+    __asm__(
+        "movl   $0,%%esi                \n\t"
+        "movl   %4,%%ecx                \n\t"   // width
+        "movl   %1,%%eax                \n\t"   // pSrc
+        "movl   %2,%%ebx                \n\t"   // pDst1
+        "movl   %0,%%edi                \n\t"   // rgbTable
+"inner_loop3:                           \n\t"
+        "movw   (%%eax),%%si            \n\t"
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "movw   2(%%eax),%%si           \n\t"
+        "punpckldq %%mm0,%%mm0          \n\t"
+        "movd   (%%edi,%%esi,4),%%mm1   \n\t"
+        "movntq %%mm0,0(%%ebx)          \n\t"
+
+        "punpckldq %%mm1,%%mm1          \n\t"
+        "movw   4(%%eax),%%si           \n\t"
+        "movntq %%mm1,8(%%ebx)          \n\t"
+
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "punpckldq %%mm0,%%mm0          \n\t"
+        "movw   6(%%eax),%%si           \n\t"
+        "movntq %%mm0,16(%%ebx)         \n\t"
+
+        "addl   $32,%%ebx               \n\t"
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "addl   $8,%%eax                \n\t"
+        "punpckldq %%mm0,%%mm0          \n\t"
+        "decl   %%ecx                   \n\t"
+        "movntq %%mm0,24-32(%%ebx)      \n\t"
+
+        "jnz    inner_loop3             \n\t"
+
+        //#-- second line
+
+        "movl   %4,%%ecx                \n\t"   // width
+        "movl   %1,%%eax                \n\t"   // pSrc
+        "movl   %5,%%edx                \n\t"   // hint
+        "movl   %3,%%ebx                \n\t"   // pDst2
+        "movl   %0,%%edi                \n\t"   // rgbTable
+"inner_loop4:                           \n\t"
+        "movw   (%%eax),%%si            \n\t"
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "punpckldq %%mm0,%%mm0          \n\t"
+        "movw   2(%%eax),%%si           \n\t"
+        "movntq %%mm0,0(%%ebx)          \n\t"
+
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "punpckldq %%mm0,%%mm0          \n\t"
+        "movw   4(%%eax),%%si \n\t"
+        "movntq %%mm0,8(%%ebx)          \n\t"
+
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "prefetcht0 (%%eax,%%edx)       \n\t"
+        "punpckldq %%mm0,%%mm0          \n\t"
+        "movw   6(%%eax),%%si           \n\t"
+        "movntq %%mm0,16(%%ebx)         \n\t"
+
+        "addl   $32,%%ebx               \n\t"
+        "movd   (%%edi,%%esi,4),%%mm0   \n\t"
+        "addl   $8,%%eax                \n\t"
+        "punpckldq %%mm0,%%mm0          \n\t"
+        "decl   %%ecx                   \n\t"
+        "movntq %%mm0,24-32(%%ebx)      \n\t"
+
+        "jnz    inner_loop4             \n\t"
+
+        "emms                           \n\t"
+        :
+        : "m" (rgbTable), "m" (pSrc), "m" (pDst1), "m" (pDst2), "m" (width), "m" (hint)
+        : "%eax", "%ebx", "%ecx", "%edx", "%edi", "%esi"
+    );
+#else
 	__asm{
         mov     esi,0
 		mov		ecx,width
@@ -1593,6 +1956,7 @@ inner_loop2:
 		emms 
 
 	}
+#endif
 
 }
 #endif
@@ -1641,12 +2005,22 @@ static void copy_2x2_32(FrameBuffer* frame, void* pDestination, int dstPitch, UI
 	int hasSSE=0;
 	const int SSEbit=1<<25;
 
+#ifdef __GNUC__
+    __asm__ (
+        "movl   $1,%%eax            \n\t"
+        "cpuid                      \n\t"
+        "andl   $0x2000000,%%edx    \n\t"
+        "movl   %%edx,%0            \n\t"
+        : "=r" (hasSSE) : : "%eax", "%ebx", "%ecx", "%edx"
+    );
+#else
 	__asm {
 		mov eax,1
 		cpuid
 		and edx,SSEbit
 		mov hasSSE,edx
 	}
+#endif
     
     hasSSE = 1;
 	core1=hasSSE? copy_2x2_32_core1_SSE: copy_2x2_32_core1;
@@ -2258,6 +2632,46 @@ void scanLines_32_core(UInt32* pBuf, int width, int scanLinesPct, int hint) {
 
 #ifndef NO_ASM
 void scanLines_32_core_SSE(UInt32* pBuf, int width, int scanLinesPct, int hint) {
+
+#ifdef __GNUC__
+    __asm__ (
+        "movl   %1,%%ecx            \n\t"   // width
+        "shrl   $2,%%ecx            \n\t"
+        "movl   %0,%%eax            \n\t"   // pbuf
+        "movl   %3,%%ebx            \n\t"   // hint
+        "pxor   %%mm0,%%mm0         \n\t"
+        "movd   %2,%%mm1            \n\t"   // scanLinesPct
+        "punpcklwd %%mm1,%%mm1      \n\t"
+        "punpckldq %%mm1,%%mm1      \n\t"
+        "psllw  $8,%%mm1            \n\t"
+"inner_loop5:                       \n\t"
+        "movq   (%%eax),%%mm2       \n\t"
+        "movq   8(%%eax),%%mm4      \n\t"
+        "movq   %%mm2,%%mm3         \n\t"
+        "punpcklbw %%mm0,%%mm2      \n\t"
+        "movq   %%mm4,%%mm5         \n\t"
+        "pmulhuw %%mm1,%%mm2        \n\t"
+        "punpcklbw %%mm0,%%mm4      \n\t"
+        "punpckhbw %%mm0,%%mm3      \n\t"
+        "prefetcht1 (%%eax,%%ebx)   \n\t"
+        "pmulhuw %%mm1,%%mm4        \n\t"
+        "punpckhbw %%mm0,%%mm5      \n\t"
+        "addl   $16,%%eax           \n\t"
+        "pmulhuw %%mm1,%%mm3        \n\t"
+        "pmulhuw %%mm1,%%mm5        \n\t"
+        "packuswb %%mm3,%%mm2       \n\t"
+        "packuswb %%mm5,%%mm4       \n\t"
+        "movq   %%mm2,-16(%%eax)    \n\t"
+        "decl   %%ecx               \n\t"
+        "movq   %%mm4,-8(%%eax)     \n\t"
+
+        "jnz    inner_loop5         \n\t"
+        "emms                       \n\t"
+        :
+        : "m" (pBuf), "m" (width), "m" (scanLinesPct), "m" (hint)
+        : "%eax", "%ebx", "%ecx"
+	);
+#else
 	__asm {
 		mov		ecx,width
 		shr		ecx,2
@@ -2292,6 +2706,8 @@ inner_loop:
 		jnz		inner_loop
 		emms
 	}
+#endif
+
 }
 #endif
 
@@ -2306,12 +2722,22 @@ void scanLines_32(void* pBuffer, int width, int height, int pitch, int scanLines
 	int hasSSE=0;
 	const int SSEbit=1<<25;
 
+#ifdef __GNUC__
+    __asm__ (
+        "movl   $1,%%eax            \n\t"
+        "cpuid                      \n\t"
+        "andl   $0x2000000,%%edx    \n\t"
+        "movl   %%edx,%0            \n\t"
+        : "=r" (hasSSE) : : "%eax", "%ebx", "%ecx", "%edx"
+    );
+#else
 	__asm {
 		mov eax,1
 		cpuid
 		and edx,SSEbit
 		mov hasSSE,edx
 	}
+#endif
 
     hasSSE = 1;
 	core=hasSSE? scanLines_32_core_SSE: scanLines_32_core;
@@ -2598,3 +3024,4 @@ int videoRender(Video* pVideo, FrameBuffer* frame, int bitDepth, int zoom,
 
     return zoom;
 }
+#endif

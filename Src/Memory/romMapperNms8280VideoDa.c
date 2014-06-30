@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperNms8280VideoDa.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperNms8280VideoDa.c,v $
 **
-** $Revision: 1.1 $
+** $Revision: 1.4 $
 **
-** $Date: 2006/01/18 22:27:45 $
+** $Date: 2008-03-30 18:38:44 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -50,7 +48,7 @@ static void daStart(RomMapperNms8280VideoDa* rm, int oddPage)
     }
 }
 
-static UInt8 daRead(RomMapperNms8280VideoDa* rm, int screenMode, int x, int y, UInt16* palette, int paletteCount)
+static UInt8 daRead(RomMapperNms8280VideoDa* rm, int screenMode, int x, int y, Pixel* palette, int paletteCount)
 {
     UInt16 color;
     int bestDiff;
@@ -68,9 +66,9 @@ static UInt8 daRead(RomMapperNms8280VideoDa* rm, int screenMode, int x, int y, U
     match = 0;
     
     for (i = 0; i < paletteCount; i++) {
-        int dR = ((palette[i] >> 10) & 0x1f) - ((color >> 10) & 0x1f);
-        int dG = ((palette[i] >>  5) & 0x1f) - ((color >>  5) & 0x1f);
-        int dB = ((palette[i] >>  0) & 0x1f) - ((color >>  0) & 0x1f);
+        int dR = ((palette[i] >> COLSHIFT_R) & COLMASK_R) - ((color >> COLSHIFT_R) & COLMASK_R);
+        int dG = ((palette[i] >> COLSHIFT_G) & COLMASK_G) - ((color >> COLSHIFT_G) & COLMASK_G);
+        int dB = ((palette[i] >> COLSHIFT_B) & COLMASK_B) - ((color >> COLSHIFT_B) & COLMASK_B);
         int test = dR * dR + dG * dG + dB * dB;
         if (test < bestDiff) {
             bestDiff = test;

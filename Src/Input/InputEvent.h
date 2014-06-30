@@ -1,29 +1,27 @@
 /*****************************************************************************
 ** $Source: /cvsroot/bluemsx/blueMSX/Src/Input/InputEvent.h,v $
 **
-** $Revision: 1.4 $
+** $Revision: 1.6 $
 **
-** $Date: 2006/01/19 01:07:16 $
+** $Date: 2008/03/30 18:38:40 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -33,10 +31,6 @@
 #include "MsxTypes.h"
 
 void inputEventReset();
-
-static void inputEventSet(int eventCode);
-static void inputEventUnset(int eventCode);
-static int  inputEventGetState(int eventCode);
 
 int inputEventStringToCode(const char* eventName);
 const char* inputEventCodeToString(int eventCode);
@@ -164,6 +158,8 @@ const char* inputEventCodeToString(int eventCode);
 #define EC_JOY1_BUTTON4 107
 #define EC_JOY1_BUTTON5 108
 #define EC_JOY1_BUTTON6 109
+#define EC_JOY1_WHEELA  136
+#define EC_JOY1_WHEELB  137
 
 #define EC_JOY2_UP      110
 #define EC_JOY2_DOWN    111
@@ -175,6 +171,8 @@ const char* inputEventCodeToString(int eventCode);
 #define EC_JOY2_BUTTON4 117
 #define EC_JOY2_BUTTON5 118
 #define EC_JOY2_BUTTON6 119
+#define EC_JOY2_WHEELA  138
+#define EC_JOY2_WHEELB  139
 
 #define EC_COLECO1_0    120
 #define EC_COLECO1_1    121
@@ -202,42 +200,63 @@ const char* inputEventCodeToString(int eventCode);
 #define EC_COLECO2_STAR 150
 #define EC_COLECO2_HASH 151
 
-#define EC_KEYCOUNT     152
+#define EC_HOT_QUIT                     160
+#define EC_HOT_TOGGLE_FDC_TIMING        161
+#define EC_HOT_TOGGLE_SPRITE_ENABLE     162
+#define EC_HOT_TOGGLE_MSX_AUDIO_SWITCH  163
+#define EC_HOT_TOGGLE_FRONT_SWITCH      164
+#define EC_HOT_TOGGLE_PAUSE_SWITCH      165
+#define EC_HOT_TOGGLE_WAVE_CAPTURE      166
+#define EC_HOT_SCREEN_CAPTURE           167
+#define EC_HOT_QUICK_LOAD_STATE         168
+#define EC_HOT_QUICK_SAVE_STATE         169
+#define EC_HOT_CARD_REMOVE_1            170
+#define EC_HOT_CARD_REMOVE_2            171
+#define EC_HOT_TOGGLE_CARD_AUTO_RESET   172
+#define EC_HOT_DISK_QUICK_CHANGE        173
+#define EC_HOT_DISK_REMOVE_A            174
+#define EC_HOT_DISK_REMOVE_B            175
+#define EC_HOT_TOGGLE_DISK_AUTO_RESET   176
+#define EC_HOT_CAS_REWIND               177
+#define EC_HOT_CAS_REMOVE               178
+#define EC_HOT_CAS_TOGGLE_READ_ONLY     179
+#define EC_HOT_TOGGLE_CAS_AUTO_REWIND   180
+#define EC_HOT_CAS_SAVE                 181
+#define EC_HOT_EMU_TOGGLE_PAUSE         182
+#define EC_HOT_EMU_STOP                 183
+#define EC_HOT_EMU_SPEED_NORMAL         184
+#define EC_HOT_EMU_SPEED_INCREASE       185
+#define EC_HOT_EMU_SPEED_DECREASE       186
+#define EC_HOT_MAX_SPEED_TOGGLE         187
+#define EC_HOT_EMU_RESET_SOFT           188
+#define EC_HOT_EMU_RESET_HARD           189
+#define EC_HOT_EMU_RESET_CLEAN          190
+#define EC_HOT_VOLUME_INCREASE          191
+#define EC_HOT_VOLUME_DECREASE          192
+#define EC_HOT_MUTE_TOGGLE_MASTER       193
+#define EC_HOT_VOLUME_TOGGLE_STEREO     194
+#define EC_HOT_WINDOW_SIZE_NORMAL       195
+#define EC_HOT_WINDOW_SIZE_FULLSCREEN   196
+#define EC_HOT_FULLSCREEN_TOGGLE        197
 
-
-static int inputEventIsJoystick1(int eventCode)
-{
-    return (eventCode >= EC_JOY1_UP   && eventCode <= EC_JOY1_BUTTON6) ||
-           (eventCode >= EC_COLECO1_0 && eventCode <= EC_COLECO1_HASH);
-}
-
-static int inputEventIsJoystick2(int eventCode)
-{
-    return (eventCode >= EC_JOY2_UP   && eventCode <= EC_JOY2_BUTTON6) ||
-           (eventCode >= EC_COLECO2_0 && eventCode <= EC_COLECO2_HASH);
-}
-
-static int inputEventIsKeyboard(int eventCode)
-{
-    return !inputEventIsJoystick1(eventCode) && !inputEventIsJoystick2(eventCode);
-}
+#define EC_KEYCOUNT                     198
 
 // Inlines
 extern int eventMap[256];
 
-static void inputEventSet(int eventCode)
-{
-    eventMap[eventCode] = 1;
-}
+#define inputEventIsJoystick1(eventCode) \
+        ((eventCode >= EC_JOY1_UP   && eventCode <= EC_JOY1_BUTTON6) || \
+         (eventCode >= EC_COLECO1_0 && eventCode <= EC_COLECO1_HASH))
 
-static void inputEventUnset(int eventCode)
-{
-    eventMap[eventCode] = 0;
-}
+#define inputEventIsJoystick2(eventCode) \
+        ((eventCode >= EC_JOY2_UP   && eventCode <= EC_JOY2_BUTTON6) || \
+         (eventCode >= EC_COLECO2_0 && eventCode <= EC_COLECO2_HASH))
 
-static int inputEventGetState(int eventCode)
-{
-    return eventMap[eventCode];
-}
+#define inputEventIsKeyboard(eventCode) \
+        (!inputEventIsJoystick1(eventCode) && !inputEventIsJoystick2(eventCode))
 
-#endif 
+#define inputEventSet(eventCode) eventMap[eventCode] = 1
+#define inputEventUnset(eventCode) eventMap[eventCode] = 0
+#define inputEventGetState(eventCode) eventMap[eventCode]
+
+#endif

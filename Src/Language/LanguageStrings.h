@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Language/LanguageStrings.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Language/LanguageStrings.h,v $
 **
-** $Revision: 1.66 $
+** $Revision: 1.91 $
 **
-** $Date: 2006/06/26 19:35:54 $
+** $Date: 2009-04-04 20:57:19 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -35,6 +33,7 @@ typedef struct {
     // Language lines
     //----------------------
 
+    char* langCatalan;
     char* langChineseSimplified;
     char* langChineseTraditional;
     char* langDutch;
@@ -47,6 +46,7 @@ typedef struct {
     char* langKorean;
     char* langPolish;
     char* langPortuguese;
+    char* langRussian;
     char* langSpanish;
     char* langSwedish;
 
@@ -87,8 +87,10 @@ typedef struct {
     char* fileRom;
     char* fileAll;
     char* fileCpuState;
+    char* fileVideoCapture;
     char* fileDisk;
     char* fileCas;
+    char* fileAvi;
 
 
     //----------------------
@@ -104,6 +106,11 @@ typedef struct {
     char* menuCartBeerIde;
     char* menuCartGIde;
     char* menuCartSunriseIde;
+    char* menuCartScsi;
+    char* menuCartMegaSCSI;
+    char* menuCartWaveSCSI;
+    char* menuCartGoudaSCSI;
+    char* menuJoyrexPsg;
     char* menuCartSCC;
     char* menuCartSCCPlus;
     char* menuCartFMPac;
@@ -112,8 +119,12 @@ typedef struct {
     char* menuCartInsertSpecial;
     char* menuCartMegaRam;
     char* menuCartExternalRam;
+    char* menuCartEseRam;
+    char* menuCartEseSCC;
+    char* menuCartMegaFlashRom;
 
     char* menuDiskInsertNew;
+    char* menuDiskInsertCdrom;
     char* menuDiskDirInsert;
     char* menuDiskAutoStart;
     char* menuCartAutoReset;
@@ -123,6 +134,14 @@ typedef struct {
     char* lmenuCasSaveAs;
     char* menuCasSetPosition;
     char* menuCasRewind;
+
+    char* menuVideoLoad;
+    char* menuVideoPlay;
+    char* menuVideoRecord;
+    char* menuVideoRecording;
+    char* menuVideoRecAppend;
+    char* menuVideoStop;
+    char* menuVideoRender;
 
     char* menuPrnFormfeed;
 
@@ -134,9 +153,10 @@ typedef struct {
     char* menuPropsVideo;
     char* menuPropsSound;
     char* menuPropsControls;
-    char* menuPropsPerformance;
+    char* menuPropsEffects;
     char* menuPropsSettings;
     char* menuPropsFile;
+    char* menuPropsDisk;
     char* menuPropsLanguage;
     char* menuPropsPorts;
 
@@ -145,6 +165,8 @@ typedef struct {
     char* menuVideoChipAutodetect;
     char* menuVideoInSource;
     char* menuVideoInBitmap;
+    
+    char* menuEthInterface;
 
     char* menuHelpHelp;
     char* menuHelpAbout;
@@ -158,10 +180,12 @@ typedef struct {
     char* menuFileQLoadState;
     char* menuFileQSaveState;
     char* menuFileCaptureAudio;
+    char* menuFileCaptureVideo;
     char* menuFileScreenShot;
     char* menuFileExit;
     char* menuFileHarddisk;
     char* menuFileHarddiskNoPesent;
+    char* menuFileHarddiskRemoveAll;
 
     char* menuRunRun;
     char* menuRunPause;
@@ -173,7 +197,9 @@ typedef struct {
     char* menuToolsMachine;
     char* menuToolsShortcuts;
     char* menuToolsKeyboard;
+    char* menuToolsCtrlEditor;
     char* menuToolsMixer;
+    char* menuToolsLoadMemory;
     char* menuToolsDebugger;
     char* menuToolsTrainer;
     char* menuToolsTraceLogger;
@@ -207,8 +233,11 @@ typedef struct {
     char* dlgLoadCasDesc;
     char* dlgLoadRomDskCasDesc;
     char* dlgLoadState;
+    char* dlgLoadVideoCapture;
     char* dlgSaveState;
     char* dlgSaveCassette;
+    char* dlgSaveVideoClipAs;
+    char* dlgAmountCompleted;
     char* dlgInsertRom1;
     char* dlgInsertRom2;
     char* dlgInsertDiskA;
@@ -216,6 +245,7 @@ typedef struct {
     char* dlgInsertHarddisk;
     char* dlgInsertCas;
     char* dlgRomType;
+    char* dlgDiskSize;
 
     char* dlgTapeTitle;
     char* dlgTapeFrameText;
@@ -244,6 +274,8 @@ typedef struct {
 
     char* dlgSavePreview;
     char* dlgSaveDate;
+    
+    char* dlgRenderVideoCapture;
 
 
     //----------------------
@@ -252,12 +284,15 @@ typedef struct {
 
     char* propTitle;
     char* propEmulation;
+    char* propD3D;
     char* propVideo;
     char* propSound;
     char* propControls;
     char* propPerformance;
+    char* propEffects;
     char* propSettings;
     char* propFile;
+    char* propDisk;
     char* propPorts;
 
     char* propEmuGeneralGB;
@@ -270,6 +305,9 @@ typedef struct {
     char* propEmuFrontSwitchGB;
     char* propEmuFrontSwitch;
     char* propEmuFdcTiming;
+    char* propEmuNoSpriteLimits;
+    char* propEnableMsxKeyboardQuirk;
+    char* propEmuReversePlay;
     char* propEmuPauseSwitch;
     char* propEmuAudioSwitch;
     char* propVideoFreqText;
@@ -334,6 +372,7 @@ typedef struct {
     char* propDisableWinKeys;
     char* propPriorityBoost;
     char* propScreenshotPng;
+    char* propEjectMediaOnExit;
     char* propClearHistory;
     char* propOpenRomGB;
     char* propDefaultRomType;
@@ -347,6 +386,26 @@ typedef struct {
 
     char* propThemeGB;
     char* propTheme;
+
+    char* propCdromGB;
+    char* propCdromMethod;
+    char* propCdromMethodNone;
+    char* propCdromMethodIoctl;
+    char* propCdromMethodAspi;
+    char* propCdromDrive;
+
+	char* propD3DParametersGB;
+    char* propD3DAspectRatioText;
+    char* propD3DLinearFilteringText;
+    char* propD3DForceHighResText;
+    char* propD3DExtendBorderColorText;
+
+    char* propD3DCroppingGB;
+	char* propD3DCroppingTypeText;
+	char* propD3DCroppingLeftText;
+    char* propD3DCroppingRightText;
+    char* propD3DCroppingTopText;
+    char* propD3DCroppingBottomText;
 
 
     //----------------------
@@ -377,6 +436,7 @@ typedef struct {
     char* enumVideoDrvDirectDrawHW;
     char* enumVideoDrvDirectDraw;
     char* enumVideoDrvGDI;
+    char* enumVideoDrvD3D;
 
     char* enumVideoFrameskip0;
     char* enumVideoFrameskip1;
@@ -384,6 +444,19 @@ typedef struct {
     char* enumVideoFrameskip3;
     char* enumVideoFrameskip4;
     char* enumVideoFrameskip5;
+
+	char* enumD3DARAuto;
+	char* enumD3DARStretch;
+	char* enumD3DARPAL;
+	char* enumD3DARNTSC;
+	char* enumD3DAR11;
+
+	char* enumD3DCropNone;
+	char* enumD3DCropMSX1;
+	char* enumD3DCropMSX1Plus8;
+	char* enumD3DCropMSX2;
+	char* enumD3DCropMSX2Plus8;
+	char* enumD3DCropCustom;
 
     char* enumSoundDrvNone;
     char* enumSoundDrvWMM;
@@ -402,6 +475,7 @@ typedef struct {
     char* enumControlsJoy2Button;
     char* enumControlsJoyGunstick;
     char* enumControlsJoyAsciiLaser;
+    char* enumControlsArkanoidPad;
     char* enumControlsJoyColeco;
     
     char* enumDiskMsx35Dbl9Sect;
@@ -410,6 +484,7 @@ typedef struct {
     char* enumDiskMsx35Sgl8Sect;
     char* enumDiskSvi525Dbl;
     char* enumDiskSvi525Sgl;
+    char* enumDiskSf3Sgl;
 
 
     //----------------------
@@ -455,6 +530,7 @@ typedef struct {
     char* confChipVideoChip;
     char* confChipVideoRam;
     char* confChipSoundGB;
+    char* confChipPsgStereoText;
 
     char* confCmosGB;
     char* confCmosEnable;
@@ -544,6 +620,7 @@ typedef struct {
     char* shortcutSwitchPause;
     char* shortcutToggleMouseLock;
     char* shortcutEmuSpeedMax;
+    char* shortcutEmuPlayReverse;
     char* shortcutEmuSpeedToggle;
     char* shortcutEmuSpeedNormal;
     char* shortcutEmuSpeedInc;
@@ -553,7 +630,7 @@ typedef struct {
     char* shortcutShowVideoProp;
     char* shortcutShowAudioProp;
     char* shortcutShowCtrlProp;
-    char* shortcutShowPerfProp;
+    char* shortcutShowEffectsProp;
     char* shortcutShowSettProp;
     char* shortcutShowPorts;
     char* shortcutShowLanguage;
@@ -568,7 +645,14 @@ typedef struct {
     char* shortcutShowFiles;
     char* shortcutToggleSpriteEnable;
     char* shortcutToggleFdcTiming;
+    char* shortcutToggleNoSpriteLimits;
+    char* shortcutEnableMsxKeyboardQuirk;
     char* shortcutToggleCpuTrace;
+    char* shortcutVideoLoad;
+    char* shortcutVideoPlay;
+    char* shortcutVideoRecord;
+    char* shortcutVideoStop;
+    char* shortcutVideoRender;
 
 
     //----------------------
@@ -585,108 +669,68 @@ typedef struct {
     //----------------------
 
     char* romTypeStandard;
-    char* romTypeMsxdos2;
-    char* romTypeKonamiScc;
-    char* romTypeKonami;
-    char* romTypeAscii8;
-    char* romTypeAscii16;
-    char* romTypeGameMaster2;
-    char* romTypeAscii8Sram;
-    char* romTypeAscii16Sram;
-    char* romTypeRtype;
-    char* romTypeCrossblaim;
-    char* romTypeHarryFox;
-    char* romTypeMajutsushi;
+
     char* romTypeZenima80;
     char* romTypeZenima90;
     char* romTypeZenima126;
-    char* romTypeScc;
-    char* romTypeSccPlus;
-    char* romTypeSnatcher;
-    char* romTypeSdSnatcher;
+
     char* romTypeSccMirrored;
     char* romTypeSccExtended;
-    char* romTypeFmpac;
-    char* romTypeFmpak;
+
     char* romTypeKonamiGeneric;
-    char* romTypeSuperPierrot;
+
     char* romTypeMirrored;
     char* romTypeNormal;
     char* romTypeDiskPatch;
     char* romTypeCasPatch;
     char* romTypeTc8566afFdc;
+    char* romTypeTc8566afTrFdc;
     char* romTypeMicrosolFdc;
     char* romTypeNationalFdc;
     char* romTypePhilipsFdc;
+    char* romTypeSvi707Fdc;
     char* romTypeSvi738Fdc;
     char* romTypeMappedRam;
     char* romTypeMirroredRam1k;
+    char* romTypeMirroredRam2k;
     char* romTypeNormalRam;
-    char* romTypeKanji;
-    char* romTypeHolyQuran;
-    char* romTypeMatsushitaSram;
-    char* romTypePanasonic16;
-    char* romTypePanasonic32;
-    char* romTypeBunsetsu;
-    char* romTypeJisyo;
-    char* romTypeKanji12;
-    char* romTypeNationalSram;
-    char* romTypeS1985;
-    char* romTypeS1990;
+
     char* romTypeTurborPause;
     char* romTypeF4deviceNormal;
     char* romTypeF4deviceInvert;
-    char* romTypeMsxMidi;
+
     char* romTypeTurborTimer;
-    char* romTypeKoei;
-    char* romTypeBasic;
-    char* romTypeHalnote;
-    char* romTypeLodeRunner;
+
     char* romTypeNormal4000;
     char* romTypeNormalC000;
-    char* romTypeKonamiSynth;
-    char* romTypeKonamiKbdMast;
-    char* romTypeKonamiWordPro;
-    char* romTypePac;
-    char* romTypeMegaRam;
-    char* romTypeMegaRam128;
-    char* romTypeMegaRam256;
-    char* romTypeMegaRam512;
-    char* romTypeMegaRam768;
-    char* romTypeMegaRam2mb;
+
     char* romTypeExtRam;
+    char* romTypeExtRam16;
+    char* romTypeExtRam32;
+    char* romTypeExtRam48;
+    char* romTypeExtRam64;
     char* romTypeExtRam512;
     char* romTypeExtRam1mb;
     char* romTypeExtRam2mb;
     char* romTypeExtRam4mb;
-    char* romTypeMsxMusic;
-    char* romTypeMsxAudio;
-    char* romTypeY8950;
-    char* romTypeMoonsound;
+
     char* romTypeSvi328Cart;
     char* romTypeSvi328Fdc;
     char* romTypeSvi328Prn;
     char* romTypeSvi328Uart;
     char* romTypeSvi328col80;
+    char* romTypeSvi328RsIde;
     char* romTypeSvi727col80;
     char* romTypeColecoCart;
     char* romTypeSg1000Cart;
-    char* romTypeTheCastle;
-    char* romTypeSonyHbi55;
+    char* romTypeSc3000Cart;
+
     char* romTypeMsxPrinter;
     char* romTypeTurborPcm;
-    char* romTypeGameReader;
-    char* romTypeSunriseIde;
-    char* romTypeBeerIde;
-    char* romTypeGide;
-    char* romTypeVmx80;
+
     char* romTypeNms8280Digitiz;
     char* romTypeHbiV1Digitiz;
-    char* romTypeFmdas;
-    char* romTypeSfg01;
-    char* romTypeSfg05;
 
-   
     //----------------------
     // Debug type lines
     // Note: Only needs translation if debugger is translated
@@ -695,7 +739,6 @@ typedef struct {
     char* dbgMemVisible;
     char* dbgMemRamNormal;
     char* dbgMemRamMapped;
-    char* dbgMemVram;
     char* dbgMemYmf278;
     char* dbgMemAy8950;
     char* dbgMemScc;
@@ -711,46 +754,20 @@ typedef struct {
 
     char* dbgDevRamMapper;
     char* dbgDevRam;
-    char* dbgDevIdeBeer;
-    char* dbgDevIdeGide;
     char* dbgDevF4Device;
-    char* dbgDevFmpac;
-    char* dbgDevFmpak;
-    char* dbgDevKanji;
-    char* dbgDevKanji12;
-    char* dbgDevKonamiKbd;
     char* dbgDevKorean80;
     char* dbgDevKorean90;
     char* dbgDevKorean128;
-    char* dbgDevMegaRam;
     char* dbgDevFdcMicrosol;
-    char* dbgDevMoonsound;
-    char* dbgDevMsxAudio;
-    char* dbgDevMsxAudioMidi;
-    char* dbgDevMsxMusic;
+
     char* dbgDevPrinter;
-    char* dbgDevRs232;
-    char* dbgDevS1990;
-    char* dbgDevSfg05;
-    char* dbgDevHbi55;
+
     char* dbgDevSviFdc;
     char* dbgDevSviPrn;
     char* dbgDevSvi80Col;
-    char* dbgDevPcm;
-    char* dbgDevMatsushita;
-    char* dbgDevS1985;
-    char* dbgDevCrtc6845;
-    char* dbgDevTms9929A;
-    char* dbgDevTms99x8A;
-    char* dbgDevV9938;
-    char* dbgDevV9958;
-    char* dbgDevZ80;
-    char* dbgDevMsxMidi;
-    char* dbgDevPpi;
+
     char* dbgDevRtc;
     char* dbgDevTrPause;
-    char* dbgDevAy8910;
-    char* dbgDevScc;
 
 
     //----------------------

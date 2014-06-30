@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/DirAsDisk.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/DirAsDisk.h,v $
 **
-** $Revision: 1.3 $
+** $Revision: 1.6 $
 **
-** $Date: 2006/06/13 17:13:27 $
+** $Date: 2008-03-30 18:38:40 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2007 Daniel Vik, Tomas Karlsson
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -32,7 +30,17 @@
 
 #include "MsxTypes.h"
 
-void* dirLoadFile(char* fileName, int* size);
+typedef enum {
+    DDT_MSX                = 0,
+    DDT_SVI_328_CPM_SSDD   = 1,
+    DDT_SVI_328_CPM_DSDD   = 2,
+    DDT_SVI_738_CPM_SSDD   = 3,
+    DDT_SVI_328_Basic_SSDD = 4,
+    DDT_SVI_328_Basic_DSDD = 5,
+    DDT_MSX_CPM_SSDD       = 6,
+    DDT_MSX_CPM_DSDD       = 7,
+} DirDiskType;
+
+void* dirLoadFile(DirDiskType diskType, const char* fileName, int* size);
 
 #endif
-

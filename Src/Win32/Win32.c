@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32.c,v $
 **
-** $Revision: 1.149 $
+** $Revision: 1.205 $
 **
-** $Date: 2006/07/04 07:49:05 $
+** $Date: 2009-07-07 02:38:25 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -37,6 +35,7 @@
 #include <CommCtrl.h>
 #include <shlobj.h> 
 #include <shlwapi.h>
+#include <dbt.h>
 #include "Win32FileTypes.h"
 #include "Win32ThemeClassic.h"
 #include "Board.h"
@@ -63,15 +62,20 @@
 #include "Win32keyboard.h"
 #include "Win32Printer.h"
 #include "Win32directx.h"
+#include "Win32D3D.h"
+#include "Win32Avi.h"
 #include "FileHistory.h"
 #include "Win32Dir.h"
+#include "Win32file.h"
 #include "Win32Help.h"
 #include "Win32Menu.h"
+#include "Win32Eth.h"
 #include "Win32VideoIn.h"
 #include "Win32ScreenShot.h"
 #include "Win32MouseEmu.h"
 #include "Win32machineConfig.h"
 #include "Win32ShortcutsConfig.h"
+#include "Win32Cdrom.h"
 #include "Actions.h"
 #include "LaunchFile.h"
 #include "TokenExtract.h"
@@ -86,6 +90,13 @@
 #include "ArchTimer.h"
 #include "ArchFile.h"
 #include "ArchInput.h"
+#include "AppConfig.h"
+#include "SlotManager.h"
+
+#pragma warning(disable: 4996)
+
+// PacketFileSystem.h Need to be included after all other includes
+#include "PacketFileSystem.h"
 
 void vdpSetDisplayEnable(int enable);
 
@@ -116,6 +127,8 @@ static EmuLanguageType getLangType()
         case 0x16: return EMU_LANG_PORTUGUESE;
         case 0x0a: return EMU_LANG_SPANISH;
         case 0x1d: return EMU_LANG_SWEDISH;
+        case 0x19: return EMU_LANG_RUSSIAN;
+        case 0x03: return EMU_LANG_CATALAN;
     }
 
     return EMU_LANG_ENGLISH;
@@ -199,7 +212,8 @@ void updateDialogPos(HWND hwnd, int dialogID, int noMove, int noSize)
         w = r2.right - r2.left;
         h = r2.bottom - r2.top;
     }
-
+    /* Laurent Halter : Removed because window might be on a secondary display*/
+    /*
     if (x + w > screenWidth) {
         x = screenWidth - w;
     }
@@ -210,7 +224,7 @@ void updateDialogPos(HWND hwnd, int dialogID, int noMove, int noSize)
 
     if (y < 0) {
         y = 0;
-    }
+    }*/
 
     SetWindowPos(hwnd, NULL, x, y, w, h, SWP_NOZORDER | (noSize ? SWP_NOSIZE : 0));
 }
@@ -257,6 +271,7 @@ static BOOL CALLBACK langDlgProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPa
 
             himlSmall = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), TRUE, 1, 1); 
 
+            ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_CATALONIA))); 
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_CHINASIMP))); 
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_CHINATRAD))); 
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_NETHERLANDS))); 
@@ -269,6 +284,7 @@ static BOOL CALLBACK langDlgProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lPa
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_KOREA))); 
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_POLAND))); 
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_BRAZIL))); 
+            ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_RUSSIA))); 
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_SPAIN))); 
             ImageList_AddIcon(himlSmall, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLAG_SWEDEN))); 
             
@@ -423,68 +439,6 @@ void diskQuickviewWindowShow(DiskQuickviewWindow* dqw)
 
 ///////////////////////////////////////////////////////////////////////////
 
-static RomType romTypeList[] = {
-    ROM_ASCII8,
-    ROM_ASCII8SRAM,
-    ROM_ASCII16,
-    ROM_ASCII16SRAM,
-    ROM_KONAMI4,
-    ROM_KONAMI5,
-    ROM_PLAIN,
-    ROM_BASIC,
-    ROM_0x4000,
-    ROM_0xC000,
-    ROM_KOEI,
-    ROM_RTYPE,
-    ROM_CROSSBLAIM,
-    ROM_HARRYFOX,
-    ROM_LODERUNNER,
-    ROM_HALNOTE,
-    ROM_KONAMISYNTH,
-    ROM_KONAMKBDMAS,
-    ROM_KONWORDPRO,
-    ROM_MAJUTSUSHI,
-    ROM_SCC,
-    ROM_SCCPLUS,
-    ROM_KONAMI4NF, 
-    ROM_ASCII16NF,
-    ROM_GAMEMASTER2,
-    ROM_KOREAN80,
-    ROM_KOREAN90,
-    ROM_KOREAN126,
-    ROM_HOLYQURAN,
-    ROM_FMPAC,
-    ROM_FMPAK,
-    ROM_MSXAUDIO,
-    ROM_MOONSOUND,
-    ROM_DISKPATCH,
-    ROM_CASPATCH,
-    ROM_TC8566AF,
-    ROM_MICROSOL,
-    ROM_NATIONALFDC,
-    ROM_PHILIPSFDC,
-    ROM_SVI738FDC,
-    ROM_GIDE,
-    ROM_SUNRISEIDE,
-    ROM_BEERIDE,
-    ROM_KANJI,
-    ROM_KANJI12,
-    ROM_JISYO,
-    ROM_BUNSETU,
-    ROM_MSXDOS2,
-    ROM_NATIONAL,
-    ROM_PANASONIC16,
-    ROM_PANASONIC32,
-    ROM_MICROSOL80,
-    ROM_SVI727,
-    ROM_SONYHBIV1,
-    ROM_FMDAS,
-    ROM_YAMAHASFG01,
-    ROM_YAMAHASFG05,
-    ROM_UNKNOWN,
-};
-
-
 typedef struct {
     char        title[128];
     char        description[128];
@@ -509,7 +463,7 @@ static void updateRomTypeList(HWND hDlg, ZipFileDlgInfo* dlgInfo) {
     
     if (isFileExtension(fileName, ".rom") || isFileExtension(fileName, ".ri") ||
         isFileExtension(fileName, ".mx1") || isFileExtension(fileName, ".mx2") || 
-        isFileExtension(fileName, ".col") ||
+        isFileExtension(fileName, ".sms") || isFileExtension(fileName, ".col") ||
         isFileExtension(fileName, ".sg") || isFileExtension(fileName, ".sc")) {
         buf = romLoad(dlgInfo->zipFileName, fileName, &size);
     }
@@ -519,7 +473,7 @@ static void updateRomTypeList(HWND hDlg, ZipFileDlgInfo* dlgInfo) {
         RomType romType = mediaType != NULL ? mediaDbGetRomType(mediaType) : ROM_UNKNOWN;
         int idx = 0;
 
-        while (romTypeList[idx] != romType) {
+        while (opendialog_getromtype(idx) != romType) {
             idx++;
         }
 
@@ -570,8 +524,8 @@ static BOOL CALLBACK dskZipDlgProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM l
 
             fileList = dlgInfo->fileList;
 
-            for (i = 0; romTypeList[i] != ROM_UNKNOWN; i++) {
-                SendDlgItemMessage(hDlg, IDC_OPEN_ROMTYPE, CB_ADDSTRING, 0, (LPARAM)romTypeToString(romTypeList[i]));
+            for (i = 0; opendialog_getromtype(i) != ROM_UNKNOWN; i++) {
+                SendDlgItemMessage(hDlg, IDC_OPEN_ROMTYPE, CB_ADDSTRING, 0, (LPARAM)romTypeToString(opendialog_getromtype(i)));
                 SendDlgItemMessage(hDlg, IDC_ROMTYPE, CB_SETCURSEL, i, 0);
             }
             SendDlgItemMessage(hDlg, IDC_OPEN_ROMTYPE, CB_ADDSTRING, 0, (LPARAM)romTypeToString(ROM_UNKNOWN));
@@ -609,7 +563,7 @@ static BOOL CALLBACK dskZipDlgProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM l
             if (HIWORD(wParam) == 1 || HIWORD(wParam) == 2) {
                 int idx = SendMessage(GetDlgItem(hDlg, IDC_OPEN_ROMTYPE), CB_GETCURSEL, 0, 0);
 
-                dlgInfo->openRomType = idx == CB_ERR ? -1 : romTypeList[idx];
+                dlgInfo->openRomType = idx == CB_ERR ? -1 : opendialog_getromtype(idx);
             }
             return 0;
         case IDC_DSKRESET:
@@ -869,12 +823,16 @@ void setTapePosition(HWND parent, Properties* pProperties) {
 #define hotkeyEq(hotkey1, hotkey2) (*(DWORD*)&hotkey1 == *(DWORD*)&hotkey2)
 
 static int maxSpeedIsSet = 0;
+static int reverseIsSet  = 0;
 
 static void checkKeyDown(Shortcuts* s, ShotcutHotkey key) {
     if (hotkeyEq(key, s->emuSpeedFull)) {
         actionMaxSpeedSet();
         maxSpeedIsSet = 1;
-
+    }
+    if (hotkeyEq(key, s->emuPlayReverse)) {
+        actionStartPlayReverse();
+        reverseIsSet = 1;
     }
 }
 
@@ -885,13 +843,25 @@ static void checkKeyUp(Shortcuts* s, ShotcutHotkey key)
         maxSpeedIsSet = 0;
     }
 
+    if (reverseIsSet) {
+        actionStopPlayReverse();
+        reverseIsSet = 0;
+    }
+
     if (hotkeyEq(key, s->spritesEnable))                actionToggleSpriteEnable();
     if (hotkeyEq(key, s->fdcTiming))                    actionToggleFdcTiming();
+    if (hotkeyEq(key, s->noSpriteLimits))               actionToggleNoSpriteLimits();
+    if (hotkeyEq(key, s->msxKeyboardQuirk))             actionToggleMsxKeyboardQuirk();
     if (hotkeyEq(key, s->msxAudioSwitch))               actionToggleMsxAudioSwitch();
     if (hotkeyEq(key, s->frontSwitch))                  actionToggleFrontSwitch();
     if (hotkeyEq(key, s->pauseSwitch))                  actionTogglePauseSwitch();
     if (hotkeyEq(key, s->quit))                         actionQuit();
     if (hotkeyEq(key, s->wavCapture))                   actionToggleWaveCapture();
+    if (hotkeyEq(key, s->videoCapLoad))                 actionVideoCaptureLoad();
+    if (hotkeyEq(key, s->videoCapPlay))                 actionVideoCapturePlay();
+    if (hotkeyEq(key, s->videoCapRec))                  actionVideoCaptureRec();
+    if (hotkeyEq(key, s->videoCapStop))                 actionVideoCaptureStop();
+    if (hotkeyEq(key, s->videoCapSave))                 actionVideoCaptureSave();
     if (hotkeyEq(key, s->screenCapture))                actionScreenCapture();
     if (hotkeyEq(key, s->screenCaptureUnfilteredSmall)) actionScreenCaptureUnfilteredSmall();
     if (hotkeyEq(key, s->screenCaptureUnfilteredLarge)) actionScreenCaptureUnfilteredLarge();
@@ -899,6 +869,7 @@ static void checkKeyUp(Shortcuts* s, ShotcutHotkey key)
     if (hotkeyEq(key, s->cpuStateSave))                 actionSaveState();
     if (hotkeyEq(key, s->cpuStateQuickLoad))            actionQuickLoadState();
     if (hotkeyEq(key, s->cpuStateQuickSave))            actionQuickSaveState();
+    if (hotkeyEq(key, s->cpuStateQuickSaveUndo))        actionQuickSaveStateUndo();
 
     if (hotkeyEq(key, s->cartInsert[0]))                actionCartInsert1();
     if (hotkeyEq(key, s->cartInsert[1]))                actionCartInsert2();
@@ -949,10 +920,10 @@ static void checkKeyUp(Shortcuts* s, ShotcutHotkey key)
     if (hotkeyEq(key, s->propShowEmulation))            actionPropShowEmulation();
     if (hotkeyEq(key, s->propShowVideo))                actionPropShowVideo();
     if (hotkeyEq(key, s->propShowAudio))                actionPropShowAudio();
-    if (hotkeyEq(key, s->propShowPerformance))          actionPropShowPerformance();
     if (hotkeyEq(key, s->propShowSettings))             actionPropShowSettings();
     if (hotkeyEq(key, s->propShowApearance))            actionPropShowApearance();
     if (hotkeyEq(key, s->propShowPorts))                actionPropShowPorts();
+    if (hotkeyEq(key, s->propShowEffects))				actionPropShowEffects();
     if (hotkeyEq(key, s->optionsShowLanguage))          actionOptionsShowLanguage();
     if (hotkeyEq(key, s->toolsShowMachineEditor))       actionToolsShowMachineEditor();
     if (hotkeyEq(key, s->toolsShowShorcutEditor))       actionToolsShowShorcutEditor();
@@ -1030,7 +1001,10 @@ typedef struct {
     int    diplaySync;
     int    diplayUpdateOnVblank;
 
+    int renderVideo;
+
     HBITMAP hBitmap;
+    HDC hdc;
     ThemePage* themePageActive;
     ThemeCollection** themeList;
     int themeIndex;
@@ -1061,15 +1035,18 @@ static void registerFileTypes() {
     registerFileType(".di2", "blueMSXdsk", "DSK Image", 1);
     registerFileType(".360", "blueMSXdsk", "DSK Image", 1);
     registerFileType(".720", "blueMSXdsk", "DSK Image", 1);
+    registerFileType(".sf7", "blueMSXdsk", "DSK Image", 1);
     registerFileType(".rom", "blueMSXrom", "ROM Image", 2);
     registerFileType(".ri",  "blueMSXrom", "ROM Image", 2);
     registerFileType(".mx1", "blueMSXrom", "ROM Image", 2);
     registerFileType(".mx2", "blueMSXrom", "ROM Image", 2);
+    registerFileType(".sms", "blueMSXrom", "Sega ROM Image", 2);
     registerFileType(".col", "blueMSXrom", "Coleco ROM Image", 2);
     registerFileType(".sg",  "blueMSXrom", "Sega ROM Image", 2);
     registerFileType(".sc",  "blueMSXrom", "Sega ROM Image", 2);
     registerFileType(".cas", "blueMSXcas", "CAS Image", 3);
     registerFileType(".sta", "blueMSXsta", "blueMSX State", 4);
+    registerFileType(".cap", "blueMSXcap", "blueMSX Video Capture", 4);
 }
 
 static void unregisterFileTypes() {
@@ -1078,15 +1055,18 @@ static void unregisterFileTypes() {
     unregisterFileType(".di2", "blueMSXdsk", "DSK Image", 1);
     unregisterFileType(".360", "blueMSXdsk", "DSK Image", 1);
     unregisterFileType(".720", "blueMSXdsk", "DSK Image", 1);
+    unregisterFileType(".sf7", "blueMSXdsk", "DSK Image", 1);
     unregisterFileType(".rom", "blueMSXrom", "ROM Image", 2);
     unregisterFileType(".ri",  "blueMSXrom", "ROM Image", 2);
     unregisterFileType(".mx1", "blueMSXrom", "ROM Image", 2);
     unregisterFileType(".mx2", "blueMSXrom", "ROM Image", 2);
+    unregisterFileType(".sms", "blueMSXrom", "Sega ROM Image", 2);
     unregisterFileType(".col", "blueMSXrom", "Coleco ROM Image", 2);
     unregisterFileType(".sg",  "blueMSXrom", "Sega ROM Image", 2);
     unregisterFileType(".sc",  "blueMSXrom", "Sega ROM Image", 2);
     unregisterFileType(".cas", "blueMSXcas", "CAS Image", 3);
     unregisterFileType(".sta", "blueMSXsta", "blueMSX State", 4);
+    unregisterFileType(".cap", "blueMSXcap", "blueMSX Video Capture", 4);
 }
 
 HWND getMainHwnd()
@@ -1115,6 +1095,8 @@ void archShowPropertiesDialog(PropPage  startPane) {
     /* Always update video render */
     
     videoUpdateAll(st.pVideo, pProperties);
+    
+    mediaDbSetDefaultRomType(pProperties->cartridge.defaultType);
 
     printerIoSetType(pProperties->ports.Lpt.type, pProperties->ports.Lpt.fileName);
     uartIoSetType(pProperties->ports.Com.type, pProperties->ports.Com.fileName);
@@ -1137,6 +1119,11 @@ void archShowPropertiesDialog(PropPage  startPane) {
         archUpdateWindow();
     }
 
+    if (pProperties->cartridge.defaultType != oldProp.cartridge.defaultType) {
+        for (i = 0; i < PROP_MAX_CARTS; i++) {
+            if (pProperties->media.carts[i].fileName[0]) insertCartridge(pProperties, i, pProperties->media.carts[i].fileName, pProperties->media.carts[i].fileNameInZip, pProperties->media.carts[i].type, -1);
+        }
+    }
     /* Must restart MSX if Machine configuration changed */
     if (strcmp(oldProp.emulation.machineName, pProperties->emulation.machineName) ||
         oldProp.emulation.syncMethod != pProperties->emulation.syncMethod ||
@@ -1146,6 +1133,7 @@ void archShowPropertiesDialog(PropPage  startPane) {
     }
 
     boardSetFdcTimingEnable(pProperties->emulation.enableFdcTiming);
+    boardSetNoSpriteLimits(pProperties->emulation.noSpriteLimits);
 
     /* Update switches */
     switchSetAudio(pProperties->emulation.audioSwitch);
@@ -1199,7 +1187,7 @@ void archShowPropertiesDialog(PropPage  startPane) {
         if (pProperties->emulation.registerFileTypes && !oldProp.emulation.registerFileTypes) {
             registerFileTypes();
         }
-        else {
+        else if (!pProperties->emulation.registerFileTypes) {
             unregisterFileTypes();
         }
     }
@@ -1272,6 +1260,7 @@ void exitDialogShow() {
 void updateMenu(int show) {
     int doDelay = show;
     int enableSpecial = 1;
+    int emuState = emulatorGetState();
 
     if (pProperties->video.windowSize != P_VIDEO_SIZEFULLSCREEN) {
         show = 1;
@@ -1291,9 +1280,10 @@ void updateMenu(int show) {
 
     menuUpdate(pProperties, 
                st.shortcuts,
-               emulatorGetState() == EMU_RUNNING, 
-               emulatorGetState() == EMU_STOPPED, 
+               emuState == EMU_RUNNING, 
+               emuState == EMU_STOPPED, 
                mixerIsLogging(st.mixer),
+               boardCaptureIsRecording() ? 1 : boardCaptureIsPlaying() ? 2 : 0,
                fileExist(pProperties->filehistory.quicksave, NULL),
                enableSpecial);
 
@@ -1346,6 +1336,13 @@ static void checkClipRegion() {
 }
 
 static int getZoom() {
+    if (pProperties->video.windowSize == P_VIDEO_SIZEFULLSCREEN && 
+        (pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO || 
+        pProperties->video.driver == P_VIDEO_DRVDIRECTX))
+    {
+        DxDisplayMode* ddm = DirectDrawGetDisplayMode();
+        return ddm->width < 640 || ddm->height < 480 ? 1 : 2;
+    }
     return pProperties->video.windowSize == P_VIDEO_SIZEX1 ? 1 : 2;
 }
 
@@ -1398,16 +1395,18 @@ void themeSet(char* themeName, int forceMatch) {
         themePageSetActive(st.themePageActive, NULL, st.active);
     }
 
-    if (st.hBitmap) {
-        DeleteObject(st.hBitmap);
-    }
-
     {
-        DxDisplayMode* ddm = DirectDrawGetDisplayMode();
+        WINDOWPLACEMENT p;
+        LONG w, h;
+
+        GetWindowPlacement(st.hwnd, &p);
+        w = p.rcNormalPosition.right - p.rcNormalPosition.left;
+        h = p.rcNormalPosition.bottom - p.rcNormalPosition.top;
+
         menuSetInfo(st.themePageActive->menu.color, st.themePageActive->menu.focusColor, 
                     st.themePageActive->menu.textColor, 
                     st.themePageActive->menu.x, st.themePageActive->menu.y,
-                    pProperties->video.windowSize == P_VIDEO_SIZEFULLSCREEN ? ddm->width : st.themePageActive->menu.width, 32);
+                    pProperties->video.windowSize == P_VIDEO_SIZEFULLSCREEN ? w : st.themePageActive->menu.width, 32);
     }
 
     if (pProperties->video.windowSize != P_VIDEO_SIZEFULLSCREEN) {
@@ -1420,17 +1419,27 @@ void themeSet(char* themeName, int forceMatch) {
         ew = getZoom() * WIDTH;
         eh = getZoom() * HEIGHT;
         z  = HWND_NOTOPMOST;
-    }
-    else {
-        DxDisplayMode* ddm = DirectDrawGetDisplayMode();
-        w = ew = ddm->width;
-        h = eh = ddm->height;
-        z  = HWND_TOPMOST;
+
+        if (pProperties->video.windowSize == P_VIDEO_SIZEX2) {
+            ew = appConfigGetInt("screen.normal.width", 640);
+            eh = appConfigGetInt("screen.normal.height", 480);
+        }
+
+        SetWindowPos(st.hwnd, z, x, y, w, h, SWP_SHOWWINDOW);
+        SetWindowPos(st.emuHwnd, NULL, ex, ey, ew, eh, SWP_NOZORDER);
     }
 
-    st.hBitmap = CreateCompatibleBitmap(GetDC(st.hwnd), w, h);
-    SetWindowPos(st.hwnd, z, x, y, w, h, SWP_SHOWWINDOW);
-    SetWindowPos(st.emuHwnd, NULL, ex, ey, ew, eh, SWP_NOZORDER);
+    if (st.hBitmap) { DeleteObject(st.hBitmap); st.hBitmap=NULL; }
+    if (st.hdc) { ReleaseDC(st.hwnd,st.hdc); st.hdc=NULL; }
+    st.hdc=GetDC(st.hwnd);
+    if (pProperties->video.windowSize != P_VIDEO_SIZEFULLSCREEN) {
+        st.hBitmap = CreateCompatibleBitmap(st.hdc, w, h);
+    }
+    else {
+        st.hBitmap = CreateCompatibleBitmap(st.hdc, 640, 480);
+    }
+    
+    if (strcmp(themeName,"Classic")) SetWindowText(st.hwnd, "  blueMSX");
 
     if (st.rgnData != NULL) {
 //        SetWindowRgn(st.hwnd, NULL, TRUE);
@@ -1523,7 +1532,10 @@ void archUpdateWindow() {
     st.enteringFullscreen = 1;
     emulatorSuspend();
 
-    DirectXExitFullscreenMode();
+    if (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D)
+        D3DExitFullscreenMode();
+    else
+        DirectXExitFullscreenMode();
 
     if (st.bmBitsGDI != NULL) {
         free(st.bmBitsGDI);
@@ -1538,12 +1550,21 @@ void archUpdateWindow() {
             int rv;
             SetWindowLong(st.hwnd, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_VISIBLE);
 
-            rv = DirectXEnterFullscreenMode(st.emuHwnd, 
-                                            pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
-                                            pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
+            if (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D)
+                rv = D3DEnterFullscreenMode(st.emuHwnd, 
+                                                pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
+                                                pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
+            else
+                rv = DirectXEnterFullscreenMode(st.emuHwnd, 
+                                                pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
+                                                pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
+
             if (rv != DXE_OK) {
                 MessageBox(NULL, langErrorEnterFullscreen(), langErrorTitle(), MB_OK);
-                DirectXExitFullscreenMode();
+                if (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D)
+                    D3DExitFullscreenMode();
+                else
+                    DirectXExitFullscreenMode();
                 pProperties->video.windowSize = P_VIDEO_SIZEX2;
             }
         }
@@ -1553,11 +1574,18 @@ void archUpdateWindow() {
         if (GetWindowLong(st.hwnd, GWL_STYLE) & WS_POPUP) {
             mouseEmuActivate(1);
             SetWindowLong(st.hwnd, GWL_STYLE, WS_OVERLAPPED | WS_CLIPCHILDREN | WS_BORDER | WS_DLGFRAME | 
-                                WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+                                WS_SYSMENU | WS_MINIMIZEBOX | (pProperties->video.maximizeIsFullscreen?WS_MAXIMIZEBOX:0));
         }
 
         if (pProperties->video.driver != P_VIDEO_DRVGDI) {
-            int rv = DirectXEnterWindowedMode(st.emuHwnd, zoom * WIDTH, zoom * HEIGHT, 
+            int rv;
+
+            if (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D)
+                rv = D3DEnterWindowedMode(st.emuHwnd, zoom * WIDTH, zoom * HEIGHT, 
+                                              pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
+                                              pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
+            else
+                rv = DirectXEnterWindowedMode(st.emuHwnd, zoom * WIDTH, zoom * HEIGHT, 
                                               pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
                                               pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
             if (rv != DXE_OK) {
@@ -1581,14 +1609,21 @@ void archUpdateWindow() {
         RECT r = { 0, 0, zoom * WIDTH, zoom * HEIGHT };
         RECT d = { 0, 0, zoom * WIDTH, zoom * HEIGHT };
         if (pProperties->video.windowSize == P_VIDEO_SIZEFULLSCREEN) {
-            DxDisplayMode* ddm = DirectDrawGetDisplayMode();
-            r.right  = ddm->width;
-            r.bottom = ddm->height;
+            WINDOWPLACEMENT p;
+            GetWindowPlacement(st.hwnd, &p);
+            r.right  = p.rcNormalPosition.right - p.rcNormalPosition.left;
+            r.bottom = p.rcNormalPosition.bottom - p.rcNormalPosition.top;
         }
         if (!pProperties->video.horizontalStretch) {
             d.left  += zoom * (320 - 272) / 2;
             d.right -= zoom * (320 - 272) / 2;
         }
+        
+        if (pProperties->video.windowSize == P_VIDEO_SIZEX2) {
+            r.right = appConfigGetInt("screen.normal.width", 640);
+            r.bottom = appConfigGetInt("screen.normal.height", 480);
+        }
+
         mouseEmuSetCaptureInfo(&r, &d);
     }
 
@@ -1614,17 +1649,43 @@ static void emuWindowDraw(int onlyOnVblank)
 
     if (!st.enteringFullscreen && 
         (pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO || 
-        pProperties->video.driver == P_VIDEO_DRVDIRECTX))
+        (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D) || 
+        (pProperties->video.driver == P_VIDEO_DRVDIRECTX)))
     {
-        
+#define PRINT_RENDERING_TIME 0
+#if PRINT_RENDERING_TIME
+        LARGE_INTEGER	iCurrentTime;
+        double fStartTime;
+        if(QueryPerformanceCounter(&iCurrentTime))
+            fStartTime = (long double) iCurrentTime.QuadPart;
+#endif
+
         st.diplaySync |= onlyOnVblank;
 
-        rv = DirectXUpdateSurface(st.pVideo, 
-                                  st.showMenu | st.showDialog || emulatorGetState() != EMU_RUNNING, 
-                                  0, 0, getZoom(), 
-                                  pProperties->video.horizontalStretch, 
-                                  pProperties->video.verticalStretch,
-                                  st.diplaySync);
+
+        if (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D) 
+            rv = D3DUpdateSurface(st.emuHwnd, st.pVideo, st.diplaySync, &pProperties->video.d3d);
+        else
+            rv = DirectXUpdateSurface(st.pVideo, 
+                                      st.showMenu | st.showDialog || emulatorGetState() != EMU_RUNNING, 
+                                      0, 0, getZoom(), 
+                                      pProperties->video.horizontalStretch, 
+                                      pProperties->video.verticalStretch,
+                                      st.diplaySync,
+                                      pProperties->video.windowSize == P_VIDEO_SIZEX2);
+
+#if PRINT_RENDERING_TIME
+        {
+            char output[1024];
+            double t;
+            LARGE_INTEGER	iFrequency;
+            QueryPerformanceFrequency(&iFrequency);
+            QueryPerformanceCounter(&iCurrentTime);
+            t = (double) (iCurrentTime.QuadPart - fStartTime) / (double) iFrequency.QuadPart;
+            sprintf(output, "Rendering time: %fms\n", t*1000.0f);
+            OutputDebugString(output);
+        }
+#endif
         st.diplaySync = 0;
         if (rv) {
             st.frameCount++;
@@ -1921,7 +1982,7 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         break;
 
     case WM_NCLBUTTONDBLCLK:
-        if (wParam == HTCAPTION) {
+        if (wParam == HTCAPTION && pProperties->video.maximizeIsFullscreen) {
             if (pProperties->video.windowSize != P_VIDEO_SIZEFULLSCREEN) {
                 pProperties->video.windowSize = P_VIDEO_SIZEFULLSCREEN;
                 archUpdateWindow();
@@ -1983,9 +2044,14 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         if (pProperties->video.driver != P_VIDEO_DRVGDI) {
             int zoom = getZoom();
             if (st.enteringFullscreen) {
-                DirectXUpdateWindowedMode(st.emuHwnd, zoom * WIDTH, zoom * HEIGHT,
-                                          pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
-                                          pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
+                if (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D)
+                    D3DUpdateWindowedMode(st.emuHwnd, zoom * WIDTH, zoom * HEIGHT,
+                                              pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
+                                              pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
+                else
+                    DirectXUpdateWindowedMode(st.emuHwnd, zoom * WIDTH, zoom * HEIGHT,
+                                              pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO, 
+                                              pProperties->video.driver == P_VIDEO_DRVDIRECTX_VIDEO);
             }
         }
         break;
@@ -2023,8 +2089,10 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
             mouseEmuActivate(1);
         }
         if (st.themePageActive) {
+            HDC hdc = GetDC(hwnd);
             st.active = LOWORD(wParam) != WA_INACTIVE;
-            themePageSetActive(st.themePageActive, GetDC(hwnd), st.active);
+            themePageSetActive(st.themePageActive, hdc, st.active);
+            ReleaseDC(hwnd, hdc);
         }
         break;
 
@@ -2036,10 +2104,12 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
     case WM_MOUSEMOVE:
         if (st.themePageActive) {
+            HDC hdc = GetDC(hwnd);
             POINT pt;
             GetCursorPos(&pt);
             ScreenToClient(hwnd, &pt);
-            themePageMouseMove(st.themePageActive, GetDC(hwnd), pt.x, pt.y);
+            themePageMouseMove(st.themePageActive, hdc, pt.x, pt.y);
+            ReleaseDC(hwnd, hdc);
             checkClipRegion();
         }
         if (pProperties->video.windowSize == P_VIDEO_SIZEFULLSCREEN) {
@@ -2066,10 +2136,12 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
                 st.currentHwnd = hwnd;
 
                 if (st.themePageActive) {
+                    HDC hdc = GetDC(hwnd);
                     POINT pt;
                     GetCursorPos(&pt);
                     ScreenToClient(hwnd, &pt);
-                    themePageMouseButtonDown(st.themePageActive, GetDC(hwnd), pt.x, pt.y);
+                    themePageMouseButtonDown(st.themePageActive, hdc, pt.x, pt.y);
+                    ReleaseDC(hwnd, hdc);
                 }
                 if (st.showMenu && pProperties->video.windowSize == P_VIDEO_SIZEFULLSCREEN) {
                     updateMenu(0);
@@ -2081,10 +2153,12 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
     case WM_LBUTTONUP:
         ReleaseCapture();
         if (st.themePageActive) {
+            HDC hdc = GetDC(hwnd);
             POINT pt;
             GetCursorPos(&pt);
             ScreenToClient(hwnd, &pt);
-            themePageMouseButtonUp(st.themePageActive, GetDC(hwnd), pt.x, pt.y);
+            themePageMouseButtonUp(st.themePageActive, hdc, pt.x, pt.y);
+            ReleaseDC(hwnd, hdc);
             st.currentHwnd = NULL;
         }
 
@@ -2100,6 +2174,7 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         case TIMER_STATUSBAR_UPDATE:
             if (!st.minimized) {
                 static UInt32 resetCnt = 0;
+                HDC hdc = GetDC(hwnd);
 
                 if (emulatorGetState() == EMU_RUNNING) {
                     if ((resetCnt++ & 0x3f) == 0) {
@@ -2111,11 +2186,14 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
                     }
                 }
 
+                if (!strcmp(pProperties->settings.themeName,"Classic")) themeClassicTitlebarUpdate(hwnd);
+                themePageUpdate(st.themePageActive, hdc);
+                ReleaseDC(hwnd, hdc);
+
                 PatchDiskSetBusy(0, 0);
                 PatchDiskSetBusy(1, 0);
-                tapeSetBusy(0);
+                ledSetCas(0);
 
-                themePageUpdate(st.themePageActive, GetDC(hwnd));
             }
             break;
 
@@ -2260,7 +2338,15 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         DestroyWindow(hwnd);
         return 0;
 
-    case WM_DESTROY:         
+    case WM_DESTROY:
+        
+        if (pProperties->emulation.ejectMediaOnExit) {
+        	actionCartRemove1(); actionCartRemove2();
+        	actionDiskRemoveA(); actionDiskRemoveB();
+        	actionCasRemove();
+        	actionHarddiskRemoveAll();
+        }
+        
         emulatorStop();
         toolUnLoadAll();
         if (pProperties->video.windowSize != P_VIDEO_SIZEFULLSCREEN) {
@@ -2271,12 +2357,32 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
             pProperties->video.windowY = r.top;
         }
         st.enteringFullscreen = 1;
-        DirectXExitFullscreenMode();
+        if (pProperties->video.driver == P_VIDEO_DRVDIRECTX_D3D)
+            D3DExitFullscreenMode();
+        else
+            DirectXExitFullscreenMode();
         PostQuitMessage(0);
         inputDestroy();
         return 0;
-    }
 
+    case WM_DEVICECHANGE:
+        {
+            PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)lParam;
+
+            switch(wParam) {
+            case DBT_DEVICEARRIVAL:
+            case DBT_DEVICEREMOVECOMPLETE:
+                if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME) {
+                    PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
+
+                    if (lpdbv->dbcv_flags & DBTF_MEDIA) {
+                        cdromOnMediaChange(lpdbv->dbcv_unitmask);
+                    }
+                }
+                break;
+            }
+        }
+    }
     return DefWindowProc(hwnd, iMsg, wParam, lParam);
 }
 
@@ -2362,9 +2468,16 @@ int setDefaultPath() {
     // Set up temp directories
     propertiesSetDirectory(st.pCurDir, rootDir);
 
+    sprintf(buffer, "%s\\Machines", rootDir);
+	machineSetDirectory(buffer);
+
     sprintf(buffer, "%s\\Audio Capture", rootDir);
     mkdir(buffer);
     actionSetAudioCaptureSetDirectory(buffer, "");
+
+    sprintf(buffer, "%s\\Video Capture", rootDir);
+    mkdir(buffer);
+    actionSetVideoCaptureSetDirectory(buffer, "");
 
     sprintf(buffer, "%s\\QuickSave", rootDir);
     mkdir(buffer);
@@ -2373,10 +2486,6 @@ int setDefaultPath() {
     sprintf(buffer, "%s\\SRAM", rootDir);
     mkdir(buffer);
     boardSetDirectory(buffer);
-
-    sprintf(buffer, "%s\\Shortcut Profiles", rootDir);
-    mkdir(buffer);
-    shortcutsSetDirectory(buffer);
 
     sprintf(buffer, "%s\\Keyboard Config", rootDir);
     mkdir(buffer);
@@ -2394,14 +2503,11 @@ int setDefaultPath() {
     mkdir(buffer);
     mediaDbLoad(buffer);
 
-    sprintf(buffer, "%s\\Databases\\romdb.dat", rootDir);
-    mediaDbCreateRomdb(buffer);
+    mediaDbCreateRomdb();
 
-    sprintf(buffer, "%s\\Databases\\diskdb.dat", rootDir);
-    mediaDbCreateDiskdb(buffer);
+    mediaDbCreateDiskdb();
 
-    sprintf(buffer, "%s\\Databases\\casdb.dat", rootDir);
-    mediaDbCreateCasdb(buffer);
+    mediaDbCreateCasdb();
 
     return readOnlyDir;
 }
@@ -2424,6 +2530,15 @@ int emuCheckLanguageArgument(char* cmdLine, int defaultLang){
     }
 
     return defaultLang;
+}
+
+////////////////////////////////////////////////////////////////////
+
+static int getScreenBitDepth()
+{
+    HDC hdc;
+    hdc = GetDC(GetDesktopWindow());
+    return GetDeviceCaps(hdc, BITSPIXEL) * GetDeviceCaps(hdc, PLANES);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2450,13 +2565,20 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
     int i;
     HINSTANCE kbdLockInst;
     int readOnlyDir;
-    
+    const char* tempName;
+    int scrDepth;
+
 #ifdef _CONSOLE
     for (i = 1; i < argc; i++) {
         strcat(szLine, argv[i]);
         strcat(szLine, " ");
     }
 #endif
+
+    scrDepth = getScreenBitDepth();
+    if (scrDepth != 16 && scrDepth != 32) {
+        MessageBox(NULL, "blueMSX works best in 16 or 32 bits color depth", "blueMSX Info", MB_OK | MB_ICONINFORMATION);
+    }
 
     hwnd = FindWindow("blueMSX", "  blueMSX");
     if (hwnd != NULL && *szLine) {
@@ -2486,13 +2608,6 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
             }
             return 0;
         }
-    }
-
-    kbdLockInst = LoadLibrary("kbdlock.dll");
-
-    if (kbdLockInst != NULL) {
-        kbdLockEnable  = (KbdLockFun)GetProcAddress(kbdLockInst, (LPCSTR)2);
-        kbdLockDisable = (KbdLockFun)GetProcAddress(kbdLockInst, (LPCSTR)3);
     }
 
     InitCommonControls(); 
@@ -2527,6 +2642,17 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
         ptr = (char*)stripPath(buffer);
         *ptr = 0;
         SetCurrentDirectory(buffer);
+    }
+
+    pkg_load("Packages/BombaPack.bpk", NULL, 0);
+
+    appConfigLoad();
+
+    kbdLockInst = LoadLibrary("kbdlock.dll");
+
+    if (kbdLockInst != NULL) {
+        kbdLockEnable  = (KbdLockFun)GetProcAddress(kbdLockInst, (LPCSTR)2);
+        kbdLockDisable = (KbdLockFun)GetProcAddress(kbdLockInst, (LPCSTR)3);
     }
 
     readOnlyDir = setDefaultPath();
@@ -2569,6 +2695,16 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
         }
 
         emuCheckFullscreenArgument(pProperties, szLine);
+    }
+
+    tempName = appConfigGetString("singlemachine", NULL);
+    if (tempName != NULL) {
+        strcpy(pProperties->emulation.machineName, tempName);
+    }
+
+    tempName = appConfigGetString("singletheme", NULL);
+    if (tempName != NULL) {
+        strcpy(pProperties->settings.themeName, tempName);
     }
 
     if (readOnlyDir && pProperties->settings.portable) {
@@ -2626,6 +2762,7 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
                   pProperties->video.contrast, pProperties->video.gamma);
     videoSetScanLines(st.pVideo, pProperties->video.scanlinesEnable, pProperties->video.scanlinesPct);
     videoSetColorSaturation(st.pVideo, pProperties->video.colorSaturationEnable, pProperties->video.colorSaturationWidth);
+    videoSetBlendFrames(st.pVideo, pProperties->video.blendFrames);
 
     DirectDrawSetDisplayMode(pProperties->video.fullscreen.width,
                              pProperties->video.fullscreen.height,
@@ -2638,6 +2775,9 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
     langInit();
     tapeSetReadOnly(pProperties->cassette.readOnly);
     
+    ethIfInitialize(pProperties);
+    cdromInitialize();
+
     // Initialize shortcuts profile
     if (!shortcutsIsProfileValid(pProperties->emulation.shortcutProfile)) {
         shortcutsGetAnyProfile(pProperties->emulation.shortcutProfile);
@@ -2662,17 +2802,29 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
 
     st.hwnd = CreateWindow("blueMSX", "  blueMSX", 
                             WS_OVERLAPPED | WS_CLIPCHILDREN | WS_BORDER | WS_DLGFRAME | 
-                            WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX, 
+                            WS_SYSMENU | WS_MINIMIZEBOX | (pProperties->video.maximizeIsFullscreen?WS_MAXIMIZEBOX:0), 
                             CW_USEDEFAULT, CW_USEDEFAULT, 800, 200, NULL, NULL, hInstance, NULL);
 
     menuCreate(st.hwnd);
 
-    addMenuItem(langMenuFile(), actionMenuFile, 0);
-    addMenuItem(langMenuRun(), actionMenuRun, 1);
-    addMenuItem(langMenuWindow(), actionMenuZoom, 1);
-    addMenuItem(langMenuOptions(), actionMenuOptions, 1);
-    addMenuItem(langMenuTools(), actionMenuTools, 1);
-    addMenuItem(langMenuHelp(), actionMenuHelp, 1);
+    if (appConfigGetInt("menu.file", 1) != 0) {
+        addMenuItem(langMenuFile(), actionMenuFile, 0);
+    }
+    if (appConfigGetInt("menu.emulation", 1) != 0) {
+        addMenuItem(langMenuRun(), actionMenuRun, 1);
+    }
+    if (appConfigGetInt("menu.window", 1) != 0) {
+        addMenuItem(langMenuWindow(), actionMenuZoom, 1);
+    }
+    if (appConfigGetInt("menu.options", 1) != 0) {
+        addMenuItem(langMenuOptions(), actionMenuOptions, 1);
+    }
+    if (appConfigGetInt("menu.tools", 1) != 0) {
+        addMenuItem(langMenuTools(), actionMenuTools, 1);
+    }
+    if (appConfigGetInt("menu.help", 1) != 0) {
+        addMenuItem(langMenuHelp(), actionMenuHelp, 1);
+    }
 
     st.emuHwnd = CreateWindow("blueMSXemuWindow", "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE, 0, 0, 0, 0, st.hwnd, NULL, hInstance, NULL);
     ShowWindow(st.emuHwnd, SW_HIDE);
@@ -2754,6 +2906,7 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
         }
     }
     boardSetFdcTimingEnable(pProperties->emulation.enableFdcTiming);
+    boardSetNoSpriteLimits(pProperties->emulation.noSpriteLimits);
     boardSetY8950Enable(pProperties->sound.chip.enableY8950);
     boardSetYm2413Enable(pProperties->sound.chip.enableYM2413);
     boardSetMoonsoundEnable(pProperties->sound.chip.enableMoonsound);
@@ -2761,7 +2914,7 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
 
     updateMenu(0);
 
-    if (emuTryStartWithArguments(pProperties, szLine) < 0) {           
+    if (emuTryStartWithArguments(pProperties, szLine, NULL) < 0) {           
         exit(0);
         return 0;
     }
@@ -2804,6 +2957,8 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
     SetCurrentDirectory(st.pCurDir);
 
     videoInCleanup(pProperties);
+    ethIfCleanup(pProperties);
+    cdromCleanup();
 
     pProperties->joy1.typeId = joystickPortGetType(0);
     pProperties->joy2.typeId = joystickPortGetType(1);
@@ -2832,9 +2987,6 @@ WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, PSTR szLine, int iShow)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#include "Win32file.h"
-
-
 void archShowCassettePosDialog()
 {
     enterDialogShow();
@@ -2845,8 +2997,12 @@ void archShowCassettePosDialog()
 void archShowHelpDialog()
 {
     HINSTANCE rv = 0;
+    /* NOTE: leaks 10 resource handles everytime ShellExecute is called, XP SP2 */
     if (pProperties->language == EMU_LANG_JAPANESE) {
          rv = ShellExecute(getMainHwnd(), "open", "blueMSXjp.chm", NULL, NULL, SW_SHOWNORMAL);
+    }
+    if (pProperties->language == EMU_LANG_DUTCH) {
+         rv = ShellExecute(getMainHwnd(), "open", "blueMSXnl.chm", NULL, NULL, SW_SHOWNORMAL);
     }
     if (rv <= (HINSTANCE)32) {
         rv = ShellExecute(getMainHwnd(), "open", "blueMSX.chm", NULL, NULL, SW_SHOWNORMAL);
@@ -2897,12 +3053,24 @@ void archShowLanguageDialog()
     success = langSetLanguage(lang);
     if (success) {
         pProperties->language = lang;
-        addMenuItem(langMenuFile(), actionMenuFile, 0);
-        addMenuItem(langMenuRun(), actionMenuRun, 1);
-        addMenuItem(langMenuWindow(), actionMenuZoom, 1);
-        addMenuItem(langMenuOptions(), actionMenuOptions, 1);
-        addMenuItem(langMenuTools(), actionMenuTools, 1);
-        addMenuItem(langMenuHelp(), actionMenuHelp, 1);
+        if (appConfigGetInt("menu.file", 1) != 0) {
+            addMenuItem(langMenuFile(), actionMenuFile, 0);
+        }
+        if (appConfigGetInt("menu.emulation", 1) != 0) {
+            addMenuItem(langMenuRun(), actionMenuRun, 1);
+        }
+        if (appConfigGetInt("menu.window", 1) != 0) {
+            addMenuItem(langMenuWindow(), actionMenuZoom, 1);
+        }
+        if (appConfigGetInt("menu.options", 1) != 0) {
+            addMenuItem(langMenuOptions(), actionMenuOptions, 1);
+        }
+        if (appConfigGetInt("menu.tools", 1) != 0) {
+            addMenuItem(langMenuTools(), actionMenuTools, 1);
+        }
+        if (appConfigGetInt("menu.help", 1) != 0) {
+            addMenuItem(langMenuHelp(), actionMenuHelp, 1);
+        }
     }
     
     for (i = 0; i < toolGetCount(); i++) {
@@ -2938,7 +3106,7 @@ void archShowKeyboardEditor()
         MessageBox(NULL, "Could not find the Keyboard Editor Theme", langErrorTitle(), MB_ICONERROR | MB_OK);
     }
     else {
-        themeCollectionOpenWindow(tc, themeGetNameHash("blueMSX Keyboard Editor"));
+        themeCollectionOpenWindow(tc, themeGetNameHash("blueMSX - Input Editor"));
     }
 }
 
@@ -2957,7 +3125,7 @@ void archShowMixer()
         MessageBox(NULL, "Could not find the Mixer Theme", langErrorTitle(), MB_ICONERROR | MB_OK);
     }
     else {
-        themeCollectionOpenWindow(tc, themeGetNameHash("blueMSX Mixer"));
+        themeCollectionOpenWindow(tc, themeGetNameHash("blueMSX - Sound Mixer"));
     }
 }
 
@@ -3037,12 +3205,12 @@ static void replaceCharInString(char* str, char oldChar, char newChar)
     }
 }
 
-static char* archFileSave(char* title, char* extensionList, char* defaultDir, char* extensions, int* selectedExtension)
+char* archFileSave(char* title, char* extensionList, char* defaultDir, char* extensions, int* selectedExtension, char* defExt)
 {
     char* fileName;
 
     enterDialogShow();
-    fileName = saveFile(getMainHwnd(), title, extensionList, selectedExtension, defaultDir);
+    fileName = saveFile(getMainHwnd(), title, extensionList, selectedExtension, defaultDir, defExt);
     exitDialogShow();
     SetCurrentDirectory(st.pCurDir);
 
@@ -3107,7 +3275,31 @@ char* archFilenameGetOpenState(Properties* properties)
     replaceCharInString(extensionList, '#', 0);
 
     enterDialogShow();
-    fileName = openStateFile(getMainHwnd(), title, extensionList, defaultDir, createFileSize, defautExtension, selectedExtension, &pProperties->settings.showStatePreview);
+    fileName = openStateFile(getMainHwnd(), title, extensionList, defaultDir, createFileSize, defautExtension, 
+                             selectedExtension, &pProperties->settings.showStatePreview);
+    exitDialogShow();
+    SetCurrentDirectory(st.pCurDir);
+
+    return fileName;
+}
+
+char* archFilenameGetOpenCapture(Properties* properties)
+{
+    char* title = langDlgLoadVideoCapture();
+    char extensionList[512];
+    char* defaultDir = properties->emulation.statsDefDir;
+    char* extensions = ".cap\0";
+    int* selectedExtension = NULL;
+    char* defautExtension = NULL;
+    int createFileSize = -1;
+    char* fileName;
+
+    sprintf(extensionList, "%s   (*.cap)#*.cap#", langFileVideoCapture());
+    replaceCharInString(extensionList, '#', 0);
+
+    enterDialogShow();
+    fileName = openStateFile(getMainHwnd(), title, extensionList, defaultDir, createFileSize, defautExtension, 
+                             selectedExtension, &pProperties->settings.showStatePreview);
     exitDialogShow();
     SetCurrentDirectory(st.pCurDir);
 
@@ -3119,11 +3311,21 @@ char* archFilenameGetOpenRom(Properties* properties, int cartSlot, RomType* romT
     char* defaultDir = properties->cartridge.defDir;
     int* selectedExtension = &properties->media.carts[cartSlot].extensionFilter;
     char* defautExtension = ".rom";
-    char* extensions = ".rom\0.ri\0.mx1\0.mx2\0.col\0.sg\0.sc\0.zip\0.*\0";
+    char* extensions = ".rom\0.ri\0.mx1\0.mx2\0.col\0.sms\0.sg\0.sc\0.zip\0.*\0";
     char* title = cartSlot == 1 ? langDlgInsertRom2() : langDlgInsertRom1();
     char* fileName;
     char extensionList[512];
-    sprintf(extensionList, "%s   (*.rom, *.ri, *.mx1, *.mx2, *.col, *.sg, *.sc, *.zip)#*.rom; *.ri; *.mx1; *.mx2; *.col; *.sg; *.sc; *.zip#%s   (*.*)#*.*#", langFileRom(), langFileAll());
+
+    // DINK: different defDir depending on machine
+    if (strcasestr(properties->emulation.machineName, "Coleco")!=0) {
+        defaultDir = properties->cartridge.defDirCOLECO; }
+    if (strcasestr(properties->emulation.machineName, "SEGA")!=0) {
+        defaultDir = properties->cartridge.defDirSEGA; }
+    if ((strcasestr(properties->emulation.machineName, "SVI-318")!=0) ||
+        (strcasestr(properties->emulation.machineName, "SVI-328")!=0)) {
+        defaultDir = properties->cartridge.defDirSVI; }
+
+    sprintf(extensionList, "%s   (*.rom, *.ri, *.mx1, *.mx2, *.col, *.sms, *.sg, *.sc, *.zip)#*.rom; *.ri; *.mx1; *.mx2; *.col; *.sg; *.sc; *.zip#%s   (*.*)#*.*#", langFileRom(), langFileAll());
     replaceCharInString(extensionList, '#', 0);
 
     enterDialogShow();
@@ -3161,13 +3363,13 @@ char* archFilenameGetOpenDisk(Properties* properties, int drive, int allowCreate
     char* title = drive == 1 ? langDlgInsertDiskB() : langDlgInsertDiskA();
     char  extensionList[512];
     char* defaultDir = properties->diskdrive.defDir;
-    char* extensions = ".dsk\0.di1\0.di2\0.360\0.720\0.zip\0";
+    char* extensions = ".dsk\0.di1\0.di2\0.360\0.720\0.sf7\0.zip\0";
     int* selectedExtension = &properties->media.disks[drive].extensionFilter;
     char* defautExtension = ".dsk";
     int createFileSize = 720 * 1024;
     char* fileName;
 
-    sprintf(extensionList, "%s   (*.dsk, *.di1, *.di2, *.360, *.720, *.zip)#*.dsk; *.di1; *.di2; *.360; *.720; *.zip#%s   (*.*)#*.*#", langFileDisk(), langFileAll());
+    sprintf(extensionList, "%s   (*.dsk, *.di1, *.di2, *.360, *.720, *.sf7, *.zip)#*.dsk; *.di1; *.di2; *.360; *.720; *.sf7; *.zip#%s   (*.*)#*.*#", langFileDisk(), langFileAll());
     replaceCharInString(extensionList, '#', 0);
 
     enterDialogShow();
@@ -3187,13 +3389,13 @@ char* archFilenameGetOpenHarddisk(Properties* properties, int drive, int allowCr
 {
     char* title = langDlgInsertHarddisk();
     char  extensionList[512];
-    char* defaultDir = properties->diskdrive.defDir;
-    char* extensions = ".dsk\0.di1\0.di2\0.360\0.720\0.zip\0";
+    char* defaultDir = properties->diskdrive.defHdDir;
+    char* extensions = ".dsk\0.di1\0.di2\0.360\0.720\0.sf7\0.zip\0";
     int* selectedExtension = &properties->media.disks[drive].extensionFilter;
     char* defautExtension = ".dsk";
     char* fileName;
 
-    sprintf(extensionList, "%s   (*.dsk, *.di1, *.di2, *.360, *.720, *.zip)#*.dsk; *.di1; *.di2; *.360; *.720; *.zip#%s   (*.*)#*.*#", langFileDisk(), langFileAll());
+    sprintf(extensionList, "%s   (*.dsk, *.di1, *.di2, *.360, *.720, *.sf7, *.zip)#*.dsk; *.di1; *.di2; *.360; *.720; *.sf7; *.zip#%s   (*.*)#*.*#", langFileDisk(), langFileAll());
     replaceCharInString(extensionList, '#', 0);
 
     enterDialogShow();
@@ -3220,7 +3422,7 @@ char* archFilenameGetSaveCas(Properties* properties, int* type)
     sprintf(extensionList, "%s - fMSX-DOS     (*.cas)#*.cas#%s - fMSX98/AT   (*.cas)#*.cas#%s - SVI-328         (*.cas)#*.cas#", langFileCas(), langFileCas(), langFileCas());
     replaceCharInString(extensionList, '#', 0);
 
-    return archFileSave(title, extensionList, defaultDir, extensions, selectedExtension);
+    return archFileSave(title, extensionList, defaultDir, extensions, selectedExtension, ".cas");
 }
 
 char* archFilenameGetSaveState(Properties* properties)
@@ -3367,6 +3569,9 @@ char* archFilenameGetOpenRomZip(Properties* properties, int cartSlot, const char
 
 
 void archEmulationStartNotification() {
+    if (st.renderVideo) {
+        return;
+    }
     ShowWindow(st.emuHwnd, SW_NORMAL);
 
     if (kbdLockEnable != NULL && pProperties->emulation.disableWinKeys) {
@@ -3376,6 +3581,10 @@ void archEmulationStartNotification() {
 
 void archEmulationStopNotification()
 {
+    if (st.renderVideo) {
+        return;
+    }
+
     DirectXSetGDISurface();
     ShowWindow(st.emuHwnd, SW_HIDE);
 
@@ -3438,12 +3647,18 @@ int archGetFramesPerSecond() {
 }
 
 void archEmulationStartFailure() {
-     MessageBox(NULL, langErrorStartEmu(), langErrorTitle(), MB_ICONHAND | MB_OK);
+    aviStopRender();
+    MessageBox(NULL, langErrorStartEmu(), langErrorTitle(), MB_ICONHAND | MB_OK);
 }
 
 int archFileExists(const char* fileName)
 {
     return PathFileExists(fileName);
+}
+
+int archFileDelete(const char* fileName)
+{
+    return DeleteFile(fileName);
 }
 
 void archMaximizeWindow() {
@@ -3491,6 +3706,131 @@ void archWindowEndMove() {
     st.currentHwndRect.right = 0;
 }
 
+void archVideoCaptureSave()
+{
+    actionEmuStop();
+
+    st.renderVideo = 1;
+    aviStartRender(getMainHwnd(), propGetGlobalProperties(), st.pVideo);
+    st.renderVideo = 0;
+}
+
 void SetCurrentWindow(HWND hwnd) {
     st.currentHwnd = hwnd;
+}
+
+void archTrap(UInt8 value)
+{
+    if (appConfigGetInt("trap.quit", 0) != 0) {
+        PostMessage(getMainHwnd(), WM_CLOSE, 0, 0);
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+
+static int LoadMemory(const char* fileName, UInt16 address)
+{
+    FILE* file;
+
+    file = fopen(fileName, "rb");
+    if (file != NULL) {
+        UInt8 data;
+        while (address <= 0xffff && (fread(&data, 1, 1, file) == 1)) {
+            slotWrite(NULL, address, data);
+            address++;
+        }
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
+static BOOL CALLBACK loadMemorProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam) 
+{
+    static HICON hIconBtBrowse = NULL;
+
+    switch (iMsg) {
+    case WM_INITDIALOG:
+        SetWindowText(hDlg, langMenuToolsLoadMemory());
+        SetWindowText(GetDlgItem(hDlg, IDC_LDMEM_CAPFIL), langConfEditMemFile());
+        SetWindowText(GetDlgItem(hDlg, IDC_LDMEM_CAPADR), langConfEditMemAddress());
+        SetWindowText(GetDlgItem(hDlg, IDOK), langDlgOK());
+        SetWindowText(GetDlgItem(hDlg, IDCANCEL), langDlgCancel());
+
+        if (hIconBtBrowse == NULL) {
+            hIconBtBrowse = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_BROWSE));
+        }
+        SendMessage(GetDlgItem(hDlg, IDC_LDMEM_BROWSE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIconBtBrowse);
+
+        return FALSE;
+
+    case WM_COMMAND:
+        switch(LOWORD(wParam)) {
+
+        case IDC_LDMEM_BROWSE: {
+                static char  defDir[MAX_PATH] = { 0 };
+                char  curDir[MAX_PATH];
+                char* fileName;
+                char extensionList[512];
+
+                GetCurrentDirectory(MAX_PATH, curDir);
+                if (strlen(defDir) == 0) {
+                    strcpy(defDir, curDir);
+                }
+                sprintf(extensionList, "%s   (*.*)#*.*#", langFileAll());
+                replaceCharInString(extensionList, '#', 0);
+
+                fileName = openFile(hDlg, langConfOpenRom(), extensionList, defDir, -1, NULL, NULL);
+                if (fileName != NULL) {
+                   SetWindowText(GetDlgItem(hDlg, IDC_LDMEM_FILENAME), fileName);
+                }
+
+                SetFocus(GetDlgItem(hDlg, IDC_LDMEM_ADDRESS));
+            }
+            return TRUE;
+
+            case IDOK: {
+                char fileName[512];
+                char data[5];
+                int addr, rv;
+
+                GetWindowText(GetDlgItem(hDlg, IDC_LDMEM_FILENAME), fileName, sizeof(fileName));
+                GetWindowText(GetDlgItem(hDlg, IDC_LDMEM_ADDRESS), data, sizeof(data));
+
+                rv = sscanf(data, "%x", &addr);
+                if (rv == 1) {
+//                    emulatorSuspend();
+                    LoadMemory(fileName, (UInt16)addr);
+//                    emulatorResume();
+                }
+
+                EndDialog(hDlg, TRUE);
+                return TRUE;
+            }
+        case IDCANCEL:
+            EndDialog(hDlg, FALSE);
+            return TRUE;
+        }
+        break;
+
+    case WM_CLOSE:
+        EndDialog(hDlg, FALSE);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+int showLoadMemoryDlg(HWND hwnd)
+{
+    int rv;
+
+    rv = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_LOAD_MEMORY), hwnd, loadMemorProc);
+    if (!rv) {
+        return 0;
+    }
+
+    return 1;
 }

@@ -1,53 +1,62 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/VideoChips/FrameBuffer.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/VideoChips/FrameBuffer.h,v $
 **
-** $Revision: 1.21 $
+** $Revision: 1.27 $
 **
-** $Date: 2006/06/16 05:46:46 $
+** $Date: 2009-07-18 14:35:59 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
 #ifndef FRAME_BUFFER_H
 #define FRAME_BUFFER_H
 
-#include "MsxTypes.h"
+#include "../Common/MsxTypes.h"
 
+#ifdef WII
+#define FB_MAX_LINE_WIDTH 544
+#else
 #define FB_MAX_LINE_WIDTH 640
+#endif
 #define FB_MAX_LINES      480
 
+#ifndef NO_FRAMEBUFFER
 typedef struct {
     int doubleWidth; // 1 when normal, 2 when 2 src pixels per dest pixel
     UInt16 buffer[FB_MAX_LINE_WIDTH];
 } LineBuffer;
+#endif
 
 typedef enum { INTERLACE_NONE, INTERLACE_ODD, INTERLACE_EVEN } InterlaceMode;
+
+#ifdef NO_FRAMEBUFFER
+typedef void FrameBuffer;
+#else
 typedef struct {
     int age;           // Internal use
-    InterlaceMode interlace; 
+    InterlaceMode interlace;
     int maxWidth;
     int lines;         // Number of lines in frame buffer
     LineBuffer line[FB_MAX_LINES];
 } FrameBuffer;
+#endif
 
 typedef struct FrameBufferData FrameBufferData;
 
@@ -82,11 +91,48 @@ FrameBufferData* frameBufferGetActive();
 
 void frameBufferSetBlendFrames(int blendFrames);
 
-#define videoGetTransparentColor() 0x8000
+#ifdef WII
+#define BKMODE_TRANSPARENT 0x0020
+#define videoGetColor(R, G, B) \
+          ((((int)(R) >> 3) << 11) | (((int)(G) >> 3) << 6) | ((int)(B) >> 3))
+#else
+#if defined(VIDEO_COLOR_TYPE_RGB565)
+#define BKMODE_TRANSPARENT 0x0000
+#define videoGetColor(R, G, B) \
+		((((int)(R) >> 3) << 11) | (((int)(G) >> 2) << 5) | ((int)(B) >> 3))
+#elif defined(VIDEO_COLOR_TYPE_RGBA5551)
+#define BKMODE_TRANSPARENT 0x0001
+#define videoGetColor(R, G, B) \
+		((((int)(R) >> 3) << 11) | (((int)(G) >> 3) << 6) | (((int)(B) >> 3) << 1))
+#else // default is ARGB1555
+#define BKMODE_TRANSPARENT 0x8000
+#define videoGetColor(R, G, B) \
+		((((int)(R) >> 3) << 10) | (((int)(G) >> 3) << 5) | ((int)(B) >> 3))
+#endif // VIDEO_COLOR_TYPE
 
-static UInt16 videoGetColor(int R, int G, int B)
-{
-    return ((R >> 3) << 10) | ((G >> 3) << 5) | (B >> 3);
-}
+#endif // WII
+#define videoGetTransparentColor() BKMODE_TRANSPARENT
+
+
+#ifdef NO_FRAMEBUFFER
+// User implementation
+Pixel* frameBufferGetLine(FrameBuffer* frameBuffer, int y);
+int    frameBufferGetDoubleWidth(FrameBuffer* frameBuffer, int y);
+void   frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val);
+void   frameBufferSetInterlace(FrameBuffer* frameBuffer, int val);
+void   frameBufferSetLineCount(FrameBuffer* frameBuffer, int val);
+int    frameBufferGetLineCount(FrameBuffer* frameBuffer);
+int    frameBufferGetMaxWidth(FrameBuffer* frameBuffer);
+
+#else
+
+#define frameBufferGetLine(frameBuffer, y)              (frameBuffer->line[y].buffer)
+#define frameBufferGetDoubleWidth(frameBuffer, y)       (frameBuffer->line[y].doubleWidth)
+#define frameBufferSetDoubleWidth(frameBuffer, y, val)  frameBuffer->line[y].doubleWidth = val
+#define frameBufferSetInterlace(frameBuffer, val)       frameBuffer->interlace = val
+#define frameBufferSetLineCount(frameBuffer, val)       frameBuffer->lines     = val
+#define frameBufferGetLineCount(frameBuffer)            frameBuffer->lines
+#define frameBufferGetMaxWidth(frameBuffer)             frameBuffer->maxWidth
+#endif
 
 #endif

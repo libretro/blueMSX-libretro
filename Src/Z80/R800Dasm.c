@@ -206,10 +206,10 @@ int r800Dasm(R800* r800, UInt16 PC, char* dest)
 	int pc = PC;
     int j;
     int k;
-    UInt8 val0;
-    UInt8 val1;
-    UInt8 val2;
-    UInt8 val;
+    UInt8 val0 = 0;
+    UInt8 val1 = 0;
+    UInt8 val2 = 0;
+    UInt8 val = 0;
 
 	dest[0] = '\0';
 

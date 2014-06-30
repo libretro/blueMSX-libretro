@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/SoundChips/DAC.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/SoundChips/DAC.c,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.9 $
 **
-** $Date: 2006/06/01 20:09:00 $
+** $Date: 2008-03-30 18:38:45 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -34,8 +32,6 @@
 
 
 #define OFFSETOF(s, a) ((int)(&((s*)0)->a))
-
-#define BUFFER_SIZE     20000
 
 static Int32* dacSyncMono(DAC* dac, UInt32 count);
 static Int32* dacSyncStereo(DAC* dac, UInt32 count);
@@ -55,8 +51,8 @@ struct DAC
     Int32   ctrlVolume[2];
     Int32   daVolume[2];
 
-    Int32   defaultBuffer[BUFFER_SIZE];
-    Int32   buffer[BUFFER_SIZE];
+    Int32   defaultBuffer[AUDIO_STEREO_BUFFER_SIZE];
+    Int32   buffer[AUDIO_STEREO_BUFFER_SIZE];
 };
 
 void dacReset(DAC* dac) {
@@ -80,10 +76,10 @@ DAC* dacCreate(Mixer* mixer, DacMode mode)
     dacReset(dac);
 
     if (mode == DAC_MONO) {
-        dac->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_PCM, 0, dacSyncMono, dac);
+        dac->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_PCM, 0, dacSyncMono, NULL, dac);
     }
     else {
-        dac->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_PCM, 1, dacSyncStereo, dac);
+        dac->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_PCM, 1, dacSyncStereo, NULL, dac);
     }
     return dac;
 }

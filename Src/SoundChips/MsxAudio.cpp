@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/SoundChips/MsxAudio.cpp,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/SoundChips/MsxAudio.cpp,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.8 $
 **
-** $Date: 2006/06/11 20:08:38 $
+** $Date: 2006-09-21 04:28:08 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -40,8 +38,6 @@ extern "C" {
 }
 
 #define FREQUENCY        3579545
-#define SAMPLERATE       44100
-#define BUFFER_SIZE      10000
  
 extern "C" Int32* msxaudioSync(void* ref, UInt32 count);
 
@@ -58,8 +54,8 @@ struct MsxAudio {
 
     Int32  deviceHandle;
     Y8950* y8950;
-    Int32  buffer[BUFFER_SIZE];
-    Int32  defaultBuffer[BUFFER_SIZE];
+    Int32  buffer[AUDIO_MONO_BUFFER_SIZE];
+    Int32  defaultBuffer[AUDIO_MONO_BUFFER_SIZE];
     UInt32 timer1;
     UInt32 counter1;
     UInt8  timerRef1;
@@ -195,6 +191,12 @@ extern "C" void msxaudioWrite(MsxAudio* msxaudio, UInt16 ioPort, UInt8 value)
 	}
 }
 
+void msxaudioSetSampleRate(void* ref, UInt32 rate)
+{
+    MsxAudio* msxaudio = (MsxAudio*)ref;
+    msxaudio->y8950->setSampleRate(rate, boardGetY8950Oversampling());
+}
+
 extern "C" int msxaudioCreate(Mixer* mixer)
 {
     DeviceCallbacks callbacks = { msxaudioDestroy, NULL, msxaudioSaveState, msxaudioLoadState };
@@ -208,12 +210,12 @@ extern "C" int msxaudioCreate(Mixer* mixer)
     msxaudio->counter2 = -1;
     msxaudio->registerLatch = 0;
 
-    msxaudio->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_MSXAUDIO, 0, msxaudioSync, msxaudio);
+    msxaudio->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_MSXAUDIO, 0, msxaudioSync, msxaudioSetSampleRate, msxaudio);
 
     msxaudio->deviceHandle = deviceManagerRegister(ROM_MSXAUDIO, &callbacks, msxaudio);
 
     msxaudio->y8950 = new Y8950("MsxAudio", 256*1024, systemTime);
-    msxaudio->y8950->setSampleRate(SAMPLERATE, boardGetY8950Oversampling());
+    msxaudio->y8950->setSampleRate(mixerGetSampleRate(mixer), boardGetY8950Oversampling());
 	msxaudio->y8950->setVolume(32767);
 
     ioPortRegister(0xc0, (IoPortRead)msxaudioRead, (IoPortWrite)msxaudioWrite, msxaudio);

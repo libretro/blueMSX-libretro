@@ -27,6 +27,8 @@
 **
 ******************************************************************************
 */
+#ifdef WIN32
+
 #include "ArchTimer.h"
 #include <stdlib.h>
 #include "SDL/SDL.h"
@@ -77,3 +79,39 @@ UInt32 archGetSystemUpTime(UInt32 frequency)
 UInt32 archGetHiresTimer() {
     return SDL_GetTicks();
 }
+#else
+#include "ArchTimer.h"
+#include <stdlib.h>
+#include <sys/time.h>
+
+#ifndef NO_TIMERS
+#error "Timers unavailable, recompile the source with -DNO_TIMERS"
+#endif
+
+void* archCreateTimer(int period, int (*timerCallback)(void*))
+{
+   return NULL;
+}
+
+void archTimerDestroy(void* timer)
+{
+}
+
+UInt32 archGetSystemUpTime(UInt32 frequency)
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+
+    return tv.tv_sec * frequency + tv.tv_usec / (1000000 / frequency);
+}
+
+UInt32 archGetHiresTimer()
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+
+    return tv.tv_sec * 1000000 + tv.tv_usec;
+}
+#endif

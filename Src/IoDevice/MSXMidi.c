@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/IoDevice/MSXMidi.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/IoDevice/MSXMidi.c,v $
 **
-** $Revision: 1.9 $
+** $Revision: 1.11 $
 **
-** $Date: 2006/06/14 19:59:52 $
+** $Date: 2007-03-21 22:27:42 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2005 Daniel Vik, Tomas Karlsson, Johan van Leur
+** Copyright (C) 2003-2006 Daniel Vik, Tomas Karlsson, Johan van Leur
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -49,16 +47,23 @@ typedef struct {
     MidiIO* midiIo;
     I8251* i8251;
     I8254* i8254;
+
+    int ioStart;
+    int isExternal;
     
 	int timerIRQlatch;
 	int timerIRQenabled;
 	int rxrdyIRQlatch;
 	int rxrdyIRQenabled;
-
 } MSXMidi;
 
 #define INT_TMR   0x100
 #define INT_RXRDY 0x200
+
+
+static UInt8 readIo(MSXMidi* msxMidi, UInt16 ioPort);
+static void writeIo(MSXMidi* msxMidi, UInt16 ioPort, UInt8 value);
+static void unregisterIoPorts(MSXMidi* msxMidi);
 
 /*****************************************
 ** Device Manager callbacks
@@ -72,6 +77,7 @@ static void saveState(MSXMidi* msxMidi)
     saveStateSet(state, "timerIRQenabled",  msxMidi->timerIRQenabled);
     saveStateSet(state, "rxrdyIRQlatch",    msxMidi->rxrdyIRQlatch);
     saveStateSet(state, "rxrdyIRQenabled",  msxMidi->rxrdyIRQenabled);
+    saveStateSet(state, "ioStart",          msxMidi->ioStart);
 
     saveStateClose(state);
 
@@ -89,6 +95,7 @@ static void loadState(MSXMidi* msxMidi)
     msxMidi->timerIRQenabled = saveStateGet(state, "timerIRQenabled",  0);
     msxMidi->rxrdyIRQlatch   = saveStateGet(state, "rxrdyIRQlatch",    0);
     msxMidi->rxrdyIRQenabled = saveStateGet(state, "rxrdyIRQenabled",  0);
+    msxMidi->ioStart         = saveStateGet(state, "ioStart", 0);
 
     saveStateClose(state);
     
@@ -100,14 +107,8 @@ static void loadState(MSXMidi* msxMidi)
 
 static void destroy(MSXMidi* msxMidi)
 {
-    ioPortUnregister(0xe8);
-    ioPortUnregister(0xe9);
-    ioPortUnregister(0xea);
-    ioPortUnregister(0xeb);
-    ioPortUnregister(0xec);
-    ioPortUnregister(0xed);
-    ioPortUnregister(0xee);
-    ioPortUnregister(0xef);
+    ioPortUnregister(0xe2);
+    unregisterIoPorts(msxMidi);
 
     midiIoDestroy(msxMidi->midiIo);
     
@@ -129,6 +130,10 @@ static void reset(MSXMidi* msxMidi)
 	msxMidi->timerIRQenabled = 0;
 	msxMidi->rxrdyIRQlatch   = 0;
 	msxMidi->rxrdyIRQenabled = 0;
+
+    if (msxMidi->isExternal) {
+        unregisterIoPorts(msxMidi);
+    }
 
     i8251Reset(msxMidi->i8251);
     i8254Reset(msxMidi->i8254);
@@ -194,6 +199,112 @@ static void enableRxRDYIRQ(MSXMidi* msxMidi, int enabled)
 }
 
 /*****************************************
+** I8251 callbacks
+******************************************
+*/
+static int transmit(MSXMidi* msxMidi, UInt8 value) 
+{
+    midiIoTransmit(msxMidi->midiIo, value);
+    return 1;
+}
+
+static int signal8251(MSXMidi* msxMidi)
+{
+    return 0;
+}
+
+static void setDataBits(MSXMidi* msxMidi, int value) 
+{
+}
+
+static void setStopBits(MSXMidi* msxMidi, int value) 
+{
+}
+
+static void setParity(MSXMidi* msxMidi, int value) 
+{
+}
+
+static void setRxReady(MSXMidi* msxMidi, int status)
+{
+    setRxRDYIRQ(msxMidi, status);
+}
+
+static void setDtr(MSXMidi* msxMidi, int status) 
+{
+    enableTimerIRQ(msxMidi, status);
+}
+
+static void setRts(MSXMidi* msxMidi, int status)
+{
+    enableRxRDYIRQ(msxMidi, status);
+}
+
+static int getDtr(MSXMidi* msxMidi)
+{
+    return boardGetInt(INT_TMR) ? 1 : 0;
+}
+
+static int getRts(MSXMidi* msxMidi)
+{
+    return 1;
+}
+
+/*****************************************
+** I8254 callbacks
+******************************************
+*/
+static void pitOut0(MSXMidi* msxMidi, int state) 
+{
+}
+
+static void pitOut1(MSXMidi* msxMidi, int state) 
+{
+}
+
+static void pitOut2(MSXMidi* msxMidi, int state) 
+{
+    setTimerIRQ(msxMidi, 1);
+}
+
+
+/*****************************************
+** IO Port registration
+******************************************
+*/
+static void unregisterIoPorts(MSXMidi* msxMidi) {
+    int i;
+    if (msxMidi->ioStart == 0) {
+        return;
+    }
+    
+    for (i = 0; i < (msxMidi->ioStart == 0xe0 ? 2 : 8); i++) {
+        ioPortUnregister(msxMidi->ioStart + i);
+    }
+
+    msxMidi->ioStart = 0;
+}
+
+static void registerIoPorts(MSXMidi* msxMidi, int ioStart) {
+    int i;
+
+    if (msxMidi->ioStart == ioStart) {
+        return;
+    }
+
+    if (msxMidi->ioStart != 0) {
+        unregisterIoPorts(msxMidi);
+    }
+
+    msxMidi->ioStart = ioStart;
+
+    i = msxMidi->ioStart == 0xe0 ? 2 : 8;
+    while (i--) {
+        ioPortRegister(ioStart + i, readIo, writeIo, msxMidi);
+    }
+}
+
+/*****************************************
 ** IO Port callbacks
 ******************************************
 */
@@ -237,7 +348,18 @@ static UInt8 readIo(MSXMidi* msxMidi, UInt16 ioPort)
 
 static void writeIo(MSXMidi* msxMidi, UInt16 ioPort, UInt8 value) 
 {
-	switch (ioPort & 7) {
+    if ((ioPort & 0xff) == 0xe2) {
+        int ioStart = (value & 1) ? 0xe0 : 0xe8;
+        if (value & 0x80) {
+            unregisterIoPorts(msxMidi);
+        }
+        else {
+            registerIoPorts(msxMidi, ioStart);
+        }
+        return;
+    }
+
+    switch (ioPort & 7) {
 		case 0: // UART data register
 		case 1: // UART command register
             i8251Write(msxMidi->i8251, ioPort & 3, value);
@@ -258,78 +380,6 @@ static void writeIo(MSXMidi* msxMidi, UInt16 ioPort, UInt8 value)
 
 
 /*****************************************
-** I8251 callbacks
-******************************************
-*/
-static int transmit(MSXMidi* msxMidi, UInt8 value) 
-{
-    midiIoTransmit(msxMidi->midiIo, value);
-    return 1;
-}
-
-static int signal(MSXMidi* msxMidi)
-{
-    return 0;
-}
-
-static void setDataBits(MSXMidi* msxMidi, int value) 
-{
-}
-
-static void setStopBits(MSXMidi* msxMidi, int value) 
-{
-}
-
-static void setParity(MSXMidi* msxMidi, int value) 
-{
-}
-
-static void setRxReady(MSXMidi* msxMidi, int status)
-{
-    setRxRDYIRQ(msxMidi, status);
-}
-
-static void setDtr(MSXMidi* msxMidi, int status) 
-{
-    enableTimerIRQ(msxMidi, status);
-}
-
-static void setRts(MSXMidi* msxMidi, int status)
-{
-    enableRxRDYIRQ(msxMidi, status);
-}
-
-static int getDtr(MSXMidi* msxMidi)
-{
-    return boardGetInt(INT_TMR) ? 1 : 0;
-}
-
-static int getRts(MSXMidi* msxMidi)
-{
-    return 1;
-}
-
-
-
-
-/*****************************************
-** I8254 callbacks
-******************************************
-*/
-static void pitOut0(MSXMidi* msxMidi, int state) 
-{
-}
-
-static void pitOut1(MSXMidi* msxMidi, int state) 
-{
-}
-
-static void pitOut2(MSXMidi* msxMidi, int state) 
-{
-    setTimerIRQ(msxMidi, 1);
-}
-
-/*****************************************
 ** MSX MIDI Debug callbacks
 ******************************************
 */
@@ -338,10 +388,20 @@ static void getDebugInfo(MSXMidi* msxMidi, DbgDevice* dbgDevice)
 {
     DbgIoPorts* ioPorts;
     int i;
+    int externalPorts = msxMidi->isExternal ? 1 : 0;
+    int mappedPorts = 0;
 
-    ioPorts = dbgDeviceAddIoPorts(dbgDevice, langDbgDevMsxMidi(), 8);
-    for (i = 0; i < 8; i++) {
-        dbgIoPortsAddPort(ioPorts, i, 0xe8 + i, DBG_IO_READWRITE, peekIo(msxMidi, 0xe8 + i));
+    if (msxMidi->ioStart != 0) {
+        mappedPorts = (msxMidi->ioStart == 0xe0 ? 2 : 8);
+    }
+    ioPorts = dbgDeviceAddIoPorts(dbgDevice, langDbgDevMsxMidi(), externalPorts + mappedPorts);
+
+    if (externalPorts != 0) {
+        dbgIoPortsAddPort(ioPorts, mappedPorts, 0xe2, DBG_IO_READWRITE, peekIo(msxMidi, 0xe2));
+    }
+
+    for (i = 0; i < mappedPorts; i++) {
+        dbgIoPortsAddPort(ioPorts, i, msxMidi->ioStart + i, DBG_IO_READWRITE, peekIo(msxMidi, msxMidi->ioStart + i));
     }
 }
 
@@ -357,7 +417,7 @@ static void midiInCallback(MSXMidi* msxMidi, UInt8* buffer, UInt32 length)
 ** MSX MIDI Create Method
 ******************************************
 */
-int MSXMidiCreate()
+int MSXMidiCreate(int isExternal)
 {
     DeviceCallbacks callbacks = {destroy, reset, saveState, loadState};
     DebugCallbacks dbgCallbacks = { getDebugInfo, NULL, NULL, NULL };
@@ -365,21 +425,21 @@ int MSXMidiCreate()
 
     msxMidi = malloc(sizeof(MSXMidi));
     
-    msxMidi->deviceHandle = deviceManagerRegister(ROM_MSXMIDI, &callbacks, msxMidi);
+    msxMidi->ioStart = 0;
+    msxMidi->deviceHandle = deviceManagerRegister(isExternal ? ROM_MSXMIDI_EXTERNAL : ROM_MSXMIDI, &callbacks, msxMidi);
     msxMidi->debugHandle = debugDeviceRegister(DBGTYPE_AUDIO, langDbgDevMsxMidi(), &dbgCallbacks, msxMidi);
 
     msxMidi->i8254 = i8254Create(4000000, pitOut0, pitOut1, pitOut2, msxMidi);
-    msxMidi->i8251 = i8251Create(transmit, signal, setDataBits, setStopBits, setParity, 
+    msxMidi->i8251 = i8251Create(transmit, signal8251, setDataBits, setStopBits, setParity, 
                                  setRxReady, setDtr, setRts, getDtr, getRts, msxMidi);
+    msxMidi->isExternal = isExternal;
 
-    ioPortRegister(0xe8, readIo, writeIo, msxMidi);
-    ioPortRegister(0xe9, readIo, writeIo, msxMidi);
-    ioPortRegister(0xea, readIo, writeIo, msxMidi);
-    ioPortRegister(0xeb, readIo, writeIo, msxMidi);
-    ioPortRegister(0xec, readIo, writeIo, msxMidi);
-    ioPortRegister(0xed, readIo, writeIo, msxMidi);
-    ioPortRegister(0xee, readIo, writeIo, msxMidi);
-    ioPortRegister(0xef, readIo, writeIo, msxMidi);
+    if (isExternal) {
+        ioPortRegister(0xe2, NULL, writeIo, msxMidi);
+    }
+    else {
+        registerIoPorts(msxMidi, 0xe8);
+    }
 
     msxMidi->midiIo = midiIoCreate(midiInCallback, msxMidi);
 

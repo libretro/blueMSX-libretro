@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Theme/ThemeLoader.cpp,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Theme/ThemeLoader.cpp,v $
 **
-** $Revision: 1.56 $
+** $Revision: 1.67 $
 **
-** $Date: 2006/06/16 01:19:18 $
+** $Date: 2008-04-03 02:31:52 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -34,11 +32,16 @@
 extern "C" {
 #include "InputEvent.h"
 #include "StrcmpNoCase.h"
+#include "AppConfig.h"
 #include "ArchBitmap.h"
 #include "ArchText.h"
 #include "ArchFile.h"
 #ifdef USE_ARCH_GLOB
 #include "ArchGlob.h"
+    
+
+// PacketFileSystem.h Need to be included after all other includes
+#include "PacketFileSystem.h"
 #endif
 }
 
@@ -53,6 +56,27 @@ struct ThemeDefaultInfo {
     { "normal",          640, 480 },
     { "fullscreen",      640, 480 }
 };
+
+static char rootPath[512];
+
+const char* fullPath(const char* filename)
+{
+    static char path[512];
+
+    if (filename[1] == ':') {
+        return filename;
+    }
+
+    strcpy(path, rootPath);
+
+    if (path[strlen(path)-1] != '/' && path[strlen(path)-1] != '\\') {
+        strcat(path, "/");
+    }
+
+    strcat(path, filename);
+
+    return path;
+}
 
 enum ThemeInfo { THEME_SMALL = 0, THEME_NORMAL = 1, THEME_FULLSCREEN = 2 };
 
@@ -74,6 +98,7 @@ static ButtonEvent getAction(TiXmlElement* el, const char* actionTag,
     }
 
     if (0 == strcmp(action, "switch-togglefdctiming"))  return (ButtonEvent)actionToggleFdcTiming;
+    if (0 == strcmp(action, "switch-nospritelimits"))  return (ButtonEvent)actionToggleNoSpriteLimits;
     
     if (0 == strcmp(action, "switch-videohstretch"))    return (ButtonEvent)actionToggleHorizontalStretch;
     if (0 == strcmp(action, "switch-videovstretch"))    return (ButtonEvent)actionToggleVerticalStretch;
@@ -109,7 +134,7 @@ static ButtonEvent getAction(TiXmlElement* el, const char* actionTag,
     if (0 == strcmp(action, "dlg-controls"))            return (ButtonEvent)actionPropShowEmulation;
     if (0 == strcmp(action, "dlg-video"))               return (ButtonEvent)actionPropShowVideo;
     if (0 == strcmp(action, "dlg-audio"))               return (ButtonEvent)actionPropShowAudio;
-    if (0 == strcmp(action, "dlg-performance"))         return (ButtonEvent)actionPropShowPerformance;
+    if (0 == strcmp(action, "dlg-effects"))             return (ButtonEvent)actionPropShowEffects;
     if (0 == strcmp(action, "dlg-settings"))            return (ButtonEvent)actionPropShowSettings;
     if (0 == strcmp(action, "dlg-apearance"))           return (ButtonEvent)actionPropShowApearance;
     if (0 == strcmp(action, "dlg-language"))            return (ButtonEvent)actionOptionsShowLanguage;
@@ -178,6 +203,12 @@ static ButtonEvent getAction(TiXmlElement* el, const char* actionTag,
     if (0 == strcmp(action, "audio-decreasevolume"))    return (ButtonEvent)actionVolumeDecrease;
     if (0 == strcmp(action, "audio-togglestereo"))      return (ButtonEvent)actionVolumeToggleStereo;
     if (0 == strcmp(action, "audio-togglemute"))        return (ButtonEvent)actionMuteToggleMaster;
+    
+    if (0 == strcmp(action, "video-captureload"))       return (ButtonEvent)actionVideoCaptureLoad;
+    if (0 == strcmp(action, "video-captureplay"))       return (ButtonEvent)actionVideoCapturePlay;
+    if (0 == strcmp(action, "video-capturerec"))        return (ButtonEvent)actionVideoCaptureRec;
+    if (0 == strcmp(action, "video-capturestop"))       return (ButtonEvent)actionVideoCaptureStop;
+    if (0 == strcmp(action, "video-capturestop"))       return (ButtonEvent)actionVideoCaptureSave;
 
     if (0 == strcmp(action, "audio-togglemutemaster"))    return (ButtonEvent)actionMuteToggleMaster;
     if (0 == strcmp(action, "audio-togglemutepsg"))       return (ButtonEvent)actionMuteTogglePsg;
@@ -237,6 +268,8 @@ static ButtonEvent getAction(TiXmlElement* el, const char* actionTag,
     if (0 == strcmp(action, "cas-setautorewind"))    return (ButtonEvent)actionSetCasAutoRewind;
     if (0 == strcmp(action, "sprite-setenable"))     return (ButtonEvent)actionSetSpriteEnable;
     if (0 == strcmp(action, "switch-setfdctiming"))  return (ButtonEvent)actionSetFdcTiming;
+    if (0 == strcmp(action, "switch-setnospritelimits"))  return (ButtonEvent)actionSetNoSpriteLimits;
+    if (0 == strcmp(action, "switch-togglemsxkeyboardquirk")) return (ButtonEvent)actionToggleMsxKeyboardQuirk;
     if (0 == strcmp(action, "switch-setmsxaudio"))   return (ButtonEvent)actionSetMsxAudioSwitch;
     if (0 == strcmp(action, "switch-setfront"))      return (ButtonEvent)actionSetFrontSwitch;
     if (0 == strcmp(action, "switch-setpause"))      return (ButtonEvent)actionSetPauseSwitch;
@@ -322,6 +355,7 @@ static int getTrigger(TiXmlElement* el, char* triggerName)
     if (0 == strcmp(s, "led-diska"))                return t | THEME_TRIGGER_IMG_DISKA;
     if (0 == strcmp(s, "led-diskb"))                return t | THEME_TRIGGER_IMG_DISKB;
     if (0 == strcmp(s, "led-cassette"))             return t | THEME_TRIGGER_IMG_CAS;
+    if (0 == strcmp(s, "led-hd"))                   return t | THEME_TRIGGER_IMG_HD;
     if (0 == strcmp(s, "led-audioswitch"))          return t | THEME_TRIGGER_IMG_AS;
     if (0 == strcmp(s, "led-frontswitch"))          return t | THEME_TRIGGER_IMG_FS;
     if (0 == strcmp(s, "led-pauseswitch"))          return t | THEME_TRIGGER_IMG_PS;
@@ -331,6 +365,7 @@ static int getTrigger(TiXmlElement* el, char* triggerName)
     if (0 == strcmp(s, "led-pause"))                return t | THEME_TRIGGER_IMG_PAUSE;
     
     if (0 == strcmp(s, "enable-fdctiming"))         return t | THEME_TRIGGER_IMG_FDCTIMING;
+    if (0 == strcmp(s, "enable-nospritelimits"))    return t | THEME_TRIGGER_IMG_NOSPRITELIMITS;
 
     if (0 == strcmp(s, "enable-keyboard"))          return t | THEME_TRIGGER_IMG_KBD;
     if (0 == strcmp(s, "enable-moonsound"))         return t | THEME_TRIGGER_IMG_MOON;
@@ -444,25 +479,35 @@ static int getTrigger(TiXmlElement* el, char* triggerName)
     if (0 == strcmp(s, "status-rfmodulation"))      return t | THEME_TRIGGER_VIDEO_RFMODULATION_EN;
     if (0 == strcmp(s, "status-hstretch"))          return t | THEME_TRIGGER_VIDEO_HSTRETCH_EN;
     if (0 == strcmp(s, "status-vstretch"))          return t | THEME_TRIGGER_VIDEO_VSTRETCH_EN;
+    if (0 == strcmp(s, "video-captureoff"))         return t | THEME_TRIGGER_VIDEO_CAPTURE_NONE;
+    if (0 == strcmp(s, "video-captureplay"))        return t | THEME_TRIGGER_VIDEO_CAPTURE_PLAY;
+    if (0 == strcmp(s, "video-capturerec"))         return t | THEME_TRIGGER_VIDEO_CAPTURE_REC;
 
+    if (0 == strcmp(s, "keyboard-enable"))       return t | THEME_TRIGGER_KEYBOARD_ENABLE;
     if (0 == strcmp(s, "port1-enable"))          return t | THEME_TRIGGER_JOY1_ENABLE;
     if (0 == strcmp(s, "port1-none"))            return t | THEME_TRIGGER_JOY1_NONE;
     if (0 == strcmp(s, "port1-joystick"))        return t | THEME_TRIGGER_JOY1_JOYSTICK;
     if (0 == strcmp(s, "port1-mouse"))           return t | THEME_TRIGGER_JOY1_MOUSE;
+    if (0 == strcmp(s, "port1-arkanoidpad"))     return t | THEME_TRIGGER_JOY1_ARK_PAD;
     if (0 == strcmp(s, "port1-tetris2dongle"))   return t | THEME_TRIGGER_JOY1_TETRIS;
     if (0 == strcmp(s, "port1-magickeydongle"))  return t | THEME_TRIGGER_JOY1_MAGICKEY;
     if (0 == strcmp(s, "port1-gunstick"))        return t | THEME_TRIGGER_JOY1_GUNSTICK;
     if (0 == strcmp(s, "port1-asciilaser"))      return t | THEME_TRIGGER_JOY1_ASCIILASER;
     if (0 == strcmp(s, "port1-colecojoystick"))  return t | THEME_TRIGGER_JOY1_COLECOJOY;
+    if (0 == strcmp(s, "port1-superaction"))     return t | THEME_TRIGGER_JOY1_SUPERACTION;
+    if (0 == strcmp(s, "port1-steeringwheel"))   return t | THEME_TRIGGER_JOY1_STEERINGWHEEL;
     if (0 == strcmp(s, "port2-enable"))          return t | THEME_TRIGGER_JOY2_ENABLE;
     if (0 == strcmp(s, "port2-none"))            return t | THEME_TRIGGER_JOY2_NONE;
     if (0 == strcmp(s, "port2-joystick"))        return t | THEME_TRIGGER_JOY2_JOYSTICK;
     if (0 == strcmp(s, "port2-mouse"))           return t | THEME_TRIGGER_JOY2_MOUSE;
+    if (0 == strcmp(s, "port2-arkanoidpad"))     return t | THEME_TRIGGER_JOY2_ARK_PAD;
     if (0 == strcmp(s, "port2-tetris2dongle"))   return t | THEME_TRIGGER_JOY2_TETRIS;
     if (0 == strcmp(s, "port2-magickeydongle"))  return t | THEME_TRIGGER_JOY2_MAGICKEY;
     if (0 == strcmp(s, "port2-gunstick"))        return t | THEME_TRIGGER_JOY2_GUNSTICK;
     if (0 == strcmp(s, "port2-asciilaser"))      return t | THEME_TRIGGER_JOY2_ASCIILASER;
     if (0 == strcmp(s, "port2-colecojoystick"))  return t | THEME_TRIGGER_JOY2_COLECOJOY;
+    if (0 == strcmp(s, "port2-superaction"))     return t | THEME_TRIGGER_JOY2_SUPERACTION;
+    if (0 == strcmp(s, "port2-steeringwheel"))   return t | THEME_TRIGGER_JOY2_STEERINGWHEEL;
 
     if (0 == strcmp(s, "text-scanlinespct"))        return t | THEME_TRIGGER_TEXT_SCANLINESPCT;
     if (0 == strcmp(s, "text-videogamma"))          return t | THEME_TRIGGER_TEXT_VIDEOGAMMA;
@@ -522,7 +567,7 @@ static ArchBitmap* loadBitmap(TiXmlElement* el, int* x, int* y, int* columns)
         return NULL;
     }
     
-    return archBitmapCreateFromFile(src);
+    return archBitmapCreateFromFile(fullPath(src));
 }
 
 
@@ -1268,25 +1313,32 @@ static Theme* loadMainTheme(ThemeCollection* themeCollection, TiXmlElement* root
 
 extern "C" ThemeCollection* themeLoad(const char* themePath) 
 {
-    char oldDirName[512];
+    static char themeData[256 * 1024];
 
-    strcpy(oldDirName, archGetCurrentDirectory());
+    strcpy(rootPath, themePath);
 
-    archSetCurrentDirectory(themePath);
+    FILE* f = fopen(fullPath("Theme.xml"), "rb");
+    if (f == NULL) {
+        return NULL;
+    }
 
-    TiXmlDocument doc("Theme.xml");
+    int len = fread(themeData, 1, sizeof(themeData), f);
+	fclose(f);
+    if (len <= 0) {
+        return NULL;
+    }
+    themeData[len] = 0;
 
-    doc.LoadFile();
+    TiXmlDocument doc;
+    doc.Parse(themeData);
 
     if (doc.Error()) {
-        archSetCurrentDirectory(oldDirName);
         return NULL;
     }
 
     TiXmlElement* root = doc.RootElement();
 
     if (root == NULL || strcmp(root->Value(), "bluemsxtheme") != 0) {
-        archSetCurrentDirectory(oldDirName);
         return NULL;
     }
 
@@ -1320,63 +1372,54 @@ extern "C" ThemeCollection* themeLoad(const char* themePath)
         themeCollection = NULL;
     }
 
-    archSetCurrentDirectory(oldDirName);
     return themeCollection;
 }
 
 static ThemeCollection** currentWin32Theme = NULL;
 
-#ifdef USE_ARCH_GLOB
 extern "C" ThemeCollection** createThemeList(ThemeCollection* defaultTheme)
 {
-    ThemeCollection** themeList = (ThemeCollection**)calloc(1, 128 * sizeof(ThemeCollection*));
-    int index = 0;
+    const char* singleTheme = appConfigGetString("singletheme", NULL);
 
-    // Set default theme
-    if (defaultTheme != NULL) {
-        themeList[index++] = defaultTheme;
-    }
+    if (singleTheme != NULL) {
+        ThemeCollection** themeList = (ThemeCollection**)calloc(1, 128 * sizeof(ThemeCollection*));
+        int index = 0;
 
-    ArchGlob* glob = archGlob("Themes/*", ARCH_GLOB_DIRS);
-
-    if (glob != NULL) {
-        for (int i = 0; i < glob->count; i++) {
-            ThemeCollection* themeCollection = themeLoad(glob->pathVector[i]);
-            if (themeCollection != NULL) {
-                if (themeCollection->little == NULL)          themeCollection->little =          themeList[0]->little;
-                if (themeCollection->normal == NULL)          themeCollection->normal =          themeList[0]->normal;
-                if (themeCollection->fullscreen == NULL)      themeCollection->fullscreen =      themeList[0]->fullscreen;
-                themeList[index++] = themeCollection;
-            }
+        // Set default theme
+        if (defaultTheme != NULL) {
+            themeList[index++] = defaultTheme;
         }
-        archGlobFree(glob);
+
+        char themeName[64] = "Themes/";
+        strcat(themeName, singleTheme);
+        ThemeCollection* themeCollection = themeLoad(themeName);
+        if (themeCollection != NULL) {
+            if (themeCollection->little == NULL)          themeCollection->little =          themeList[0]->little;
+            if (themeCollection->normal == NULL)          themeCollection->normal =          themeList[0]->normal;
+            if (themeCollection->fullscreen == NULL)      themeCollection->fullscreen =      themeList[0]->fullscreen;
+            themeList[index++] = themeCollection;
+        }
+
+        themeList[index] = NULL;
+
+        currentWin32Theme = themeList;
+
+        return themeList;
     }
-    themeList[index] = NULL;
+    else {
+        ThemeCollection** themeList = (ThemeCollection**)calloc(1, 128 * sizeof(ThemeCollection*));
+        int index = 0;
 
-    currentWin32Theme = themeList;
+        // Set default theme
+        if (defaultTheme != NULL) {
+            themeList[index++] = defaultTheme;
+        }
 
-    return themeList;
-}
-#else
-extern "C" ThemeCollection** createThemeList(ThemeCollection* defaultTheme)
-{
-    ThemeCollection** themeList = (ThemeCollection**)calloc(1, 128 * sizeof(ThemeCollection*));
-    int index = 0;
+        ArchGlob* glob = archGlob("Themes/*", ARCH_GLOB_DIRS);
 
-    // Set default theme
-    if (defaultTheme != NULL) {
-        themeList[index++] = defaultTheme;
-    }
-
-    // Load custom made themes
-    WIN32_FIND_DATA wfd;
-    HANDLE handle = FindFirstFile("Themes/*", &wfd);
-
-    if (handle != INVALID_HANDLE_VALUE) {
-        do {
-		    DWORD fa = GetFileAttributes(wfd.cFileName);
-            if (fa & FILE_ATTRIBUTE_DIRECTORY) {
-                ThemeCollection* themeCollection = themeLoad(wfd.cFileName, NULL);
+        if (glob != NULL) {
+            for (int i = 0; i < glob->count; i++) {
+                ThemeCollection* themeCollection = themeLoad(glob->pathVector[i]);
                 if (themeCollection != NULL) {
                     if (themeCollection->little == NULL)          themeCollection->little =          themeList[0]->little;
                     if (themeCollection->normal == NULL)          themeCollection->normal =          themeList[0]->normal;
@@ -1384,18 +1427,17 @@ extern "C" ThemeCollection** createThemeList(ThemeCollection* defaultTheme)
                     themeList[index++] = themeCollection;
                 }
             }
-        } while (FindNextFile(handle, &wfd));
+            archGlobFree(glob);
+        }
+        themeList[index] = NULL;
 
-    	FindClose(handle);
+        currentWin32Theme = themeList;
+
+        return themeList;
     }
 
-    themeList[index] = NULL;
-
-    currentWin32Theme = themeList;
-
-    return themeList;
+    return NULL;
 }
-#endif
 
 extern "C" ThemeCollection** themeGetAvailable()
 {

@@ -1,9 +1,9 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32VideoIn.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32VideoIn.c,v $
 **
-** $Revision: 1.4 $
+** $Revision: 1.6 $
 **
-** $Date: 2006/01/22 22:31:29 $
+** $Date: 2008-03-30 18:38:48 $
 **
 ** More info: http://www.bluemsx.com
 **
@@ -126,7 +126,7 @@ int videoInGetActive()
     return videoIn.inputIndex;
 }
 
-char* videoInGetName(int index)
+const char* videoInGetName(int index)
 {
     // Should return a list of input devices
     // First should be 'None', second, 'Use Bitmap File'

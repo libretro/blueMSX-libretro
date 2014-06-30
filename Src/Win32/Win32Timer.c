@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32Timer.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32Timer.c,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.10 $
 **
-** $Date: 2005/10/04 23:03:34 $
+** $Date: 2008-04-05 18:47:11 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -37,6 +35,12 @@ typedef struct {
 
 static void (*timerCb)(void*) = NULL;
 static void* timerId = NULL;
+
+static LONGLONG uptime_hfFrequency = 0;
+static signed long long uptime_offset = 0;
+
+LONGLONG win32timer_get_uptime_freq(void) { return uptime_hfFrequency; }
+void win32timer_uptime_offset(int d) { uptime_offset+=d; }
 
 static void syncCallback() {
     if (timerCb) {
@@ -52,12 +56,11 @@ UInt32 archGetHiresTimer() {
 
 UInt32 archGetSystemUpTime(UInt32 frequency)
 {
-    static LONGLONG hfFrequency = 0;
     LARGE_INTEGER li;
 
-    if (!hfFrequency) {
+    if (!uptime_hfFrequency) {
         if (QueryPerformanceFrequency(&li)) {
-            hfFrequency = li.QuadPart;
+            uptime_hfFrequency = li.QuadPart;
         }
         else {
             return 0;
@@ -66,7 +69,7 @@ UInt32 archGetSystemUpTime(UInt32 frequency)
 
     QueryPerformanceCounter(&li);
 
-    return (DWORD)(li.QuadPart * frequency / hfFrequency);
+    return (DWORD)((li.QuadPart + uptime_offset) * frequency / uptime_hfFrequency);
 }
 
 static void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
@@ -83,7 +86,8 @@ static void CALLBACK timerCallback(unsigned int unused1,
     syncCallback();
 }
 
-void* archCreateTimer(int period, void (*callback)(void*)) {
+void* archCreateTimer(int period, int (*callback)(void*)) 
+{
     Win32Timer* win32Timer = (Win32Timer*)malloc(sizeof(Win32Timer));
 
     win32Timer->timerId = 0;
@@ -123,14 +127,17 @@ void archTimerDestroy(void* timer)
 static unsigned long long last[RDTSC_MAX_TIMERS];
 
 void rdtsc_start_timer (int timer) {
+#ifdef __GNUC__
+	__asm__ __volatile__("rdtsc" : "=A" (last[timer]));
+#else
 	unsigned int a,b; 
-   __asm (
-		"rdtsc         \n"
-		"mov %0,edx     \n"
-		"mov %1,eax     \n"
-   :"=r"(a),"=r"(b)
-	);
+	__asm { 
+		rdtsc
+		mov a,edx
+		mov b,eax
+	}
 	last[timer]=(((unsigned long long int)a)<<32)+((unsigned long long int)b);
+#endif
 }
 
 static unsigned long long int rdtsc_queue[RDTSC_MAX_TIMERS][30]={
@@ -142,13 +149,18 @@ static unsigned long long int rdtsc_queue[RDTSC_MAX_TIMERS][30]={
 void rdtsc_end_timer (int timer) {
 	unsigned int a,b,i; 
 	unsigned long long int c;
-   __asm (
-		"rdtsc         \n"
-		"mov %0,edx     \n"
-		"mov %1,eax     \n"
-   :"=r"(a),"=r"(b)
-	);
+
+#ifdef __GNUC__
+	__asm__ __volatile__("rdtsc" : "=A" (c));
+#else
+	__asm { 
+		rdtsc
+		mov a,edx
+		mov b,eax
+	}
 	c=((((unsigned long long int)a)<<32)+((unsigned long long int)b))-last[timer];
+#endif
+
 	for (i=0; i<29; i++)
 	  rdtsc_queue[timer][i]=rdtsc_queue[timer][i+1];
     rdtsc_queue[timer][29]=c;

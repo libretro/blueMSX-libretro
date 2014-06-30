@@ -1,6 +1,5 @@
 
-#define IDB_BLUEMSX                     1003
-
+#ifndef NO_DEFAULT_THEME
 
 #define IDB_CLASSIC_BG                  2100
 #define IDB_CLASSIC_FONT                2101
@@ -28,6 +27,7 @@
 #define IDB_CLASSIC_FPS                 2150
 #define IDB_CLASSIC_FREQ                2151
 
+#endif
 
 #define IDI_BLUEMSX                     30102
 #define IDI_DISKIMAGE                   30103
@@ -68,15 +68,15 @@
 #define IDI_FLAG_POLAND                 30161
 #define IDI_FLAG_CHINASIMP              30162
 #define IDI_FLAG_CHINATRAD              30163
-
+#define IDI_FLAG_RUSSIA                 30164
+#define IDI_FLAG_CATALONIA              30165
 
 #define IDD_MENU                        101
 #define IDD_VIDEO                       102
-#define IDD_CONTROLS                    103
 #define IDD_SOUND                       104
 #define IDD_EMULATION                   105
 #define IDD_SETTINGS                    106
-#define IDD_JOYKEYS                     107
+#define IDD_D3D                         107
 #define IDD_ABOUT                       108
 #define IDD_ZIPDSK                      109
 #define IDD_TAPEPOS                     110
@@ -97,12 +97,17 @@
 #define IDD_SHORTCUTSCONFIG             125
 #define IDD_APEARANCE                   126
 #define IDD_PORTS                       127
+#define IDD_DISKEMU                     128
 
-#define IDD_OPEN_STATEDIALOG            128
-#define IDD_OPEN_HDSIZEDROPDOWN         129
+#define IDD_OPEN_STATEDIALOG            129
+#define IDD_OPEN_HDSIZEDROPDOWN         130
 
-#define IDD_BUTTON                      130
-#define IDD_DROPDOWN                    131
+#define IDD_BUTTON                      131
+#define IDD_DROPDOWN                    132
+
+#define IDD_RENDERVIDEO                 133
+
+#define IDD_LOAD_MEMORY                 134
 
 #define IDC_JOY1                        1000
 #define IDC_JOY2                        1001
@@ -145,6 +150,8 @@
 #define IDC_LPTFILENAME                 1038
 #define IDC_LPTFILENAMEBROWSE           1039
 #define IDC_LPTFILENAMETEXT             1040
+#define IDD_VIDEO_SOFTWARE              1041
+#define IDD_VIDEO_DIRECT3D              1042
 
 #define IDC_EMUGENERALGROUPBOX          1800
 #define IDC_EMUFAMILYTEXT               1801
@@ -157,6 +164,9 @@
 #define IDC_EMUAUDIOSWITCH              1808
 #define IDC_EMUFRONTSWITCHGROUPBOX      1809
 #define IDC_EMUFDCTIMING                1810
+#define IDC_EMUREVERSEPLAY              1811
+#define IDC_NOSPRITELIMITS              1812
+#define IDC_ENABLEMSXKEYBOARDQUIRK      1813
 
 #define IDC_MONGROUPBOX                 1900
 #define IDC_MONTYPETEXT                 1901
@@ -195,6 +205,10 @@
 #define IDC_PERFSYNCMODETEXT            2007
 #define IDC_PERFFULLSCREEN              2008
 #define IDC_PERFFULLSCREENTEXT          2009
+#define IDC_PERFSETTINGSGROUPBOX        2010
+#define IDD_PERF_DIRECTDRAW             2011
+#define IDD_PERF_GDI                    2012
+#define IDD_PERF_DIRECT3D               2013
 
 #define IDC_SNDCHIPEMUGROUPBOX          2100
 
@@ -224,6 +238,8 @@
 #define IDC_VIDEOCHIP                   2123
 #define IDC_VIDEORAM                    2124
 #define IDC_VIDEOGROUPBOX               2125
+#define IDC_AUDIOGROUPBOX               2126
+#define IDC_AUDIOPSGSTEREO              2127
 
 #define IDC_CPUFREQGROUPBOX             2130
 #define IDC_CPUR800FREQTEXT             2131
@@ -255,25 +271,6 @@
 
 #define IDC_MACHINENAMETEXT             2180
 
-#define IDC_JOYPORT1GROUPBOX            2200
-#define IDC_JOYPORT2GROUPBOX            2201
-
-#define IDC_JOYAUTOFIRETEXT1            2202
-#define IDC_JOYAUTOFIRETEXT2            2203
-#define IDC_JOYKEYSETGROUPBOX           2204
-#define IDC_JOYCONTROLTEXT1             2205
-#define IDC_JOYCONTROLTEXT2             2206
-#define IDC_JOYKEYSET1                  2207
-#define IDC_JOYKEYSET2                  2208
-#define IDC_JOYBUTTONATEXT1             2209
-#define IDC_JOYBUTTONATEXT2             2210
-#define IDC_JOYBUTTONBTEXT1             2211
-#define IDC_JOYBUTTONBTEXT2             2212
-#define IDC_JOYBUTTONA1                 2213
-#define IDC_JOYBUTTONA2                 2214
-#define IDC_JOYBUTTONB1                 2215
-#define IDC_JOYBUTTONB2                 2216
-
 #define IDC_PORTSLPTGROUPBOX            2217
 #define IDC_PORTSCOMGROUPBOX            2218
 #define IDC_PORTSLPTTEXT                2219
@@ -293,6 +290,7 @@
 #define IDC_SETTINGSROMTYPEGB           2311
 #define IDC_SETTINGSROMTYPE             2312
 #define IDC_SETTINGSROMTYPETEXT         2313
+#define IDC_SETINGSFILEHISTORYICON      2314
 
 #define IDC_APEARANCETHEMEGB            2400
 #define IDC_APEARANCETHEMETEXT          2401
@@ -303,28 +301,22 @@
 #define IDC_SETTINGSDISABLEWINKEYS      2408
 #define IDC_SETTINGSPRIORITYBOOST       2409
 #define IDC_SETTINGSSCREENSHOTPNG       2410
+#define IDC_SETTINGSEJECTMEDIAONEXIT    2411
 
-#define IDC_KEYUP                       1030
-#define IDC_KEYDOWN                     1031
-#define IDC_KEYLEFT                     1032
-#define IDC_KEYRIGHT                    1033
-#define IDC_KEYBUTTON1                  1034
-#define IDC_KEYBUTTON2                  1035
-
-#define IDC_JOYUPTEXT                   2300
-#define IDC_JOYDOWNTEXT                 2301
-#define IDC_JOYLEFTTEXT                 2302
-#define IDC_JOYRIGHTTEXT                2303
-#define IDC_JOYBUTTON1TEXT              2304
-#define IDC_JOYBUTTON2TEXT              2305
-#define IDC_JOYGROUPBOX                 2306
-
+#define IDC_CDROMGROUPBOX               2500
+#define IDC_CDROMDISABLE                2501
+#define IDC_CDROMMETHODTEXT             2502
+#define IDC_CDROMMETHODLIST             2503
+#define IDC_CDROMDRIVETEXT              2504
+#define IDC_CDROMDRIVELIST              2505
 
 #define IDC_ABOUTTEXT                   1100
 
 #define IDC_DSKLIST                     1200
 #define IDC_DSKRESET                    1201
 #define IDC_DSKLOADTXT                  1202
+
+#define IDC_VIDEOPROGRESSTEXT           1210
 
 #define IDC_LANGLIST                    1250
 #define IDC_LANGTXT                     1251
@@ -425,6 +417,39 @@
 #define IDC_PREVIEWDATETEXT             2783
 
 #define IDC_CONTROL                     2800
+
+#define IDC_LDMEM_FILENAME              2900
+#define IDC_LDMEM_CAPFIL                2901
+#define IDC_LDMEM_BROWSE                2902
+#define IDC_LDMEM_ADDRESS               2903
+#define IDC_LDMEM_CAPADR                2904
+
+#define IDC_D3D_PARAMETERSGROUPBOX			3000
+#define IDC_D3D_ASPECTRATIO					3001
+#define IDC_D3D_ASPECTRATIOTEXT				3002
+#define IDC_D3D_LINEARFILTERING				3003
+#define IDC_D3D_EXTENDBORDERCOLOR			3004
+#define IDC_D3D_FORCEHIGHRES				3005
+
+#define IDC_D3D_CROPPINGGROUPBOX			3006
+#define IDC_D3D_CROPPING_TYPE				3007
+#define IDC_D3D_CROPPING_TYPETEXT			3008
+
+#define IDC_D3D_CROPPING_RIGHTTEXT			3009
+#define IDC_D3D_CROPPING_RIGHT				3010
+#define IDC_D3D_CROPPING_RIGHTVALUETEXT		3011
+
+#define IDC_D3D_CROPPING_LEFTTEXT			3012
+#define IDC_D3D_CROPPING_LEFT				3013
+#define IDC_D3D_CROPPING_LEFTVALUETEXT		3014
+
+#define IDC_D3D_CROPPING_TOPTEXT			3015
+#define IDC_D3D_CROPPING_TOP				3016
+#define IDC_D3D_CROPPING_TOPVALUETEXT		3017
+
+#define IDC_D3D_CROPPING_BOTTOMTEXT			3018
+#define IDC_D3D_CROPPING_BOTTOM				3019
+#define IDC_D3D_CROPPING_BOTTOMVALUETEXT	3020
 
 #define IDC_STATIC                      -1
 

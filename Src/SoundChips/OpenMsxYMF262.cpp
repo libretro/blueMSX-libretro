@@ -1,7 +1,7 @@
 // This file is taken from the openMSX project. 
 // The file has been modified to be built in the blueMSX environment.
 
-// $Id: OpenMsxYMF262.cpp,v 1.4 2005/09/24 00:09:50 dvik Exp $
+// $Id: OpenMsxYMF262.cpp,v 1.8 2009-07-18 15:08:35 dvik Exp $
 
 /*
  *
@@ -10,7 +10,7 @@
  *
  * Copyright (C) 2003 Jarek Burczynski
  *
- * Version 0.1
+ * Version 0.2
  *
  *
  * Revision History:
@@ -44,6 +44,7 @@
 
 #include "OpenMsxYMF262.h"
 #include <cmath>
+#include <cstring>
 
 
 extern "C" {
@@ -54,7 +55,7 @@ extern "C" {
 #pragma warning( disable : 4355 )
 #endif
 
-const double PI = 3.14159265358979323846;
+const DoubleT PI = 3.14159265358979323846;
 
 const int FREQ_SH   = 16;  // 16.16 fixed point (frequency calculations)
 const int EG_SH     = 16;  // 16.16 fixed point (EG timing)
@@ -66,7 +67,7 @@ const unsigned int EG_TIMER_OVERFLOW = 1 << EG_SH;
 // envelope output entries
 const int ENV_BITS    = 10;
 const int ENV_LEN     = 1 << ENV_BITS;
-const double ENV_STEP = 128.0 / ENV_LEN;
+const DoubleT ENV_STEP = 128.0 / ENV_LEN;
 
 const int MAX_ATT_INDEX = (1 << (ENV_BITS - 1)) - 1; //511
 const int MIN_ATT_INDEX = 0;
@@ -355,7 +356,7 @@ const byte lfo_am_table[LFO_AM_TAB_ELEMENTS] =
 };
 
 // LFO Phase Modulation table (verified on real YM3812) 
-const char lfo_pm_table[8 * 8 * 2] =
+const int lfo_pm_table[8 * 8 * 2] =
 {
 	// FNUM2/FNUM = 00 0xxxxxxx (0x0000)
 	0, 0, 0, 0, 0, 0, 0, 0,	//LFO PM depth = 0
@@ -873,7 +874,7 @@ void YMF262::init_tables(void)
 	alreadyInit = true;
 
 	for (int x = 0; x < TL_RES_LEN; x++) {
-		double m = (1 << 16) / pow((double)2, (x + 1) * (ENV_STEP / 4.0) / 8.0);
+		DoubleT m = (1 << 16) / pow((DoubleT)2, (x + 1) * (ENV_STEP / 4.0) / 8.0);
 		m = floor(m);
 
 		// we never reach (1<<16) here due to the (x+1) 
@@ -896,12 +897,12 @@ void YMF262::init_tables(void)
 		}
 	}
 
-	const double LOG2 = ::log((double)2);
+	const DoubleT LOG2 = ::log((DoubleT)2);
 	for (i = 0; i < SIN_LEN; i++) {
 		// non-standard sinus
-		double m = sin(((i * 2) + 1) * PI / SIN_LEN); // checked against the real chip 
+		DoubleT m = sin(((i * 2) + 1) * PI / SIN_LEN); // checked against the real chip 
 		// we never reach zero here due to ((i * 2) + 1) 
-		double o = (m > 0.0) ?
+		DoubleT o = (m > 0.0) ?
 			8 * ::log( 1.0 / m) / LOG2:	// convert to 'decibels' 
 			8 * ::log(-1.0 / m) / LOG2;	// convert to 'decibels'
 		o = o / (ENV_STEP / 4);
@@ -989,13 +990,13 @@ void YMF262::setSampleRate(int sampleRate, int Oversampling)
 {
     oplOversampling = Oversampling;
 	const int CLCK_FREQ = 14318180;
-	double freqbase  = ((double)CLCK_FREQ / (8.0 * 36)) / (double)(sampleRate * oplOversampling);
+	DoubleT freqbase  = ((DoubleT)CLCK_FREQ / (8.0 * 36)) / (DoubleT)(sampleRate * oplOversampling);
 
 	// make fnumber -> increment counter table 
 	for (int i = 0; i < 1024; i++) {
 		// opn phase increment counter = 20bit 
 		// -10 because chip works with 10.10 fixed point, while we use 16.16 
-		fn_tab[i] = (unsigned)( (double)i * 64 * freqbase * (1<<(FREQ_SH - 10)));
+		fn_tab[i] = (unsigned)( (DoubleT)i * 64 * freqbase * (1<<(FREQ_SH - 10)));
 	}
 
 	// Amplitude modulation: 27 output levels (triangle waveform);
@@ -1658,8 +1659,7 @@ void YMF262::writeRegForce(int r, byte v, const EmuTime &time)
 			case 9: case 10: case 11:
 				if (ch.extended) {
 					YMF262Channel &ch3 = channels[chan_no + 3];
-					byte conn = (ch.slots[SLOT1].CON << 1) || (ch3.slots[SLOT1].CON);
-					switch(conn) {
+					switch((ch.slots[SLOT1].CON << 1) | ch3.slots[SLOT1].CON) {
 					case 0:
 						// 1 -> 2 -> 3 -> 4 - out 
 						ch.slots[SLOT1].connect = PHASE_MOD1;
@@ -1707,8 +1707,7 @@ void YMF262::writeRegForce(int r, byte v, const EmuTime &time)
 			case 12: case 13: case 14: {
 				YMF262Channel &ch3 = channels[chan_no - 3];
 				if (ch3.extended) {
-					byte conn = (ch3.slots[SLOT1].CON << 1) || (ch.slots[SLOT1].CON);
-					switch(conn) {
+					switch((ch3.slots[SLOT1].CON << 1) | ch.slots[SLOT1].CON) {
 					case 0:
 						// 1 -> 2 -> 3 -> 4 - out 
 						ch3.slots[SLOT1].connect = PHASE_MOD1;
@@ -1917,7 +1916,7 @@ int* YMF262::updateBuffer(int length)
 		    channels[1].chan_calc(LFO_AM);
 		    if (channels[1].extended) {
 			    // extended 4op ch#1 part 2 
-			    channels[5].chan_calc_ext(LFO_AM);
+			    channels[4].chan_calc_ext(LFO_AM);
 		    } else {
 			    // standard 2op ch#4 
 			    channels[4].chan_calc(LFO_AM);

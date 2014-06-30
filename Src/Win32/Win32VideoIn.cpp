@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Win32/Win32VideoIn.cpp,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Win32/Win32VideoIn.cpp,v $
 **
-** $Revision: 1.4 $
+** $Revision: 1.9 $
 **
-** $Date: 2006/07/03 19:25:45 $
+** $Date: 2008-03-30 18:38:48 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -42,8 +40,11 @@ typedef struct {
 
     int inputIndex;
     int inputCount;
+    int disabled;
 
     CVideoGrabber* grabber;
+    
+    CVideoGrabber::DeviceNameList devList;
 } VideoIn;
 
 static VideoIn videoIn;
@@ -78,34 +79,33 @@ UInt16* archVideoInBufferGet(int width, int height)
 void videoInInitialize(Properties* properties)
 {
     videoIn.inputCount = 1;
+    videoIn.inputIndex = 0;
+
+    videoIn.disabled = properties->videoIn.disabled;
+
+    if (videoIn.disabled) {
+        return;
+    }
+
+    videoIn.grabber = new CVideoGrabber;
+    
+    videoIn.devList = videoIn.grabber->GetDeviceNames();
+
+    videoIn.inputCount += videoIn.devList.size();
+
     videoIn.inputIndex = properties->videoIn.inputIndex;
 
-    if (!properties->videoIn.disabled) {
-        videoIn.grabber = new CVideoGrabber;
-        
-        if (videoIn.grabber->SetupGrabber()) {
-            videoIn.inputCount++;
-
-            if (videoIn.inputIndex == 0) {
-    //            videoIn.grabber->ShutdownGrabber();
-            }
-        }
-    }
-
-    if (videoIn.inputIndex >= videoIn.inputCount) {
-        videoIn.inputIndex = 0;
-    }
+    videoInSetActive(videoIn.inputIndex);
 }
 
 void videoInCleanup(Properties* properties)
 {
-    if (videoIn.inputCount > 1) {
-        videoIn.grabber->ShutdownGrabber();
+    if (videoIn.disabled) {
+        return;
     }
 
-    if (videoIn.grabber != NULL) {
-        delete videoIn.grabber;
-    }
+    videoIn.grabber->ShutdownGrabber();
+    delete videoIn.grabber;
 
     properties->videoIn.inputIndex = videoIn.inputIndex;
 }
@@ -125,17 +125,14 @@ int videoInGetActive()
     return videoIn.inputIndex;
 }
 
-char* videoInGetName(int index)
+const char* videoInGetName(int index)
 {
-    // Should return a list of input devices
-    // First should be 'None', second, 'Use Bitmap File'
-    // Others should be Real input devices
-    // The list probably needs updating everytime
-    // videoInGetInputCount is called (which is
-    // from the menu
-    switch (index) {
-        case 0: return langTextNone();
-        case 1: return videoIn.grabber->GetName();
+    if (index == 0) {
+        return langTextNone();
+    }
+    
+    if (index < videoIn.inputCount) {
+        return videoIn.devList[index - 1].c_str();
     }
 
     return langTextUnknown();
@@ -143,14 +140,28 @@ char* videoInGetName(int index)
 
 void videoInSetActive(int index)
 {
-    if (index >= videoIn.inputCount) {
+    bool showdialog;
+
+    if (videoIn.disabled) {
         return;
     }
-    if (videoIn.inputIndex != index) {
-//        switch (index) {
-//        case 0: videoIn.grabber->ShutdownGrabber(); break;
-//        case 1: videoIn.grabber->SetupGrabber(); break;
-//        }
-    }
+
+    videoIn.grabber->ShutdownGrabber();
+
+    showdialog = (videoIn.inputIndex != index);
     videoIn.inputIndex = index;
+
+    if (videoIn.inputIndex > videoIn.inputCount) {
+        videoIn.inputIndex = 0;
+    }
+
+    if (videoIn.inputIndex > 0) {
+        if (showdialog) {
+            videoIn.grabber->ShowProperties(NULL, videoIn.devList[videoIn.inputIndex - 1]);
+        }
+
+        if (!videoIn.grabber->SetupGrabber(videoIn.devList[videoIn.inputIndex - 1])) {
+            videoIn.inputIndex = 0;
+        }
+    }
 }

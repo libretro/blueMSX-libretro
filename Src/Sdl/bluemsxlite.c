@@ -1,37 +1,37 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Sdl/bluemsxlite.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Sdl/bluemsxlite.c,v $
 **
-** $Revision: 1.20 $
+** $Revision: 1.29 $
 **
-** $Date: 2006/06/24 08:35:29 $
+** $Date: 2008-04-18 04:09:54 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
+#ifndef __APPLE__
 #define ENABLE_OPENGL
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "SDL/SDL.h"
+#include <SDL.h>
 
 #include "CommandLine.h"
 #include "Properties.h"
@@ -64,6 +64,7 @@ void keyboardInit();
 void keyboardSetFocus(int handle, int focus);
 void keyboardUpdate();
 int keyboardGetModifiers();
+static void handleEvent(SDL_Event* event);
 
 static Properties* properties;
 static Video* video;
@@ -73,6 +74,7 @@ static Properties* properties;
 static Video* video;
 static Mixer* mixer;
 static Shortcuts* shortcuts;
+static int doQuit = 0;
 
 static int pendingDisplayEvents = 0;
 static void* dpyUpdateAckEvent = NULL;
@@ -361,9 +363,11 @@ int  archUpdateEmuDisplay(int syncMode)
     event.user.data2 = NULL;
     SDL_PushEvent(&event);
 
+#ifndef SINGLE_THREADED
     if (properties->emulation.syncMethod == P_EMU_SYNCFRAMES) {
         archEventWait(dpyUpdateAckEvent, 500);
     }
+#endif
     return 1;
 }
 
@@ -378,6 +382,44 @@ void archUpdateWindow()
     SDL_PushEvent(&event);
 }
 
+#ifdef SINGLE_THREADED
+int archPollEvent()
+{
+    SDL_Event event;
+
+    while(SDL_PollEvent(&event)) {
+        if( event.type == SDL_QUIT ) {
+            doQuit = 1;
+        }
+        else {
+            handleEvent(&event);
+        }
+    }
+    return doQuit;
+}
+#endif
+
+void archEmulationStartNotification() 
+{
+}
+
+void archEmulationStopNotification() 
+{
+#ifdef RUN_EMU_ONCE_ONLY
+    doQuit = 1;
+#endif
+}
+
+void archEmulationStartFailure() 
+{
+#ifdef RUN_EMU_ONCE_ONLY
+    doQuit = 1;
+#endif
+}
+
+void archTrap(UInt8 value)
+{
+}
 
 void setDefaultPaths(const char* rootDir)
 {   
@@ -386,6 +428,10 @@ void setDefaultPaths(const char* rootDir)
     propertiesSetDirectory(rootDir, rootDir);
 
     sprintf(buffer, "%s/Audio Capture", rootDir);
+    archCreateDirectory(buffer);
+    actionSetAudioCaptureSetDirectory(buffer, "");
+
+    sprintf(buffer, "%s/Video Capture", rootDir);
     archCreateDirectory(buffer);
     actionSetAudioCaptureSetDirectory(buffer, "");
 
@@ -405,11 +451,11 @@ void setDefaultPaths(const char* rootDir)
     archCreateDirectory(buffer);
     mediaDbLoad(buffer);
     
-    sprintf(buffer, "%s\\Keyboard Config", rootDir);
+    sprintf(buffer, "%s/Keyboard Config", rootDir);
     archCreateDirectory(buffer);
     keyboardSetDirectory(buffer);
 
-    sprintf(buffer, "%s\\Shortcut Profiles", rootDir);
+    sprintf(buffer, "%s/Shortcut Profiles", rootDir);
     archCreateDirectory(buffer);
     shortcutsSetDirectory(buffer);
 }
@@ -465,12 +511,18 @@ int main(int argc, char **argv)
     int resetProperties;
     char path[512] = "";
     int i;
-    int doQuit = 0;
 
     SDL_Init( SDL_INIT_EVERYTHING );
 
     for (i = 1; i < argc; i++) {
-        strcat(szLine, argv[i]);
+        if (strchr(argv[i], ' ') != NULL && argv[i][0] != '\"') {
+            strcat(szLine, "\"");
+            strcat(szLine, argv[i]);
+            strcat(szLine, "\"");
+        }
+        else {
+            strcat(szLine, argv[i]);
+        }
         strcat(szLine, " ");
     }
 
@@ -481,6 +533,7 @@ int main(int argc, char **argv)
     strcat(path, DIR_SEPARATOR "bluemsx.ini");
     properties = propCreate(resetProperties, 0, P_KBD_EUROPEAN, 0, "");
     
+    properties->emulation.syncMethod = P_EMU_SYNCFRAMES;    
 //    properties->emulation.syncMethod = P_EMU_SYNCTOVBLANKASYNC;
 
     if (resetProperties == 2) {
@@ -567,7 +620,7 @@ int main(int argc, char **argv)
     boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
     boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
-    i = emuTryStartWithArguments(properties, szLine);
+    i = emuTryStartWithArguments(properties, szLine, NULL);
     if (i < 0) {
         printf("Failed to parse command line\n");
         return 0;
@@ -590,15 +643,16 @@ int main(int argc, char **argv)
         } while(SDL_PollEvent(&event));
     }
 
+	// For stop threads before destroy.
+	// Clean up.
+	if (SDL_WasInit(SDL_INIT_EVERYTHING)) {
+		SDL_Quit(); 
+	}
+
     videoDestroy(video);
     propDestroy(properties);
     archSoundDestroy();
     mixerDestroy(mixer);
-
-	// Clean up.
-	if (SDL_WasInit(SDL_INIT_EVERYTHING)) {
-		SDL_Quit();
-	}
     
     return 0;
 }

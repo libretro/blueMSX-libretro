@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Language/LanguageChineseTraditional.h,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Language/LanguageChineseTraditional.h,v $
 **
-** $Revision: 1.25 $
+** $Revision: 1.52 $
 **
-** $Date: 2006/06/30 15:59:34 $
+** $Date: 2009-04-04 20:57:19 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -38,6 +36,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     // Language lines
     //----------------------
 
+    ls->langCatalan             = "Catalan";
     ls->langChineseSimplified   = "中文 (簡體)";
     ls->langChineseTraditional  = "中文 (繁體)";
     ls->langDutch               = "荷蘭文";
@@ -50,6 +49,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->langKorean              = "韓文";
     ls->langPolish              = "波蘭文";
     ls->langPortuguese          = "葡萄牙文";
+    ls->langRussian             = "Russian";            // v2.8
     ls->langSpanish             = "西班牙文";
     ls->langSwedish             = "瑞典文";
 
@@ -62,7 +62,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->textFilename            = "檔案名稱:";
     ls->textFile                = "檔案";
     ls->textNone                = "無";
-    ls->textUnknown             = "未知的";                            // New in 2.5
+    ls->textUnknown             = "未知的";                            
 
 
     //----------------------
@@ -71,7 +71,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
 
     ls->warningTitle            = "blueMSX - 警告";
     ls->warningDiscardChanges   = "您確定要放棄變更嗎？";
-    ls->warningOverwriteFile    = "您確定要覆寫檔案:"; // New in 2.5
+    ls->warningOverwriteFile    = "您確定要覆寫檔案:"; 
     ls->errorTitle              = "blueMSX - 錯誤";
     ls->errorEnterFullscreen    = "無法進入全螢幕模式。           \n";
     ls->errorDirectXFailed      = "無法建立 DirectX 物件。           \n替代為使用 GDI。\n請檢查視訊內容。";
@@ -80,7 +80,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->errorNoCasInZip         = "無法在 zip 壓縮檔案中找出 .cas 檔案。";
     ls->errorNoHelp             = "無法找到 blueMSX 說明檔案。";
     ls->errorStartEmu           = "無法啟動 MSX 模擬器。";
-    ls->errorPortableReadonly   = "可攜式裝置為唯讀屬性";        // New in 2.5
+    ls->errorPortableReadonly   = "可攜式裝置為唯讀屬性";        
 
 
     //----------------------
@@ -90,8 +90,10 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->fileRom                 = "ROM 映像檔";
     ls->fileAll                 = "所有檔案";
     ls->fileCpuState            = "CPU 狀態";
+    ls->fileVideoCapture        = "擷取視訊"; 
     ls->fileDisk                = "磁碟映像檔";
     ls->fileCas                 = "磁帶映像檔";
+    ls->fileAvi                 = "裁剪視訊";    
 
 
     //----------------------
@@ -102,21 +104,30 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->menuInsert              = "插入";
     ls->menuEject               = "退出";
 
-    ls->menuCartGameReader      = "遊戲讀取器";                        // New in 2.5
-    ls->menuCartIde             = "IDE";                                // New in 2.5
-    ls->menuCartBeerIde         = "Beer";                               // New in 2.5
-    ls->menuCartGIde            = "GIDE";                               // New in 2.5
-    ls->menuCartSunriseIde      = "Sunrise";                            // New in 2.5
+    ls->menuCartGameReader      = "遊戲讀取器";                        
+    ls->menuCartIde             = "IDE";                                
+    ls->menuCartBeerIde         = "Beer";                               
+    ls->menuCartGIde            = "GIDE";                               
+    ls->menuCartSunriseIde      = "Sunrise";                              
+    ls->menuCartScsi            = "SCSI";                // New in 2.7
+    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
+    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
+    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
+    ls->menuJoyrexPsg           = "Joyrex PSG 卡匣"; // New in 2.9
     ls->menuCartSCCPlus         = "SCC + 卡匣";
     ls->menuCartSCC             = "SCC 卡匣";
     ls->menuCartFMPac           = "FM-PAC 卡匣";
     ls->menuCartPac             = "PAC 卡匣";
     ls->menuCartHBI55           = "SONY HBI-55 卡匣";
-    ls->menuCartInsertSpecial   = "插入特殊檔案";                     // New in 2.5
-    ls->menuCartMegaRam         = "MegaRAM";                            // New in 2.5
+    ls->menuCartInsertSpecial   = "插入特殊檔案";                     
+    ls->menuCartMegaRam         = "MegaRAM";                            
     ls->menuCartExternalRam     = "外部 RAM";
+    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
+    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
+    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
 
-    ls->menuDiskInsertNew       = "插入新的磁碟映像檔";              // New in 2.5
+    ls->menuDiskInsertNew       = "插入新的磁碟映像檔";              
+    ls->menuDiskInsertCdrom     = "Insert CD-Rom";       // New in 2.7
     ls->menuDiskDirInsert       = "插入目錄";
     ls->menuDiskAutoStart       = "插入之後重置";
     ls->menuCartAutoReset       = "插入/移除之後重置";
@@ -126,6 +137,14 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->lmenuCasSaveAs           = "另存磁帶映像檔為...";
     ls->menuCasSetPosition      = "設定位置";
     ls->menuCasRewind           = "迴帶";
+
+    ls->menuVideoLoad           = "載入...";             
+    ls->menuVideoPlay           = "播放上次的擷取";   
+    ls->menuVideoRecord         = "錄製";              
+    ls->menuVideoRecording      = "正在錄製";           
+    ls->menuVideoRecAppend      = "錄製 (附加)";     
+    ls->menuVideoStop           = "停止";                
+    ls->menuVideoRender         = "渲染視訊檔案";   
 
     ls->menuPrnFormfeed         = "換頁";
 
@@ -137,17 +156,20 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->menuPropsVideo          = "視訊";
     ls->menuPropsSound          = "音效";
     ls->menuPropsControls       = "控制器";
-    ls->menuPropsPerformance    = "效能";
+    ls->menuPropsEffects        = "Effects";               // New in 2.9
     ls->menuPropsSettings        = "設定";
     ls->menuPropsFile           = "檔案";
+    ls->menuPropsDisk           = "Disks";               // New in 2.7
     ls->menuPropsLanguage       = "語言";
     ls->menuPropsPorts          = "連接埠";
     
-    ls->menuVideoSource         = "視訊輸出來源";                   // New in 2.5
-    ls->menuVideoSourceDefault  = "沒有視訊輸出來源連線";      // New in 2.5
+    ls->menuVideoSource         = "視訊輸出來源";                   
+    ls->menuVideoSourceDefault  = "沒有視訊輸出來源連線";      
     ls->menuVideoChipAutodetect = "自動偵測視訊晶片";
-    ls->menuVideoInSource       = "視訊輸入來源";                    // New in 2.5
-    ls->menuVideoInBitmap       = "點陣圖檔";                        // New in 2.5
+    ls->menuVideoInSource       = "視訊輸入來源";                    
+    ls->menuVideoInBitmap       = "點陣圖檔";                        
+    
+    ls->menuEthInterface        = "Ethernet"; 
 
     ls->menuHelpHelp            = "說明主題";
     ls->menuHelpAbout           = "關於 blueMSX";
@@ -161,11 +183,13 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->menuFileQLoadState      = "快速載入狀態";
     ls->menuFileQSaveState      = "快速儲存狀態";
     ls->menuFileCaptureAudio    = "擷取音訊";
+    ls->menuFileCaptureVideo    = "擷取視訊"; 
     ls->menuFileScreenShot      = "儲存螢幕抓圖";
     ls->menuFileExit            = "結束";
 
-    ls->menuFileHarddisk        = "硬碟機";                          // New in 2.5
-    ls->menuFileHarddiskNoPesent= "沒有硬碟機顯示";             // New in 2.5
+    ls->menuFileHarddisk        = "硬碟機";                          
+    ls->menuFileHarddiskNoPesent= "沒有硬碟機顯示";             
+    ls->menuFileHarddiskRemoveAll= "Eject All Harddisk";    // New in 2.7
 
     ls->menuRunRun              = "執行";
     ls->menuRunPause            = "暫停";
@@ -176,11 +200,11 @@ void langInitChineseTraditional(LanguageStrings* ls)
 
     ls->menuToolsMachine        = "機種編輯器";
     ls->menuToolsShortcuts      = "快速鍵編輯器";
-    ls->menuToolsKeyboard       = "鍵盤編輯器";
+    ls->menuToolsCtrlEditor     = "控制器 / 鍵盤編輯器"; 
     ls->menuToolsMixer          = "混合器";
-    ls->menuToolsDebugger       = "偵錯工具";               // New in 2.5
-    ls->menuToolsTrainer        = "訓練器";                // New in 2.5
-    ls->menuToolsTraceLogger    = "追蹤記錄器";           // New in 2.5
+    ls->menuToolsDebugger       = "偵錯工具";               
+    ls->menuToolsTrainer        = "訓練器";                
+    ls->menuToolsTraceLogger    = "追蹤記錄器";           
 
     ls->menuFile                = "檔案";
     ls->menuRun                 = "執行";
@@ -211,15 +235,19 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->dlgLoadCasDesc          = "請選擇要載入的磁帶映像檔:";
     ls->dlgLoadRomDskCasDesc    = "請選擇要載入的卡匣、磁碟或磁帶映像檔:";
     ls->dlgLoadState            = "載入 CPU 狀態";
+    ls->dlgLoadVideoCapture     = "載入擷取視訊";      
     ls->dlgSaveState            = "儲存 CPU 狀態";
     ls->dlgSaveCassette          = "blueMSX - 儲存磁帶映像檔";
+    ls->dlgSaveVideoClipAs      = "儲存視訊裁剪為...";      
+    ls->dlgAmountCompleted      = "產生完成:";          
     ls->dlgInsertRom1           = "請在插槽 1 插入 ROM 卡匣";
     ls->dlgInsertRom2           = "請在插槽 2 插入 ROM 卡匣";
     ls->dlgInsertDiskA          = "請在磁碟機 A 插入磁碟映像檔";
     ls->dlgInsertDiskB          = "請在磁碟機 B 插入磁碟映像檔";
-    ls->dlgInsertHarddisk       = "插入硬碟機";                   // New in 2.5
+    ls->dlgInsertHarddisk       = "插入硬碟機";                   
     ls->dlgInsertCas            = "請插入磁帶機磁帶";
     ls->dlgRomType              = "ROM 類型:";
+    ls->dlgDiskSize             = "磁碟大小:";             
 
     ls->dlgTapeTitle            = "blueMSX - 磁帶位置";
     ls->dlgTapeFrameText        = "磁帶位置";
@@ -243,7 +271,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->dlgAboutBuildDate       = "日期:";
     ls->dlgAboutCreat           = "由 Daniel Vik 創作";
     ls->dlgAboutDevel           = "開發成員\r\n========";
-    ls->dlgAboutThanks          = "特別感謝\r\n============";
+    ls->dlgAboutThanks          = "特別感謝\r\n============";       // New in 2.7 (retranslate, see english)
     ls->dlgAboutLisence         = "授權協議\r\n"
                                   "======\r\n\r\n"
                                   "這個軟體依據目前的狀態來提供，沒有任何明確的或暗示的擔保。 "
@@ -253,6 +281,8 @@ void langInitChineseTraditional(LanguageStrings* ls)
 
     ls->dlgSavePreview          = "顯示預覽";
     ls->dlgSaveDate             = "儲存時間:";
+
+    ls->dlgRenderVideoCapture   = "blueMSX - 正在渲染擷取視訊...";  
 
 
     //----------------------
@@ -265,8 +295,10 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->propSound               = "音效";
     ls->propControls            = "控制器";
     ls->propPerformance         = "效能";
+    ls->propEffects             = "Effects";             // New in 2.9
     ls->propSettings             = "設定";
     ls->propFile                = "檔案";
+    ls->propDisk                = "Disks";              // New in 2.7
     ls->propPorts               = "連接埠";
     
     ls->propEmuGeneralGB        = "一般 ";
@@ -278,17 +310,20 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->propEmuSpeedText        = "模擬速度:";
     ls->propEmuFrontSwitchGB     = "Panasonic 開關 ";
     ls->propEmuFrontSwitch       = " 前端開關";
-    ls->propEmuFdcTiming        = "停用軟式磁碟機計時";
+    ls->propEmuNoSpriteLimits   = " Disable Sprites Limitation";  // New in 2.9
+    ls->propEnableMsxKeyboardQuirk = " Emulate MSX keyboard quirk";  // New in 2.9
+    ls->propEmuFdcTiming        = " 停用軟式磁碟機計時";
+    ls->propEmuReversePlay      = " Enable reverse playback"; // New in 2.8.3
     ls->propEmuPauseSwitch      = " 暫停開關";
     ls->propEmuAudioSwitch       = " MSX 音效卡開關";
     ls->propVideoFreqText       = "視訊頻率:";
     ls->propVideoFreqAuto       = "自動";
     ls->propSndOversampleText   = "超取樣:";
-    ls->propSndYkInGB           = "YK-01/YK-10/YK-20 輸入 ";                // New in 2.5
+    ls->propSndYkInGB           = "YK-01/YK-10/YK-20 輸入 ";                
     ls->propSndMidiInGB         = "MIDI 輸入 ";
     ls->propSndMidiOutGB        = "MIDI 輸出 ";
-    ls->propSndMidiChannel      = "MIDI 聲道:";                      // New in 2.5
-    ls->propSndMidiAll          = "全部";                                // New in 2.5
+    ls->propSndMidiChannel      = "MIDI 聲道:";                      
+    ls->propSndMidiAll          = "全部";                                
 
     ls->propMonMonGB            = "監視器 ";
     ls->propMonTypeText         = "監視器類型:";
@@ -296,16 +331,16 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->propVideoTypeText       = "視訊類型:";
     ls->propWindowSizeText      = "視窗大小:";
     ls->propMonHorizStretch      = " 水平拉伸";
-    ls->propMonDeInterlace      = " 去雜紋高畫質功\能";
-    ls->propBlendFrames         = " 混合連續的畫格";           // New in 2.5
-    ls->propMonColorGhosting    = "RF 調變器";
     ls->propMonVertStretch       = " 垂直拉伸";
+    ls->propMonDeInterlace      = " 去雜紋高畫質功\能";
+    ls->propBlendFrames         = " 混合連續的畫格";           
     ls->propMonBrightness       = "亮度:";
     ls->propMonContrast         = "對比度:";
     ls->propMonSaturation       = "飽合度:";
     ls->propMonGamma            = "珈瑪值:";
-    ls->propMonScanlines        = "掃瞄線:";
-    ls->propMonEffectsGB        = "效果";
+    ls->propMonScanlines        = " 掃瞄線:";
+    ls->propMonColorGhosting    = " RF 調變器:";
+    ls->propMonEffectsGB        = "效果 ";
 
     ls->propPerfVideoDrvGB      = "視訊驅動程式 ";
     ls->propPerfVideoDispDrvText= "顯示驅動程式:";
@@ -342,7 +377,8 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->propSetScreenSaver       = " 當 blueMSX 執行時停用螢幕保護";
     ls->propDisableWinKeys       = " 使用 MSX 時自動停用 Windows 的左、右鍵功\能表"; 
     ls->propPriorityBoost        = " 提高 blueMSX 的優先權";
-    ls->propScreenshotPng        = " 使用可攜式網路圖形 (.png) 螢幕抓圖";  // New in 2.5
+    ls->propScreenshotPng        = " 使用可攜式網路圖形 (.png) 螢幕抓圖";  
+    ls->propEjectMediaOnExit    = " Eject media when blueMSX exits";        // New in 2.8
     ls->propClearHistory         = "您是否確定要清除檔案記錄？";
     ls->propOpenRomGB            = "開啟 ROM 對話方塊 ";
     ls->propDefaultRomType       = "預設 ROM 類型:";
@@ -356,6 +392,26 @@ void langInitChineseTraditional(LanguageStrings* ls)
 
     ls->propThemeGB             = "佈景主題 ";
     ls->propTheme               = "佈景主題:";
+
+    ls->propCdromGB             = "CD-ROM ";         // New in 2.7
+    ls->propCdromMethod         = "Access Method:";  // New in 2.7
+    ls->propCdromMethodNone     = "None";            // New in 2.7
+    ls->propCdromMethodIoctl    = "IOCTL";           // New in 2.7
+    ls->propCdromMethodAspi     = "ASPI";            // New in 2.7
+    ls->propCdromDrive          = "Drive:";          // New in 2.7
+
+    ls->propD3DParametersGB         = "Parameters ";                // New in 2.9
+    ls->propD3DAspectRatioText      = "Aspect ratio";               // New in 2.9
+    ls->propD3DLinearFilteringText  = " Linear filtering";          // New in 2.9
+    ls->propD3DForceHighResText     = " Force high resolution";     // New in 2.9
+    ls->propD3DExtendBorderColorText    = " Extend border color";   // New in 2.9
+
+    ls->propD3DCroppingGB               = "Cropping ";              // New in 2.9
+    ls->propD3DCroppingTypeText         = "Cropping type:";         // New in 2.9
+    ls->propD3DCroppingLeftText         = "Left:";                  // New in 2.9
+    ls->propD3DCroppingRightText        = "Right:";                 // New in 2.9
+    ls->propD3DCroppingTopText          = "Top:";                   // New in 2.9
+    ls->propD3DCroppingBottomText       = "Bottom:";                // New in 2.9
 
 
     //----------------------
@@ -386,6 +442,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->enumVideoDrvDirectDrawHW = "DirectDraw 硬體加速"; 
     ls->enumVideoDrvDirectDraw  = "DirectDraw";
     ls->enumVideoDrvGDI         = "GDI";
+    ls->enumVideoDrvD3D         = "Direct3D";
 
     ls->enumVideoFrameskip0     = "無";
     ls->enumVideoFrameskip1     = "1 畫格";
@@ -393,6 +450,19 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->enumVideoFrameskip3     = "3 個畫格";
     ls->enumVideoFrameskip4     = "4 個畫格";
     ls->enumVideoFrameskip5     = "5 個畫格";
+
+    ls->enumD3DARAuto           = "Auto";           // New in 2.9
+    ls->enumD3DARStretch        = "Stretch";        // New in 2.9
+    ls->enumD3DARPAL            = "PAL";            // New in 2.9
+    ls->enumD3DARNTSC           = "NTSC";           // New in 2.9
+    ls->enumD3DAR11             = "1:1";            // New in 2.9
+
+    ls->enumD3DCropNone         = "None";           // New in 2.9
+    ls->enumD3DCropMSX1         = "MSX1";           // New in 2.9
+    ls->enumD3DCropMSX1Plus8    = "MSX1+8";         // New in 2.9
+    ls->enumD3DCropMSX2         = "MSX2";           // New in 2.9
+    ls->enumD3DCropMSX2Plus8    = "MSX2+8";         // New in 2.9
+    ls->enumD3DCropCustom       = "Custom";         // New in 2.9
 
     ls->enumSoundDrvNone        = "沒有音效";
     ls->enumSoundDrvWMM         = "WMM 驅動程式";
@@ -402,23 +472,25 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->enumEmuSyncAuto         = "自動 (快速)";
     ls->enumEmuSyncNone         = "無";
     ls->enumEmuSyncVblank       = "同步到 PC 垂直空白";
-    ls->enumEmuAsyncVblank      = "非同步 PC 空白";             // New in 2.5
+    ls->enumEmuAsyncVblank      = "非同步 PC 空白";             
 
     ls->enumControlsJoyNone     = "無";
     ls->enumControlsJoyMouse    = "滑鼠";
     ls->enumControlsJoyTetris2Dongle = "俄羅斯方塊 2 介面模組";
-    ls->enumControlsJoyTMagicKeyDongle = "MagicKey Dongle";             // New in 2.5
-    ls->enumControlsJoy2Button = "2 按鈕搖桿";                   // New in 2.5
-    ls->enumControlsJoyGunstick  = "Gun Stick 光線槍";                         // New in 2.5
-    ls->enumControlsJoyAsciiLaser="ASCII Plus-X 終結者雷射光線槍";      // New in 2.5
-    ls->enumControlsJoyColeco = "ColecoVision 搖桿";                // New in 2.5
+    ls->enumControlsJoyTMagicKeyDongle = "MagicKey Dongle";             
+    ls->enumControlsJoy2Button = "2 按鈕搖桿";                   
+    ls->enumControlsJoyGunstick  = "Gun Stick 光線槍";                         
+    ls->enumControlsJoyAsciiLaser="ASCII Plus-X 終結者雷射光線槍";      
+    ls->enumControlsArkanoidPad  ="Arkanoid Pad";                   // New in 2.7.1
+    ls->enumControlsJoyColeco = "ColecoVision 搖桿";                
 
-    ls->enumDiskMsx35Dbl9Sect    = "MSX 3.5 雙面, 9 個磁區";     // New in 2.5
-    ls->enumDiskMsx35Dbl8Sect    = "MSX 3.5 雙面, 8 個磁區";     // New in 2.5
-    ls->enumDiskMsx35Sgl9Sect    = "MSX 3.5 單面, 9 個磁區";     // New in 2.5
-    ls->enumDiskMsx35Sgl8Sect    = "MSX 3.5 單面, 8 個磁區";     // New in 2.5
-    ls->enumDiskSvi525Dbl        = "SVI-328 5.25 雙面";           // New in 2.5
-    ls->enumDiskSvi525Sgl        = "SVI-328 5.25 單面";           // New in 2.5
+    ls->enumDiskMsx35Dbl9Sect    = "MSX 3.5\" 雙面, 9 個磁區";     
+    ls->enumDiskMsx35Dbl8Sect    = "MSX 3.5\" 雙面, 8 個磁區";     
+    ls->enumDiskMsx35Sgl9Sect    = "MSX 3.5\" 單面, 9 個磁區";     
+    ls->enumDiskMsx35Sgl8Sect    = "MSX 3.5\" 單面, 8 個磁區";     
+    ls->enumDiskSvi525Dbl        = "SVI-328 5.25\" 雙面";           
+    ls->enumDiskSvi525Sgl        = "SVI-328 5.25\" 單面"; 
+    ls->enumDiskSf3Sgl           = "Sega SF-7000 3\"  單面";               
 
 
     //----------------------
@@ -464,6 +536,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->confChipVideoChip        = "視訊晶片:";
     ls->confChipVideoRam         = "視訊 RAM:";
     ls->confChipSoundGB          = "音效 ";
+    ls->confChipPsgStereoText    = " PSG 立體聲";
 
     ls->confCmosGB                = "CMOS ";
     ls->confCmosEnable            = " 啟用 CMOS";
@@ -553,6 +626,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->shortcutSwitchPause     = "切換暫停開關";
     ls->shortcutToggleMouseLock = "切換滑鼠鎖定";
     ls->shortcutEmuSpeedMax     = "最高模擬速度";
+    ls->shortcutEmuPlayReverse  = "Rewind emulation";                     // New in 2.8.3
     ls->shortcutEmuSpeedToggle  = "切換最高模擬速度";
     ls->shortcutEmuSpeedNormal  = "標準模擬速度";
     ls->shortcutEmuSpeedInc     = "增加模擬速度";
@@ -562,7 +636,7 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->shortcutShowVideoProp   = "顯示視訊內容";
     ls->shortcutShowAudioProp   = "顯示音訊內容";
     ls->shortcutShowCtrlProp    = "顯示控制內容";
-    ls->shortcutShowPerfProp    = "顯示效能內容";
+    ls->shortcutShowEffectsProp = "Show Effects Properties";     // New in 2.9
     ls->shortcutShowSettProp    = "顯示設定內容";
     ls->shortcutShowPorts       = "顯示連接埠內容";
     ls->shortcutShowLanguage    = "顯示語言對話方塊";
@@ -577,7 +651,14 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->shortcutShowFiles       = "顯示檔案內容";
     ls->shortcutToggleSpriteEnable = "顯示/隱藏前景圖層";
     ls->shortcutToggleFdcTiming = "啟用/停用軟式磁碟機計時";
+    ls->shortcutToggleNoSpriteLimits = "Toggle Sprites Limitation";                 // New in 2.9
+    ls->shortcutEnableMsxKeyboardQuirk = "Emulate MSX Keyboard Quirk";              // New in 2.9
     ls->shortcutToggleCpuTrace  = "啟用/停用 CPU 追蹤";
+    ls->shortcutVideoLoad       = "載入...";             
+    ls->shortcutVideoPlay       = "播放上次的擷取";   
+    ls->shortcutVideoRecord     = "錄製";              
+    ls->shortcutVideoStop       = "停止";                
+    ls->shortcutVideoRender     = "渲染視訊檔案";   
 
 
     //----------------------
@@ -594,84 +675,42 @@ void langInitChineseTraditional(LanguageStrings* ls)
     //----------------------
 
     ls->romTypeStandard         = "Standard";
-    ls->romTypeMsxdos2          = "MSXDOS 2";
-    ls->romTypeKonamiScc        = "Konami SCC";
-    ls->romTypeKonami           = "Konami";
-    ls->romTypeAscii8           = "ASCII 8";
-    ls->romTypeAscii16          = "ASCII 16";
-    ls->romTypeGameMaster2      = "Game Master 2 (SRAM)";
-    ls->romTypeAscii8Sram       = "ASCII 8 (SRAM)";
-    ls->romTypeAscii16Sram      = "ASCII 16 (SRAM)";
-    ls->romTypeRtype            = "R-Type";
-    ls->romTypeCrossblaim       = "Cross Blaim";
-    ls->romTypeHarryFox         = "Harry Fox";
-    ls->romTypeMajutsushi       = "Konami Majutsushi";
     ls->romTypeZenima80         = "Zemina 80 in 1";
     ls->romTypeZenima90         = "Zemina 90 in 1";
     ls->romTypeZenima126        = "Zemina 126 in 1";
-    ls->romTypeScc              = "SCC";
-    ls->romTypeSccPlus          = "SCC+";
-    ls->romTypeSnatcher         = "The Snatcher";
-    ls->romTypeSdSnatcher       = "SD Snatcher";
     ls->romTypeSccMirrored      = "SCC mirrored";
     ls->romTypeSccExtended      = "SCC extended";
-    ls->romTypeFmpac            = "FMPAC (SRAM)";
-    ls->romTypeFmpak            = "FMPAK";
     ls->romTypeKonamiGeneric    = "Konami Generic";
-    ls->romTypeSuperPierrot     = "Super Pierrot";
     ls->romTypeMirrored         = "Mirrored ROM";
     ls->romTypeNormal           = "Normal ROM";
     ls->romTypeDiskPatch        = "Normal + Disk Patch";
     ls->romTypeCasPatch         = "Normal + Cassette Patch";
     ls->romTypeTc8566afFdc      = "TC8566AF Disk Controller";
+    ls->romTypeTc8566afTrFdc    = "TC8566AF Turbo-R Disk Controller";
     ls->romTypeMicrosolFdc      = "Microsol Disk Controller";
     ls->romTypeNationalFdc      = "National Disk Controller";
     ls->romTypePhilipsFdc       = "Philips Disk Controller";
+    ls->romTypeSvi707Fdc        = "SVI-707 Disk Controller";
     ls->romTypeSvi738Fdc        = "SVI-738 Disk Controller";
     ls->romTypeMappedRam        = "Mapped RAM";
     ls->romTypeMirroredRam1k    = "1kB Mirrored RAM";
+    ls->romTypeMirroredRam2k    = "2kB Mirrored RAM";
     ls->romTypeNormalRam        = "Normal RAM";
-    ls->romTypeKanji            = "Kanji";
-    ls->romTypeHolyQuran        = "Holy Quran";
-    ls->romTypeMatsushitaSram   = "Matsushita SRAM";
-    ls->romTypePanasonic16      = "Panasonic 16kB SRAM";
-    ls->romTypePanasonic32      = "Panasonic 32kB SRAM";
-    ls->romTypeBunsetsu         = "Bunsetsu";
-    ls->romTypeJisyo            = "Jisyo";
-    ls->romTypeKanji12          = "Kanji12";
-    ls->romTypeNationalSram     = "National (SRAM)";
-    ls->romTypeS1985            = "S1985";
-    ls->romTypeS1990            = "S1990";
     ls->romTypeTurborPause      = "Turbo-R Pause";
     ls->romTypeF4deviceNormal   = "F4 Device Normal";
     ls->romTypeF4deviceInvert   = "F4 Device Inverted";
-    ls->romTypeMsxMidi          = "MSX-MIDI";
     ls->romTypeTurborTimer      = "Turbo-R Timer";
-    ls->romTypeKoei             = "Koei (SRAM)";
-    ls->romTypeBasic            = "Basic ROM";
-    ls->romTypeHalnote          = "Halnote";
-    ls->romTypeLodeRunner       = "Lode Runner";
     ls->romTypeNormal4000       = "Normal 4000h";
     ls->romTypeNormalC000       = "Normal C000h";
-    ls->romTypeKonamiSynth      = "Konami Synthesizer";
-    ls->romTypeKonamiKbdMast    = "Konami Keyboard Master";
-    ls->romTypeKonamiWordPro    = "Konami Word Pro";
-    ls->romTypePac              = "PAC (SRAM)";
-    ls->romTypeMegaRam          = "MegaRAM";
-    ls->romTypeMegaRam128       = "128kB MegaRAM";
-    ls->romTypeMegaRam256       = "256kB MegaRAM";
-    ls->romTypeMegaRam512       = "512kB MegaRAM";
-    ls->romTypeMegaRam768       = "768kB MegaRAM";
-    ls->romTypeMegaRam2mb       = "2MB MegaRAM";
     ls->romTypeExtRam           = "External RAM";
+    ls->romTypeExtRam16         = "16kB External RAM";
+    ls->romTypeExtRam32         = "32kB External RAM";
+    ls->romTypeExtRam48         = "48kB External RAM";
+    ls->romTypeExtRam64         = "64kB External RAM";
     ls->romTypeExtRam512        = "512kB External RAM";
     ls->romTypeExtRam1mb        = "1MB External RAM";
     ls->romTypeExtRam2mb        = "2MB External RAM";
     ls->romTypeExtRam4mb        = "4MB External RAM";
-    ls->romTypeMsxMusic         = "MSX Music";
-    ls->romTypeMsxAudio         = "MSX Audio";
-    ls->romTypeY8950            = "Y8950";
-    ls->romTypeMoonsound        = "Moonsound";
     ls->romTypeSvi328Cart       = "SVI-328 Cartridge";
     ls->romTypeSvi328Fdc        = "SVI-328 Disk Controller";
     ls->romTypeSvi328Prn        = "SVI-328 Printer";
@@ -680,20 +719,11 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->romTypeSvi727col80      = "SVI-727 80 Column Card";
     ls->romTypeColecoCart       = "Coleco Cartridge";
     ls->romTypeSg1000Cart       = "SG-1000 Cartridge";
-    ls->romTypeTheCastle        = "The Castle";
-    ls->romTypeSonyHbi55        = "Sony HBI-55";
+    ls->romTypeSc3000Cart       = "SC-3000 Cartridge";
     ls->romTypeMsxPrinter       = "MSX Printer";
     ls->romTypeTurborPcm        = "Turbo-R PCM Chip";
-    ls->romTypeGameReader       = "Sunrise GameReader";
-    ls->romTypeSunriseIde       = "Sunrise IDE";
-    ls->romTypeBeerIde          = "Beer IDE";
-    ls->romTypeGide             = "GIDE";
-    ls->romTypeVmx80            = "Microsol VMX-80";
     ls->romTypeNms8280Digitiz   = "Philips NMS-8280 Digitizer";
     ls->romTypeHbiV1Digitiz     = "Sony HBI-V1 Digitizer";
-    ls->romTypeFmdas            = "F&M Direct Assembler System";
-    ls->romTypeSfg01            = "Yamaha SFG-01";
-    ls->romTypeSfg05            = "Yamaha SFG-05";
     
     
     //----------------------
@@ -704,7 +734,6 @@ void langInitChineseTraditional(LanguageStrings* ls)
     ls->dbgMemVisible           = "可見記憶體";
     ls->dbgMemRamNormal         = "標準";
     ls->dbgMemRamMapped         = "對應";
-    ls->dbgMemVram              = "VRAM";
     ls->dbgMemYmf278            = "YMF278 取樣 RAM";
     ls->dbgMemAy8950            = "AY8950 取樣 RAM";
     ls->dbgMemScc               = "記憶體";
@@ -720,46 +749,17 @@ void langInitChineseTraditional(LanguageStrings* ls)
 
     ls->dbgDevRamMapper         = "RAM 對應器";
     ls->dbgDevRam               = "RAM";
-    ls->dbgDevIdeBeer           = "Beer IDE";
-    ls->dbgDevIdeGide           = "GIDE";
     ls->dbgDevF4Device          = "F4 裝置";
-    ls->dbgDevFmpac             = "FMPAC";
-    ls->dbgDevFmpak             = "FMPAK";
-    ls->dbgDevKanji             = "Kanji";
-    ls->dbgDevKanji12           = "Kanji 12";
-    ls->dbgDevKonamiKbd         = "Konami Keyboard Master";
     ls->dbgDevKorean80          = "Korean 80";
     ls->dbgDevKorean90          = "Korean 90";
     ls->dbgDevKorean128         = "Korean 128";
-    ls->dbgDevMegaRam           = "Mega RAM";
     ls->dbgDevFdcMicrosol       = "Microsol FDC";
-    ls->dbgDevMoonsound         = "Moonsound";
-    ls->dbgDevMsxAudio          = "MSX 音效";
-    ls->dbgDevMsxAudioMidi      = "MSX 音效 MIDI";
-    ls->dbgDevMsxMusic          = "MSX 音樂";
     ls->dbgDevPrinter           = "印表機";
-    ls->dbgDevRs232             = "RS232";
-    ls->dbgDevS1990             = "S1990";
-    ls->dbgDevSfg05             = "Yamaha SFG-05";
-    ls->dbgDevHbi55             = "Sony HBI-55";
     ls->dbgDevSviFdc            = "SVI FDC";
     ls->dbgDevSviPrn            = "SVI 印表機";
     ls->dbgDevSvi80Col          = "SVI 80 資料欄";
-    ls->dbgDevPcm               = "PCM";
-    ls->dbgDevMatsushita        = "Matsushita";
-    ls->dbgDevS1985             = "S1985";
-    ls->dbgDevCrtc6845          = "CRTC6845";
-    ls->dbgDevTms9929A          = "TMS9929A";
-    ls->dbgDevTms99x8A          = "TMS99x8A";
-    ls->dbgDevV9938             = "V9938";
-    ls->dbgDevV9958             = "V9958";
-    ls->dbgDevZ80               = "Z80";
-    ls->dbgDevMsxMidi           = "MSX MIDI";
-    ls->dbgDevPpi               = "PPI";
     ls->dbgDevRtc               = "RTC";
     ls->dbgDevTrPause           = "TR 暫停";
-    ls->dbgDevAy8910            = "AY8910 PSG";
-    ls->dbgDevScc               = "SCC";
 
 
     //----------------------

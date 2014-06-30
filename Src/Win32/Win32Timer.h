@@ -33,6 +33,8 @@
 
 #include <windows.h>
 
+LONGLONG win32timer_get_uptime_freq(void);
+void win32timer_uptime_offset(int);
 void* StartTimer(HWND hwnd, DWORD period, int useHiResTimer);
 void StopTimer(void* pTimer);
 DWORD GetSystemUpTime(DWORD frequency);

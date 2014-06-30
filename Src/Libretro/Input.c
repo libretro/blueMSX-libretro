@@ -36,10 +36,6 @@ int  archJoystickGetCount() { return 1; }
 char* archJoystickGetName(int index) { return ""; }
 void archMouseSetForceLock(int lock) { }
 
-void archMouseGetState(int* dx, int* dy) { *dx = *dy = 0; }
-int  archMouseGetButtonState(int checkAlways) { return 0; }
-void  archMouseEmuEnable(AmEnableMode mode) {}
-
 void  archPollInput() {}
 void  archKeyboardSetSelectedKey(int keyCode) {}
 char* archGetSelectedKey() { return ""; }

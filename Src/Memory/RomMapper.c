@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/RomMapper.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/RomMapper.c,v $
 **
-** $Revision: 1.6 $
+** $Revision: 1.8 $
 **
-** $Date: 2005/01/02 08:22:11 $
+** $Date: 2008-03-30 18:38:42 $
 **
 ** More info: http://www.bluemsx.com
 **
 ** Copyright (C) 2003-2004 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -159,6 +157,7 @@ RomType romMapperTypeFromString(const char* name)
     if (0 == strcmpnocase(name, "diskpatch"))    return ROM_DISKPATCH;
     if (0 == strcmpnocase(name, "caspatch"))     return ROM_CASPATCH;
     if (0 == strcmpnocase(name, "wd2793"))       return ROM_PHILIPSFDC;
+    if (0 == strcmpnocase(name, "svi707fdc"))    return ROM_SVI707FDC;
     if (0 == strcmpnocase(name, "svi738fdc"))    return ROM_SVI738FDC;
     if (0 == strcmpnocase(name, "microsol"))     return ROM_MICROSOL;
     if (0 == strcmpnocase(name, "rtype"))        return ROM_RTYPE;
@@ -174,7 +173,7 @@ RomType romMapperTypeFromString(const char* name)
     if (0 == strcmpnocase(name, "jisyo"))        return ROM_JISYO;    
     if (0 == strcmpnocase(name, "bunsetsu"))     return ROM_BUNSETU;
     if (0 == strcmpnocase(name, "coleco"))       return ROM_COLECO;
-    if (0 == strcmpnocase(name, "svi328"))       return ROM_SVI328;
+    if (0 == strcmpnocase(name, "svi328"))       return ROM_SVI328CART;
 
     return ROM_UNKNOWN;
 }    
@@ -274,8 +273,8 @@ RomType romMapperGuessRom(const void *buffer, int size, int guess, char* extende
     romType = romMapperRomFromFile(romData, size, extendedName);
 
     if (romType == ROM_UNKNOWN &&
-        size < 0x8001 && romData[0] == 0xF3 && romData[1] == 0x31) {
-            romType = ROM_SVI328;
+        size < 0x10000 && romData[0] == 0xF3 && romData[1] == 0x31) {
+            romType = ROM_SVI328CART;
     }
 
     if (romType == ROM_UNKNOWN &&

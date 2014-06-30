@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperSg1000Castle.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperSg1000Castle.c,v $
 **
-** $Revision: 1.1 $
+** $Revision: 1.5 $
 **
-** $Date: 2005/10/30 01:49:54 $
+** $Date: 2008-03-30 18:38:44 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -59,7 +57,7 @@ static void destroy(RomMapperSg1000Castle* rm)
     free(rm);
 }
 
-int romMapperSg1000CastleCreate(char* filename, UInt8* romData, 
+int romMapperSg1000CastleCreate(const char* filename, UInt8* romData, 
                           int size, int slot, int sslot, int startPage) 
 {
     DeviceCallbacks callbacks = { destroy, NULL, NULL, NULL };
@@ -88,9 +86,18 @@ int romMapperSg1000CastleCreate(char* filename, UInt8* romData,
     sramLoad(rm->sramFilename, rm->sram, 0x2000, NULL, 0);
 
     for (i = 0; i < pages; i++) {
+        if (i + startPage >= 2) slot = 0;
         slotMapPage(slot, sslot, i + startPage, rm->romData + 0x2000 * i, 1, 0);
     }
-    slotMapPage(rm->slot, rm->sslot, 4 + rm->startPage, rm->sram, 1, 1);
+    // Always map SRAM in slot 0. This is an unfortunate workaround because
+    // Sega roms are mapped in slot 2, but the page size is 16kB and the SRAM
+    // is only 8kB which makes it impossible in current implementation to
+    // map it in the same slot as the cart.
+    // Note though that mapping carts to slot 2 is also sort of a workaround to
+    // allow carts to be inserted/removed more easily in a running system. This
+    // patch prevent removing the cart to be handled correctly though
+    slotMapPage(0, 0, 4 + rm->startPage, rm->sram, 1, 1);
+//    slotMapPage(rm->slot, rm->sslot, 4 + rm->startPage, rm->sram, 1, 1);
 
     return 1;
 }

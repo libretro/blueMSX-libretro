@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Memory/romMapperTC8566AF.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Memory/romMapperTC8566AF.c,v $
 **
-** $Revision: 1.4 $
+** $Revision: 1.11 $
 **
-** $Date: 2005/02/13 21:20:01 $
+** $Date: 2008-03-30 18:38:44 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -45,6 +43,7 @@ typedef struct {
     int slot;
     int sslot;
     int startPage;
+    RomType romType;
     UInt32 romMask;
     int romMapper[4];
 } RomMapperTC8566AF;
@@ -116,25 +115,33 @@ static void reset(RomMapperTC8566AF* rm)
 static UInt8 read(RomMapperTC8566AF* rm, UInt16 address) 
 {
     address += 0x4000;
-
-	if ((address & 0x3fff) >= 0x3ff0) {
-		switch (address & 0x3FFF) {
-		case 0x3ff1:
-            return 0x03 | (tc8566afDiskChanged(rm->fdc, 0) ? 0x00 : 0x10) | (tc8566afDiskChanged(rm->fdc, 1) ? 0x00 : 0x20);
-		case 0x3ff4:
-		case 0x3ffa:
-            return tc8566afReadRegister(rm->fdc, 4);
-		case 0x3ff5:
-		case 0x3ffb:
-            return tc8566afReadRegister(rm->fdc, 5);
-		default:
-			return 0xff;
-		}
-	} 
+    if ((address & 0x3fff) >= 0x3ff0) {
+        if (rm->romType == ROM_TC8566AF) {
+            switch (address & 0x0f) {
+            case 0x0a:
+                return tc8566afReadRegister(rm->fdc, 4);
+            case 0x0b:
+                return tc8566afReadRegister(rm->fdc, 5);
+            }
+        }
+        else if (rm->romType == ROM_TC8566AF_TR) {
+            switch (address & 0x0f) {
+            case 0x00:
+                return rm->romMapper[0];
+            case 0x01:
+                return 0x03 | (tc8566afDiskChanged(rm->fdc, 0) ? 0x00 : 0x10) | (tc8566afDiskChanged(rm->fdc, 1) ? 0x00 : 0x20);
+            case 0x04:
+                return tc8566afReadRegister(rm->fdc, 4);
+            case 0x05:
+                return tc8566afReadRegister(rm->fdc, 5);
+            }
+        }
+        return rm->romData[address & 0x3fff];
+    } 
    
     if (address >= 0x4000 && address < 0x8000) {
-		return rm->romData[0x4000 * rm->romMapper[0] + (address & 0x3fff)];
-	} 
+        return rm->romData[0x4000 * rm->romMapper[0] + (address & 0x3fff)];
+    } 
 
     return 0xff;
 }
@@ -143,24 +150,33 @@ static UInt8 peek(RomMapperTC8566AF* rm, UInt16 address)
 {
     address += 0x4000;
 
-	if ((address & 0x3fff) >= 0x3ff0) {
-		switch (address & 0x3FFF) {
-		case 0x3ff1:
-            return 0xff; // Get from fdc
-		case 0x3ff4:
-		case 0x3ffa:
-            return 0xff; // Get from fdc
-		case 0x3ff5:
-		case 0x3ffb:
-            return 0xff; // Get from fdc
-		default:
-			return 0xff;
-		}
-	} 
+    if ((address & 0x3fff) >= 0x3ff0) {
+        if (rm->romType == ROM_TC8566AF) {
+            switch (address & 0x0f) {
+            case 0x0a:
+                return 0xff; // Get from fdc
+            case 0x0b:
+                return 0xff; // Get from fdc
+            }
+        }
+        else if (rm->romType == ROM_TC8566AF_TR) {
+            switch (address & 0x0f) {
+            case 0x00:
+                return rm->romMapper[0];
+            case 0x01:
+                return 0xff; // Get from fdc
+            case 0x04:
+                return 0xff; // Get from fdc
+            case 0x05:
+                return 0xff; // Get from fdc
+            }
+        }
+        return rm->romData[address & 0x3fff];
+    } 
    
     if (address >= 0x4000 && address < 0x8000) {
-		return rm->romData[0x4000 * rm->romMapper[0] + (address & 0x3fff)];
-	} 
+        return rm->romData[0x4000 * rm->romMapper[0] + (address & 0x3fff)];
+    } 
 
     return 0xff;
 }
@@ -168,42 +184,57 @@ static UInt8 peek(RomMapperTC8566AF* rm, UInt16 address)
 static void write(RomMapperTC8566AF* rm, UInt16 address, UInt8 value) 
 {
     address += 0x4000;
-	
+    
     if ((address == 0x6000) || (address == 0x7ff0) || (address == 0x7ffe)) {
-		rm->romMapper[0] =  value & rm->romMask;
-		return;
-	} 
+        rm->romMapper[0] =  value & rm->romMask;
+        return;
+    } 
     else {
-		switch (address & 0x3fff) {
-		case 0x3ff2:
-		case 0x3ff8:
-            tc8566afWriteRegister(rm->fdc, 2, value);
-			break;
-		case 0x3ff3:
-		case 0x3ff9:
-            tc8566afWriteRegister(rm->fdc, 3, value);
-			break;
-		case 0x3ff4:
-		case 0x3ffa:
-            tc8566afWriteRegister(rm->fdc, 4, value);
-			break;
-		case 0x3ff5:
-		case 0x3ffb:
-            tc8566afWriteRegister(rm->fdc, 5, value);
-			break;
-		}
+        if (rm->romType == ROM_TC8566AF) {
+            switch (address & 0x3fff) {
+            case 0x3ff8:
+                tc8566afWriteRegister(rm->fdc, 2, value);
+                break;
+            case 0x3ff9:
+                tc8566afWriteRegister(rm->fdc, 3, value);
+                break;
+            case 0x3ffa:
+                tc8566afWriteRegister(rm->fdc, 4, value);
+                break;
+            case 0x3ffb:
+                tc8566afWriteRegister(rm->fdc, 5, value);
+                break;
+            }
+        }
+        else if (rm->romType == ROM_TC8566AF_TR) {
+            switch (address & 0x3fff) {
+            case 0x3ff2:
+                tc8566afWriteRegister(rm->fdc, 2, value);
+                break;
+            case 0x3ff3:
+                tc8566afWriteRegister(rm->fdc, 3, value);
+                break;
+            case 0x3ff4:
+                tc8566afWriteRegister(rm->fdc, 4, value);
+                break;
+            case 0x3ff5:
+                tc8566afWriteRegister(rm->fdc, 5, value);
+                break;
+            }
+        }
     }
 }
 
-int romMapperTC8566AFCreate(char* filename, UInt8* romData, 
-                           int size, int slot, int sslot, int startPage) 
+int romMapperTC8566AFCreate(const char* filename, UInt8* romData, 
+                           int size, int slot, int sslot, int startPage,
+                           RomType romType) 
 {
     DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };
     RomMapperTC8566AF* rm;
 
     rm = malloc(sizeof(RomMapperTC8566AF));
 
-    rm->deviceHandle = deviceManagerRegister(ROM_TC8566AF, &callbacks, rm);
+    rm->deviceHandle = deviceManagerRegister(romType, &callbacks, rm);
     slotRegister(slot, sslot, startPage, 4, read, peek, write, destroy, rm);
 
     size = (size + 0x3fff) & ~0x3fff;
@@ -214,6 +245,7 @@ int romMapperTC8566AFCreate(char* filename, UInt8* romData,
     rm->slot  = slot;
     rm->sslot = sslot;
     rm->startPage  = startPage;
+    rm->romType = romType;
 
     rm->fdc = tc8566afCreate();
 

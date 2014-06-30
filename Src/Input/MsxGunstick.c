@@ -1,29 +1,27 @@
 /*****************************************************************************
-** $Source: /cvsroot/bluemsx/blueMSX/Src/Input/MsxGunstick.c,v $
+** $Source: /cygdrive/d/Private/_SVNROOT/bluemsx/blueMSX/Src/Input/MsxGunstick.c,v $
 **
-** $Revision: 1.5 $
+** $Revision: 1.9 $
 **
-** $Date: 2006/06/16 05:14:36 $
+** $Date: 2008-03-30 18:38:40 $
 **
 ** More info: http://www.bluemsx.com
 **
-** Copyright (C) 2003-2004 Daniel Vik
+** Copyright (C) 2003-2006 Daniel Vik
 **
-**  This software is provided 'as-is', without any express or implied
-**  warranty.  In no event will the authors be held liable for any damages
-**  arising from the use of this software.
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+** 
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-**  Permission is granted to anyone to use this software for any purpose,
-**  including commercial applications, and to alter it and redistribute it
-**  freely, subject to the following restrictions:
-**
-**  1. The origin of this software must not be misrepresented; you must not
-**     claim that you wrote the original software. If you use this software
-**     in a product, an acknowledgment in the product documentation would be
-**     appreciated but is not required.
-**  2. Altered source versions must be plainly marked as such, and must not be
-**     misrepresented as being the original software.
-**  3. This notice may not be removed or altered from any source distribution.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ******************************************************************************
 */
@@ -58,7 +56,7 @@ static UInt8 read(MsxGunstick* joystick) {
 
     my = my * joystick->scanlines / 0x10000;
     
-    frameBuffer = frameBufferGetDrawFrame(my);
+    frameBuffer = frameBufferGetDrawFrame();
 
     if (frameBuffer != NULL) {
         int scanline = frameBufferGetScanline();
@@ -66,17 +64,17 @@ static UInt8 read(MsxGunstick* joystick) {
         int myHigh = MIN(scanline, my);
         int y;
         
-        joystick->scanlines = frameBuffer->lines;
+        joystick->scanlines = frameBufferGetLineCount(frameBuffer);
 
         myLow  = MAX(myLow, 0);
-        myHigh = MIN(myHigh, frameBuffer->lines);
-
+        myHigh = MIN(myHigh, frameBufferGetLineCount(frameBuffer));
+        
         for (y = myLow; y < myHigh; y++) {
-            int x = mx * (frameBuffer->line[y].doubleWidth ? 2 : 1) * frameBuffer->maxWidth / 0x10000;
-            UInt16 rgb = frameBuffer->line[y].buffer[x];
-            int R = 8 * ((rgb >> 10) & 0x01f);
-            int G = 8 * ((rgb >> 5) & 0x01f);
-            int B = 8 * ((rgb >> 0) & 0x01f);
+            int x = mx * (frameBufferGetDoubleWidth(frameBuffer, y) ? 2 : 1) * frameBufferGetMaxWidth(frameBuffer) / 0x10000;
+            Pixel rgb = frameBufferGetLine(frameBuffer, y)[x];
+            int R = 256 * ((rgb >> COLSHIFT_R) & COLMASK_R) / COLMASK_R;
+            int G = 256 * ((rgb >> COLSHIFT_G) & COLMASK_G) / COLMASK_G;
+            int B = 256 * ((rgb >> COLSHIFT_B) & COLMASK_B) / COLMASK_B;
             int Y = (int)(0.2989*R + 0.5866*G + 0.1145*B);
         
             if (Y > TRESHOLD) {
