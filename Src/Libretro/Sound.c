@@ -30,12 +30,13 @@
 #include "ArchSound.h"
 #include "libretro.h"
 
-static retro_audio_sample_batch_t audio_batch_cb;
+static retro_audio_sample_batch_t audio_batch_cb = NULL;
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) { audio_batch_cb = cb; }
 
 static Int32 soundWrite(void* dummy, Int16 *buffer, UInt32 count)
 {
-   audio_batch_cb(buffer, count / 2);
+   if (audio_batch_cb)
+      audio_batch_cb(buffer, count / 2);
 }
 
 void archSoundCreate(Mixer* mixer, UInt32 sampleRate, UInt32 bufferSize, Int16 channels) {

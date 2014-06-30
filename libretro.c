@@ -243,6 +243,9 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.sample_rate = 44100.0;
 }
 
+#define MEDIADB_DIR "Databases"
+#define MACHINES_DIR "Machines"
+#define PROPERTIES_DIR "."
 
 void retro_init(void)
 {
@@ -257,6 +260,19 @@ void retro_init(void)
    image_buffer_width =  272;
    image_buffer_height =  240;
 
+   propertiesSetDirectory(PROPERTIES_DIR, PROPERTIES_DIR);
+
+   machineSetDirectory(MACHINES_DIR);
+
+//    boardSetDirectory(buffer);
+
+   mediaDbLoad(MEDIADB_DIR);
+
+//    mediaDbCreateRomdb();
+
+//    mediaDbCreateDiskdb();
+
+//    mediaDbCreateCasdb();
 }
 
 void retro_deinit(void)
