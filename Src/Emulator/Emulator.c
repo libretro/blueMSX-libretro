@@ -880,9 +880,17 @@ extern ucontext_t cpu_thread;
 
 static int WaitForSync(int maxSpeed, int breakpointHit) {
 
+   static float time_fraction = 0.0;
+   if (time_fraction > 1.0)
+      time_fraction -= 1.0;
+
    swapcontext(&cpu_thread, &main_thread);
 
-   return 20;
+   time_fraction += (1000.0 / 60.0) - 16.0;
+
+
+
+   return 16 + time_fraction;
 }
 
 #else

@@ -352,7 +352,10 @@ bool retro_load_game(const struct retro_game_info *info)
    }
 
 
-   properties = propCreate(1, 0, P_KBD_EUROPEAN, 0, "");
+   properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
+
+   properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
+   properties->video.monitorType           = P_VIDEO_PALNONE;
 
    video = videoCreate();
    videoSetColors(video, properties->video.saturation, properties->video.brightness,
@@ -479,13 +482,8 @@ UInt8 archJoystickGetState(int joystickNo) {
 void retro_run(void)
 {
 
-   swapcontext(&main_thread, &cpu_thread);
-
    int i,j;
    input_poll_cb();
-
-
-
 
    for (i=0; i <= EC_PRINT; i++)
       eventMap[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[i]) ? 1 : 0;
@@ -499,7 +497,9 @@ void retro_run(void)
       eventMap[i] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
 
 
-   timerCallback_global(NULL);
+   swapcontext(&main_thread, &cpu_thread);
+
+//   timerCallback_global(NULL);
 //   emulatorRunOne();
 
    FrameBuffer* frameBuffer;
