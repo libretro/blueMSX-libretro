@@ -36,122 +36,129 @@
 ucontext_t main_thread;
 ucontext_t cpu_thread;
 
+
+#define CPU_THREAD_STACK_SIZE    (2 * 1024 * 1024)
+
+#define MEDIADB_DIR              "Databases"
+#define MACHINES_DIR             "Machines"
+#define PROPERTIES_DIR           "."
+
 extern int eventMap[256];
 
 static unsigned btn_map[EC_KEYCOUNT] =
 {
-   RETROK_UNKNOWN,   //EC_NONE      0
+   RETROK_UNKNOWN,         //EC_NONE      0
 
 // ROW 0
-   RETROK_F1,        //EC_F1        1
-   RETROK_F2,        //EC_F2        2
-   RETROK_F3,        //EC_F3        3
-   RETROK_F4,        //EC_F4        4
-   RETROK_F5,        //EC_F5        5
-   RETROK_END,       //EC_STOP      6
-   RETROK_HOME,      //EC_CLS       7
-   RETROK_PAGEUP,   //EC_SELECT    8
-   RETROK_INSERT,    //EC_INS       9
-   RETROK_DELETE,    //EC_DEL      10
+   RETROK_F1,              //EC_F1        1
+   RETROK_F2,              //EC_F2        2
+   RETROK_F3,              //EC_F3        3
+   RETROK_F4,              //EC_F4        4
+   RETROK_F5,              //EC_F5        5
+   RETROK_END,             //EC_STOP      6
+   RETROK_HOME,            //EC_CLS       7
+   RETROK_PAGEUP,          //EC_SELECT    8
+   RETROK_INSERT,          //EC_INS       9
+   RETROK_DELETE,          //EC_DEL      10
 
 // ROW 1
-   RETROK_ESCAPE,   //EC_ESC      11
-   RETROK_1,   //EC_1        12
-   RETROK_2,   //EC_2        13
-   RETROK_3,   //EC_3        14
-   RETROK_4,   //EC_4        15
-   RETROK_5,   //EC_5        16
-   RETROK_6,   //EC_6        17
-   RETROK_7,   //EC_7        18
-   RETROK_8,   //EC_8        19
-   RETROK_9,   //EC_9        20
-   RETROK_0,   //EC_0        21
-   RETROK_MINUS,   //EC_NEG      22
-   RETROK_EQUALS,   //EC_CIRCFLX  23
-   RETROK_UNKNOWN,   //EC_BKSLASH  24
-   RETROK_BACKSPACE,   //EC_BKSPACE  25
+   RETROK_ESCAPE,          //EC_ESC      11
+   RETROK_1,               //EC_1        12
+   RETROK_2,               //EC_2        13
+   RETROK_3,               //EC_3        14
+   RETROK_4,               //EC_4        15
+   RETROK_5,               //EC_5        16
+   RETROK_6,               //EC_6        17
+   RETROK_7,               //EC_7        18
+   RETROK_8,               //EC_8        19
+   RETROK_9,               //EC_9        20
+   RETROK_0,               //EC_0        21
+   RETROK_MINUS,           //EC_NEG      22
+   RETROK_EQUALS,          //EC_CIRCFLX  23
+   RETROK_UNKNOWN,         //EC_BKSLASH  24
+   RETROK_BACKSPACE,       //EC_BKSPACE  25
 
 // ROW 2
-   RETROK_TAB,   //EC_TAB      26
-   RETROK_q,   //EC_Q        27
-   RETROK_w,   //EC_W        28
-   RETROK_e,   //EC_E        29
-   RETROK_r,   //EC_R        30
-   RETROK_t,   //EC_T        31
-   RETROK_y,   //EC_Y        32
-   RETROK_u,   //EC_U        33
-   RETROK_i,   //EC_I        34
-   RETROK_o,   //EC_O        35
-   RETROK_p,   //EC_P        36
-   RETROK_LEFTBRACKET,   //EC_AT       37
-   RETROK_RIGHTBRACKET,   //EC_LBRACK   38
-   RETROK_RETURN,   //EC_RETURN   39
+   RETROK_TAB,             //EC_TAB      26
+   RETROK_q,               //EC_Q        27
+   RETROK_w,               //EC_W        28
+   RETROK_e,               //EC_E        29
+   RETROK_r,               //EC_R        30
+   RETROK_t,               //EC_T        31
+   RETROK_y,               //EC_Y        32
+   RETROK_u,               //EC_U        33
+   RETROK_i,               //EC_I        34
+   RETROK_o,               //EC_O        35
+   RETROK_p,               //EC_P        36
+   RETROK_LEFTBRACKET,     //EC_AT       37
+   RETROK_RIGHTBRACKET,    //EC_LBRACK   38
+   RETROK_RETURN,          //EC_RETURN   39
 
 // ROW 3
-   RETROK_LCTRL,   //EC_CTRL     40
-   RETROK_a,   //EC_A        41
-   RETROK_s,   //EC_S        42
-   RETROK_d,   //EC_D        43
-   RETROK_f,   //EC_F        44
-   RETROK_g,   //EC_G        45
-   RETROK_h,   //EC_H        46
-   RETROK_j,   //EC_J        47
-   RETROK_k,   //EC_K        48
-   RETROK_l,   //EC_L        49
-   RETROK_SEMICOLON,   //EC_SEMICOL  50
-   RETROK_COLON,   //EC_COLON    51
-   RETROK_BACKSLASH,   //EC_RBRACK   52
+   RETROK_LCTRL,           //EC_CTRL     40
+   RETROK_a,               //EC_A        41
+   RETROK_s,               //EC_S        42
+   RETROK_d,               //EC_D        43
+   RETROK_f,               //EC_F        44
+   RETROK_g,               //EC_G        45
+   RETROK_h,               //EC_H        46
+   RETROK_j,               //EC_J        47
+   RETROK_k,               //EC_K        48
+   RETROK_l,               //EC_L        49
+   RETROK_SEMICOLON,       //EC_SEMICOL  50
+   RETROK_COLON,           //EC_COLON    51
+   RETROK_BACKSLASH,       //EC_RBRACK   52
 
 // ROW 4
-   RETROK_LSHIFT,   //EC_LSHIFT   53
-   RETROK_z,   //EC_Z        54
-   RETROK_x,   //EC_X        55
-   RETROK_c,   //EC_C        56
-   RETROK_v,   //EC_V        57
-   RETROK_b,   //EC_B        58
-   RETROK_n,   //EC_N        59
-   RETROK_m,   //EC_M        60
-   RETROK_COMMA,   //EC_COMMA    61
-   RETROK_PERIOD,   //EC_PERIOD   62
-   RETROK_SLASH,   //EC_DIV      63
-   RETROK_UNKNOWN,   //EC_UNDSCRE  64
-   RETROK_RSHIFT,   //EC_RSHIFT   65
+   RETROK_LSHIFT,          //EC_LSHIFT   53
+   RETROK_z,               //EC_Z        54
+   RETROK_x,               //EC_X        55
+   RETROK_c,               //EC_C        56
+   RETROK_v,               //EC_V        57
+   RETROK_b,               //EC_B        58
+   RETROK_n,               //EC_N        59
+   RETROK_m,               //EC_M        60
+   RETROK_COMMA,           //EC_COMMA    61
+   RETROK_PERIOD,          //EC_PERIOD   62
+   RETROK_SLASH,           //EC_DIV      63
+   RETROK_UNKNOWN,         //EC_UNDSCRE  64
+   RETROK_RSHIFT,          //EC_RSHIFT   65
 
 // ROW 5
-   RETROK_CAPSLOCK,   //EC_CAPS     66
-   RETROK_LALT,   //EC_GRAPH    67
-   RETROK_UNKNOWN,   //EC_TORIKE   68
-   RETROK_SPACE,   //EC_SPACE    69
-   RETROK_UNKNOWN,   //EC_JIKKOU   70
-   RETROK_UNKNOWN,   //EC_CODE     71
-   RETROK_PAUSE,   //EC_PAUSE    72
+   RETROK_CAPSLOCK,        //EC_CAPS     66
+   RETROK_LALT,            //EC_GRAPH    67
+   RETROK_UNKNOWN,         //EC_TORIKE   68
+   RETROK_SPACE,           //EC_SPACE    69
+   RETROK_UNKNOWN,         //EC_JIKKOU   70
+   RETROK_UNKNOWN,         //EC_CODE     71
+   RETROK_PAUSE,           //EC_PAUSE    72
 
 // ARROWS
-   RETROK_LEFT,   //EC_LEFT     73
-   RETROK_UP,   //EC_UP       74
-   RETROK_DOWN,   //EC_DOWN     75
-   RETROK_RIGHT,   //EC_RIGHT    76
+   RETROK_LEFT,            //EC_LEFT     73
+   RETROK_UP,              //EC_UP       74
+   RETROK_DOWN,            //EC_DOWN     75
+   RETROK_RIGHT,           //EC_RIGHT    76
 
 // NUMERIC KEYBOARD
-   RETROK_KP7,   //EC_NUM7     77
-   RETROK_KP8,   //EC_NUM8     78
-   RETROK_KP9,   //EC_NUM9     79
-   RETROK_KP_DIVIDE,   //EC_NUMDIV   80
-   RETROK_KP4,   //EC_NUM4     81
-   RETROK_KP5,   //EC_NUM5     82
-   RETROK_KP6,   //EC_NUM6     83
-   RETROK_KP_MULTIPLY,   //EC_NUMMUL   84
-   RETROK_KP1,   //EC_NUM1     85
-   RETROK_KP2,   //EC_NUM2     86
-   RETROK_KP3,   //EC_NUM3     87
-   RETROK_KP_MINUS,   //EC_NUMSUB   88
-   RETROK_KP0,   //EC_NUM0     89
-   RETROK_KP_ENTER,   //EC_NUMPER   90
-   RETROK_KP_PERIOD,   //EC_NUMCOM   91
-   RETROK_KP_PLUS,   //EC_NUMADD   92
+   RETROK_KP7,             //EC_NUM7     77
+   RETROK_KP8,             //EC_NUM8     78
+   RETROK_KP9,             //EC_NUM9     79
+   RETROK_KP_DIVIDE,       //EC_NUMDIV   80
+   RETROK_KP4,             //EC_NUM4     81
+   RETROK_KP5,             //EC_NUM5     82
+   RETROK_KP6,             //EC_NUM6     83
+   RETROK_KP_MULTIPLY,     //EC_NUMMUL   84
+   RETROK_KP1,             //EC_NUM1     85
+   RETROK_KP2,             //EC_NUM2     86
+   RETROK_KP3,             //EC_NUM3     87
+   RETROK_KP_MINUS,        //EC_NUMSUB   88
+   RETROK_KP0,             //EC_NUM0     89
+   RETROK_KP_ENTER,        //EC_NUMPER   90
+   RETROK_KP_PERIOD,       //EC_NUMCOM   91
+   RETROK_KP_PLUS,         //EC_NUMADD   92
 
 // SVI SPECIFIC KEYS
-   RETROK_PRINT,   //EC_PRINT    93
+   RETROK_PRINT,           //EC_PRINT    93
 
    RETROK_UNKNOWN,
    RETROK_UNKNOWN,
@@ -160,26 +167,26 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_UNKNOWN,
    RETROK_UNKNOWN,
 
-   RETRO_DEVICE_ID_JOYPAD_UP,   //EC_JOY1_UP      100
-   RETRO_DEVICE_ID_JOYPAD_DOWN,   //EC_JOY1_DOWN    101
-   RETRO_DEVICE_ID_JOYPAD_LEFT,   //EC_JOY1_LEFT    102
-   RETRO_DEVICE_ID_JOYPAD_RIGHT,   //EC_JOY1_RIGHT   103
-   RETRO_DEVICE_ID_JOYPAD_A,   //EC_JOY1_BUTTON1 104
-   RETRO_DEVICE_ID_JOYPAD_B,   //EC_JOY1_BUTTON2 105
-   RETRO_DEVICE_ID_JOYPAD_Y,   //EC_JOY1_BUTTON3 106
-   RETRO_DEVICE_ID_JOYPAD_X,   //EC_JOY1_BUTTON4 107
-   RETRO_DEVICE_ID_JOYPAD_START,   //EC_JOY1_BUTTON5 108
+   RETRO_DEVICE_ID_JOYPAD_UP,       //EC_JOY1_UP      100
+   RETRO_DEVICE_ID_JOYPAD_DOWN,     //EC_JOY1_DOWN    101
+   RETRO_DEVICE_ID_JOYPAD_LEFT,     //EC_JOY1_LEFT    102
+   RETRO_DEVICE_ID_JOYPAD_RIGHT,    //EC_JOY1_RIGHT   103
+   RETRO_DEVICE_ID_JOYPAD_A,        //EC_JOY1_BUTTON1 104
+   RETRO_DEVICE_ID_JOYPAD_B,        //EC_JOY1_BUTTON2 105
+   RETRO_DEVICE_ID_JOYPAD_Y,        //EC_JOY1_BUTTON3 106
+   RETRO_DEVICE_ID_JOYPAD_X,        //EC_JOY1_BUTTON4 107
+   RETRO_DEVICE_ID_JOYPAD_START,    //EC_JOY1_BUTTON5 108
    RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_JOY1_BUTTON6 109
 
-   RETRO_DEVICE_ID_JOYPAD_UP,   //EC_JOY2_UP      110
-   RETRO_DEVICE_ID_JOYPAD_DOWN,   //EC_JOY2_DOWN    111
-   RETRO_DEVICE_ID_JOYPAD_LEFT,   //EC_JOY2_LEFT    112
-   RETRO_DEVICE_ID_JOYPAD_RIGHT,   //EC_JOY2_RIGHT   113
-   RETRO_DEVICE_ID_JOYPAD_A,   //EC_JOY2_BUTTON1 114
-   RETRO_DEVICE_ID_JOYPAD_B,   //EC_JOY2_BUTTON2 115
-   RETRO_DEVICE_ID_JOYPAD_Y,   //EC_JOY2_BUTTON3 116
-   RETRO_DEVICE_ID_JOYPAD_X,   //EC_JOY2_BUTTON4 117
-   RETRO_DEVICE_ID_JOYPAD_START,   //EC_JOY2_BUTTON5 118
+   RETRO_DEVICE_ID_JOYPAD_UP,       //EC_JOY2_UP      110
+   RETRO_DEVICE_ID_JOYPAD_DOWN,     //EC_JOY2_DOWN    111
+   RETRO_DEVICE_ID_JOYPAD_LEFT,     //EC_JOY2_LEFT    112
+   RETRO_DEVICE_ID_JOYPAD_RIGHT,    //EC_JOY2_RIGHT   113
+   RETRO_DEVICE_ID_JOYPAD_A,        //EC_JOY2_BUTTON1 114
+   RETRO_DEVICE_ID_JOYPAD_B,        //EC_JOY2_BUTTON2 115
+   RETRO_DEVICE_ID_JOYPAD_Y,        //EC_JOY2_BUTTON3 116
+   RETRO_DEVICE_ID_JOYPAD_X,        //EC_JOY2_BUTTON4 117
+   RETRO_DEVICE_ID_JOYPAD_START,    //EC_JOY2_BUTTON5 118
    RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_JOY2_BUTTON6 119
 
    RETROK_UNKNOWN,   //EC_COLECO1_0    120
@@ -248,10 +255,6 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.sample_rate = 44100.0;
 }
 
-#define MEDIADB_DIR "Databases"
-#define MACHINES_DIR "Machines"
-#define PROPERTIES_DIR "."
-
 void retro_init(void)
 {
    struct retro_log_callback log;
@@ -278,12 +281,21 @@ void retro_init(void)
 //    mediaDbCreateDiskdb();
 
 //    mediaDbCreateCasdb();
+
+   getcontext(&main_thread);
+
+   getcontext(&cpu_thread);
+   cpu_thread.uc_stack.ss_size = CPU_THREAD_STACK_SIZE;
+   cpu_thread.uc_stack.ss_sp = malloc(cpu_thread.uc_stack.ss_size);
 }
 
 void retro_deinit(void)
 {
    if (image_buffer)
       free(image_buffer);
+   if (cpu_thread.uc_stack.ss_sp)
+      free(cpu_thread.uc_stack.ss_sp);
+
    image_buffer = NULL;
    image_buffer_width = 0;
    image_buffer_height = 0;
@@ -432,18 +444,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
 //   emulatorStart(NULL);
 
-   getcontext(&main_thread);
-   getcontext(&cpu_thread);
-
-
-   cpu_thread.uc_stack.ss_size = 10*1024*1024;
-   cpu_thread.uc_stack.ss_sp = malloc(cpu_thread.uc_stack.ss_size);
-
    makecontext(&cpu_thread, emulatorStart, 2, NULL);
-
-
-
-
 
 //  retro_set_controller_port_device(0, RETRO_DEVICE_KEYBOARD);
 
@@ -480,13 +481,16 @@ UInt8 archJoystickGetState(int joystickNo) {
             (eventMap[EC_JOY1_BUTTON3]  << 6) |
             (eventMap[EC_JOY1_BUTTON4] << 7));
    ; }
+
+#define EC_KEYBOARD_KEYCOUNT  94
+
 void retro_run(void)
 {
 
    int i,j;
    input_poll_cb();
 
-   for (i=0; i <= EC_PRINT; i++)
+   for (i=0; i < EC_KEYBOARD_KEYCOUNT; i++)
       eventMap[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[i]) ? 1 : 0;
 
 
