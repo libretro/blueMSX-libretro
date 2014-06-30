@@ -31,13 +31,82 @@
 
 #include "InputEvent.h"
 
+#ifdef PSP
+#include "pspthreadman.h"
+static SceUID main_thread;
+static SceUID cpu_thread;
+
+void switch_to_main_thread(void)
+{
+   sceKernelWakeupThread(main_thread);
+   sceKernelSleepThread();
+}
+
+static inline void switch_to_cpu_thread(void)
+{
+   sceKernelWakeupThread(cpu_thread);
+   sceKernelSleepThread();
+}
+
+static int cpu_thread_entry(SceSize args, void* argp)
+{
+   sceKernelSleepThread();
+
+   emulatorStart(NULL);
+
+   return 0;
+}
+
+static inline void init_context_switch(void)
+{
+   main_thread = sceKernelGetThreadId();
+   cpu_thread = sceKernelCreateThread ("CPU thread", cpu_thread_entry, 0x10, 0x10000, 0, NULL);
+   sceKernelStartThread(cpu_thread, 0, NULL);
+}
+
+static inline void deinit_context_switch(void)
+{
+   sceKernelTerminateDeleteThread(cpu_thread);
+}
+
+#else
+
 #include "ucontext.h"
-
-ucontext_t main_thread;
-ucontext_t cpu_thread;
-
+static ucontext_t main_thread;
+static ucontext_t cpu_thread;
 
 #define CPU_THREAD_STACK_SIZE    (2 * 1024 * 1024)
+
+void switch_to_main_thread(void)
+{
+   swapcontext(&cpu_thread, &main_thread);
+}
+
+static inline void switch_to_cpu_thread(void)
+{
+   swapcontext(&main_thread, &cpu_thread);
+}
+
+static inline void init_context_switch(void)
+{
+   getcontext(&main_thread);
+
+   getcontext(&cpu_thread);
+   cpu_thread.uc_stack.ss_size = CPU_THREAD_STACK_SIZE;
+   cpu_thread.uc_stack.ss_sp = malloc(cpu_thread.uc_stack.ss_size);
+
+   makecontext(&cpu_thread, emulatorStart, 2, NULL);
+}
+
+static inline void deinit_context_switch(void)
+{
+   if (cpu_thread.uc_stack.ss_sp)
+      free(cpu_thread.uc_stack.ss_sp);
+}
+
+#endif
+
+
 
 #define MEDIADB_DIR              "Databases"
 #define MACHINES_DIR             "Machines"
@@ -282,23 +351,19 @@ void retro_init(void)
 
 //    mediaDbCreateCasdb();
 
-   getcontext(&main_thread);
-
-   getcontext(&cpu_thread);
-   cpu_thread.uc_stack.ss_size = CPU_THREAD_STACK_SIZE;
-   cpu_thread.uc_stack.ss_sp = malloc(cpu_thread.uc_stack.ss_size);
+   init_context_switch();
 }
 
 void retro_deinit(void)
 {
    if (image_buffer)
       free(image_buffer);
-   if (cpu_thread.uc_stack.ss_sp)
-      free(cpu_thread.uc_stack.ss_sp);
 
    image_buffer = NULL;
    image_buffer_width = 0;
    image_buffer_height = 0;
+
+   deinit_context_switch();
 }
 
 void retro_set_environment(retro_environment_t cb)
@@ -443,8 +508,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
 //   emulatorStart(NULL);
 
-   makecontext(&cpu_thread, emulatorStart, 2, NULL);
-
 //  retro_set_controller_port_device(0, RETRO_DEVICE_KEYBOARD);
 
   return true;
@@ -470,16 +533,17 @@ size_t retro_get_memory_size(unsigned id)
 }
 
 void timerCallback_global(void* timer) ;
-UInt8 archJoystickGetState(int joystickNo) {
-   return ((eventMap[EC_JOY1_UP]    << 0) |
-            (eventMap[EC_JOY1_DOWN]  << 1) |
-            (eventMap[EC_JOY1_LEFT]  << 2) |
-            (eventMap[EC_JOY1_RIGHT] << 3) |
-            (eventMap[EC_JOY1_BUTTON1]    << 4) |
-            (eventMap[EC_JOY1_BUTTON2]  << 5) |
-            (eventMap[EC_JOY1_BUTTON3]  << 6) |
-            (eventMap[EC_JOY1_BUTTON4] << 7));
-   ; }
+UInt8 archJoystickGetState(int joystickNo)
+{
+   return ((eventMap[EC_JOY1_UP]      << 0) |
+           (eventMap[EC_JOY1_DOWN]    << 1) |
+           (eventMap[EC_JOY1_LEFT]    << 2) |
+           (eventMap[EC_JOY1_RIGHT]   << 3) |
+           (eventMap[EC_JOY1_BUTTON1] << 4) |
+           (eventMap[EC_JOY1_BUTTON2] << 5) |
+           (eventMap[EC_JOY1_BUTTON3] << 6) |
+           (eventMap[EC_JOY1_BUTTON4] << 7));
+}
 
 #define EC_KEYBOARD_KEYCOUNT  94
 
@@ -501,7 +565,7 @@ void retro_run(void)
       eventMap[i] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
 
 
-   swapcontext(&main_thread, &cpu_thread);
+   switch_to_cpu_thread();
 
 //   timerCallback_global(NULL);
 //   emulatorRunOne();

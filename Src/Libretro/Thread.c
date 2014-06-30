@@ -28,7 +28,23 @@
 ******************************************************************************
 */
 #include "ArchThread.h"
+#if defined(_WIN32)
+#error
+#ifdef _XBOX
+#include <xtl.h>
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+#elif defined(GEKKO)
+#include "thread/gx_pthread.h"
+#elif defined(PSP)
+#include "thread/psp_pthread.h"
+#else
 #include <pthread.h>
+#include <time.h>
+#endif
+
 #include <signal.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -89,7 +105,7 @@ void archThreadJoin(void* thread, int timeout)
     } while(rv != 0);
 }
 
-void  archThreadDestroy(void* thread) 
+void archThreadDestroy(void* thread)
 {
     if((pthread_t)thread == pthread_self()) {
         pthread_exit(NULL);

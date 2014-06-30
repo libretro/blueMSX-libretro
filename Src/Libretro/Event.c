@@ -40,7 +40,25 @@ void archEventWait(void* event, int timeout) {}
 #error
 #endif
 
-#if 1
+#ifdef PSP
+
+void* archSemaphoreCreate(int initCount)
+{
+}
+
+void archSemaphoreDestroy(void* semaphore)
+{
+}
+
+void archSemaphoreSignal(void* semaphore)
+{
+}
+
+void archSemaphoreWait(void* semaphore, int timeout)
+{
+
+}
+#else
 #include <semaphore.h>
 
 typedef struct {

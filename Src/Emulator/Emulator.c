@@ -873,10 +873,8 @@ UInt32 getHiresTimer() {
 #define getHiresTimer archGetHiresTimer
 #endif
 #if 1
-#include "ucontext.h"
 
-extern ucontext_t main_thread;
-extern ucontext_t cpu_thread;
+extern void switch_to_main_thread(void);
 
 static int WaitForSync(int maxSpeed, int breakpointHit) {
 
@@ -884,11 +882,9 @@ static int WaitForSync(int maxSpeed, int breakpointHit) {
    if (time_fraction > 1.0)
       time_fraction -= 1.0;
 
-   swapcontext(&cpu_thread, &main_thread);
+   switch_to_main_thread();
 
    time_fraction += (1000.0 / 60.0) - 16.0;
-
-
 
    return 16 + time_fraction;
 }

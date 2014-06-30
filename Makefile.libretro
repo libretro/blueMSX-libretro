@@ -1,4 +1,5 @@
-DEBUG = 0
+DEBUG   = 0
+USE_SSE = 0
 
 ifneq ($(EMSCRIPTEN),)
    platform = emscripten
@@ -93,6 +94,7 @@ else ifeq ($(platform), psp1)
    CFLAGS += -G0
    CXXFLAGS += -G0
    STATIC_LINKING = 1
+   EXTRA_INCLUDES := -I$(shell psp-config --pspsdk-path)/include
 else ifeq ($(platform), xenon)
    TARGET := $(TARGET_NAME)_libretro_xenon360.a
    CC = xenon-gcc$(EXE_EXT)
@@ -142,6 +144,7 @@ else
    TARGET := $(TARGET_NAME)_libretro.dll
    CC = gcc
    CXX = g++
+   USE_SSE = 1
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
 endif
 
@@ -156,13 +159,9 @@ else
 	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
 endif
 
-#ifneq ($(shell uname --hardware-platform),amd64)
-ifneq ($(shell uname --hardware-platform),x86_64)
-ifneq ($(shell uname --hardware-platform),x86)
+ifeq ($(USE_SSE), 0)
 PLATFORM_DEFINES += -DNO_ASM
 endif
-endif
-#endif
 
 
 DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES)
@@ -509,6 +508,7 @@ INCDIRS += -ISrc/Z80
 INCDIRS += -ISrc/Input
 
 INCDIRS += -ISrc/Libretro
+INCDIRS += $(EXTRA_INCLUDES)
 
 LIBS := -lpthread -lz
 
