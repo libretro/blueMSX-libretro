@@ -1,5 +1,10 @@
+TARGET_NAME := blueMSX
+
 DEBUG   = 0
 USE_SSE = 0
+
+CSRCS   :=
+CXXSRCS :=
 
 ifneq ($(EMSCRIPTEN),)
    platform = emscripten
@@ -29,7 +34,7 @@ else ifneq ($(findstring MINGW,$(shell uname -a)),)
    system_platform = win
 endif
 
-TARGET_NAME := blueMSX
+
 
 ifeq ($(platform), unix)
    TARGET := $(TARGET_NAME)_libretro.so
@@ -95,6 +100,8 @@ else ifeq ($(platform), psp1)
    CXXFLAGS += -G0
    STATIC_LINKING = 1
    EXTRA_INCLUDES := -I$(shell psp-config --pspsdk-path)/include
+   CSRCS  += Src/Libretro/psp/diet-glob.c
+   CSRCS  += Src/Libretro/psp/diet-fnmatch.c
 else ifeq ($(platform), xenon)
    TARGET := $(TARGET_NAME)_libretro_xenon360.a
    CC = xenon-gcc$(EXE_EXT)
@@ -175,9 +182,7 @@ CXXFLAGS   += -w
 
 
 
-CSRCS   = libretro.c
-CXXSRCS  =
-
+CSRCS   += libretro.c
 
 CSRCS  += Src/Libretro/blueMSXlite.c
 CSRCS  += Src/Libretro/Dialog.c

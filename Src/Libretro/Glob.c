@@ -106,10 +106,14 @@ void archGlobFree(ArchGlob* globHandle)
     free(globHandle);
 }
 
-#else
 
+#else
 #include "ArchGlob.h"
+#ifdef PSP
+#include "psp/diet-glob.h"
+#else
 #include <glob.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

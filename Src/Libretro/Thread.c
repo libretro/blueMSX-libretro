@@ -27,24 +27,11 @@
 **
 ******************************************************************************
 */
+#ifndef PSP
+
 #include "ArchThread.h"
-#if defined(_WIN32)
-#error
-#ifdef _XBOX
-#include <xtl.h>
-#else
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-#elif defined(GEKKO)
-#include "thread/gx_pthread.h"
-#elif defined(PSP)
-#include "thread/psp_pthread.h"
-#else
 #include <pthread.h>
 #include <time.h>
-#endif
-
 #include <signal.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -122,3 +109,53 @@ void archThreadSleep(int milliseconds)
 {
    retro_sleep(milliseconds);
 }
+
+#else
+
+#include <pspthreadman.h>
+
+typedef void (*entryPoint_type)();
+
+static int thread_entry(SceSize args, void* argp)
+{
+   entryPoint_type entryPoint = *((entryPoint_type*)argp);
+
+   entryPoint();
+
+   return 0;
+}
+
+
+void* archThreadCreate(void (*entryPoint)(), int priority) {
+
+   SceUID thread_uid = sceKernelCreateThread ("CPU thread", thread_entry, 0x10, 0x10000, 0, NULL);
+
+
+   sceKernelStartThread(thread_uid, sizeof(entryPoint_type), &thread_entry);
+
+   return (void*)thread_uid;
+
+}
+
+void archThreadJoin(void* thread, int timeout)
+{
+   SceUID thread_uid = (SceUID)thread;
+   SceUInt sce_timeout = (SceUInt)timeout;
+
+   sceKernelTerminateThread(thread_uid);
+   sceKernelWaitThreadEnd(thread_uid, &sce_timeout);
+}
+
+void archThreadDestroy(void* thread)
+{
+   SceUID thread_uid = (SceUID)thread;
+   sceKernelDeleteThread((SceUID)thread);
+}
+
+
+void archThreadSleep(int milliseconds)
+{
+   sceKernelDelayThread(1000 * milliseconds);
+}
+
+#endif
