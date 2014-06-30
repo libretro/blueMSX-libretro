@@ -156,9 +156,16 @@ else
 	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
 endif
 
+#ifneq ($(shell uname --hardware-platform),amd64)
+ifneq ($(shell uname --hardware-platform),x86_64)
+ifneq ($(shell uname --hardware-platform),x86)
+PLATFORM_DEFINES += -DNO_ASM
+endif
+endif
+#endif
+
+
 DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES)
-DEFINES += -D_MBCS -D__WINCRYPT_H__ -DLSB_FIRST -DNARROW -DSOUND -DDISK -DFMSX -DPROPERTIES_DEFAULTS_ALT_1 -DPROPERTIES_NO_REGISTRY -DPROPERTIES_LOCAL_INI_FILE
-DEFINES += -DNO_ASM
 DEFINES += -DNO_TIMERS -DSINGLE_THREADED -DVIDEO_COLOR_TYPE_RGB565
 
 CFLAGS   += $(fpic) $(DEFINES)
