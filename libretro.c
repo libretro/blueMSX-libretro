@@ -108,9 +108,6 @@ static inline void deinit_context_switch(void)
 
 
 
-#define MEDIADB_DIR              "Databases"
-#define MACHINES_DIR             "Machines"
-#define PROPERTIES_DIR           "."
 
 extern int eventMap[256];
 
@@ -337,19 +334,6 @@ void retro_init(void)
    image_buffer_width =  272;
    image_buffer_height =  240;
 
-   propertiesSetDirectory(PROPERTIES_DIR, PROPERTIES_DIR);
-
-   machineSetDirectory(MACHINES_DIR);
-
-//    boardSetDirectory(buffer);
-
-   mediaDbLoad(MEDIADB_DIR);
-
-//    mediaDbCreateRomdb();
-
-//    mediaDbCreateDiskdb();
-
-//    mediaDbCreateCasdb();
 
    init_context_switch();
 }
@@ -415,11 +399,34 @@ bool retro_unserialize(const void *data, size_t size)
 void retro_cheat_reset(void) {}
 void retro_cheat_set(unsigned a, bool b, const char * c) {}
 
+
+static void extract_directory(char *buf, const char *path, size_t size)
+{
+   strncpy(buf, path, size - 1);
+   buf[size - 1] = '\0';
+
+   char *base = strrchr(buf, '/');
+   if (!base)
+      base = strrchr(buf, '\\');
+
+   if (base)
+      *base = '\0';
+   else
+      buf[0] = '\0';
+}
+
 bool retro_load_game(const struct retro_game_info *info)
 {
    int i;
-
+   char properties_dir[256], machines_dir[256], mediadb_dir[256];
+   const char *dir = NULL;
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
+#ifdef _WIN32
+   char slash = '\\';
+#else
+   char slash = '/';
+#endif
+
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
       if (log_cb)
@@ -427,6 +434,21 @@ bool retro_load_game(const struct retro_game_info *info)
       return false;
    }
 
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
+      strcpy(properties_dir, dir);
+   else /* Fallback */
+      extract_directory(properties_dir, info->path, sizeof(properties_dir));
+
+   snprintf(machines_dir, sizeof(machines_dir), "%s%c%s", properties_dir, slash, "Machines");
+   snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, slash, "Databases");
+
+   propertiesSetDirectory(properties_dir, properties_dir);
+   machineSetDirectory(machines_dir);
+   //boardSetDirectory(buffer);
+   mediaDbLoad(mediadb_dir);
+   //mediaDbCreateRomdb();
+   //mediaDbCreateDiskdb();
+   //mediaDbCreateCasdb();
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
@@ -461,7 +483,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    emulatorRestartSound();
 
-   for (i = 0; i < MIXER_CHANNEL_TYPE_COUNT; i++) {
+   for (i = 0; i < MIXER_CHANNEL_TYPE_COUNT; i++)
+   {
        mixerSetChannelTypeVolume(mixer, i, properties->sound.mixerChannel[i].volume);
        mixerSetChannelTypePan(mixer, i, properties->sound.mixerChannel[i].pan);
        mixerEnableChannelType(mixer, i, properties->sound.mixerChannel[i].enable);
@@ -474,27 +497,33 @@ bool retro_load_game(const struct retro_game_info *info)
 
    mediaDbSetDefaultRomType(properties->cartridge.defaultType);
 
-
    strcpy(properties->media.carts[0].fileName , info->path);
 
-   for (i = 0; i < PROP_MAX_CARTS; i++) {
-       if (properties->media.carts[i].fileName[0]) insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+   for (i = 0; i < PROP_MAX_CARTS; i++)
+   {
+       if (properties->media.carts[i].fileName[0])
+          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
        updateExtendedRomName(i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip);
    }
 
-   for (i = 0; i < PROP_MAX_DISKS; i++) {
-       if (properties->media.disks[i].fileName[0]) insertDiskette(properties, i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip, -1);
+   for (i = 0; i < PROP_MAX_DISKS; i++)
+   {
+       if (properties->media.disks[i].fileName[0])
+          insertDiskette(properties, i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip, -1);
        updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
    }
 
-   for (i = 0; i < PROP_MAX_TAPES; i++) {
-       if (properties->media.tapes[i].fileName[0]) insertCassette(properties, i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip, 0);
+   for (i = 0; i < PROP_MAX_TAPES; i++)
+   {
+       if (properties->media.tapes[i].fileName[0])
+          insertCassette(properties, i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip, 0);
        updateExtendedCasName(i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip);
    }
 
    {
        Machine* machine = machineCreate(properties->emulation.machineName);
-       if (machine != NULL) {
+       if (machine != NULL)
+       {
            boardSetMachine(machine);
            machineDestroy(machine);
        }
@@ -505,22 +534,26 @@ bool retro_load_game(const struct retro_game_info *info)
    boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
-
-//   emulatorStart(NULL);
-
-//  retro_set_controller_port_device(0, RETRO_DEVICE_KEYBOARD);
+   //emulatorStart(NULL);
+   //retro_set_controller_port_device(0, RETRO_DEVICE_KEYBOARD);
 
   return true;
 }
 
 
-bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t c) { return false; }
+bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t c)
+{
+   return false;
+}
 
 void retro_unload_game(void)
 {
 }
 
-   unsigned retro_get_region(void) { return RETRO_REGION_NTSC; }
+unsigned retro_get_region(void)
+{
+   return RETRO_REGION_NTSC;
+}
 
 void *retro_get_memory_data(unsigned id)
 {
@@ -532,7 +565,8 @@ size_t retro_get_memory_size(unsigned id)
    return 0;
 }
 
-void timerCallback_global(void* timer) ;
+void timerCallback_global(void* timer);
+
 UInt8 archJoystickGetState(int joystickNo)
 {
    return ((eventMap[EC_JOY1_UP]      << 0) |
@@ -555,8 +589,6 @@ void retro_run(void)
 
    for (i=0; i < EC_KEYBOARD_KEYCOUNT; i++)
       eventMap[i] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[i]) ? 1 : 0;
-
-
 
    for (i = EC_JOY1_UP; i <= (EC_JOY1_BUTTON6); i++)
       eventMap[i] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, btn_map[i]) ? 1 : 0;
