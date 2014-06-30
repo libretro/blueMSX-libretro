@@ -27,9 +27,7 @@
 **
 ******************************************************************************
 */
-#ifdef PSP
-#include <pspthreadman.h>
-#endif
+
 #include "thread.h"
 
 #ifndef PSP
