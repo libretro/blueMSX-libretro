@@ -90,10 +90,15 @@ static inline void switch_to_cpu_thread(void)
    co_switch(cpu_thread);
 }
 
+static inline cpu_thread_entry(void)
+{
+   emulatorStart(NULL);
+}
+
 static inline void init_context_switch(void)
 {
    main_thread = co_active();
-   cpu_thread = co_create(CPU_THREAD_STACK_SIZE, emulatorStart);
+   cpu_thread = co_create(CPU_THREAD_STACK_SIZE, cpu_thread_entry);
 }
 
 static inline void deinit_context_switch(void)
