@@ -90,7 +90,7 @@ static inline void switch_to_cpu_thread(void)
    co_switch(cpu_thread);
 }
 
-static inline cpu_thread_entry(void)
+static void cpu_thread_entry(void)
 {
    emulatorStart(NULL);
 }
