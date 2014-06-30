@@ -77,6 +77,10 @@
 #include "SdlShortcuts.h"
 #include "SdlMouse.h"
 
+#ifdef videoGetColor
+#undef videoGetColor
+#endif
+
 void keyboardSetDirectory(char* directory);
 void keyboardInit();
 void keyboardSetFocus(int handle, int focus);
@@ -105,6 +109,10 @@ static int   displayPitch = 0;
 
 #define EVENT_UPDATE_DISPLAY 2
 #define EVENT_UPDATE_WINDOW  3
+
+void archTrap(UInt8 value)
+{
+}
 
 void createSdlSurface(int width, int height)
 {
