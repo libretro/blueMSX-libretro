@@ -34,6 +34,8 @@
 #define MAX_PADS 2
 static unsigned input_devices[2];
 
+//#define USE_LIBCO
+
 #ifdef PSP
 #include "pspthreadman.h"
 static SceUID main_thread;
@@ -72,7 +74,7 @@ static inline void deinit_context_switch(void)
    sceKernelTerminateDeleteThread(cpu_thread);
 }
 
-#else
+#elif defined (USE_LIBCO)
 
 #include "Src/Libretro/libco/libco.h"
 cothread_t main_thread;
@@ -104,6 +106,41 @@ static inline void init_context_switch(void)
 static inline void deinit_context_switch(void)
 {
    co_delete(cpu_thread);
+}
+
+#else
+
+#include "ucontext.h"
+static ucontext_t main_thread;
+static ucontext_t cpu_thread;
+
+#define CPU_THREAD_STACK_SIZE    (2 * 1024 * 1024)
+
+void switch_to_main_thread(void)
+{
+   swapcontext(&cpu_thread, &main_thread);
+}
+
+static inline void switch_to_cpu_thread(void)
+{
+   swapcontext(&main_thread, &cpu_thread);
+}
+
+static inline void init_context_switch(void)
+{
+   getcontext(&main_thread);
+
+   getcontext(&cpu_thread);
+   cpu_thread.uc_stack.ss_size = CPU_THREAD_STACK_SIZE;
+   cpu_thread.uc_stack.ss_sp = malloc(cpu_thread.uc_stack.ss_size);
+
+   makecontext(&cpu_thread, emulatorStart, 2, NULL);
+}
+
+static inline void deinit_context_switch(void)
+{
+   if (cpu_thread.uc_stack.ss_sp)
+      free(cpu_thread.uc_stack.ss_sp);
 }
 
 #endif
