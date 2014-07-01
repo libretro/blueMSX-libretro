@@ -326,6 +326,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.sample_rate = 44100.0;
 }
 
+static struct retro_perf_callback perf_cb;
+
 void retro_init(void)
 {
    struct retro_log_callback log;
@@ -339,8 +341,10 @@ void retro_init(void)
    image_buffer_width =  272;
    image_buffer_height =  240;
 
-
 //   init_context_switch();
+
+   environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
+
 }
 
 void retro_deinit(void)
@@ -353,6 +357,9 @@ void retro_deinit(void)
    image_buffer_height = 0;
 
 //   deinit_context_switch();
+
+   perf_cb.perf_log();
+
 }
 
 void retro_set_environment(retro_environment_t cb)
@@ -481,8 +488,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
    properties->video.monitorType           = P_VIDEO_PALNONE;
-   strcpy(properties->emulation.machineName, "MSX2+");
-//   strcpy(properties->emulation.machineName, "MSX");
+//   strcpy(properties->emulation.machineName, "MSX2+");
+   strcpy(properties->emulation.machineName, "MSX");
 
    video = videoCreate();
    videoSetColors(video, properties->video.saturation, properties->video.brightness,
@@ -608,10 +615,20 @@ UInt8 archJoystickGetState(int joystickNo)
 #define EC_KEYBOARD_KEYCOUNT  94
 extern BoardInfo boardInfo;
 #include "R800.h"
+
+#define RETRO_PERFORMANCE_INIT(name) static struct retro_perf_counter name = {#name}; if (!name.registered) perf_cb.perf_register(&(name))
+#define RETRO_PERFORMANCE_START(name) perf_cb.perf_start(&(name))
+#define RETRO_PERFORMANCE_STOP(name) perf_cb.perf_stop(&(name))
+
+
 void retro_run(void)
 {
 
    int i,j;
+
+   RETRO_PERFORMANCE_INIT(core_retro_run);
+   RETRO_PERFORMANCE_START(core_retro_run);
+
    input_poll_cb();
 
 #ifdef PSP
@@ -680,6 +697,8 @@ void retro_run(void)
    else
       for (i=0;i<frameBuffer->lines;i++)
          memcpy(image_buffer + (i*frameBuffer->maxWidth), frameBuffer->line[i].buffer, frameBuffer->maxWidth * sizeof(uint16_t));
+
+   RETRO_PERFORMANCE_STOP(core_retro_run);
 
    video_cb(image_buffer,frameBuffer->maxWidth,frameBuffer->lines,frameBuffer->maxWidth * sizeof(uint16_t));
 
