@@ -34,6 +34,8 @@
 #define MAX_PADS 2
 static unsigned input_devices[2];
 
+#if 0
+
 #ifdef PSP
 #include "pspthreadman.h"
 static SceUID main_thread;
@@ -109,6 +111,7 @@ static inline void deinit_context_switch(void)
 #endif
 
 
+#endif
 
 
 extern int eventMap[256];
@@ -257,31 +260,31 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETRO_DEVICE_ID_JOYPAD_START,    //EC_JOY2_BUTTON5 118
    RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_JOY2_BUTTON6 119
 
-   RETROK_UNKNOWN,   //EC_COLECO1_0    120
-   RETROK_UNKNOWN,   //EC_COLECO1_1    121
-   RETROK_UNKNOWN,   //EC_COLECO1_2    122
-   RETROK_UNKNOWN,   //EC_COLECO1_3    123
-   RETROK_UNKNOWN,   //EC_COLECO1_4    124
-   RETROK_UNKNOWN,   //EC_COLECO1_5    125
-   RETROK_UNKNOWN,   //EC_COLECO1_6    126
-   RETROK_UNKNOWN,   //EC_COLECO1_7    127
-   RETROK_UNKNOWN,   //EC_COLECO1_8    128
-   RETROK_UNKNOWN,   //EC_COLECO1_9    129
-   RETROK_UNKNOWN,   //EC_COLECO1_STAR 130
-   RETROK_UNKNOWN,   //EC_COLECO1_HASH 131
+   RETROK_UNKNOWN,                  //EC_COLECO1_0    120
+   RETROK_UNKNOWN,                  //EC_COLECO1_1    121
+   RETROK_UNKNOWN,                  //EC_COLECO1_2    122
+   RETROK_UNKNOWN,                  //EC_COLECO1_3    123
+   RETROK_UNKNOWN,                  //EC_COLECO1_4    124
+   RETROK_UNKNOWN,                  //EC_COLECO1_5    125
+   RETROK_UNKNOWN,                  //EC_COLECO1_6    126
+   RETROK_UNKNOWN,                  //EC_COLECO1_7    127
+   RETROK_UNKNOWN,                  //EC_COLECO1_8    128
+   RETROK_UNKNOWN,                  //EC_COLECO1_9    129
+   RETROK_UNKNOWN,                  //EC_COLECO1_STAR 130
+   RETROK_UNKNOWN,                  //EC_COLECO1_HASH 131
 
-   RETROK_UNKNOWN,   //EC_COLECO2_0    140
-   RETROK_UNKNOWN,   //EC_COLECO2_1    141
-   RETROK_UNKNOWN,   //EC_COLECO2_2    142
-   RETROK_UNKNOWN,   //EC_COLECO2_3    143
-   RETROK_UNKNOWN,   //EC_COLECO2_4    144
-   RETROK_UNKNOWN,   //EC_COLECO2_5    145
-   RETROK_UNKNOWN,   //EC_COLECO2_6    146
-   RETROK_UNKNOWN,   //EC_COLECO2_7    147
-   RETROK_UNKNOWN,   //EC_COLECO2_8    148
-   RETROK_UNKNOWN,   //EC_COLECO2_9    149
-   RETROK_UNKNOWN,   //EC_COLECO2_STAR 150
-   RETROK_UNKNOWN,   //EC_COLECO2_HASH 151
+   RETROK_UNKNOWN,                  //EC_COLECO2_0    140
+   RETROK_UNKNOWN,                  //EC_COLECO2_1    141
+   RETROK_UNKNOWN,                  //EC_COLECO2_2    142
+   RETROK_UNKNOWN,                  //EC_COLECO2_3    143
+   RETROK_UNKNOWN,                  //EC_COLECO2_4    144
+   RETROK_UNKNOWN,                  //EC_COLECO2_5    145
+   RETROK_UNKNOWN,                  //EC_COLECO2_6    146
+   RETROK_UNKNOWN,                  //EC_COLECO2_7    147
+   RETROK_UNKNOWN,                  //EC_COLECO2_8    148
+   RETROK_UNKNOWN,                  //EC_COLECO2_9    149
+   RETROK_UNKNOWN,                  //EC_COLECO2_STAR 150
+   RETROK_UNKNOWN,                  //EC_COLECO2_HASH 151
 };
 
 
@@ -337,7 +340,7 @@ void retro_init(void)
    image_buffer_height =  240;
 
 
-   init_context_switch();
+//   init_context_switch();
 }
 
 void retro_deinit(void)
@@ -349,7 +352,7 @@ void retro_deinit(void)
    image_buffer_width = 0;
    image_buffer_height = 0;
 
-   deinit_context_switch();
+//   deinit_context_switch();
 }
 
 void retro_set_environment(retro_environment_t cb)
@@ -479,6 +482,7 @@ bool retro_load_game(const struct retro_game_info *info)
    properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
    properties->video.monitorType           = P_VIDEO_PALNONE;
    strcpy(properties->emulation.machineName, "MSX2+");
+//   strcpy(properties->emulation.machineName, "MSX");
 
    video = videoCreate();
    videoSetColors(video, properties->video.saturation, properties->video.brightness,
@@ -558,6 +562,7 @@ bool retro_load_game(const struct retro_game_info *info)
    boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
+   emulatorStart(NULL);
    return true;
 }
 
@@ -601,12 +606,26 @@ UInt8 archJoystickGetState(int joystickNo)
 }
 
 #define EC_KEYBOARD_KEYCOUNT  94
-
+extern BoardInfo boardInfo;
+#include "R800.h"
 void retro_run(void)
 {
 
    int i,j;
    input_poll_cb();
+
+#ifdef PSP
+
+   eventMap[EC_LEFT] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ? 1 : 0;
+   eventMap[EC_RIGHT] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
+   eventMap[EC_UP] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ? 1 : 0;
+   eventMap[EC_DOWN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ? 1 : 0;
+   eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ? 1 : 0;
+   eventMap[EC_SPACE] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ? 1 : 0;
+   eventMap[EC_CTRL] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) ? 1 : 0;
+   eventMap[EC_GRAPH] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ? 1 : 0;
+
+#else
 
    for (i = 0; i < MAX_PADS; i++)
    {
@@ -627,10 +646,14 @@ void retro_run(void)
       }
    }
 
-   switch_to_cpu_thread();
+#endif
+//   switch_to_cpu_thread();
 
 //   timerCallback_global(NULL);
 //   emulatorRunOne();
+   ((R800*)boardInfo.cpuRef)->terminate = 0;
+   boardInfo.run(boardInfo.cpuRef);
+
 
    FrameBuffer* frameBuffer;
    frameBuffer = frameBufferFlipViewFrame(0);

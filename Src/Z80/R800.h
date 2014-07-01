@@ -86,12 +86,12 @@
 ** Configuration options
 */
 #ifndef Z80_CUSTOM_CONFIGURATION
-#define ENABLE_BREAKPOINTS
-#define ENABLE_CALLSTACK
-#define ENABLE_WATCHPOINTS
-#define ENABLE_ASMSX_DEBUG_COMMANDS
-#define ENABLE_TRAP_CALLBACK
-#define TIME_TRACE_SIZE 1024
+//#define ENABLE_BREAKPOINTS
+//#define ENABLE_CALLSTACK
+//#define ENABLE_WATCHPOINTS
+//#define ENABLE_ASMSX_DEBUG_COMMANDS
+//#define ENABLE_TRAP_CALLBACK
+//#define TIME_TRACE_SIZE 1024
 #endif
 
 /*****************************************************

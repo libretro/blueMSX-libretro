@@ -186,8 +186,8 @@ else ifeq ($(platform), emscripten)
 	CFLAGS += -O2
 	CXXFLAGS += -O2 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
 else
-	CFLAGS += -O3
-	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
+	CFLAGS += -O3 -g
+	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H -g
 endif
 
 ifeq ($(USE_SSE), 0)

@@ -71,7 +71,7 @@ static BoardTimer* stateTimer;
 static BoardTimer* breakpointTimer;
 static BoardDeviceInfo* boardDeviceInfo;
 static Machine* boardMachine;
-static BoardInfo boardInfo;
+BoardInfo boardInfo;
 static UInt32 boardRamSize;
 static UInt32 boardVramSize;
 static int boardRunning = 0;
@@ -795,6 +795,8 @@ int boardRun(Machine* machine,
             periodicTimer = boardTimerCreate(boardPeriodicCallback, periodicRef);
             boardTimerAdd(periodicTimer, boardSystemTime() + periodicInterval);
         }
+
+        return;
 
         if (!skipSync) {
             syncToRealClock(0, 0);

@@ -403,6 +403,8 @@ static void emulatorThread() {
                        reverseBufferCnt,
                        WaitForSync);
 
+    return;
+
     ledSetAll(0);
     emuState = EMU_STOPPED;
 
@@ -475,6 +477,7 @@ void emulatorStart(const char* stateName) {
 #ifdef SINGLE_THREADED
     emuState = EMU_RUNNING;
     emulatorThread();
+    return;
 
     if (emulationStartFailure) {
         archEmulationStopNotification();
@@ -875,18 +878,21 @@ UInt32 getHiresTimer() {
 #if 1
 
 extern void switch_to_main_thread(void);
-
+extern BoardInfo boardInfo;
 static int WaitForSync(int maxSpeed, int breakpointHit) {
 
    static float time_fraction = 0.0;
    if (time_fraction > 1.0)
       time_fraction -= 1.0;
 
-   switch_to_main_thread();
+//   switch_to_main_thread();
 
    time_fraction += (1000.0 / 60.0) - 16.0;
 
+   boardInfo.stop(boardInfo.cpuRef);
    return 16 + time_fraction;
+
+
 }
 
 #else
