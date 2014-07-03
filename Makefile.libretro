@@ -237,6 +237,7 @@ CSRCS  += Src/Libretro/Eth.c
 CSRCS  += Src/Libretro/Cdrom.c
 CSRCS  += Src/Libretro/Mouse.c
 CSRCS  += Src/Libretro/rthread.c
+CSRCS  += Src/Libretro/Emulator.c
 
 CSRCS  += Src/Common/ArrayList.c
 CSRCS  += Src/Common/DebugMemory.c
@@ -478,7 +479,7 @@ CSRCS  += Src/SoundChips/MsxPsg.c
 CSRCS  += Src/Emulator/Actions.c
 CSRCS  += Src/Emulator/AppConfig.c
 CSRCS  += Src/Emulator/CommandLine.c
-CSRCS  += Src/Emulator/Emulator.c
+#CSRCS  += Src/Emulator/Emulator.c
 #CSRCS  += Src/Emulator/Keyboard.c
 CSRCS  += Src/Emulator/FileHistory.c
 CSRCS  += Src/Emulator/LaunchFile.c
