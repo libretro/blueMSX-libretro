@@ -109,8 +109,6 @@ static inline void deinit_context_switch(void)
 #endif
 
 
-
-
 extern int eventMap[256];
 
 static unsigned btn_map[EC_KEYCOUNT] =
@@ -322,7 +320,11 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.fps = 60.0;
    info->timing.sample_rate = 44100.0;
 }
+
+#ifdef LOG_PERFORMANCE
 static struct retro_perf_callback perf_cb;
+#endif
+
 void retro_init(void)
 {
    struct retro_log_callback log;
@@ -339,7 +341,9 @@ void retro_init(void)
 
    init_context_switch();
 
+#ifdef LOG_PERFORMANCE
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
+#endif
 
 }
 
@@ -353,7 +357,10 @@ void retro_deinit(void)
    image_buffer_height = 0;
 
    deinit_context_switch();
+
+#ifdef LOG_PERFORMANCE
    perf_cb.perf_log();
+#endif
 }
 
 void retro_set_environment(retro_environment_t cb)
@@ -607,9 +614,16 @@ UInt8 archJoystickGetState(int joystickNo)
 
 #define EC_KEYBOARD_KEYCOUNT  94
 
+#ifdef LOG_PERFORMANCE
 #define RETRO_PERFORMANCE_INIT(name) static struct retro_perf_counter name = {#name}; if (!name.registered) perf_cb.perf_register(&(name))
 #define RETRO_PERFORMANCE_START(name) perf_cb.perf_start(&(name))
 #define RETRO_PERFORMANCE_STOP(name) perf_cb.perf_stop(&(name))
+#else
+#define RETRO_PERFORMANCE_INIT(name)
+#define RETRO_PERFORMANCE_START(name)
+#define RETRO_PERFORMANCE_STOP(name)
+
+#endif
 
 void retro_run(void)
 {
