@@ -199,8 +199,8 @@ DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES)
 DEFINES += -DNO_TIMERS -DSINGLE_THREADED -DVIDEO_COLOR_TYPE_RGB565 -DZ80_CUSTOM_CONFIGURATION
 
 CFLAGS   += $(fpic) $(DEFINES)
-#CFLAGS   += -w
-CFLAGS   += -Wall
+CFLAGS   += -w
+#CFLAGS   += -Wall
 
 CXXFLAGS += $(fpic) $(DEFINES)
 CXXFLAGS   += -w
@@ -221,14 +221,12 @@ CSRCS  += Src/Libretro/Midi.c
 CSRCS  += Src/Libretro/Notifications.c
 CSRCS  += Src/Libretro/Printer.c
 CSRCS  += Src/Libretro/Sound.c
-CSRCS  += Src/Libretro/Thread.c
 CSRCS  += Src/Libretro/Timer.c
 CSRCS  += Src/Libretro/Uart.c
 CSRCS  += Src/Libretro/VideoIn.c
 CSRCS  += Src/Libretro/Eth.c
 CSRCS  += Src/Libretro/Cdrom.c
 CSRCS  += Src/Libretro/Mouse.c
-CSRCS  += Src/Libretro/rthread.c
 CSRCS  += Src/Libretro/Emulator.c
 
 CSRCS  += Src/Common/ArrayList.c
@@ -394,7 +392,6 @@ CSRCS  += Src/VideoRender/Scalebit.c
 CSRCS  += Src/VideoRender/VideoRender.c
 
 CSRCS  += Src/Z80/R800.c
-CSRCS  += Src/Z80/R800Dasm.c
 CSRCS  += Src/Z80/R800SaveState.c
 
 CSRCS  += Src/Z80/R800Debug.c
@@ -541,7 +538,7 @@ INCDIRS += -ISrc/Input
 INCDIRS += -ISrc/Libretro
 INCDIRS += $(EXTRA_INCLUDES)
 
-LIBS := -lpthread -lz
+LIBS := -lz
 
 
 all: $(TARGET)
