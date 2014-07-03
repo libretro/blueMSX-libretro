@@ -222,9 +222,10 @@ static Mixer* mixer;
 
 
 static uint16_t* image_buffer;
-static unsigned image_buffer_width;
+static unsigned image_buffer_base_width;
+static unsigned image_buffer_current_width;
 static unsigned image_buffer_height;
-
+static int double_width;
 
 void retro_get_system_info(struct retro_system_info *info)
 {
@@ -237,10 +238,8 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   info->geometry.base_width = image_buffer_width ;
+   info->geometry.base_width = image_buffer_base_width ;
    info->geometry.base_height = image_buffer_height ;
-   info->geometry.base_width = 272 ;
-   info->geometry.base_height = 240 ;
    info->geometry.max_width = FB_MAX_LINE_WIDTH ;
    info->geometry.max_height = FB_MAX_LINES ;
    info->geometry.aspect_ratio = 0;
@@ -262,8 +261,10 @@ void retro_init(void)
       log_cb = NULL;
 
    image_buffer = malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
-   image_buffer_width =  272;
+   image_buffer_base_width =  272;
+   image_buffer_current_width =  image_buffer_base_width;
    image_buffer_height =  240;
+   double_width = 0;
 
 #ifdef LOG_PERFORMANCE
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
@@ -277,7 +278,8 @@ void retro_deinit(void)
       free(image_buffer);
 
    image_buffer = NULL;
-   image_buffer_width = 0;
+   image_buffer_base_width = 0;
+   image_buffer_current_width = 0;
    image_buffer_height = 0;
 
 #ifdef LOG_PERFORMANCE
@@ -584,38 +586,109 @@ void retro_run(void)
    ((R800*)boardInfo.cpuRef)->terminate = 0;
    boardInfo.run(boardInfo.cpuRef);
 
-   FrameBuffer* frameBuffer;
-   frameBuffer = frameBufferFlipViewFrame(0);
-   if (frameBuffer == NULL) {
-       frameBuffer = frameBufferGetWhiteNoiseFrame();
-   }
-
-
-//   if ((frameBuffer->maxWidth != image_buffer_width)||(frameBuffer->lines != image_buffer_height))
-//   {
-//      image_buffer_width  = frameBuffer->maxWidth;
-//      image_buffer_height = frameBuffer->lines;
-
-//      static struct retro_system_av_info new_av_info;
-//      environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
-//   }
-
-
-
-   if (frameBuffer->line[0].doubleWidth)
-      for (i=0;i<frameBuffer->lines;i++)
-         for (j=0;j<frameBuffer->maxWidth;j++)
-            image_buffer[j + i * frameBuffer->maxWidth]= frameBuffer->line[i].buffer[j<<1];
-   else
-      for (i=0;i<frameBuffer->lines;i++)
-         memcpy(image_buffer + (i*frameBuffer->maxWidth), frameBuffer->line[i].buffer, frameBuffer->maxWidth * sizeof(uint16_t));
-
    RETRO_PERFORMANCE_STOP(core_retro_run);
 
-   video_cb(image_buffer,frameBuffer->maxWidth,frameBuffer->lines,frameBuffer->maxWidth * sizeof(uint16_t));
+   video_cb(image_buffer, image_buffer_current_width, image_buffer_height, image_buffer_current_width * sizeof(uint16_t));
 
 
 }
 
 unsigned retro_api_version(void) { return RETRO_API_VERSION; }
 
+
+// framebuffer
+
+uint16_t* frameBufferGetLine(FrameBuffer* frameBuffer, int y) {
+    return (image_buffer + y * image_buffer_current_width);
+}
+
+FrameBuffer* frameBufferGetDrawFrame()
+{
+   return (void*)-1;
+}
+FrameBuffer* frameBufferFlipDrawFrame()
+{
+   return (void*)-1;
+}
+
+static int fbScanLine = 0;
+void frameBufferSetScanline(int scanline)
+{
+   fbScanLine = scanline;
+}
+
+int frameBufferGetScanline() {
+   return fbScanLine;
+}
+
+FrameBufferData* frameBufferDataCreate(int maxWidth, int maxHeight, int defaultHorizZoom)
+{
+   return (void*)-1;
+}
+
+FrameBufferData* frameBufferGetActive()
+{
+   return (void*)-1;
+}
+
+void frameBufferDataDestroy(FrameBufferData* frameData)
+{
+
+}
+
+void frameBufferSetActive(FrameBufferData* frameData)
+{
+
+}
+void frameBufferSetMixMode(FrameBufferMixMode mode, FrameBufferMixMode mask)
+{
+
+}
+
+void   frameBufferSetLineCount(FrameBuffer* frameBuffer, int val)
+{
+   image_buffer_height = val;
+}
+
+int    frameBufferGetLineCount(FrameBuffer* frameBuffer) {
+   return image_buffer_height;
+}
+
+int    frameBufferGetMaxWidth(FrameBuffer* frameBuffer)
+{
+   return FB_MAX_LINE_WIDTH;
+}
+
+int    frameBufferGetDoubleWidth(FrameBuffer* frameBuffer, int y)
+{
+   return double_width;
+}
+
+void   frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val)
+{
+   double_width = val;
+   image_buffer_current_width = double_width ? image_buffer_base_width * 2 : image_buffer_base_width;
+}
+
+void frameBufferClearDeinterlace()
+{
+
+}
+void   frameBufferSetInterlace(FrameBuffer* frameBuffer, int val)
+{
+
+}
+
+void archTrap(UInt8 value)
+{
+}
+
+int archPollEvent()
+{
+   return 0;
+}
+
+void videoUpdateAll(Video* video, Properties* properties)
+{
+
+}

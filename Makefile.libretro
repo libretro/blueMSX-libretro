@@ -196,7 +196,7 @@ endif
 
 
 DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES)
-DEFINES += -DNO_TIMERS -DSINGLE_THREADED -DVIDEO_COLOR_TYPE_RGB565 -DZ80_CUSTOM_CONFIGURATION
+DEFINES += -DNO_TIMERS -DSINGLE_THREADED -DVIDEO_COLOR_TYPE_RGB565 -DZ80_CUSTOM_CONFIGURATION -DNO_FRAMEBUFFER
 
 CFLAGS   += $(fpic) $(DEFINES)
 CFLAGS   += -w
@@ -210,7 +210,6 @@ CXXFLAGS   += -w
 
 CSRCS   += libretro.c
 
-CSRCS  += Src/Libretro/blueMSXlite.c
 CSRCS  += Src/Libretro/Dialog.c
 CSRCS  += Src/Libretro/Event.c
 CSRCS  += Src/Libretro/File.c
@@ -381,7 +380,6 @@ CXXSRCS += Src/Media/MediaDb.cpp
 CXXSRCS += Src/Media/Sha1.cpp
 
 CSRCS  += Src/VideoChips/CRTC6845.c
-CSRCS  += Src/VideoChips/FrameBuffer.c
 CSRCS  += Src/VideoChips/VDP.c
 CSRCS  += Src/VideoChips/V9938.c
 CSRCS  += Src/VideoChips/VideoManager.c
