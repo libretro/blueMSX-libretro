@@ -58,4 +58,10 @@ int archPollEvent()
 {
    return 0;
 }
+
+void videoUpdateAll(Video* video, Properties* properties)
+{
+
+}
+
 #endif

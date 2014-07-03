@@ -414,12 +414,6 @@ bool retro_load_game(const struct retro_game_info *info)
    strcpy(properties->emulation.machineName, "MSX2+");
 //   strcpy(properties->emulation.machineName, "MSX");
 
-   video = videoCreate();
-   videoSetColors(video, properties->video.saturation, properties->video.brightness,
-         properties->video.contrast, properties->video.gamma);
-   videoSetScanLines(video, properties->video.scanlinesEnable, properties->video.scanlinesPct);
-   videoSetColorSaturation(video, properties->video.colorSaturationEnable, properties->video.colorSaturationWidth);
-
    mixer = mixerCreate();
 
    emulatorInit(properties, mixer);
@@ -451,7 +445,6 @@ bool retro_load_game(const struct retro_game_info *info)
    mixerSetMasterVolume(mixer, properties->sound.masterVolume);
    mixerEnableMaster(mixer, properties->sound.masterEnable);
 
-   videoUpdateAll(video, properties);
 
    mediaDbSetDefaultRomType(properties->cartridge.defaultType);
 

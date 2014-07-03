@@ -386,10 +386,10 @@ CSRCS  += Src/VideoChips/VDP.c
 CSRCS  += Src/VideoChips/V9938.c
 CSRCS  += Src/VideoChips/VideoManager.c
 
-CSRCS  += Src/VideoRender/hq2x.c
-CSRCS  += Src/VideoRender/hq3x.c
-CSRCS  += Src/VideoRender/Scalebit.c
-CSRCS  += Src/VideoRender/VideoRender.c
+#CSRCS  += Src/VideoRender/hq2x.c
+#CSRCS  += Src/VideoRender/hq3x.c
+#CSRCS  += Src/VideoRender/Scalebit.c
+#CSRCS  += Src/VideoRender/VideoRender.c
 
 CSRCS  += Src/Z80/R800.c
 CSRCS  += Src/Z80/R800SaveState.c
