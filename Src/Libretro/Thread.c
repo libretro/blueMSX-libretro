@@ -150,7 +150,4 @@ void archThreadDestroy(void* thread)
 }
 #endif
 
-void archThreadSleep(int milliseconds)
-{
-   retro_sleep(milliseconds);
-}
+

@@ -49,11 +49,6 @@ static Video* video;
 static Mixer* mixer;
 
 
-int  archUpdateEmuDisplay(int syncMode) 
-{
-   return 1;
-}
-
 void archTrap(UInt8 value)
 {
 }

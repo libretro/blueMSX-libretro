@@ -71,7 +71,11 @@ static BoardTimer* stateTimer;
 static BoardTimer* breakpointTimer;
 static BoardDeviceInfo* boardDeviceInfo;
 static Machine* boardMachine;
+#ifdef __LIBRETRO__
+BoardInfo boardInfo;
+#else
 static BoardInfo boardInfo;
+#endif
 static UInt32 boardRamSize;
 static UInt32 boardVramSize;
 static int boardRunning = 0;
@@ -796,6 +800,9 @@ int boardRun(Machine* machine,
             boardTimerAdd(periodicTimer, boardSystemTime() + periodicInterval);
         }
 
+#ifdef __LIBRETRO__
+        return success;
+#endif
         if (!skipSync) {
             syncToRealClock(0, 0);
         }

@@ -28,86 +28,13 @@
 #include "ArchSound.h"
 #include "ArchNotifications.h"
 #include "JoystickPort.h"
-
 #include "InputEvent.h"
+#include "R800.h"
+
+extern BoardInfo boardInfo;
 
 #define MAX_PADS 2
 static unsigned input_devices[2];
-
-#ifdef PSP
-#include "pspthreadman.h"
-static SceUID main_thread;
-static SceUID cpu_thread;
-
-void switch_to_main_thread(void)
-{
-   sceKernelWakeupThread(main_thread);
-   sceKernelSleepThread();
-}
-
-static inline void switch_to_cpu_thread(void)
-{
-   sceKernelWakeupThread(cpu_thread);
-   sceKernelSleepThread();
-}
-
-static int cpu_thread_entry(SceSize args, void* argp)
-{
-   sceKernelSleepThread();
-
-   emulatorStart(NULL);
-
-   return 0;
-}
-
-static inline void init_context_switch(void)
-{
-   main_thread = sceKernelGetThreadId();
-   cpu_thread = sceKernelCreateThread ("CPU thread", cpu_thread_entry, 0x10, 0x10000, PSP_THREAD_ATTR_VFPU, NULL);
-   sceKernelStartThread(cpu_thread, 0, NULL);
-}
-
-static inline void deinit_context_switch(void)
-{
-   sceKernelTerminateDeleteThread(cpu_thread);
-}
-
-#else
-
-#include "Src/Libretro/libco/libco.h"
-cothread_t main_thread;
-cothread_t cpu_thread;
-
-#define CPU_THREAD_STACK_SIZE    (2 * 1024 * 1024)
-
-void switch_to_main_thread(void)
-{
-   co_switch(main_thread);
-}
-
-static inline void switch_to_cpu_thread(void)
-{
-   co_switch(cpu_thread);
-}
-
-static void cpu_thread_entry(void)
-{
-   emulatorStart(NULL);
-}
-
-static inline void init_context_switch(void)
-{
-   main_thread = co_active();
-   cpu_thread = co_create(CPU_THREAD_STACK_SIZE, cpu_thread_entry);
-}
-
-static inline void deinit_context_switch(void)
-{
-   co_delete(cpu_thread);
-}
-
-#endif
-
 
 extern int eventMap[256];
 
@@ -338,9 +265,6 @@ void retro_init(void)
    image_buffer_width =  272;
    image_buffer_height =  240;
 
-
-   init_context_switch();
-
 #ifdef LOG_PERFORMANCE
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
 #endif
@@ -355,8 +279,6 @@ void retro_deinit(void)
    image_buffer = NULL;
    image_buffer_width = 0;
    image_buffer_height = 0;
-
-   deinit_context_switch();
 
 #ifdef LOG_PERFORMANCE
    perf_cb.perf_log();
@@ -489,8 +411,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
    properties->video.monitorType           = P_VIDEO_PALNONE;
-//   strcpy(properties->emulation.machineName, "MSX2+");
-   strcpy(properties->emulation.machineName, "MSX");
+   strcpy(properties->emulation.machineName, "MSX2+");
+//   strcpy(properties->emulation.machineName, "MSX");
 
    video = videoCreate();
    videoSetColors(video, properties->video.saturation, properties->video.brightness,
@@ -570,6 +492,7 @@ bool retro_load_game(const struct retro_game_info *info)
    boardSetMoonsoundEnable(properties->sound.chip.enableMoonsound);
    boardSetVideoAutodetect(properties->video.detectActiveMonitor);
 
+   emulatorStart(NULL);
    return true;
 }
 
@@ -622,17 +545,29 @@ UInt8 archJoystickGetState(int joystickNo)
 #define RETRO_PERFORMANCE_INIT(name)
 #define RETRO_PERFORMANCE_START(name)
 #define RETRO_PERFORMANCE_STOP(name)
-
 #endif
 
 void retro_run(void)
 {
+   int i,j;
+
    RETRO_PERFORMANCE_INIT(core_retro_run);
    RETRO_PERFORMANCE_START(core_retro_run);
 
-   int i,j;
    input_poll_cb();
 
+#ifdef PSP
+
+   eventMap[EC_LEFT] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ? 1 : 0;
+   eventMap[EC_RIGHT] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
+   eventMap[EC_UP] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ? 1 : 0;
+   eventMap[EC_DOWN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ? 1 : 0;
+   eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ? 1 : 0;
+   eventMap[EC_SPACE] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ? 1 : 0;
+   eventMap[EC_CTRL] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) ? 1 : 0;
+   eventMap[EC_GRAPH] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ? 1 : 0;
+
+#else
    for (i = 0; i < MAX_PADS; i++)
    {
       switch (input_devices[i])
@@ -651,11 +586,10 @@ void retro_run(void)
             break;
       }
    }
+#endif
 
-   switch_to_cpu_thread();
-
-//   timerCallback_global(NULL);
-//   emulatorRunOne();
+   ((R800*)boardInfo.cpuRef)->terminate = 0;
+   boardInfo.run(boardInfo.cpuRef);
 
    FrameBuffer* frameBuffer;
    frameBuffer = frameBufferFlipViewFrame(0);
