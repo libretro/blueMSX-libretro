@@ -1087,7 +1087,7 @@ Properties* propCreate(int useDefault, int langType, PropKeyboardLanguage kbdLan
     if (!useDefault) {
         propLoad(properties);
     }
-#ifndef WII
+#if !defined(WII) && !defined(__LIBRETRO__)
     // Verify machine name
     {
         int foundMachine = 0;
