@@ -70,19 +70,6 @@ static int    enableSynchronousUpdate = 1;
 
 extern BoardInfo boardInfo;
 
-static int WaitForSync(int maxSpeed, int breakpointHit) {
-
-   static float time_fraction = 0.0;
-   if (time_fraction > 1.0)
-      time_fraction -= 1.0;
-
-   time_fraction += (1000.0 / 60.0) - 16.0;
-
-   boardInfo.stop(boardInfo.cpuRef);
-
-   return 16 + time_fraction;
-}
-
 
 void emuEnableSynchronousUpdate(int enable)
 {
@@ -130,55 +117,6 @@ void emulatorSetState(EmuState state) {
     emuState = state;
 }
 
-
-int emulatorGetSyncPeriod() {
-#ifdef NO_HIRES_TIMERS
-    return 10;
-#else
-    return properties->emulation.syncMethod == P_EMU_SYNCAUTO ||
-           properties->emulation.syncMethod == P_EMU_SYNCNONE ? 2 : 1;
-#endif
-}
-
-#ifndef WII
-static int timerCallback(void* timer) {
-    if (properties == NULL) {
-        return 1;
-    }
-    else {
-        static UInt32 frameCount = 0;
-        static UInt32 oldSysTime = 0;
-        static UInt32 refreshRate = 50;
-        UInt32 framePeriod = (properties->video.frameSkip + 1) * 1000;
-        UInt32 sysTime = archGetSystemUpTime(1000);
-        UInt32 diffTime = sysTime - oldSysTime;
-
-        if (diffTime == 0) {
-            return 0;
-        }
-
-        oldSysTime = sysTime;
-
-        // Update display
-        frameCount += refreshRate * diffTime;
-        if (frameCount >= framePeriod) {
-            frameCount %= framePeriod;
-            if (emuState == EMU_RUNNING) {
-                refreshRate = boardGetRefreshRate();
-
-            }
-        }
-
-    }
-
-    return 1;
-}
-
-int timerCallback_global(void* timer) {
-   timerCallback(timer);
-}
-
-#endif
 
 static void getDeviceInfo(BoardDeviceInfo* deviceInfo)
 {
@@ -283,7 +221,7 @@ void emulatorStart(const char* stateName) {
 
     emuState = EMU_RUNNING;
 
-    emulatorSetFrequency(properties->emulation.speed, &frequency);
+    emulatorSetFrequency(50 , &frequency);
 
     switchSetFront(properties->emulation.frontSwitch);
     switchSetPause(properties->emulation.pauseSwitch);
@@ -298,9 +236,9 @@ void emulatorStart(const char* stateName) {
                        mixer,
                        *emuStateName ? emuStateName : NULL,
                        frequency,
-                       reversePeriod,
-                       reverseBufferCnt,
-                       WaitForSync);
+                       0,
+                       0,
+                       NULL);
     if (!success) {
         archEmulationStopNotification();
         emuState = EMU_STOPPED;

@@ -537,6 +537,10 @@ static void onHint(VDP* vdp, UInt32 time)
 
 int framecounter = 0;
 
+#ifdef __LIBRETRO__
+extern BoardInfo boardInfo;
+#endif
+
 static void onVint(VDP* vdp, UInt32 time)
 {
     sync(vdp, time);
@@ -555,6 +559,11 @@ static void onVint(VDP* vdp, UInt32 time)
 //    }
 //    vdp->drawArea = 0;
     vdpSetTimingMode(vdp->cmdEngine, vdp->vdpRegs[8] & 2);
+
+#ifdef __LIBRETRO__
+   boardInfo.stop(boardInfo.cpuRef);
+#endif
+
 }
 
 static void onDrawAreaEnd(VDP* vdp, UInt32 time)

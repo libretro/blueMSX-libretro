@@ -774,7 +774,9 @@ int boardRun(Machine* machine,
     }
 
     if (success) {
+#ifndef __LIBRETRO__
         syncTimer = boardTimerCreate(onSync, NULL);
+#endif
         fdcTimer = boardTimerCreate(onFdcDone, NULL);
         mixerTimer = boardTimerCreate(onMixerSync, NULL);
         
@@ -792,16 +794,17 @@ int boardRun(Machine* machine,
             stateTimer = NULL;
         }
 
+#ifdef __LIBRETRO__
+        boardTimerAdd(mixerTimer, boardSystemTime() + boardFrequency() / 50);
+        return success;
+#else
         boardTimerAdd(syncTimer, boardSystemTime() + 1);
         boardTimerAdd(mixerTimer, boardSystemTime() + boardFrequency() / 50);
-        
+
         if (boardPeriodicCallback != NULL) {
             periodicTimer = boardTimerCreate(boardPeriodicCallback, periodicRef);
             boardTimerAdd(periodicTimer, boardSystemTime() + periodicInterval);
         }
-
-#ifdef __LIBRETRO__
-        return success;
 #endif
         if (!skipSync) {
             syncToRealClock(0, 0);
