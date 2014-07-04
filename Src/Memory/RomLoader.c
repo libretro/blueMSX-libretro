@@ -34,6 +34,11 @@
 // PacketFileSystem.h Need to be included after all other includes
 #include "PacketFileSystem.h"
 
+#ifdef __LIBRETRO__
+#include "libretro.h"
+extern retro_log_printf_t log_cb;
+#define printf(args...)    do{if(log_cb) log_cb(RETRO_LOG_ERROR, args);}while(0)
+#endif
 
 UInt8* romLoad(const char *fileName, const char *fileInZipFile, int* size)
 {
@@ -41,7 +46,7 @@ UInt8* romLoad(const char *fileName, const char *fileInZipFile, int* size)
     FILE *file;
 
     if (fileName == NULL || strlen(fileName) == 0) {
-        return NULL;
+        goto error;
     }
 
     if (fileInZipFile != NULL && strlen(fileInZipFile) == 0) {
@@ -50,12 +55,14 @@ UInt8* romLoad(const char *fileName, const char *fileInZipFile, int* size)
 
     if (fileInZipFile != NULL) {
         buf = zipLoadFile(fileName, fileInZipFile, size);
+        if (buf == NULL)
+           goto error;
         return buf;
     }
 
     file = fopen(fileName, "rb");
     if (file == NULL) {
-        return NULL;
+        goto error;
     }
 
     fseek(file, 0, SEEK_END);
@@ -73,5 +80,13 @@ UInt8* romLoad(const char *fileName, const char *fileInZipFile, int* size)
     fclose(file);
 
     return buf;
+
+error:
+    if (fileName && fileName[0])
+    {
+      printf("cannot open file : %s\n", fileName);
+      fflush(stdout);
+    }
+    return NULL;
 }
 
