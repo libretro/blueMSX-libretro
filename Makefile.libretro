@@ -1,7 +1,6 @@
 TARGET_NAME := blueMSX
 
 DEBUG   = 0
-USE_SSE = 0
 LOG_PERFORMANCE = 1
 
 CSRCS   :=
@@ -170,7 +169,6 @@ else
    CC = gcc
    CC_AS = gcc
    CXX = g++
-   USE_SSE = 1
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
 endif
 
@@ -183,10 +181,6 @@ else ifeq ($(platform), emscripten)
 else
 	CFLAGS += -O3
 	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
-endif
-
-ifeq ($(USE_SSE), 0)
-PLATFORM_DEFINES += -DNO_ASM
 endif
 
 ifeq ($(LOG_PERFORMANCE), 1)

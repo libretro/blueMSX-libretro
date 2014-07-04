@@ -34,7 +34,7 @@
 extern BoardInfo boardInfo;
 
 #define MAX_PADS 2
-static unsigned input_devices[2];
+static unsigned input_devices[MAX_PADS];
 
 extern int eventMap[256];
 
@@ -210,7 +210,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
 };
 
 
-static retro_log_printf_t log_cb;
+retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
 static retro_input_poll_t input_poll_cb;
 static retro_input_state_t input_state_cb;
@@ -253,7 +253,9 @@ static struct retro_perf_callback perf_cb;
 
 void retro_init(void)
 {
+   int i;
    struct retro_log_callback log;
+
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
       log_cb = log.log;
@@ -265,6 +267,10 @@ void retro_init(void)
    image_buffer_current_width =  image_buffer_base_width;
    image_buffer_height =  240;
    double_width = 0;
+
+   input_devices[0] = RETRO_DEVICE_JOYPAD;
+//   for (i = 0; i < MAX_PADS; i++)
+//      input_devices[i] = RETRO_DEVICE_JOYPAD;
 
 #ifdef LOG_PERFORMANCE
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
@@ -334,6 +340,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_reset(void)
 {
+   boardReset();
 }
 
 size_t retro_serialize_size(void)
@@ -411,10 +418,19 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
+   strcpy(properties->joy1.type, "joystick");
+   properties->joy1.typeId            = JOYSTICK_PORT_JOYSTICK;
+   properties->joy1.autofire          = 0;
+
+   strcpy(properties->joy2.type, "joystick");
+   properties->joy2.typeId            = JOYSTICK_PORT_JOYSTICK;
+   properties->joy2.autofire          = 0;
+
    properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
    properties->video.monitorType           = P_VIDEO_PALNONE;
-   strcpy(properties->emulation.machineName, "MSX2+");
-//   strcpy(properties->emulation.machineName, "MSX");
+//   strcpy(properties->emulation.machineName, "MSX2+");
+//   strcpy(properties->emulation.machineName, "MSXturboR");
+   strcpy(properties->emulation.machineName, "MSX");
 
    mixer = mixerCreate();
 
@@ -428,12 +444,14 @@ bool retro_load_game(const struct retro_game_info *info)
    joystickPortSetType(0, properties->joy1.typeId);
    joystickPortSetType(1, properties->joy2.typeId);
 
-   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
-   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
-   uartIoSetType(properties->ports.Com.type, properties->ports.Com.fileName);
-   midiIoSetMidiOutType(properties->sound.MidiOut.type, properties->sound.MidiOut.fileName);
-   midiIoSetMidiInType(properties->sound.MidiIn.type, properties->sound.MidiIn.fileName);
-   ykIoSetMidiInType(properties->sound.YkIn.type, properties->sound.YkIn.fileName);
+
+
+//   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
+//   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
+//   uartIoSetType(properties->ports.Com.type, properties->ports.Com.fileName);
+//   midiIoSetMidiOutType(properties->sound.MidiOut.type, properties->sound.MidiOut.fileName);
+//   midiIoSetMidiInType(properties->sound.MidiIn.type, properties->sound.MidiIn.fileName);
+//   ykIoSetMidiInType(properties->sound.YkIn.type, properties->sound.YkIn.fileName);
 
    emulatorRestartSound();
 
@@ -552,16 +570,20 @@ void retro_run(void)
    input_poll_cb();
 
 #ifdef PSP
-
-   eventMap[EC_LEFT] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) ? 1 : 0;
-   eventMap[EC_RIGHT] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
-   eventMap[EC_UP] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) ? 1 : 0;
-   eventMap[EC_DOWN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) ? 1 : 0;
-   eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) ? 1 : 0;
-   eventMap[EC_SPACE] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) ? 1 : 0;
-   eventMap[EC_CTRL] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) ? 1 : 0;
-   eventMap[EC_GRAPH] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) ? 1 : 0;
-
+   if(input_devices[0] == RETRO_DEVICE_JOYPAD)
+      for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON6); j++)
+         eventMap[j] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+   else
+   {
+      eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
+      eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
+      eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
+      eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
+      eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
+      eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
+      eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
+      eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+   }
 #else
    for (i = 0; i < MAX_PADS; i++)
    {
@@ -604,11 +626,11 @@ uint16_t* frameBufferGetLine(FrameBuffer* frameBuffer, int y) {
 
 FrameBuffer* frameBufferGetDrawFrame()
 {
-   return (void*)-1;
+   return (void*)image_buffer;
 }
 FrameBuffer* frameBufferFlipDrawFrame()
 {
-   return (void*)-1;
+   return (void*)image_buffer;
 }
 
 static int fbScanLine = 0;
@@ -623,12 +645,12 @@ int frameBufferGetScanline() {
 
 FrameBufferData* frameBufferDataCreate(int maxWidth, int maxHeight, int defaultHorizZoom)
 {
-   return (void*)-1;
+   return (void*)image_buffer;
 }
 
 FrameBufferData* frameBufferGetActive()
 {
-   return (void*)-1;
+   return (void*)image_buffer;
 }
 
 void frameBufferDataDestroy(FrameBufferData* frameData)
