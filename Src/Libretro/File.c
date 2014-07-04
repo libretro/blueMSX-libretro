@@ -29,7 +29,7 @@
 
 #include <stdlib.h>
 
-#ifdef WINDOWS_HOST
+#ifdef WIN32
 
 #include <windows.h>
 #include <direct.h>
