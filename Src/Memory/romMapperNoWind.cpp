@@ -249,7 +249,7 @@ static void loadState(void* _rm)
     updateMapper(rm, rm->romMapper);
 }
 
-static void destroy(void* _rm)
+static void RomMapperNoWinddestroy(void* _rm)
 {
     RomMapperNoWind* rm = (RomMapperNoWind*)_rm;
     int i;
@@ -282,7 +282,7 @@ static void reset(void* _rm)
     updateMapper(rm, 0);
 }
 
-static UInt8 read(RomMapperNoWind* rm, UInt16 address) 
+static UInt8 RomMapperNoWindread(RomMapperNoWind* rm, UInt16 address) 
 {
     if ((address >= 0x2000 && address < 0x4000) || 
         (address >= 0x8000 && address < 0xa000))
@@ -298,12 +298,12 @@ static UInt8 read(RomMapperNoWind* rm, UInt16 address)
     return 0xff;
 }
 
-static UInt8 peek(RomMapperNoWind* rm, UInt16 address) 
+static UInt8 RomMapperNoWindpeek(RomMapperNoWind* rm, UInt16 address) 
 {
     return 0xff;
 }
 
-static void write(RomMapperNoWind* rm, UInt16 address, UInt8 value) 
+static void RomMapperNoWindwrite(RomMapperNoWind* rm, UInt16 address, UInt8 value) 
 {   
     if (address < 0x4000) {
         amdFlashWrite(rm->amdFlash, address + 0x4000 * rm->romMapper, value);
@@ -331,14 +331,14 @@ int romMapperNoWindCreate(int driveId, const char* filename, UInt8* romData,
                          int size, int slot, int sslot, int startPage) 
 {
     NoWindProperties* prop = &propGetGlobalProperties()->nowind;
-    DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };
+    DeviceCallbacks callbacks = { RomMapperNoWinddestroy, reset, saveState, loadState };
     RomMapperNoWind* rm;
     int i;
 
     rm = (RomMapperNoWind*)malloc(sizeof(RomMapperNoWind));
 
     rm->deviceHandle = deviceManagerRegister(ROM_NOWIND, &callbacks, rm);
-    slotRegister(slot, sslot, startPage, 6, (SlotRead)read, (SlotRead)peek, (SlotWrite)write, destroy, rm);
+    slotRegister(slot, sslot, startPage, 6, (SlotRead)RomMapperNoWindread, (SlotRead)RomMapperNoWindpeek, (SlotWrite)RomMapperNoWindwrite, RomMapperNoWinddestroy, rm);
 
     if (filename == NULL) {
         filename = "nowind.rom";
