@@ -49,6 +49,7 @@
 
 extern "C" {
 #include "SaveState.h"
+#include "math.h"
 }
 
 #ifdef _MSC_VER
@@ -874,7 +875,7 @@ void YMF262::init_tables(void)
 	alreadyInit = true;
 
 	for (int x = 0; x < TL_RES_LEN; x++) {
-		DoubleT m = (1 << 16) / pow((DoubleT)2, (x + 1) * (ENV_STEP / 4.0) / 8.0);
+		DoubleT m = (1 << 16) / powf((DoubleT)2, (x + 1) * (ENV_STEP / 4.0) / 8.0);
 		m = floor(m);
 
 		// we never reach (1<<16) here due to the (x+1) 

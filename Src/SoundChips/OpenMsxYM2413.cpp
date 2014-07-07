@@ -5,13 +5,15 @@
 //
 #include "OpenMsxYM2413.h"
 
+#include <cmath>
+#include <cstring>
+
 extern "C" {
 #include "SaveState.h"
 }
 
 #include <stdio.h>
-#include <cmath>
-#include <cstring>
+#include <math.h>
 
 const DoubleT PI = 3.14159265358979323846;
  

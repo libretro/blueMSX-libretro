@@ -25,8 +25,13 @@
 **
 ******************************************************************************
 */
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 
 extern "C" {
+
+#include  <stdlib.h>
 
 #include "romMapperNoWind.h"
 #include "AmdFlash.h"
@@ -37,9 +42,6 @@ extern "C" {
 #include "SaveState.h"
 #include "sramLoader.h"
 #include "Properties.h"
-
-#include <stdlib.h>
-#include <string.h>
 
 #ifdef USE_NOWIND_DLL
 #include "Disk.h"

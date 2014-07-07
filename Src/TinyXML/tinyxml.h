@@ -31,11 +31,14 @@ distribution.
 #pragma warning( disable : 4786 )
 #endif
 
-#include <ctype.h>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 #include <stdio.h>
-#include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
-#include <assert.h>
 
 #ifdef TIXML_USE_STL
 	#include <string>

@@ -5,6 +5,9 @@
 //
 #include "OpenMsxYM2413_2.h"
 
+#include <cmath>
+#include <algorithm>
+
 extern "C" {
 #include "SaveState.h"
 }
@@ -15,8 +18,7 @@ extern "C" {
 #define assert(x)
 
 #include <stdio.h>
-#include <cmath>
-#include <algorithm>
+#include <math.h>
 
 using std::string;
 
@@ -114,7 +116,7 @@ void OpenYM2413_2::makeDB2LinTable()
 	for (int i = 0; i < 2 * DB_MUTE; ++i) {
 		dB2LinTab[i] = (i < DB_MUTE)
 		             ?  (short)((DoubleT)((1 << DB2LIN_AMP_BITS) - 1) *
-		                    pow(10.0, -(DoubleT)i * DB_STEP / 20))
+		                    powf(10.0, -(DoubleT)i * DB_STEP / 20))
 		             : 0;
 		dB2LinTab[i + 2 * DB_MUTE] = -dB2LinTab[i];
 	}
@@ -160,7 +162,7 @@ void OpenYM2413_2::makePmTable()
 {
 	for (int i = 0; i < PM_PG_WIDTH; ++i) {
 		 pmtable[i] = (int)((DoubleT)PM_AMP * 
-		     pow(2.0, (DoubleT)PM_DEPTH * 
+		     powf(2.0, (DoubleT)PM_DEPTH * 
 		            saw(2.0 * PI * i / PM_PG_WIDTH) / 1200));
 	}
 }
