@@ -109,7 +109,9 @@ void archGlobFree(ArchGlob* globHandle)
 
 #else
 #include "ArchGlob.h"
-#ifdef PSP
+#if defined(PSP) || defined(__CELLOS_LV2__)
+/* TODO/FIXME - might want to turn this into more generic define that we
+ * flick on for consoles/portables */
 #include "psp/diet-glob.h"
 #else
 #include <glob.h>

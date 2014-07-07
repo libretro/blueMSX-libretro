@@ -21,9 +21,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
-#include <fnmatch.h>
+#include "diet-fnmatch.h"
 #include <dirent.h>
-#include <pwd.h>
 #include "dietfeatures.h"
 
 // we do not intend to get in trouble with the glob.h 

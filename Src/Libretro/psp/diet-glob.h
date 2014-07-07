@@ -4,8 +4,6 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-__BEGIN_DECLS
-
 typedef struct {
 	size_t gl_pathc;    /* Count of paths matched so far  */
 	char **gl_pathv;    /* List of matched pathnames.  */
@@ -16,11 +14,9 @@ typedef struct {
 
 int glob(const char *pattern, int flags,
 	 int errfunc(const char * epath, int eerrno),
-	 glob_t *pglob) __THROW;
+	 glob_t *pglob);
 
-void globfree(glob_t *pglob) __THROW;
-
-
+void globfree(glob_t *pglob);
 
 /* Bits set in the FLAGS argument to `glob'.  */
 #define	GLOB_ERR	(1 << 0)/* Return on read errors.  */
@@ -54,7 +50,5 @@ void globfree(glob_t *pglob) __THROW;
 /* Previous versions of this file defined GLOB_ABEND instead of
    GLOB_ABORTED.  Provide a compatibility definition here.  */
 #define GLOB_ABEND GLOB_ABORTED
-
-__END_DECLS
 
 #endif
