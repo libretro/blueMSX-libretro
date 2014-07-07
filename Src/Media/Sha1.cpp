@@ -22,6 +22,7 @@ A million repetitions of "a"
 
 #include <cassert>
 #include <cstdio>
+#include <stdio.h>
 #include <string.h>
 #include "Sha1.h"
 
