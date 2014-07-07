@@ -355,9 +355,10 @@ static int readMachine(Machine* machine, const char* machineName, const char* fi
     machine->cpu.hasR800 = 0;
     machine->fdc.enabled = 0;
     for (i = 0; i < sizeof(machine->slotInfo) / sizeof(SlotInfo) && *slotBuf; i++) {
-        char* arg;
+        char* arg, *ch;
         char slotInfoName[512];
-		char *slotFilename;
+	char *slotFilename;
+        (void)ch;
 
         machine->slotInfo[i].slot = toint(extractToken(slotBuf, 0));    
         machine->slotInfo[i].subslot = toint(extractToken(slotBuf, 1));
@@ -433,7 +434,7 @@ static int readMachine(Machine* machine, const char* machineName, const char* fi
         
 #ifdef __APPLE__
         // On OS X, replace all backslashes with slashes
-        for (char *ch = machine->slotInfo[i].name; *ch; ch++)
+        for (ch = machine->slotInfo[i].name; *ch; ch++)
             if (*ch == '\\') *ch = '/';
 #endif
     }
