@@ -1,4 +1,4 @@
-TARGET_NAME := blueMSX
+TARGET_NAME := bluemsx
 
 DEBUG   = 0
 LOG_PERFORMANCE = 1
