@@ -25,7 +25,7 @@
 **
 ******************************************************************************
 */
-#ifdef WINDOWS_HOST
+#ifdef WIN32
 
 #include "ArchGlob.h"
 #include <windows.h>

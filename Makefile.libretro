@@ -6,6 +6,7 @@ HAVE_COMPAT = 0
 
 CSRCS   :=
 CXXSRCS :=
+LIBS    :=
 
 ifneq ($(EMSCRIPTEN),)
    platform = emscripten
@@ -175,7 +176,8 @@ else
    CC_AS = gcc
    CXX = g++
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
-   HAVE_COMPAT = 1
+   CXXSRCS  += Src/IoDevice/msxgr.cpp
+   LIBS += -lshlwapi
 endif
 
 ifeq ($(HAVE_COMPAT), 1)
@@ -542,7 +544,7 @@ INCDIRS += -ISrc/Input
 INCDIRS += -ISrc/Libretro
 INCDIRS += $(EXTRA_INCLUDES)
 
-LIBS := -lz
+LIBS += -lz
 
 
 all: $(TARGET)
