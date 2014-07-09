@@ -29,7 +29,38 @@
 
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef __MINGW32__
+#include <sys/stat.h>
+#include <unistd.h>
+
+int archCreateDirectory(const char* pathname)
+{
+    return mkdir(pathname);
+}
+
+const char* archGetCurrentDirectory()
+{
+    static char buf[512];
+    return getcwd(buf, sizeof(buf));
+}
+
+void archSetCurrentDirectory(const char* pathname)
+{
+    chdir(pathname);
+}
+
+int archFileExists(const char* fileName)
+{
+    struct stat s;
+    return stat(fileName, &s) == 0;
+}
+
+int archFileDelete(const char* fileName)
+{
+    return remove(fileName) == 0;
+}
+
+#elif defined(WIN32)
 
 #include <windows.h>
 #include <direct.h>
