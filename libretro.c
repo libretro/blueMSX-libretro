@@ -230,10 +230,10 @@ static int double_width;
 void retro_get_system_info(struct retro_system_info *info)
 {
    info->library_name = "blueMSX";
-   info->library_version = "v0.0.1";
+   info->library_version = "svn";
    info->need_fullpath = true;
    info->block_extract = false;
-   info->valid_extensions = "rom|mx2";
+   info->valid_extensions = "rom|ri|mx1|mx2|col|sg|sc";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
