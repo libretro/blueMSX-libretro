@@ -195,8 +195,6 @@ endif
 
 ifeq ($(HAVE_COMPAT), 1)
  PLATFORM_DEFINES += -DHAVE_COMPAT
-   SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-glob.c
-   SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-fnmatch.c
 endif
 
 ifeq ($(DEBUG), 1)

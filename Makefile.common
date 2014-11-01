@@ -245,7 +245,7 @@ SOURCES_C  += $(CORE_DIR)/Src/SoundChips/DAC.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/Fmopl.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/KeyClick.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/MameVLM5030.c
-SOURCES_C  += $(CORE_DIR)/Src/SoundChips/Moonsound.c
+SOURCES_CXX  += $(CORE_DIR)/Src/SoundChips/Moonsound.cpp
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/SamplePlayer.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/SCC.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/VLM5030.c
@@ -316,3 +316,8 @@ SOURCES_CXX  += $(CORE_DIR)/Src/Memory/romMapperNoWind.cpp \
 					 $(CORE_DIR)/Src/SoundChips/YM2413.cpp
 
 #SOURCES_CXX  += $(CORE_DIR)/Src/IoDevice/msxgr.cpp
+
+ifeq ($(HAVE_COMPAT), 1)
+	SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-glob.c
+	SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-fnmatch.c
+endif
