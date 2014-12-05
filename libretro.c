@@ -300,6 +300,7 @@ void retro_set_environment(retro_environment_t cb)
    static const struct retro_variable vars[] = {
       { "bluemsx_msxtype", "Machine Type (Restart); MSX|MSX2+|MSXturboR" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
+      { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); disabled|enabled" },
       { NULL, NULL },
    };
 
@@ -385,6 +386,7 @@ static void extract_directory(char *buf, const char *path, size_t size)
 
 static char msx_type[256];
 static unsigned msx_vdp_synctype;
+static bool msx_ym2413_enable;
 
 static void check_variables(void)
 {
@@ -411,6 +413,19 @@ static void check_variables(void)
    }
    else
       msx_vdp_synctype = P_VDP_SYNCAUTO;
+
+   var.key = "bluemsx_ym2413_enable";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         msx_ym2413_enable = false;
+      else if (!strcmp(var.value, "enabled"))
+         msx_ym2413_enable = true;
+   }
+   else
+      msx_ym2413_enable = false;
 }
 
 bool retro_load_game(const struct retro_game_info *info)
@@ -463,6 +478,8 @@ bool retro_load_game(const struct retro_game_info *info)
    properties->emulation.vdpSyncMode       = msx_vdp_synctype;
    properties->video.monitorType           = P_VIDEO_PALNONE;
    strcpy(properties->emulation.machineName, msx_type);
+
+   properties->sound.chip.enableYM2413 = msx_ym2413_enable;
 
    mixer = mixerCreate();
 
