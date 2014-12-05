@@ -298,6 +298,8 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
 
    static const struct retro_variable vars[] = {
+      { "bluemsx_msxtype", "Machine Type (Restart); MSX|MSX2+|MSXturboR" },
+      { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { NULL, NULL },
    };
 
@@ -381,6 +383,36 @@ static void extract_directory(char *buf, const char *path, size_t size)
       buf[0] = '\0';
 }
 
+static char msx_type[256];
+static unsigned msx_vdp_synctype;
+
+static void check_variables(void)
+{
+   struct retro_variable var;
+   var.key = "bluemsx_msxtype";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      sprintf(msx_type, var.value);
+   else
+      sprintf(msx_type, "MSX");
+
+   var.key = "bluemsx_vdp_synctype";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "Auto"))
+         msx_vdp_synctype = P_VDP_SYNCAUTO;
+      else if (!strcmp(var.value, "50Hz"))
+         msx_vdp_synctype = P_VDP_SYNC50HZ;
+      else if (!strcmp(var.value, "60Hz"))
+         msx_vdp_synctype = P_VDP_SYNC60HZ;
+   }
+   else
+      msx_vdp_synctype = P_VDP_SYNCAUTO;
+}
+
 bool retro_load_game(const struct retro_game_info *info)
 {
    int i;
@@ -399,6 +431,8 @@ bool retro_load_game(const struct retro_game_info *info)
          log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
       return false;
    }
+
+   check_variables();
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
       strcpy(properties_dir, dir);
@@ -426,11 +460,9 @@ bool retro_load_game(const struct retro_game_info *info)
    properties->joy2.typeId            = JOYSTICK_PORT_JOYSTICK;
    properties->joy2.autofire          = 0;
 
-   properties->emulation.vdpSyncMode       = P_VDP_SYNC60HZ;
+   properties->emulation.vdpSyncMode       = msx_vdp_synctype;
    properties->video.monitorType           = P_VIDEO_PALNONE;
-   strcpy(properties->emulation.machineName, "MSX2+");
-//   strcpy(properties->emulation.machineName, "MSXturboR");
-//   strcpy(properties->emulation.machineName, "MSX");
+   strcpy(properties->emulation.machineName, msx_type);
 
    mixer = mixerCreate();
 
@@ -563,6 +595,10 @@ UInt8 archJoystickGetState(int joystickNo)
 void retro_run(void)
 {
    int i,j;
+   bool updated = false;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
+      check_variables();
 
    RETRO_PERFORMANCE_INIT(core_retro_run);
    RETRO_PERFORMANCE_START(core_retro_run);
