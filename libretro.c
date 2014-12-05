@@ -393,9 +393,9 @@ static void check_variables(void)
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-      sprintf(msx_type, var.value);
+      strcpy(msx_type, var.value);
    else
-      sprintf(msx_type, "MSX");
+      strcpy(msx_type, "MSX");
 
    var.key = "bluemsx_vdp_synctype";
    var.value = NULL;
