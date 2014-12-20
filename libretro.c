@@ -343,7 +343,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_reset(void)
 {
-   boardReset();
+   actionEmuResetSoft();
 }
 
 size_t retro_serialize_size(void)
