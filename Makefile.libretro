@@ -78,6 +78,15 @@ ifeq ($(OSX_LT_MAVERICKS),"YES")
    CC_AS += -miphoneos-version-min=5.0
    PLATFORM_DEFINES := -miphoneos-version-min=5.0
 endif
+else ifeq ($(platform), theos_ios)
+DEPLOYMENT_IOSVERSION = 5.0
+TARGET = iphone:latest:$(DEPLOYMENT_IOSVERSION)
+ARCHS = armv7 armv7s
+TARGET_IPHONEOS_DEPLOYMENT_VERSION=$(DEPLOYMENT_IOSVERSION)
+THEOS_BUILD_DIR := objs
+include $(THEOS)/makefiles/common.mk
+
+LIBRARY_NAME = $(TARGET_NAME)_libretro_ios
 else ifeq ($(platform), qnx)
    TARGET := $(TARGET_NAME)_libretro_qnx.so
    fpic := -fPIC
@@ -231,15 +240,6 @@ INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS)
 
 LIBS += -lz
 
-all: $(TARGET)
-
-$(TARGET): $(OBJS)
-ifeq ($(STATIC_LINKING), 1)
-	$(AR) rcs $@ $(OBJS)
-else
-	$(CXX) -o $@ $(SHARED) $(OBJS) $(LDFLAGS) $(LIBS)
-endif
-
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCDIRS)
 
@@ -249,6 +249,24 @@ endif
 %.o: %.S
 	$(CC_AS) -c -o $@ $< $(CFLAGS) $(INCDIRS)
 
+ifeq ($(platform), theos_ios)
+COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCFLAGS) -I$(THEOS_INCLUDE_PATH) -Wno-error
+$(LIBRARY_NAME)_CFLAGS += $(CFLAGS) $(COMMON_FLAGS)
+$(LIBRARY_NAME)_CXXFLAGS += $(CXXFLAGS) $(COMMON_FLAGS)
+${LIBRARY_NAME}_FILES = $(SOURCES_CXX) $(SOURCES_C)
+${LIBRARY_NAME}_LIBRARIES = z
+include $(THEOS_MAKE_PATH)/library.mk
+else
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+ifeq ($(STATIC_LINKING), 1)
+	$(AR) rcs $@ $(OBJS)
+else
+	$(CXX) -o $@ $(SHARED) $(OBJS) $(LDFLAGS) $(LIBS)
+endif
+
+
 clean-objs:
 	rm -f $(OBJS)
 
@@ -257,4 +275,4 @@ clean:
 	rm -f $(TARGET)
 
 .PHONY: $(TARGET) clean clean-objs
-
+endif
