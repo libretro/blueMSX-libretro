@@ -22,8 +22,9 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include "diet-fnmatch.h"
-#include <dirent.h>
 #include "dietfeatures.h"
+
+#include <retro_dirent.h>
 
 // we do not intend to get in trouble with the glob.h 
 // already in the PSPSDK so the name is changed
@@ -47,10 +48,10 @@ static int cmp_func(const void * a, const void * b)
    The GLOB_NOSORT bit in FLAGS is ignored.  No sorting is ever done.
    The GLOB_APPEND flag is assumed to be set (always appends).
    Prepends DIRECTORY in constructed PGLOB. */
-static void close_dir_keep_errno(DIR* dp) {
+static void close_dir_keep_errno(struct RDIR* dp) {
   int save = errno;
   if (dp)
-    closedir (dp);
+    retro_closedir(dp);
   errno=save;
 }
 
@@ -83,48 +84,53 @@ static int glob_in_dir(const char *pattern, const char *directory, int flags,
 		       int errfunc(const char * epath, int eerrno),
 		       glob_t *pglob)
 {
-	DIR *dp = opendir(directory);
+	struct RDIR *dp = retro_opendir(directory);
 	int nfound = 0;
 
 	int i;
 	char * ptr;
 
-	if (!dp) {
-		if (errno != ENOTDIR
-		    && ((errfunc != NULL && (*errfunc) (directory, errno))
-			|| (flags & GLOB_ERR)))
-		      return GLOB_ABORTED;
-	} else {
-		int fnm_flags = ((!(flags & GLOB_PERIOD) ? FNM_PERIOD : 0)
-				 | ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0));
-		struct dirent *ep;
-		while ((ep = readdir(dp))) {
-			i = strlen(directory) + strlen(ep->d_name) + 2;
-			ptr = (char *) alloca(i);
-			build_fullname(ptr, directory, ep->d_name);
-			if (flags & GLOB_ONLYDIR) {
-				struct stat statr;
-				if (stat(ptr, &statr) || !S_ISDIR(statr.st_mode))
-					continue;
-			}
-			if (fnmatch(pattern, ep->d_name, fnm_flags) == 0)
-				if (add_entry(ptr,pglob,&nfound))
-					goto memory_error;
-		}
-	}
+	if (!dp)
+   {
+      if (errno != ENOTDIR
+            && ((errfunc != NULL && (*errfunc) (directory, errno))
+               || (flags & GLOB_ERR)))
+         return GLOB_ABORTED;
+   }
+   else
+   {
+      int fnm_flags = ((!(flags & GLOB_PERIOD) ? FNM_PERIOD : 0)
+            | ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0));
+      while (retro_readdir(dp))
+      {
+         i = strlen(directory) + strlen(dirent_get_name(dp)) + 2;
+         ptr = (char *) alloca(i);
+         build_fullname(ptr, directory, dirent_get_name(dp));
+         if (flags & GLOB_ONLYDIR)
+         {
+            struct stat statr;
+            if (stat(ptr, &statr) || !S_ISDIR(statr.st_mode))
+               continue;
+         }
+         if (fnmatch(pattern, dirent_get_name(dp), fnm_flags) == 0)
+            if (add_entry(ptr,pglob,&nfound))
+               goto memory_error;
+      }
+   }
 
 	close_dir_keep_errno(dp);
 
 	if (nfound != 0)
 		pglob->gl_flags = flags;
-	else if (flags & GLOB_NOCHECK) {
-		/* nfound == 0 */
-		i = strlen(directory) + strlen(pattern) + 2;
-		ptr = (char *) alloca(i);
-		build_fullname(ptr, directory, pattern);
-		if (add_entry(ptr,pglob,&nfound))
-			goto memory_error;
-	}
+	else if (flags & GLOB_NOCHECK)
+   {
+      /* nfound == 0 */
+      i = strlen(directory) + strlen(pattern) + 2;
+      ptr = (char *) alloca(i);
+      build_fullname(ptr, directory, pattern);
+      if (add_entry(ptr,pglob,&nfound))
+         goto memory_error;
+   }
 
 	return (nfound == 0) ? GLOB_NOMATCH : 0;
 
@@ -150,7 +156,8 @@ int glob(const char *pattern, int flags, int errfunc(const char * epath, int eer
 	int j, k;    /* */
 	char * ptr, * ptr2;
 
-	if (pattern == NULL || pglob == NULL || (flags & ~__GLOB_FLAGS) != 0) {
+	if (pattern == NULL || pglob == NULL || (flags & ~__GLOB_FLAGS) != 0)
+   {
 		errno=EINVAL;
 		return -1;
 	}
