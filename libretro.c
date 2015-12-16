@@ -298,9 +298,9 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
 
    static const struct retro_variable vars[] = {
-      { "bluemsx_msxtype", "Machine Type (Restart); MSX|MSX2+|MSXturboR" },
+      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSXturboR|MSX" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
-      { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); disabled|enabled" },
+      { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
       { NULL, NULL },
    };
 
