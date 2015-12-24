@@ -547,6 +547,10 @@ bool retro_load_game(const struct retro_game_info *info)
          boardSetMachine(machine);
          machineDestroy(machine);
       }
+      else
+      {
+         return false;
+      }
    }
    boardSetFdcTimingEnable(properties->emulation.enableFdcTiming);
    boardSetY8950Enable(properties->sound.chip.enableY8950);
