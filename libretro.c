@@ -397,7 +397,7 @@ static void check_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
       strcpy(msx_type, var.value);
    else
-      strcpy(msx_type, "MSX");
+      strcpy(msx_type, "MSX2+");
 
    var.key = "bluemsx_vdp_synctype";
    var.value = NULL;
@@ -425,7 +425,7 @@ static void check_variables(void)
          msx_ym2413_enable = true;
    }
    else
-      msx_ym2413_enable = false;
+      msx_ym2413_enable = true;
 }
 
 bool retro_load_game(const struct retro_game_info *info)
