@@ -49,6 +49,13 @@ else ifneq (,$(findstring rpi,$(platform)))
 	fpic = -fPIC
 	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
 
+# Raspberry Pi 2
+else ifeq ($(platform), rpi2)
+	PLATFORM_DEFINES += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -funsafe-math-optimizations
+	PLATFORM_DEFINES += -fomit-frame-pointer -ffast-math
+	PLATFORM_DEFINES += -DARM
+	HAVE_NEON = 1
+
 # OS X
 else ifeq ($(platform), osx)
 	TARGET := $(TARGET_NAME)_libretro.dylib
