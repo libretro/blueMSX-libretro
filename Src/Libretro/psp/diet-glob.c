@@ -103,16 +103,16 @@ static int glob_in_dir(const char *pattern, const char *directory, int flags,
             | ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0));
       while (retro_readdir(dp))
       {
-         i = strlen(directory) + strlen(dirent_get_name(dp)) + 2;
+         i = strlen(directory) + strlen(retro_dirent_get_name(dp)) + 2;
          ptr = (char *) alloca(i);
-         build_fullname(ptr, directory, dirent_get_name(dp));
+         build_fullname(ptr, directory, retro_dirent_get_name(dp));
          if (flags & GLOB_ONLYDIR)
          {
             struct stat statr;
             if (stat(ptr, &statr) || !S_ISDIR(statr.st_mode))
                continue;
          }
-         if (fnmatch(pattern, dirent_get_name(dp), fnm_flags) == 0)
+         if (fnmatch(pattern, retro_dirent_get_name(dp), fnm_flags) == 0)
             if (add_entry(ptr,pglob,&nfound))
                goto memory_error;
       }
