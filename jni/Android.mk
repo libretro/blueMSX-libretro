@@ -19,6 +19,7 @@ CORE_DIR := ..
 
 LOCAL_MODULE    := libretro
 HAVE_COMPAT := 1
+SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
 
 include ../Makefile.common
 
