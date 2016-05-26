@@ -47,7 +47,7 @@ else ifeq ($(platform), rpi1)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic = -fPIC
 	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
-	PLATFORM_DEFINES += -marm -mfpu=vfp -mfloat-abi=hard -march=armv6j -funsafe-math-optimizations
+	PLATFORM_DEFINES += -marm -mfpu=vfp -mfloat-abi=hard -march=armv6j
 	PLATFORM_DEFINES += -fomit-frame-pointer -ffast-math
 	PLATFORM_DEFINES += -DARM
 
@@ -56,7 +56,17 @@ else ifeq ($(platform), rpi2)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic = -fPIC
 	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
-	PLATFORM_DEFINES += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -funsafe-math-optimizations
+	PLATFORM_DEFINES += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+	PLATFORM_DEFINES += -fomit-frame-pointer -ffast-math
+	PLATFORM_DEFINES += -DARM
+	HAVE_NEON = 1
+
+# Raspberry Pi 3
+else ifeq ($(platform), rpi3)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic = -fPIC
+	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
+	PLATFORM_DEFINES += -marm -mcpu=cortex-a53 -mfpu=neon-fp-armv8 -mfloat-abi=hard
 	PLATFORM_DEFINES += -fomit-frame-pointer -ffast-math
 	PLATFORM_DEFINES += -DARM
 	HAVE_NEON = 1
