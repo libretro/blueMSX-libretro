@@ -1,26 +1,28 @@
+LIBRETRO_COMM_DIR = $(CORE_DIR)/libretro-common
+
 INCFLAGS := -I$(CORE_DIR) \
-	-I$(CORE_DIR)/libretro-common/include \
-	-I$(CORE_DIR)/Src/Arch \
-	-I$(CORE_DIR)/Src/Bios \
-	-I$(CORE_DIR)/Src/Board \
-	-I$(CORE_DIR)/Src/BuildInfo \
-	-I$(CORE_DIR)/Src/Common \
-	-I$(CORE_DIR)/Src/Debugger \
-	-I$(CORE_DIR)/Src/Emulator \
-	-I$(CORE_DIR)/Src/IoDevice \
-	-I$(CORE_DIR)/Src/Language \
-	-I$(CORE_DIR)/Src/Media \
-	-I$(CORE_DIR)/Src/Memory \
-	-I$(CORE_DIR)/Src/Resources \
-	-I$(CORE_DIR)/Src/SoundChips \
-	-I$(CORE_DIR)/Src/TinyXML \
-	-I$(CORE_DIR)/Src/Unzip \
-	-I$(CORE_DIR)/Src/Utils \
-	-I$(CORE_DIR)/Src/VideoChips \
-	-I$(CORE_DIR)/Src/VideoRender \
-	-I$(CORE_DIR)/Src/Z80 \
-	-I$(CORE_DIR)/Src/Input \
-	-I$(CORE_DIR)/Src/Libretro
+				-I$(LIBRETRO_COMM_DIR)/include \
+				-I$(CORE_DIR)/Src/Arch \
+				-I$(CORE_DIR)/Src/Bios \
+				-I$(CORE_DIR)/Src/Board \
+				-I$(CORE_DIR)/Src/BuildInfo \
+				-I$(CORE_DIR)/Src/Common \
+				-I$(CORE_DIR)/Src/Debugger \
+				-I$(CORE_DIR)/Src/Emulator \
+				-I$(CORE_DIR)/Src/IoDevice \
+				-I$(CORE_DIR)/Src/Language \
+				-I$(CORE_DIR)/Src/Media \
+				-I$(CORE_DIR)/Src/Memory \
+				-I$(CORE_DIR)/Src/Resources \
+				-I$(CORE_DIR)/Src/SoundChips \
+				-I$(CORE_DIR)/Src/TinyXML \
+				-I$(CORE_DIR)/Src/Unzip \
+				-I$(CORE_DIR)/Src/Utils \
+				-I$(CORE_DIR)/Src/VideoChips \
+				-I$(CORE_DIR)/Src/VideoRender \
+				-I$(CORE_DIR)/Src/Z80 \
+				-I$(CORE_DIR)/Src/Input \
+				-I$(CORE_DIR)/Src/Libretro
 
 SOURCES_C   := $(CORE_DIR)/libretro.c \
 					$(CORE_DIR)/Src/Libretro/Dialog.c \
@@ -320,7 +322,7 @@ SOURCES_CXX  := $(CORE_DIR)/Src/SoundChips/Moonsound.cpp \
 #SOURCES_CXX  += $(CORE_DIR)/Src/IoDevice/msxgr.cpp
 
 ifneq ($(STATIC_LINKING), 1)
-SOURCES_C += $(CORE_DIR)/libretro-common/file/retro_dirent.c 
+SOURCES_C += $(LIBRETRO_COMM_DIR)/file/retro_dirent.c 
 endif
 
 ifeq ($(HAVE_COMPAT), 1)
