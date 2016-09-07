@@ -269,10 +269,6 @@ endif
 
 CORE_DIR := .
 
-ifeq ($(HAVE_WIN32_MSX_MANAGER), 1)
-	SOURCES_CXX  += $(CORE_DIR)/Src/IoDevice/msxgr.cpp
-endif
-
 ifeq ($(HAVE_COMPAT), 1)
 	PLATFORM_DEFINES += -DHAVE_COMPAT
 endif

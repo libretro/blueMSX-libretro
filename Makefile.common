@@ -62,7 +62,7 @@ SOURCES_C   := $(CORE_DIR)/libretro.c \
 #SOURCES_C  += $(CORE_DIR)/Src/Unzip/iowin32.c
 
 
-SOURCES_C  := 	$(CORE_DIR)/Src/Memory/AtmelPerom.c \
+SOURCES_C  += 	$(CORE_DIR)/Src/Memory/AtmelPerom.c \
 					$(CORE_DIR)/Src/Memory/AmdFlash.c
 
 SOURCES_C  += $(CORE_DIR)/Src/Memory/DeviceManager.c
@@ -326,4 +326,8 @@ endif
 ifeq ($(HAVE_COMPAT), 1)
 	SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-glob.c
 	SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-fnmatch.c
+endif
+
+ifeq ($(HAVE_WIN32_MSX_MANAGER), 1)
+	SOURCES_CXX  += $(CORE_DIR)/Src/IoDevice/msxgr.cpp
 endif
