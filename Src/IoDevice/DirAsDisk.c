@@ -34,6 +34,12 @@
 #include <io.h> // not on Linux
 #endif
 
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>

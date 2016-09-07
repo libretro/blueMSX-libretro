@@ -27,6 +27,7 @@
 */
 #include "ArchFile.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #ifdef __MINGW32__

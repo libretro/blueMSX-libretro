@@ -25,6 +25,11 @@
 **
 ******************************************************************************
 */
+#ifdef EMSCRIPTEN
+#define _GNU_SOURCE
+#endif
+#include <string.h>
+
 #include "Machine.h"
 #include "SaveState.h"
 #include "IniFileParser.h"
