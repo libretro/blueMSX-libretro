@@ -316,15 +316,15 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->sound.chip.moonsoundOversampling = 1;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_PSG].enable = 1;
-    properties->sound.mixerChannel[MIXER_CHANNEL_PSG].pan = 40;
+    properties->sound.mixerChannel[MIXER_CHANNEL_PSG].pan = 50;
     properties->sound.mixerChannel[MIXER_CHANNEL_PSG].volume = 100;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_SCC].enable = 1;
-    properties->sound.mixerChannel[MIXER_CHANNEL_SCC].pan = 60;
+    properties->sound.mixerChannel[MIXER_CHANNEL_SCC].pan = 50;
     properties->sound.mixerChannel[MIXER_CHANNEL_SCC].volume = 100;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_MSXMUSIC].enable = 1;
-    properties->sound.mixerChannel[MIXER_CHANNEL_MSXMUSIC].pan = 60;
+    properties->sound.mixerChannel[MIXER_CHANNEL_MSXMUSIC].pan = 50;
     properties->sound.mixerChannel[MIXER_CHANNEL_MSXMUSIC].volume = 95;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_MSXAUDIO].enable = 1;
@@ -344,7 +344,7 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->sound.mixerChannel[MIXER_CHANNEL_PCM].volume = 95;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 0;
-    properties->sound.mixerChannel[MIXER_CHANNEL_IO].pan = 70;
+    properties->sound.mixerChannel[MIXER_CHANNEL_IO].pan = 50;
     properties->sound.mixerChannel[MIXER_CHANNEL_IO].volume = 50;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_MIDI].enable = 1;
@@ -352,7 +352,7 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->sound.mixerChannel[MIXER_CHANNEL_MIDI].volume = 90;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_KEYBOARD].enable = 1;
-    properties->sound.mixerChannel[MIXER_CHANNEL_KEYBOARD].pan = 55;
+    properties->sound.mixerChannel[MIXER_CHANNEL_KEYBOARD].pan = 50;
     properties->sound.mixerChannel[MIXER_CHANNEL_KEYBOARD].volume = 65;
     
     properties->sound.YkIn.type               = P_MIDI_NONE;
