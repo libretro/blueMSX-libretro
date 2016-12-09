@@ -231,7 +231,7 @@ void retro_get_system_info(struct retro_system_info *info)
 {
    info->library_name = "blueMSX";
 #ifdef GIT_VERSION
-   info->library_version = GIT_VERSION;
+   info->library_version = "git" GIT_VERSION;
 #else
    info->library_version = "svn";
 #endif
