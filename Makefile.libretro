@@ -1,4 +1,8 @@
 TARGET_NAME := bluemsx
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+	CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
 
 DEBUG   = 0
 LOG_PERFORMANCE = 1

@@ -230,7 +230,11 @@ static int double_width;
 void retro_get_system_info(struct retro_system_info *info)
 {
    info->library_name = "blueMSX";
+#ifdef GIT_VERSION
+   info->library_version = "git" GIT_VERSION;
+#else
    info->library_version = "svn";
+#endif
    info->need_fullpath = true;
    info->block_extract = false;
    info->valid_extensions = "rom|ri|mx1|mx2|col|sg|sc";
