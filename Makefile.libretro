@@ -1,4 +1,6 @@
 TARGET_NAME := bluemsx
+GIT_VERSION := "$(shell git describe --abbrev=7 --dirty --always --tags)"
+CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 
 DEBUG   = 0
 LOG_PERFORMANCE = 1
