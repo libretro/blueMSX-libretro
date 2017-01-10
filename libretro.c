@@ -31,6 +31,35 @@
 #include "InputEvent.h"
 #include "R800.h"
 
+//.dsk support
+enum{
+   MEDIA_TYPE_CART = 0,
+   MEDIA_TYPE_TAPE,
+   MEDIA_TYPE_DISK,
+   MEDIA_TYPE_OTHER
+};
+
+void lowerstring(char* str){
+   int i;
+   for (i=0; str[i]; i++){
+      str[i] = tolower(str[i]);
+   }
+}
+
+int getmediatype(const char* filename){
+   char workram[4096];
+   strcpy(workram,filename);
+   lowerstring(workram);
+   const char* extension = workram + strlen(workram) - 4;
+   
+   if(strcmp(extension,".dsk") == 0){
+      return MEDIA_TYPE_DISK;
+   }
+   
+   return MEDIA_TYPE_OTHER;
+}
+//end .dsk support
+
 extern BoardInfo boardInfo;
 
 #define MAX_PADS 2
@@ -554,7 +583,22 @@ bool retro_load_game(const struct retro_game_info *info)
 
    mediaDbSetDefaultRomType(properties->cartridge.defaultType);
 
-   strcpy(properties->media.carts[0].fileName , info->path);
+   int mediatype = getmediatype(info->path);
+   switch(mediatype){
+      case MEDIA_TYPE_DISK:
+         strcpy(properties->media.disks[0].fileName , info->path);
+         break;
+      case MEDIA_TYPE_TAPE:
+         strcpy(properties->media.tapes[0].fileName , info->path);
+         break;
+      case MEDIA_TYPE_CART:
+      case MEDIA_TYPE_OTHER:
+      default:
+         strcpy(properties->media.carts[0].fileName , info->path);
+         break;
+   }
+   //strcpy(properties->media.carts[0].fileName , info->path);
+   
 
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
@@ -745,20 +789,6 @@ FrameBufferData* frameBufferGetActive()
    return (void*)image_buffer;
 }
 
-void frameBufferDataDestroy(FrameBufferData* frameData)
-{
-
-}
-
-void frameBufferSetActive(FrameBufferData* frameData)
-{
-
-}
-void frameBufferSetMixMode(FrameBufferMixMode mode, FrameBufferMixMode mask)
-{
-
-}
-
 void   frameBufferSetLineCount(FrameBuffer* frameBuffer, int val)
 {
    image_buffer_height = val;
@@ -784,25 +814,16 @@ void   frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val)
    image_buffer_current_width = double_width ? image_buffer_base_width * 2 : image_buffer_base_width;
 }
 
-void frameBufferClearDeinterlace()
-{
-
-}
-void   frameBufferSetInterlace(FrameBuffer* frameBuffer, int val)
-{
-
-}
-
-void archTrap(UInt8 value)
-{
-}
-
 int archPollEvent()
 {
    return 0;
 }
 
-void videoUpdateAll(Video* video, Properties* properties)
-{
-
-}
+//stubs
+void frameBufferDataDestroy(FrameBufferData* frameData){}
+void frameBufferSetActive(FrameBufferData* frameData){}
+void frameBufferSetMixMode(FrameBufferMixMode mode, FrameBufferMixMode mask){}
+void frameBufferClearDeinterlace(){}
+void frameBufferSetInterlace(FrameBuffer* frameBuffer, int val){}
+void archTrap(UInt8 value){}
+void videoUpdateAll(Video* video, Properties* properties){}
