@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
-
+#include <ctype.h>
 
 #include "CommandLine.h"
 #include "Properties.h"
@@ -31,19 +30,20 @@
 #include "InputEvent.h"
 #include "R800.h"
 
-//.dsk support
-enum{
+/* .dsk support */
+enum
+{
    MEDIA_TYPE_CART = 0,
    MEDIA_TYPE_TAPE,
    MEDIA_TYPE_DISK,
    MEDIA_TYPE_OTHER
 };
 
-void lowerstring(char* str){
+void lowerstring(char* str)
+{
    int i;
-   for (i=0; str[i]; i++){
+   for (i=0; str[i]; i++)
       str[i] = tolower(str[i]);
-   }
 }
 
 int getmediatype(const char* filename){
