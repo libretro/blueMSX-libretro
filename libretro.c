@@ -30,9 +30,52 @@
 #include "InputEvent.h"
 #include "R800.h"
 
+
+
+retro_log_printf_t log_cb;
+static retro_video_refresh_t video_cb;
+static retro_input_poll_t input_poll_cb;
+static retro_input_state_t input_state_cb;
+static retro_environment_t environ_cb;
+
+static Properties* properties;
+static Video* video;
+static Mixer* mixer;
+
+
+static uint16_t* image_buffer;
+static unsigned image_buffer_base_width;
+static unsigned image_buffer_current_width;
+static unsigned image_buffer_height;
+static int double_width;
+
+
+static char msx_type[256];
+static unsigned msx_vdp_synctype;
+static bool msx_ym2413_enable;
+
+
+void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
+void retro_set_input_poll(retro_input_poll_t cb) { input_poll_cb = cb; }
+void retro_set_input_state(retro_input_state_t cb) { input_state_cb = cb; }
+
+#ifdef LOG_PERFORMANCE
+static struct retro_perf_callback perf_cb;
+#define RETRO_PERFORMANCE_INIT(name) static struct retro_perf_counter name = {#name}; if (!name.registered) perf_cb.perf_register(&(name))
+#define RETRO_PERFORMANCE_START(name) perf_cb.perf_start(&(name))
+#define RETRO_PERFORMANCE_STOP(name) perf_cb.perf_stop(&(name))
+#else
+#define RETRO_PERFORMANCE_INIT(name)
+#define RETRO_PERFORMANCE_START(name)
+#define RETRO_PERFORMANCE_STOP(name)
+#endif
+
+
+#define EC_KEYBOARD_KEYCOUNT  94
+
+
 /* .dsk support */
-enum
-{
+enum{
    MEDIA_TYPE_CART = 0,
    MEDIA_TYPE_TAPE,
    MEDIA_TYPE_DISK,
@@ -43,11 +86,13 @@ void lowerstring(char* str)
 {
    int i;
    for (i=0; str[i]; i++)
+   {
       str[i] = tolower(str[i]);
+   }
 }
 
 int getmediatype(const char* filename){
-   char workram[4096];
+   char workram[4096/*max path name length for all existing OSes*/];
    strcpy(workram,filename);
    lowerstring(workram);
    const char* extension = workram + strlen(workram) - 4;
@@ -55,10 +100,80 @@ int getmediatype(const char* filename){
    if(strcmp(extension,".dsk") == 0){
       return MEDIA_TYPE_DISK;
    }
+   else if(strcmp(extension,".cas") == 0){
+      return MEDIA_TYPE_TAPE;
+   }
+   else if(strcmp(extension,".rom") == 0){
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension,".mx1") == 0){
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension,".mx2") == 0){
+      return MEDIA_TYPE_CART;
+   }
    
    return MEDIA_TYPE_OTHER;
 }
-//end .dsk support
+/* end .dsk support */
+/* .dsk swap support */
+struct retro_disk_control_callback dskcb;
+bool diskinserted = false;
+
+//all the fake functions used to limit swapping to 1 disk drive
+bool setdskeject(bool ejected){
+   diskinserted = !ejected;
+   return false;
+}
+
+bool getdskeject(){
+   return !diskinserted;
+}
+
+unsigned getdskindex(){
+   return 0;
+}
+
+bool setdskindex(unsigned index){
+   //fail on this one,only one disk slot
+   if(index != 0)return true;
+   return false;
+}
+
+unsigned getnumimages(){
+   return 1;
+}
+
+bool addimageindex(){
+   //fail on this one,only one disk slot
+   return true;
+}
+
+
+
+//this is the only real function,it will swap out the disk
+bool replacedsk(unsigned index,const struct retro_game_info *info){
+   if(getmediatype(info->path) != MEDIA_TYPE_DISK)return true;//cant swap a cart or tape into a disk slot
+   
+   bool failed = insertDiskette(properties, 0 /*drive*/, info->path /*fname*/, NULL /*inZipFile*/, 0 /*forceAutostart*/);
+   return failed;
+}
+
+void attachdiskswapinterface(){
+   //these functions are unused
+   dskcb.set_eject_state = setdskeject;
+   dskcb.get_eject_state = getdskeject;
+   dskcb.set_image_index = setdskindex;
+   dskcb.get_image_index = getdskindex;
+   dskcb.get_num_images  = getnumimages;
+   dskcb.add_image_index = addimageindex;
+   
+   //this is the only real function,it will swap out the disk
+   dskcb.replace_image_index = replacedsk;
+   
+   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE,&dskcb);
+}
+/* end .dsk swap support */
 
 extern BoardInfo boardInfo;
 
@@ -238,24 +353,6 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_UNKNOWN,   //EC_COLECO2_HASH 151
 };
 
-
-retro_log_printf_t log_cb;
-static retro_video_refresh_t video_cb;
-static retro_input_poll_t input_poll_cb;
-static retro_input_state_t input_state_cb;
-static retro_environment_t environ_cb;
-
-static Properties* properties;
-static Video* video;
-static Mixer* mixer;
-
-
-static uint16_t* image_buffer;
-static unsigned image_buffer_base_width;
-static unsigned image_buffer_current_width;
-static unsigned image_buffer_height;
-static int double_width;
-
 void retro_get_system_info(struct retro_system_info *info)
 {
    info->library_name = "blueMSX";
@@ -266,7 +363,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #endif
    info->need_fullpath = true;
    info->block_extract = false;
-   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc";
+   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|cas";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
@@ -279,10 +376,6 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.fps = 60.0;
    info->timing.sample_rate = 44100.0;
 }
-
-#ifdef LOG_PERFORMANCE
-static struct retro_perf_callback perf_cb;
-#endif
 
 void init_input_descriptors(){
    struct retro_input_descriptor desc[] = {
@@ -364,7 +457,7 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
 
    static const struct retro_variable vars[] = {
-      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSXturboR|MSX" },
+      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSX2|MSXturboR|MSX" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
       { NULL, NULL },
@@ -384,11 +477,6 @@ void retro_set_environment(retro_environment_t cb)
    cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 }
-
-void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
-void retro_set_audio_sample(retro_audio_sample_t unused) { }
-void retro_set_input_poll(retro_input_poll_t cb) { input_poll_cb = cb; }
-void retro_set_input_state(retro_input_state_t cb) { input_state_cb = cb; }
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
@@ -412,29 +500,6 @@ void retro_reset(void)
    actionEmuResetSoft();
 }
 
-size_t retro_serialize_size(void)
-{
-   return 0;
-}
-
-bool retro_serialize(void *data, size_t size)
-{
-   (void)data;
-   (void)size;
-   return false;
-}
-
-bool retro_unserialize(const void *data, size_t size)
-{
-   (void)data;
-   (void)size;
-   return false;
-}
-
-void retro_cheat_reset(void) {}
-void retro_cheat_set(unsigned a, bool b, const char * c) {}
-
-
 static void extract_directory(char *buf, const char *path, size_t size)
 {
    strncpy(buf, path, size - 1);
@@ -449,10 +514,6 @@ static void extract_directory(char *buf, const char *path, size_t size)
    else
       buf[0] = '\0';
 }
-
-static char msx_type[256];
-static unsigned msx_vdp_synctype;
-static bool msx_ym2413_enable;
 
 static void check_variables(void)
 {
@@ -562,7 +623,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
 
 //   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
-//   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
 //   uartIoSetType(properties->ports.Com.type, properties->ports.Com.fileName);
 //   midiIoSetMidiOutType(properties->sound.MidiOut.type, properties->sound.MidiOut.fileName);
 //   midiIoSetMidiInType(properties->sound.MidiIn.type, properties->sound.MidiIn.fileName);
@@ -587,6 +647,7 @@ bool retro_load_game(const struct retro_game_info *info)
    switch(mediatype){
       case MEDIA_TYPE_DISK:
          strcpy(properties->media.disks[0].fileName , info->path);
+         attachdiskswapinterface();
          break;
       case MEDIA_TYPE_TAPE:
          strcpy(properties->media.tapes[0].fileName , info->path);
@@ -597,7 +658,6 @@ bool retro_load_game(const struct retro_game_info *info)
          strcpy(properties->media.carts[0].fileName , info->path);
          break;
    }
-   //strcpy(properties->media.carts[0].fileName , info->path);
    
 
    for (i = 0; i < PROP_MAX_CARTS; i++)
@@ -641,31 +701,6 @@ bool retro_load_game(const struct retro_game_info *info)
    return true;
 }
 
-
-bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t c)
-{
-   return false;
-}
-
-void retro_unload_game(void)
-{
-}
-
-unsigned retro_get_region(void)
-{
-   return RETRO_REGION_NTSC;
-}
-
-void *retro_get_memory_data(unsigned id)
-{
-   return NULL;
-}
-
-size_t retro_get_memory_size(unsigned id)
-{
-   return 0;
-}
-
 void timerCallback_global(void* timer);
 
 UInt8 archJoystickGetState(int joystickNo)
@@ -679,18 +714,6 @@ UInt8 archJoystickGetState(int joystickNo)
            (eventMap[EC_JOY1_BUTTON3] << 6) |
            (eventMap[EC_JOY1_BUTTON4] << 7));
 }
-
-#define EC_KEYBOARD_KEYCOUNT  94
-
-#ifdef LOG_PERFORMANCE
-#define RETRO_PERFORMANCE_INIT(name) static struct retro_perf_counter name = {#name}; if (!name.registered) perf_cb.perf_register(&(name))
-#define RETRO_PERFORMANCE_START(name) perf_cb.perf_start(&(name))
-#define RETRO_PERFORMANCE_STOP(name) perf_cb.perf_stop(&(name))
-#else
-#define RETRO_PERFORMANCE_INIT(name)
-#define RETRO_PERFORMANCE_START(name)
-#define RETRO_PERFORMANCE_STOP(name)
-#endif
 
 void retro_run(void)
 {
@@ -750,9 +773,6 @@ void retro_run(void)
 
 
 }
-
-unsigned retro_api_version(void) { return RETRO_API_VERSION; }
-
 
 // framebuffer
 
@@ -814,12 +834,27 @@ void   frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val)
    image_buffer_current_width = double_width ? image_buffer_base_width * 2 : image_buffer_base_width;
 }
 
-int archPollEvent()
-{
-   return 0;
-}
 
-//stubs
+
+
+//RetroArch stubs
+void retro_set_audio_sample(retro_audio_sample_t unused){}
+bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t c){return false;}
+void retro_unload_game(void){}
+unsigned retro_get_region(void){return RETRO_REGION_NTSC;}
+void *retro_get_memory_data(unsigned id){return NULL;}
+size_t retro_get_memory_size(unsigned id){return 0;}
+unsigned retro_api_version(void){return RETRO_API_VERSION;}
+size_t retro_serialize_size(void){return 0;}
+void retro_cheat_reset(void){}
+void retro_cheat_set(unsigned a, bool b, const char * c){}
+bool retro_serialize(void *data, size_t size){return false;}
+bool retro_unserialize(const void *data, size_t size){return false;}
+
+
+
+//Core stubs
+int archPollEvent(){return 0;}
 void frameBufferDataDestroy(FrameBufferData* frameData){}
 void frameBufferSetActive(FrameBufferData* frameData){}
 void frameBufferSetMixMode(FrameBufferMixMode mode, FrameBufferMixMode mask){}
