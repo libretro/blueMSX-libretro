@@ -413,23 +413,11 @@ void retro_init(void)
    int i;
    struct retro_log_callback log;
 
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
       log_cb = log.log;
    else
       log_cb = NULL;
    
-   init_input_descriptors();
-
-   image_buffer = malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
-   image_buffer_base_width =  272;
-   image_buffer_current_width =  image_buffer_base_width;
-   image_buffer_height =  240;
-   double_width = 0;
-
-   input_devices[0] = RETRO_DEVICE_JOYPAD;
-//   for (i = 0; i < MAX_PADS; i++)
-//      input_devices[i] = RETRO_DEVICE_JOYPAD;
 
 #ifdef LOG_PERFORMANCE
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
@@ -439,14 +427,6 @@ void retro_init(void)
 
 void retro_deinit(void)
 {
-   if (image_buffer)
-      free(image_buffer);
-
-   image_buffer = NULL;
-   image_buffer_base_width = 0;
-   image_buffer_current_width = 0;
-   image_buffer_height = 0;
-
 #ifdef LOG_PERFORMANCE
    perf_cb.perf_log();
 #endif
@@ -573,6 +553,23 @@ bool retro_load_game(const struct retro_game_info *info)
          log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
       return false;
    }
+
+   if (!info)
+      return false;
+
+   init_input_descriptors();
+
+   image_buffer               = malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
+   image_buffer_base_width    =  272;
+   image_buffer_current_width =  image_buffer_base_width;
+   image_buffer_height        =  240;
+   double_width               = 0;
+
+   input_devices[0] = RETRO_DEVICE_JOYPAD;
+#if 0
+   for (i = 0; i < MAX_PADS; i++)
+      input_devices[i] = RETRO_DEVICE_JOYPAD;
+#endif
 
    check_variables();
 
@@ -840,7 +837,17 @@ void   frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val)
 //RetroArch stubs
 void retro_set_audio_sample(retro_audio_sample_t unused){}
 bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t c){return false;}
-void retro_unload_game(void){}
+
+void retro_unload_game(void)
+{
+   if (image_buffer)
+      free(image_buffer);
+
+   image_buffer = NULL;
+   image_buffer_base_width = 0;
+   image_buffer_current_width = 0;
+   image_buffer_height = 0;
+}
 unsigned retro_get_region(void){return RETRO_REGION_NTSC;}
 void *retro_get_memory_data(unsigned id){return NULL;}
 size_t retro_get_memory_size(unsigned id){return 0;}
