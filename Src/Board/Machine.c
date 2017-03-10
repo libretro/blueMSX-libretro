@@ -25,7 +25,7 @@
 **
 ******************************************************************************
 */
-#ifdef EMSCRIPTEN
+#if defined(__linux__) || defined(EMSCRIPTEN)
 #define _GNU_SOURCE
 #endif
 #include <string.h>
