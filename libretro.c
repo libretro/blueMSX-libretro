@@ -445,12 +445,11 @@ void retro_set_environment(retro_environment_t cb)
 
    static const struct retro_controller_description port[] = {
       { "RetroPad", RETRO_DEVICE_JOYPAD },
-      { "RetroKeyboard", RETRO_DEVICE_KEYBOARD },
    };
 
    static const struct retro_controller_info ports[] = {
-      { port, 2 },
-      { port, 2 },
+      { port, 1 },
+      { port, 1 },
       { NULL, 0 },
    };
 
@@ -465,13 +464,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       case RETRO_DEVICE_JOYPAD:
          input_devices[port] = RETRO_DEVICE_JOYPAD;
          break;
-      case RETRO_DEVICE_KEYBOARD:
-         input_devices[port] = RETRO_DEVICE_KEYBOARD;
-         break;
       default:
          if (log_cb)
-            log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_KEYBOARD ...\n");
-         input_devices[port] = RETRO_DEVICE_KEYBOARD;
+            log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...\n");
+         input_devices[port] = RETRO_DEVICE_JOYPAD;
    }
 }
 
@@ -565,11 +561,8 @@ bool retro_load_game(const struct retro_game_info *info)
    image_buffer_height        =  240;
    double_width               = 0;
 
-   input_devices[0] = RETRO_DEVICE_JOYPAD;
-#if 0
    for (i = 0; i < MAX_PADS; i++)
       input_devices[i] = RETRO_DEVICE_JOYPAD;
-#endif
 
    check_variables();
 
@@ -753,12 +746,11 @@ void retro_run(void)
                for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON6); j++)
                   eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
             break;
-         case RETRO_DEVICE_KEYBOARD:
-            for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
-               eventMap[j] = input_state_cb(i, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
-            break;
       }
    }
+
+   for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
+               eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
 #endif
 
    ((R800*)boardInfo.cpuRef)->terminate = 0;
