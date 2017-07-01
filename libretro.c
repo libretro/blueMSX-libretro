@@ -212,7 +212,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_0,               //EC_0        21
    RETROK_MINUS,           //EC_NEG      22
    RETROK_EQUALS,          //EC_CIRCFLX  23
-   RETROK_UNKNOWN,         //EC_BKSLASH  24
+   RETROK_BACKSLASH,       //EC_BKSLASH  24 (YEN)
    RETROK_BACKSPACE,       //EC_BKSPACE  25
 
 // ROW 2
@@ -227,8 +227,8 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_i,               //EC_I        34
    RETROK_o,               //EC_O        35
    RETROK_p,               //EC_P        36
-   RETROK_LEFTBRACKET,     //EC_AT       37
-   RETROK_RIGHTBRACKET,    //EC_LBRACK   38
+   RETROK_BACKQUOTE,       //EC_AT       37
+   RETROK_LEFTBRACKET,     //EC_LBRACK   38
    RETROK_RETURN,          //EC_RETURN   39
 
 // ROW 3
@@ -243,8 +243,8 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_k,               //EC_K        48
    RETROK_l,               //EC_L        49
    RETROK_SEMICOLON,       //EC_SEMICOL  50
-   RETROK_COLON,           //EC_COLON    51
-   RETROK_BACKSLASH,       //EC_RBRACK   52
+   RETROK_QUOTE,           //EC_COLON    51
+   RETROK_RIGHTBRACKET,    //EC_RBRACK   52
 
 // ROW 4
    RETROK_LSHIFT,          //EC_LSHIFT   53
@@ -258,7 +258,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_COMMA,           //EC_COMMA    61
    RETROK_PERIOD,          //EC_PERIOD   62
    RETROK_SLASH,           //EC_DIV      63
-   RETROK_UNKNOWN,         //EC_UNDSCRE  64
+   RETROK_0,               //EC_UNDSCRE  64 (as Shift+0)
    RETROK_RSHIFT,          //EC_RSHIFT   65
 
 // ROW 5
