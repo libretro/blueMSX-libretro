@@ -51,6 +51,8 @@ static int double_width;
 
 
 static char msx_type[256];
+static char msx_cartmapper[256];
+static bool mapper_auto;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 
@@ -440,6 +442,7 @@ void retro_set_environment(retro_environment_t cb)
       { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSX2|MSXturboR|MSX" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
+      { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher" },
       { NULL, NULL },
    };
 
@@ -529,6 +532,19 @@ static void check_variables(void)
    }
    else
       msx_ym2413_enable = true;
+
+   var.key = "bluemsx_cartmapper";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "Auto"))
+         mapper_auto = true;
+      else {
+         mapper_auto = false;
+         strcpy(msx_cartmapper, var.value);
+      }
+   }
 }
 
 bool retro_load_game(const struct retro_game_info *info)
@@ -631,7 +647,10 @@ bool retro_load_game(const struct retro_game_info *info)
    mixerEnableMaster(mixer, properties->sound.masterEnable);
 
 
-   mediaDbSetDefaultRomType(properties->cartridge.defaultType);
+   if (mapper_auto)
+      mediaDbSetDefaultRomType(properties->cartridge.defaultType);
+   else
+      mediaDbSetDefaultRomType(msx_cartmapper);
 
    int mediatype = getmediatype(info->path);
    switch(mediatype){
@@ -652,8 +671,11 @@ bool retro_load_game(const struct retro_game_info *info)
 
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
-      if (properties->media.carts[i].fileName[0])
+      if (properties->media.carts[i].fileName[0] && mapper_auto)
          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+      if (properties->media.carts[i].fileName[0] && !mapper_auto)
+         insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
+
       updateExtendedRomName(i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip);
    }
 
