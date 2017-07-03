@@ -650,7 +650,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (mapper_auto)
       mediaDbSetDefaultRomType(properties->cartridge.defaultType);
    else
-      mediaDbSetDefaultRomType(msx_cartmapper);
+      mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
    int mediatype = getmediatype(info->path);
    switch(mediatype){
