@@ -691,8 +691,10 @@ bool retro_load_game(const struct retro_game_info *info)
    mixerEnableMaster(mixer, properties->sound.masterEnable);
 
 
-   if (mapper_auto)
+   if (mapper_auto && !is_coleco)
       mediaDbSetDefaultRomType(properties->cartridge.defaultType);
+   else if (mapper_auto && is_coleco)
+      mediaDbSetDefaultRomType(ROM_COLECO);
    else
       mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
