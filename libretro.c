@@ -114,6 +114,9 @@ int getmediatype(const char* filename){
    else if(strcmp(extension,".mx2") == 0){
       return MEDIA_TYPE_CART;
    }
+   else if(strcmp(extension,".col") == 0){
+      return MEDIA_TYPE_CART;
+   }
    
    return MEDIA_TYPE_OTHER;
 }
@@ -328,31 +331,31 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETRO_DEVICE_ID_JOYPAD_START,    //EC_JOY2_BUTTON5 118
    RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_JOY2_BUTTON6 119
 
-   RETROK_UNKNOWN,   //EC_COLECO1_0    120
-   RETROK_UNKNOWN,   //EC_COLECO1_1    121
-   RETROK_UNKNOWN,   //EC_COLECO1_2    122
-   RETROK_UNKNOWN,   //EC_COLECO1_3    123
-   RETROK_UNKNOWN,   //EC_COLECO1_4    124
-   RETROK_UNKNOWN,   //EC_COLECO1_5    125
-   RETROK_UNKNOWN,   //EC_COLECO1_6    126
-   RETROK_UNKNOWN,   //EC_COLECO1_7    127
-   RETROK_UNKNOWN,   //EC_COLECO1_8    128
-   RETROK_UNKNOWN,   //EC_COLECO1_9    129
-   RETROK_UNKNOWN,   //EC_COLECO1_STAR 130
-   RETROK_UNKNOWN,   //EC_COLECO1_HASH 131
+   RETRO_DEVICE_ID_JOYPAD_R3,       //EC_COLECO1_0    120
+   RETRO_DEVICE_ID_JOYPAD_START,    //EC_COLECO1_1    121
+   RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_COLECO1_2    122
+   RETRO_DEVICE_ID_JOYPAD_X,        //EC_COLECO1_3    123
+   RETRO_DEVICE_ID_JOYPAD_Y,        //EC_COLECO1_4    124
+   RETRO_DEVICE_ID_JOYPAD_L,        //EC_COLECO1_5    125
+   RETRO_DEVICE_ID_JOYPAD_R,        //EC_COLECO1_6    126
+   RETRO_DEVICE_ID_JOYPAD_L2,       //EC_COLECO1_7    127
+   RETRO_DEVICE_ID_JOYPAD_R2,       //EC_COLECO1_8    128
+   RETRO_DEVICE_ID_JOYPAD_L3,       //EC_COLECO1_9    129
+   RETROK_UNKNOWN,                  //EC_COLECO1_STAR 130
+   RETROK_UNKNOWN,                  //EC_COLECO1_HASH 131
 
-   RETROK_UNKNOWN,   //EC_COLECO2_0    140
-   RETROK_UNKNOWN,   //EC_COLECO2_1    141
-   RETROK_UNKNOWN,   //EC_COLECO2_2    142
-   RETROK_UNKNOWN,   //EC_COLECO2_3    143
-   RETROK_UNKNOWN,   //EC_COLECO2_4    144
-   RETROK_UNKNOWN,   //EC_COLECO2_5    145
-   RETROK_UNKNOWN,   //EC_COLECO2_6    146
-   RETROK_UNKNOWN,   //EC_COLECO2_7    147
-   RETROK_UNKNOWN,   //EC_COLECO2_8    148
-   RETROK_UNKNOWN,   //EC_COLECO2_9    149
-   RETROK_UNKNOWN,   //EC_COLECO2_STAR 150
-   RETROK_UNKNOWN,   //EC_COLECO2_HASH 151
+   RETRO_DEVICE_ID_JOYPAD_R3,       //EC_COLECO2_0    140
+   RETRO_DEVICE_ID_JOYPAD_START,    //EC_COLECO2_1    141
+   RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_COLECO2_2    142
+   RETRO_DEVICE_ID_JOYPAD_X,        //EC_COLECO2_3    143
+   RETRO_DEVICE_ID_JOYPAD_Y,        //EC_COLECO2_4    144
+   RETRO_DEVICE_ID_JOYPAD_L,        //EC_COLECO2_5    145
+   RETRO_DEVICE_ID_JOYPAD_R,        //EC_COLECO2_6    146
+   RETRO_DEVICE_ID_JOYPAD_L2,       //EC_COLECO2_7    147
+   RETRO_DEVICE_ID_JOYPAD_R2,       //EC_COLECO2_8    148
+   RETRO_DEVICE_ID_JOYPAD_L3,       //EC_COLECO2_9    149
+   RETROK_UNKNOWN,                  //EC_COLECO2_STAR 150
+   RETROK_UNKNOWN,                  //EC_COLECO2_HASH 151
 };
 
 void retro_get_system_info(struct retro_system_info *info)
@@ -391,8 +394,13 @@ void init_input_descriptors(){
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Button 4" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Select" },
-      
-      
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "Button 5" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "Button 6" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,    "Button 7" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "Button 8" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "Button 9" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "Button 10" },
+
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Joy Left" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Joy Up" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Joy Down" },
@@ -403,7 +411,13 @@ void init_input_descriptors(){
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Button 4" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Select" },
-      
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "Button 5" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "Button 6" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,    "Button 7" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "Button 8" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "Button 9" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "Button 10" },
+
       { 0, 0, 0, 0, NULL }
    };
    
@@ -439,7 +453,7 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
 
    static const struct retro_variable vars[] = {
-      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSX2|MSXturboR|MSX" },
+      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSX2|MSXturboR|MSX|ColecoVision" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
       { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher" },
@@ -506,7 +520,12 @@ static void check_variables(void)
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-      strcpy(msx_type, var.value);
+   {
+      if (!strcmp(var.value, "ColecoVision"))
+         strcpy(msx_type, "COL - ColecoVision");
+      else
+         strcpy(msx_type, var.value);
+   }
    else
       strcpy(msx_type, "MSX2+");
 
@@ -605,13 +624,26 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
-   strcpy(properties->joy1.type, "joystick");
-   properties->joy1.typeId            = JOYSTICK_PORT_JOYSTICK;
-   properties->joy1.autofire          = 0;
+   if (!strcmp(msx_type, "COL - ColecoVision"))
+   {
+      strcpy(properties->joy1.type, "coleco joystick");
+      properties->joy1.typeId            = JOYSTICK_PORT_COLECOJOYSTICK;
+      properties->joy1.autofire          = 0;
 
-   strcpy(properties->joy2.type, "joystick");
-   properties->joy2.typeId            = JOYSTICK_PORT_JOYSTICK;
-   properties->joy2.autofire          = 0;
+      strcpy(properties->joy2.type, "coleco joystick");
+      properties->joy2.typeId            = JOYSTICK_PORT_COLECOJOYSTICK;
+      properties->joy2.autofire          = 0;
+   }
+   else
+   {
+      strcpy(properties->joy1.type, "joystick");
+      properties->joy1.typeId            = JOYSTICK_PORT_JOYSTICK;
+      properties->joy1.autofire          = 0;
+
+      strcpy(properties->joy2.type, "joystick");
+      properties->joy2.typeId            = JOYSTICK_PORT_JOYSTICK;
+      properties->joy2.autofire          = 0;
+   }
 
    properties->emulation.vdpSyncMode       = msx_vdp_synctype;
    properties->video.monitorType           = P_VIDEO_PALNONE;
@@ -745,33 +777,64 @@ void retro_run(void)
 
    input_poll_cb();
 
-   for (i = 0; i < MAX_PADS; i++)
+   if (!strcmp(msx_type, "COL - ColecoVision"))
    {
-      switch (input_devices[i])
+    // ColecoVision Input Part
+      for (i = 0; i < MAX_PADS; i++)
       {
-         case RETRO_DEVICE_JOYPAD:
-            if (i == 0)
-               for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON6); j++)
+          switch (input_devices[i])
+          {
+            case RETRO_DEVICE_JOYPAD:
+              if (i == 0){
+                for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON2); j++)
                   eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-            else if (i == 1)
-               for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON6); j++)
+                for (j = EC_COLECO1_0; j <= (EC_COLECO1_9); j++)
                   eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-            break;
+              }else if (i == 1){
+                for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON2); j++)
+                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+                for (j = EC_COLECO2_0; j <= (EC_COLECO2_9); j++)
+                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+              }
+              break;
+          }
       }
-   }
+       eventMap[EC_COLECO1_STAR]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_z)     ? 1 : 0;
+       eventMap[EC_COLECO1_HASH]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_x)     ? 1 : 0;
+       eventMap[EC_COLECO2_STAR]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_a)     ? 1 : 0;
+       eventMap[EC_COLECO2_HASH]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_s)     ? 1 : 0;
+    }
+    else
+    {
+    // MSX Input Part
+      for (i = 0; i < MAX_PADS; i++)
+      {
+        switch (input_devices[i])
+          {
+             case RETRO_DEVICE_JOYPAD:
+                if (i == 0)
+                  for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON6); j++)
+                    eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+                else if (i == 1)
+                  for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON6); j++)
+                    eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+             break;
+          }
+      }
 
-   for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
-               eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
+      for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
+        eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
 
-   if (input_devices[0] == RETRO_DEVICE_MAPPER){
-      eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
-      eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
-      eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
-      eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
-      eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
-      eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
-      eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
-      eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+      if (input_devices[0] == RETRO_DEVICE_MAPPER){
+        eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
+          eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
+          eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
+          eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
+          eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
+          eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
+          eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
+          eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+      }
    }
 
    ((R800*)boardInfo.cpuRef)->terminate = 0;
@@ -780,7 +843,6 @@ void retro_run(void)
    RETRO_PERFORMANCE_STOP(core_retro_run);
 
    video_cb(image_buffer, image_buffer_current_width, image_buffer_height, image_buffer_current_width * sizeof(uint16_t));
-
 
 }
 
