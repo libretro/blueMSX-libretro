@@ -331,29 +331,29 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETRO_DEVICE_ID_JOYPAD_START,    //EC_JOY2_BUTTON5 118
    RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_JOY2_BUTTON6 119
 
-   RETRO_DEVICE_ID_JOYPAD_L3,       //EC_COLECO1_0    120
-   RETRO_DEVICE_ID_JOYPAD_START,    //EC_COLECO1_1    121
-   RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_COLECO1_2    122
-   RETRO_DEVICE_ID_JOYPAD_X,        //EC_COLECO1_3    123
-   RETRO_DEVICE_ID_JOYPAD_Y,        //EC_COLECO1_4    124
-   RETRO_DEVICE_ID_JOYPAD_R,        //EC_COLECO1_5    125
-   RETRO_DEVICE_ID_JOYPAD_L,        //EC_COLECO1_6    126
-   RETRO_DEVICE_ID_JOYPAD_R2,       //EC_COLECO1_7    127
-   RETRO_DEVICE_ID_JOYPAD_L2,       //EC_COLECO1_8    128
-   RETRO_DEVICE_ID_JOYPAD_R3,       //EC_COLECO1_9    129
+   RETROK_UNKNOWN,                  //EC_COLECO1_0    120
+   RETROK_UNKNOWN,                  //EC_COLECO1_1    121
+   RETROK_UNKNOWN,                  //EC_COLECO1_2    122
+   RETROK_UNKNOWN,                  //EC_COLECO1_3    123
+   RETROK_UNKNOWN,                  //EC_COLECO1_4    124
+   RETROK_UNKNOWN,                  //EC_COLECO1_5    125
+   RETROK_UNKNOWN,                  //EC_COLECO1_6    126
+   RETROK_UNKNOWN,                  //EC_COLECO1_7    127
+   RETROK_UNKNOWN,                  //EC_COLECO1_8    128
+   RETROK_UNKNOWN,                  //EC_COLECO1_9    129
    RETROK_UNKNOWN,                  //EC_COLECO1_STAR 130
    RETROK_UNKNOWN,                  //EC_COLECO1_HASH 131
 
-   RETRO_DEVICE_ID_JOYPAD_L3,       //EC_COLECO2_0    140
-   RETRO_DEVICE_ID_JOYPAD_START,    //EC_COLECO2_1    141
-   RETRO_DEVICE_ID_JOYPAD_SELECT,   //EC_COLECO2_2    142
-   RETRO_DEVICE_ID_JOYPAD_X,        //EC_COLECO2_3    143
-   RETRO_DEVICE_ID_JOYPAD_Y,        //EC_COLECO2_4    144
-   RETRO_DEVICE_ID_JOYPAD_R,        //EC_COLECO2_5    145
-   RETRO_DEVICE_ID_JOYPAD_L,        //EC_COLECO2_6    146
-   RETRO_DEVICE_ID_JOYPAD_R2,       //EC_COLECO2_7    147
-   RETRO_DEVICE_ID_JOYPAD_L2,       //EC_COLECO2_8    148
-   RETRO_DEVICE_ID_JOYPAD_R3,       //EC_COLECO2_9    149
+   RETROK_UNKNOWN,                  //EC_COLECO2_0    140
+   RETROK_UNKNOWN,                  //EC_COLECO2_1    141
+   RETROK_UNKNOWN,                  //EC_COLECO2_2    142
+   RETROK_UNKNOWN,                  //EC_COLECO2_3    143
+   RETROK_UNKNOWN,                  //EC_COLECO2_4    144
+   RETROK_UNKNOWN,                  //EC_COLECO2_5    145
+   RETROK_UNKNOWN,                  //EC_COLECO2_6    146
+   RETROK_UNKNOWN,                  //EC_COLECO2_7    147
+   RETROK_UNKNOWN,                  //EC_COLECO2_8    148
+   RETROK_UNKNOWN,                  //EC_COLECO2_9    149
    RETROK_UNKNOWN,                  //EC_COLECO2_STAR 150
    RETROK_UNKNOWN,                  //EC_COLECO2_HASH 151
 };
@@ -788,21 +788,38 @@ void retro_run(void)
               if (i == 0){
                 for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON2); j++)
                   eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-                for (j = EC_COLECO1_0; j <= (EC_COLECO1_9); j++)
-                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
               }else if (i == 1){
                 for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON2); j++)
-                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-                for (j = EC_COLECO2_0; j <= (EC_COLECO2_9); j++)
                   eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
               }
               break;
           }
       }
-       eventMap[EC_COLECO1_STAR]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_z)     ? 1 : 0;
-       eventMap[EC_COLECO1_HASH]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_x)     ? 1 : 0;
-       eventMap[EC_COLECO2_STAR]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_a)     ? 1 : 0;
-       eventMap[EC_COLECO2_HASH]  = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_s)     ? 1 : 0;
+       eventMap[EC_COLECO1_1]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+       eventMap[EC_COLECO1_2]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+       eventMap[EC_COLECO1_3]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+       eventMap[EC_COLECO1_4]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+       eventMap[EC_COLECO1_5]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+       eventMap[EC_COLECO1_6]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+       eventMap[EC_COLECO1_7]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+       eventMap[EC_COLECO1_8]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+       eventMap[EC_COLECO1_STAR]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+       eventMap[EC_COLECO1_HASH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+       eventMap[EC_COLECO1_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_1)                    ? 1 : 0;
+       eventMap[EC_COLECO1_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_2)                    ? 1 : 0;
+
+       eventMap[EC_COLECO2_1]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+       eventMap[EC_COLECO2_2]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+       eventMap[EC_COLECO2_3]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+       eventMap[EC_COLECO2_4]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+       eventMap[EC_COLECO2_5]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+       eventMap[EC_COLECO2_6]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+       eventMap[EC_COLECO2_7]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+       eventMap[EC_COLECO2_8]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+       eventMap[EC_COLECO2_STAR]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+       eventMap[EC_COLECO2_HASH]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+       eventMap[EC_COLECO2_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_3)                    ? 1 : 0;
+       eventMap[EC_COLECO2_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_4)                    ? 1 : 0;
     }
     else
     {
