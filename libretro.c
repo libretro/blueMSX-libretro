@@ -72,7 +72,7 @@ static struct retro_perf_callback perf_cb;
 #define RETRO_PERFORMANCE_STOP(name)
 #endif
 
-
+#define RETRO_DEVICE_MAPPER RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 1)
 #define EC_KEYBOARD_KEYCOUNT  94
 
 
@@ -447,11 +447,13 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    static const struct retro_controller_description port[] = {
-      { "RetroPad", RETRO_DEVICE_JOYPAD },
+      { "RetroPad",              RETRO_DEVICE_JOYPAD },
+      { "RetroPad Keyboard Map", RETRO_DEVICE_MAPPER },
+      { 0 },
    };
 
    static const struct retro_controller_info ports[] = {
-      { port, 1 },
+      { port, 2 },
       { port, 1 },
       { NULL, 0 },
    };
@@ -466,6 +468,9 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
    {
       case RETRO_DEVICE_JOYPAD:
          input_devices[port] = RETRO_DEVICE_JOYPAD;
+         break;
+      case RETRO_DEVICE_MAPPER:
+         input_devices[port] = RETRO_DEVICE_MAPPER;
          break;
       default:
          if (log_cb)
@@ -740,22 +745,6 @@ void retro_run(void)
 
    input_poll_cb();
 
-#ifdef PSP
-   if(input_devices[0] == RETRO_DEVICE_JOYPAD)
-      for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON6); j++)
-         eventMap[j] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-   else
-   {
-      eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
-      eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
-      eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
-      eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
-      eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
-      eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
-      eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
-      eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
-   }
-#else
    for (i = 0; i < MAX_PADS; i++)
    {
       switch (input_devices[i])
@@ -773,7 +762,17 @@ void retro_run(void)
 
    for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
                eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
-#endif
+
+   if (input_devices[0] == RETRO_DEVICE_MAPPER){
+      eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
+      eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
+      eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
+      eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
+      eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
+      eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
+      eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
+      eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+   }
 
    ((R800*)boardInfo.cpuRef)->terminate = 0;
    boardInfo.run(boardInfo.cpuRef);
