@@ -53,6 +53,7 @@ static int double_width;
 static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
+static bool is_coleco;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 
@@ -522,9 +523,15 @@ static void check_variables(void)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (!strcmp(var.value, "ColecoVision"))
+      {
+         is_coleco = true;
          strcpy(msx_type, "COL - ColecoVision");
+      }
       else
+      {
+         is_coleco = false;
          strcpy(msx_type, var.value);
+      }
    }
    else
       strcpy(msx_type, "MSX2+");
@@ -624,7 +631,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
-   if (!strcmp(msx_type, "COL - ColecoVision"))
+   if (is_coleco)
    {
       strcpy(properties->joy1.type, "coleco joystick");
       properties->joy1.typeId            = JOYSTICK_PORT_COLECOJOYSTICK;
@@ -777,7 +784,7 @@ void retro_run(void)
 
    input_poll_cb();
 
-   if (!strcmp(msx_type, "COL - ColecoVision"))
+   if (is_coleco)
    {
     // ColecoVision Input Part
       for (i = 0; i < MAX_PADS; i++)
