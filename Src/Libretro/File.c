@@ -36,8 +36,9 @@
 #include <unistd.h>
 #endif
 
-#ifdef __MINGW32__
 #include <sys/stat.h>
+
+#ifdef __MINGW32__
 
 int archCreateDirectory(const char* pathname)
 {
@@ -96,7 +97,7 @@ int archFileExists(const char* fileName)
 
    _stat(path, &buf);
 
-   if (file_info == INVALID_FILE_ATTRIBUTES)
+   if (file_info == -1)
       return 0;
 
    return 1;
@@ -108,9 +109,6 @@ int archFileDelete(const char* fileName)
 }
 
 #else
-
-#include <sys/stat.h>
-
 
 int archCreateDirectory(const char* pathname)
 {
