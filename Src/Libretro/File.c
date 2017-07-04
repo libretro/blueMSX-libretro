@@ -30,9 +30,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 #ifdef __MINGW32__
 #include <sys/stat.h>
-#include <unistd.h>
 
 int archCreateDirectory(const char* pathname)
 {
@@ -61,10 +66,9 @@ int archFileDelete(const char* fileName)
     return remove(fileName) == 0;
 }
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 
 #include <windows.h>
-#include <direct.h>
 #include <shlobj.h>
 #include <shlwapi.h>
 
@@ -98,7 +102,6 @@ int archFileDelete(const char* fileName)
 #else
 
 #include <sys/stat.h>
-#include <unistd.h>
 
 
 int archCreateDirectory(const char* pathname)
