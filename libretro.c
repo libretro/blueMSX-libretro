@@ -506,10 +506,12 @@ void retro_reset(void)
 
 static void extract_directory(char *buf, const char *path, size_t size)
 {
+   char *base = NULL;
+
    strncpy(buf, path, size - 1);
    buf[size - 1] = '\0';
 
-   char *base = strrchr(buf, '/');
+   base = strrchr(buf, '/');
    if (!base)
       base = strrchr(buf, '\\');
 
@@ -585,7 +587,7 @@ static void check_variables(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   int i;
+   int i, mediatype;
    char properties_dir[256], machines_dir[256], mediadb_dir[256];
    const char *dir = NULL;
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
@@ -707,8 +709,9 @@ bool retro_load_game(const struct retro_game_info *info)
    else
       mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
-   int mediatype = getmediatype(info->path);
-   switch(mediatype){
+   mediatype = getmediatype(info->path);
+   switch(mediatype)
+   {
       case MEDIA_TYPE_DISK:
          strcpy(properties->media.disks[0].fileName , info->path);
          attachdiskswapinterface();
