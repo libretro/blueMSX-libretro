@@ -1,7 +1,7 @@
 /* Copyright  (C) 2010-2017 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (retro_dirent.h).
+ * The following license statement only applies to this file (retro_common.h).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -20,42 +20,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __RETRO_DIRENT_H
-#define __RETRO_DIRENT_H
+#ifndef _LIBRETRO_COMMON_RETRO_COMMON_H
+#define _LIBRETRO_COMMON_RETRO_COMMON_H
 
-#include <retro_common_api.h>
-#include <retro_miscellaneous.h>
+/*
+This file is designed to normalize the libretro-common compiling environment.
+It is not to be used in public API headers, as they should be designed as leanly as possible.
+Nonetheless.. in the meantime, if you do something like use ssize_t, which is not fully portable, 
+in a public API, you may need this.
+*/
 
-#include <boolean.h>
-
-RETRO_BEGIN_DECLS
-
-typedef struct RDIR RDIR;
-
-struct RDIR *retro_opendir(const char *name);
-
-int retro_readdir(struct RDIR *rdir);
-
-bool retro_dirent_error(struct RDIR *rdir);
-
-void retro_dirent_include_hidden(struct RDIR *rdir, bool include_hidden);
-
-const char *retro_dirent_get_name(struct RDIR *rdir);
-
-/**
- *
- * retro_dirent_is_dir:
- * @rdir         : pointer to the directory entry.
- *
- * Is the directory listing entry a directory?
- *
- * Returns: true if directory listing entry is
- * a directory, false if not.
- */
-bool retro_dirent_is_dir(struct RDIR *rdir, const char *path);
-
-void retro_closedir(struct RDIR *rdir);
-
-RETRO_END_DECLS
+/* conditional compilation is handled inside here */
+#include <compat/msvc.h>
 
 #endif
+

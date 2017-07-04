@@ -5,7 +5,7 @@ ifneq ($(GIT_VERSION)," unknown")
 endif
 
 DEBUG   = 0
-LOG_PERFORMANCE = 1
+LOG_PERFORMANCE = 0
 HAVE_COMPAT = 0
 
 SOURCES_C   :=
@@ -292,12 +292,9 @@ endif
 ifeq ($(DEBUG), 1)
 	CFLAGS += -O0 -g
 	CXXFLAGS += -O0 -g
-else ifeq ($(platform), emscripten)
-	CFLAGS += -O2
-	CXXFLAGS += -O2 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
 else
-	CFLAGS += -O3
-	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
+	CFLAGS += -O2
+	CXXFLAGS += -O2 -fno-exceptions -fno-rtti -DHAVE_STDINT_H -DNDEBUG
 endif
 
 ifeq ($(LOG_PERFORMANCE), 1)
@@ -305,17 +302,15 @@ ifeq ($(LOG_PERFORMANCE), 1)
 	CXXFLAGS += -DLOG_PERFORMANCE
 endif
 
+include Makefile.common
 
-DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES)
-DEFINES += -DSINGLE_THREADED -DVIDEO_COLOR_TYPE_RGB565 -DZ80_CUSTOM_CONFIGURATION -DNO_FRAMEBUFFER
+DEFINES := $(PLATFORM_DEFINES) $(COREDEFINES)
 
 CFLAGS   += $(fpic) $(DEFINES)
 CFLAGS   += -w
 
 CXXFLAGS += $(fpic) $(DEFINES)
 CXXFLAGS   += -w
-
-include Makefile.common
 
 OBJS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o)
 
