@@ -94,89 +94,94 @@ void lowerstring(char* str)
    }
 }
 
-int getmediatype(const char* filename){
+int getmediatype(const char* filename)
+{
    char workram[4096/*max path name length for all existing OSes*/];
+   const char *extension = NULL;
+
    strcpy(workram,filename);
    lowerstring(workram);
-   const char* extension = workram + strlen(workram) - 4;
-   
-   if(strcmp(extension,".dsk") == 0){
+   extension = workram + strlen(workram) - 4;
+
+   if(strcmp(extension,".dsk") == 0)
       return MEDIA_TYPE_DISK;
-   }
-   else if(strcmp(extension,".cas") == 0){
+   else if(strcmp(extension,".cas") == 0)
       return MEDIA_TYPE_TAPE;
-   }
-   else if(strcmp(extension,".rom") == 0){
+   else if(strcmp(extension,".rom") == 0)
       return MEDIA_TYPE_CART;
-   }
-   else if(strcmp(extension,".mx1") == 0){
+   else if(strcmp(extension,".mx1") == 0)
       return MEDIA_TYPE_CART;
-   }
-   else if(strcmp(extension,".mx2") == 0){
+   else if(strcmp(extension,".mx2") == 0)
       return MEDIA_TYPE_CART;
-   }
-   else if(strcmp(extension,".col") == 0){
+   else if(strcmp(extension,".col") == 0)
       return MEDIA_TYPE_CART;
-   }
-   
+
    return MEDIA_TYPE_OTHER;
 }
+
 /* end .dsk support */
 /* .dsk swap support */
 struct retro_disk_control_callback dskcb;
 bool diskinserted = false;
 
 //all the fake functions used to limit swapping to 1 disk drive
-bool setdskeject(bool ejected){
+bool setdskeject(bool ejected)
+{
    diskinserted = !ejected;
    return false;
 }
 
-bool getdskeject(){
+bool getdskeject(void)
+{
    return !diskinserted;
 }
 
-unsigned getdskindex(){
+unsigned getdskindex(void)
+{
    return 0;
 }
 
-bool setdskindex(unsigned index){
-   //fail on this one,only one disk slot
-   if(index != 0)return true;
+bool setdskindex(unsigned index)
+{
+   /* fail on this one,only one disk slot */
+   if(index != 0)
+      return true;
    return false;
 }
 
-unsigned getnumimages(){
+unsigned getnumimages(void)
+{
    return 1;
 }
 
-bool addimageindex(){
-   //fail on this one,only one disk slot
+bool addimageindex(void)
+{
+   /* fail on this one,only one disk slot */
    return true;
 }
 
+/* this is the only real function,it will swap out the disk */
+bool replacedsk(unsigned index,const struct retro_game_info *info)
+{
+   if(getmediatype(info->path) != MEDIA_TYPE_DISK)
+      return true;//cant swap a cart or tape into a disk slot
 
-
-//this is the only real function,it will swap out the disk
-bool replacedsk(unsigned index,const struct retro_game_info *info){
-   if(getmediatype(info->path) != MEDIA_TYPE_DISK)return true;//cant swap a cart or tape into a disk slot
-   
-   bool failed = insertDiskette(properties, 0 /*drive*/, info->path /*fname*/, NULL /*inZipFile*/, 0 /*forceAutostart*/);
-   return failed;
+   return insertDiskette(properties, 0 /*drive*/, info->path /*fname*/, NULL /*inZipFile*/, 0 /*forceAutostart*/);
 }
 
-void attachdiskswapinterface(){
-   //these functions are unused
+void attachdiskswapinterface(void)
+{
+   /* these functions are unused */
    dskcb.set_eject_state = setdskeject;
    dskcb.get_eject_state = getdskeject;
    dskcb.set_image_index = setdskindex;
    dskcb.get_image_index = getdskindex;
    dskcb.get_num_images  = getnumimages;
    dskcb.add_image_index = addimageindex;
-   
-   //this is the only real function,it will swap out the disk
+
+   /* this is the only real function,it will swap out the disk */
    dskcb.replace_image_index = replacedsk;
-   
+
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE,&dskcb);
 }
 /* end .dsk swap support */
@@ -192,7 +197,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
 {
    RETROK_UNKNOWN,         //EC_NONE      0
 
-// ROW 0
+   // ROW 0
    RETROK_F1,              //EC_F1        1
    RETROK_F2,              //EC_F2        2
    RETROK_F3,              //EC_F3        3
@@ -204,7 +209,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_INSERT,          //EC_INS       9
    RETROK_DELETE,          //EC_DEL      10
 
-// ROW 1
+   // ROW 1
    RETROK_ESCAPE,          //EC_ESC      11
    RETROK_1,               //EC_1        12
    RETROK_2,               //EC_2        13
@@ -221,7 +226,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_BACKSLASH,       //EC_BKSLASH  24 (YEN)
    RETROK_BACKSPACE,       //EC_BKSPACE  25
 
-// ROW 2
+   // ROW 2
    RETROK_TAB,             //EC_TAB      26
    RETROK_q,               //EC_Q        27
    RETROK_w,               //EC_W        28
@@ -237,7 +242,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_LEFTBRACKET,     //EC_LBRACK   38
    RETROK_RETURN,          //EC_RETURN   39
 
-// ROW 3
+   // ROW 3
    RETROK_LCTRL,           //EC_CTRL     40
    RETROK_a,               //EC_A        41
    RETROK_s,               //EC_S        42
@@ -252,7 +257,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_QUOTE,           //EC_COLON    51
    RETROK_RIGHTBRACKET,    //EC_RBRACK   52
 
-// ROW 4
+   // ROW 4
    RETROK_LSHIFT,          //EC_LSHIFT   53
    RETROK_z,               //EC_Z        54
    RETROK_x,               //EC_X        55
@@ -267,7 +272,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_0,               //EC_UNDSCRE  64 (as Shift+0)
    RETROK_RSHIFT,          //EC_RSHIFT   65
 
-// ROW 5
+   // ROW 5
    RETROK_CAPSLOCK,        //EC_CAPS     66
    RETROK_LALT,            //EC_GRAPH    67
    RETROK_UNKNOWN,         //EC_TORIKE   68
@@ -276,13 +281,13 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_UNKNOWN,         //EC_CODE     71
    RETROK_PAUSE,           //EC_PAUSE    72
 
-// ARROWS
+   // ARROWS
    RETROK_LEFT,            //EC_LEFT     73
    RETROK_UP,              //EC_UP       74
    RETROK_DOWN,            //EC_DOWN     75
    RETROK_RIGHT,           //EC_RIGHT    76
 
-// NUMERIC KEYBOARD
+   // NUMERIC KEYBOARD
    RETROK_KP7,             //EC_NUM7     77
    RETROK_KP8,             //EC_NUM8     78
    RETROK_KP9,             //EC_NUM9     79
@@ -300,7 +305,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_KP_PERIOD,       //EC_NUMCOM   91
    RETROK_KP_PLUS,         //EC_NUMADD   92
 
-// SVI SPECIFIC KEYS
+   // SVI SPECIFIC KEYS
    RETROK_PRINT,           //EC_PRINT    93
 
    RETROK_UNKNOWN,
@@ -421,7 +426,7 @@ void init_input_descriptors(){
 
       { 0, 0, 0, 0, NULL }
    };
-   
+
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 }
 
@@ -434,7 +439,7 @@ void retro_init(void)
       log_cb = log.log;
    else
       log_cb = NULL;
-   
+
 
 #ifdef LOG_PERFORMANCE
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
@@ -623,11 +628,15 @@ bool retro_load_game(const struct retro_game_info *info)
 
    propertiesSetDirectory(properties_dir, properties_dir);
    machineSetDirectory(machines_dir);
-   //boardSetDirectory(buffer);
+#if 0
+   boardSetDirectory(buffer);
+#endif
    mediaDbLoad(mediadb_dir);
-   //mediaDbCreateRomdb();
-   //mediaDbCreateDiskdb();
-   //mediaDbCreateCasdb();
+#if 0
+   mediaDbCreateRomdb();
+   mediaDbCreateDiskdb();
+   mediaDbCreateCasdb();
+#endif
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
@@ -670,13 +679,13 @@ bool retro_load_game(const struct retro_game_info *info)
    joystickPortSetType(0, properties->joy1.typeId);
    joystickPortSetType(1, properties->joy2.typeId);
 
-
-
-//   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
-//   uartIoSetType(properties->ports.Com.type, properties->ports.Com.fileName);
-//   midiIoSetMidiOutType(properties->sound.MidiOut.type, properties->sound.MidiOut.fileName);
-//   midiIoSetMidiInType(properties->sound.MidiIn.type, properties->sound.MidiIn.fileName);
-//   ykIoSetMidiInType(properties->sound.YkIn.type, properties->sound.YkIn.fileName);
+#if 0
+   printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
+   uartIoSetType(properties->ports.Com.type, properties->ports.Com.fileName);
+   midiIoSetMidiOutType(properties->sound.MidiOut.type, properties->sound.MidiOut.fileName);
+   midiIoSetMidiInType(properties->sound.MidiIn.type, properties->sound.MidiIn.fileName);
+   ykIoSetMidiInType(properties->sound.YkIn.type, properties->sound.YkIn.fileName);
+#endif
 
    emulatorRestartSound();
 
@@ -713,7 +722,7 @@ bool retro_load_game(const struct retro_game_info *info)
          strcpy(properties->media.carts[0].fileName , info->path);
          break;
    }
-   
+
 
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
@@ -764,13 +773,13 @@ void timerCallback_global(void* timer);
 UInt8 archJoystickGetState(int joystickNo)
 {
    return ((eventMap[EC_JOY1_UP]      << 0) |
-           (eventMap[EC_JOY1_DOWN]    << 1) |
-           (eventMap[EC_JOY1_LEFT]    << 2) |
-           (eventMap[EC_JOY1_RIGHT]   << 3) |
-           (eventMap[EC_JOY1_BUTTON1] << 4) |
-           (eventMap[EC_JOY1_BUTTON2] << 5) |
-           (eventMap[EC_JOY1_BUTTON3] << 6) |
-           (eventMap[EC_JOY1_BUTTON4] << 7));
+         (eventMap[EC_JOY1_DOWN]    << 1) |
+         (eventMap[EC_JOY1_LEFT]    << 2) |
+         (eventMap[EC_JOY1_RIGHT]   << 3) |
+         (eventMap[EC_JOY1_BUTTON1] << 4) |
+         (eventMap[EC_JOY1_BUTTON2] << 5) |
+         (eventMap[EC_JOY1_BUTTON3] << 6) |
+         (eventMap[EC_JOY1_BUTTON4] << 7));
 }
 
 void retro_run(void)
@@ -788,78 +797,78 @@ void retro_run(void)
 
    if (is_coleco)
    {
-    // ColecoVision Input Part
+      /* ColecoVision Input Part */
       for (i = 0; i < MAX_PADS; i++)
       {
-          switch (input_devices[i])
-          {
+         switch (input_devices[i])
+         {
             case RETRO_DEVICE_JOYPAD:
-              if (i == 0){
-                for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON2); j++)
-                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-              }else if (i == 1){
-                for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON2); j++)
-                  eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-              }
-              break;
-          }
+               if (i == 0){
+                  for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON2); j++)
+                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+               }else if (i == 1){
+                  for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON2); j++)
+                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+               }
+               break;
+         }
       }
-       eventMap[EC_COLECO1_1]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
-       eventMap[EC_COLECO1_2]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
-       eventMap[EC_COLECO1_3]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
-       eventMap[EC_COLECO1_4]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
-       eventMap[EC_COLECO1_5]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
-       eventMap[EC_COLECO1_6]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
-       eventMap[EC_COLECO1_7]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
-       eventMap[EC_COLECO1_8]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
-       eventMap[EC_COLECO1_STAR]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
-       eventMap[EC_COLECO1_HASH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
-       eventMap[EC_COLECO1_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_1)                    ? 1 : 0;
-       eventMap[EC_COLECO1_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_2)                    ? 1 : 0;
+      eventMap[EC_COLECO1_1]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+      eventMap[EC_COLECO1_2]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+      eventMap[EC_COLECO1_3]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+      eventMap[EC_COLECO1_4]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+      eventMap[EC_COLECO1_5]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+      eventMap[EC_COLECO1_6]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+      eventMap[EC_COLECO1_7]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+      eventMap[EC_COLECO1_8]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+      eventMap[EC_COLECO1_STAR]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+      eventMap[EC_COLECO1_HASH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+      eventMap[EC_COLECO1_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_1)                    ? 1 : 0;
+      eventMap[EC_COLECO1_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_2)                    ? 1 : 0;
 
-       eventMap[EC_COLECO2_1]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
-       eventMap[EC_COLECO2_2]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
-       eventMap[EC_COLECO2_3]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
-       eventMap[EC_COLECO2_4]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
-       eventMap[EC_COLECO2_5]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
-       eventMap[EC_COLECO2_6]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
-       eventMap[EC_COLECO2_7]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
-       eventMap[EC_COLECO2_8]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
-       eventMap[EC_COLECO2_STAR]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
-       eventMap[EC_COLECO2_HASH]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
-       eventMap[EC_COLECO2_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_3)                    ? 1 : 0;
-       eventMap[EC_COLECO2_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_4)                    ? 1 : 0;
-    }
-    else
-    {
-    // MSX Input Part
+      eventMap[EC_COLECO2_1]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+      eventMap[EC_COLECO2_2]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+      eventMap[EC_COLECO2_3]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+      eventMap[EC_COLECO2_4]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+      eventMap[EC_COLECO2_5]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+      eventMap[EC_COLECO2_6]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+      eventMap[EC_COLECO2_7]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+      eventMap[EC_COLECO2_8]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+      eventMap[EC_COLECO2_STAR]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+      eventMap[EC_COLECO2_HASH]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+      eventMap[EC_COLECO2_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_3)                    ? 1 : 0;
+      eventMap[EC_COLECO2_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_4)                    ? 1 : 0;
+   }
+   else
+   {
+      /* MSX Input Part */
       for (i = 0; i < MAX_PADS; i++)
       {
-        switch (input_devices[i])
-          {
-             case RETRO_DEVICE_JOYPAD:
-                if (i == 0)
+         switch (input_devices[i])
+         {
+            case RETRO_DEVICE_JOYPAD:
+               if (i == 0)
                   for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON6); j++)
-                    eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-                else if (i == 1)
+                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+               else if (i == 1)
                   for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON6); j++)
-                    eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
-             break;
-          }
+                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+               break;
+         }
       }
 
       for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
-        eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
+         eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
 
       if (input_devices[0] == RETRO_DEVICE_MAPPER){
-        eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
-          eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
-          eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
-          eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
-          eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
-          eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
-          eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
-          eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+         eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
+         eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
+         eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
+         eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
+         eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
+         eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
+         eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
+         eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
       }
    }
 
@@ -872,10 +881,11 @@ void retro_run(void)
 
 }
 
-// framebuffer
+/* framebuffer */
 
-uint16_t* frameBufferGetLine(FrameBuffer* frameBuffer, int y) {
-    return (image_buffer + y * image_buffer_current_width);
+uint16_t* frameBufferGetLine(FrameBuffer* frameBuffer, int y)
+{
+   return (image_buffer + y * image_buffer_current_width);
 }
 
 FrameBuffer* frameBufferGetDrawFrame()
@@ -932,11 +942,8 @@ void   frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val)
    image_buffer_current_width = double_width ? image_buffer_base_width * 2 : image_buffer_base_width;
 }
 
-
-
-
-//RetroArch stubs
-void retro_set_audio_sample(retro_audio_sample_t unused){}
+/* libretro stubs */
+void retro_set_audio_sample(retro_audio_sample_t unused) {}
 bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t c){return false;}
 
 void retro_unload_game(void)
@@ -959,9 +966,7 @@ void retro_cheat_set(unsigned a, bool b, const char * c){}
 bool retro_serialize(void *data, size_t size){return false;}
 bool retro_unserialize(const void *data, size_t size){return false;}
 
-
-
-//Core stubs
+/* Core stubs */
 int archPollEvent(){return 0;}
 void frameBufferDataDestroy(FrameBufferData* frameData){}
 void frameBufferSetActive(FrameBufferData* frameData){}
