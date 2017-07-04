@@ -456,8 +456,6 @@ void retro_deinit(void)
 
 void retro_set_environment(retro_environment_t cb)
 {
-   environ_cb = cb;
-
    static const struct retro_variable vars[] = {
       { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSX2|MSXturboR|MSX|ColecoVision" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
@@ -477,6 +475,8 @@ void retro_set_environment(retro_environment_t cb)
       { port, 1 },
       { NULL, 0 },
    };
+
+   environ_cb = cb;
 
    cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
