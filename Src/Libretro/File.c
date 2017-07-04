@@ -91,7 +91,15 @@ void archSetCurrentDirectory(const char* pathname)
 
 int archFileExists(const char* fileName)
 {
-    return PathFileExists(fileName);
+   struct _stat buf;
+   DWORD file_info = GetFileAttributes(fileName);
+
+   _stat(path, &buf);
+
+   if (file_info == INVALID_FILE_ATTRIBUTES)
+      return 0;
+
+   return 1;
 }
 
 int archFileDelete(const char* fileName)
