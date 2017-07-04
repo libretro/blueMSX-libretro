@@ -364,8 +364,6 @@ OBJS += $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o)
 
 INCDIRS := $(EXTRA_INCLUDES) $(INCFLAGS) $(INCFLAGS_PLATFORM)
 
-LIBS += -lz
-
 OBJOUT   = -o
 LINKOUT  = -o 
 
