@@ -95,7 +95,7 @@ int archFileExists(const char* fileName)
    struct _stat buf;
    DWORD file_info = GetFileAttributes(fileName);
 
-   _stat(path, &buf);
+   _stat(fileName, &buf);
 
    if (file_info == -1)
       return 0;
