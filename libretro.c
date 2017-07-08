@@ -117,6 +117,8 @@ int getmediatype(const char* filename)
       return MEDIA_TYPE_CART;
    else if(strcmp(extension,".col") == 0)
       return MEDIA_TYPE_CART;
+   else if(strcmp(extension,".sg") == 0)
+      return MEDIA_TYPE_CART;
 
    return MEDIA_TYPE_OTHER;
 }
@@ -459,7 +461,7 @@ void retro_deinit(void)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_variable vars[] = {
-      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSX2|MSXturboR|MSX|ColecoVision" },
+      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)|MSX|MSXturboR|MSX2" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
       { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher" },
@@ -535,6 +537,11 @@ static void check_variables(void)
       {
          is_coleco = true;
          strcpy(msx_type, "COL - ColecoVision");
+      }
+      else if (!strcmp(var.value, "Coleco (Spectravideo SVI-603)"))
+      {
+         is_coleco = true;
+         strcpy(msx_type, "COL - Spectravideo SVI-603 Coleco");
       }
       else
       {
