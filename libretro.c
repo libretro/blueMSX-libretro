@@ -56,6 +56,7 @@ static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
 static bool is_coleco;
+static bool is_sega;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 
@@ -464,7 +465,7 @@ void retro_set_environment(retro_environment_t cb)
       { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)|MSX|MSXturboR|MSX2" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
-      { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher" },
+      { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher|SegaBasic|SG1000|SG1000Castle|SG1000RamA|SG1000RamB|SC3000" },
       { NULL, NULL },
    };
 
@@ -547,6 +548,9 @@ static void check_variables(void)
       {
          is_coleco = false;
          strcpy(msx_type, var.value);
+         
+         if (!strncmp(var.value, "SEGA", 4))
+            is_sega = true;
       }
    }
    else
@@ -711,10 +715,15 @@ bool retro_load_game(const struct retro_game_info *info)
    mixerEnableMaster(mixer, properties->sound.masterEnable);
 
 
-   if (mapper_auto && !is_coleco)
-      mediaDbSetDefaultRomType(properties->cartridge.defaultType);
-   else if (mapper_auto && is_coleco)
-      mediaDbSetDefaultRomType(ROM_COLECO);
+   if (mapper_auto)
+   {
+      if (is_coleco)
+         mediaDbSetDefaultRomType(ROM_COLECO);
+      else if (is_sega)
+         mediaDbSetDefaultRomType(ROM_SG1000);
+      else
+         mediaDbSetDefaultRomType(properties->cartridge.defaultType);
+   }
    else
       mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
