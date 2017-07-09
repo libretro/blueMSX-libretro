@@ -55,8 +55,7 @@ static int double_width;
 static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
-static bool is_coleco;
-static bool is_sega;
+static bool is_coleco, is_sega, is_spectra;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 
@@ -551,6 +550,8 @@ static void check_variables(void)
          
          if (!strncmp(var.value, "SEGA", 4))
             is_sega = true;
+         if (!strncmp(var.value, "SVI", 3))
+            is_spectra = true;
       }
    }
    else
@@ -881,7 +882,7 @@ void retro_run(void)
       for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
          eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
 
-      if (input_devices[0] == RETRO_DEVICE_MAPPER){
+      if (input_devices[0] == RETRO_DEVICE_MAPPER && !is_spectra){
          eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
          eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
          eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
@@ -890,6 +891,32 @@ void retro_run(void)
          eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
          eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
          eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+      }
+      
+      if (input_devices[0] == RETRO_DEVICE_MAPPER && is_spectra){
+         eventMap[EC_JOY1_LEFT]    = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
+         eventMap[EC_JOY1_RIGHT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
+         eventMap[EC_JOY1_UP]      = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
+         eventMap[EC_JOY1_DOWN]    = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
+         eventMap[EC_JOY1_BUTTON1] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
+         eventMap[EC_JOY1_BUTTON2] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
+         eventMap[EC_1]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+         eventMap[EC_2]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+         eventMap[EC_3]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+         eventMap[EC_4]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+         eventMap[EC_5]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+         eventMap[EC_6]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+         eventMap[EC_7]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+         eventMap[EC_8]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+         eventMap[EC_9]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+         eventMap[EC_0]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+
+         eventMap[EC_JOY2_LEFT]    = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
+         eventMap[EC_JOY2_RIGHT]   = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
+         eventMap[EC_JOY2_UP]      = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
+         eventMap[EC_JOY2_DOWN]    = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
+         eventMap[EC_JOY2_BUTTON1] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
+         eventMap[EC_JOY2_BUTTON2] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
       }
    }
 
