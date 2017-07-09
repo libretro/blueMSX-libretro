@@ -748,8 +748,14 @@ bool retro_load_game(const struct retro_game_info *info)
 
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
-      if (properties->media.carts[i].fileName[0] && mapper_auto)
+   if (properties->media.carts[i].fileName[0] && mapper_auto)
+   {
+      if (is_sega && (properties->media.carts[i].type == ROM_UNKNOWN))
+         insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, ROM_SG1000, -1);
+      else
          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+   }
+
       if (properties->media.carts[i].fileName[0] && !mapper_auto)
          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
 
