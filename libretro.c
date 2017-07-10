@@ -717,14 +717,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
 
    if (mapper_auto)
-   {
-      if (is_coleco)
-         mediaDbSetDefaultRomType(ROM_COLECO);
-      else if (is_sega)
-         mediaDbSetDefaultRomType(ROM_SG1000);
-      else
-         mediaDbSetDefaultRomType(properties->cartridge.defaultType);
-   }
+      mediaDbSetDefaultRomType(properties->cartridge.defaultType);
    else
       mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
@@ -745,17 +738,12 @@ bool retro_load_game(const struct retro_game_info *info)
          break;
    }
 
-
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
+   /*    Breaks database detection
       if (properties->media.carts[i].fileName[0] && mapper_auto)
-      {
-         if (is_sega && (properties->media.carts[i].type == ROM_UNKNOWN))
-            insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, ROM_SG1000, -1);
-         else
-            insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
-      }
-
+         insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+   */
       if (properties->media.carts[i].fileName[0] && !mapper_auto)
          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
 
@@ -786,6 +774,7 @@ bool retro_load_game(const struct retro_game_info *info)
       else
          return false;
    }
+   
    boardSetFdcTimingEnable(properties->emulation.enableFdcTiming);
    boardSetY8950Enable(properties->sound.chip.enableY8950);
    boardSetYm2413Enable(properties->sound.chip.enableYM2413);
