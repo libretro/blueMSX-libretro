@@ -55,7 +55,7 @@ static int double_width;
 static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
-static bool is_coleco;
+static bool is_coleco, is_sega, is_spectra;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 
@@ -116,6 +116,8 @@ int getmediatype(const char* filename)
    else if(strcmp(extension,".mx2") == 0)
       return MEDIA_TYPE_CART;
    else if(strcmp(extension,".col") == 0)
+      return MEDIA_TYPE_CART;
+   else if(strcmp(extension,".sg") == 0)
       return MEDIA_TYPE_CART;
 
    return MEDIA_TYPE_OTHER;
@@ -459,10 +461,10 @@ void retro_deinit(void)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_variable vars[] = {
-      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|MSX2|MSXturboR|MSX|ColecoVision" },
+      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)|MSX|MSXturboR|MSX2" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
-      { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher" },
+      { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher|SegaBasic|SG1000|SG1000Castle|SG1000RamA|SG1000RamB|SC3000" },
       { NULL, NULL },
    };
 
@@ -536,10 +538,20 @@ static void check_variables(void)
          is_coleco = true;
          strcpy(msx_type, "COL - ColecoVision");
       }
+      else if (!strcmp(var.value, "Coleco (Spectravideo SVI-603)"))
+      {
+         is_coleco = true;
+         strcpy(msx_type, "COL - Spectravideo SVI-603 Coleco");
+      }
       else
       {
          is_coleco = false;
          strcpy(msx_type, var.value);
+         
+         if (!strncmp(var.value, "SEGA", 4))
+            is_sega = true;
+         if (!strncmp(var.value, "SVI", 3))
+            is_spectra = true;
       }
    }
    else
@@ -704,10 +716,8 @@ bool retro_load_game(const struct retro_game_info *info)
    mixerEnableMaster(mixer, properties->sound.masterEnable);
 
 
-   if (mapper_auto && !is_coleco)
+   if (mapper_auto)
       mediaDbSetDefaultRomType(properties->cartridge.defaultType);
-   else if (mapper_auto && is_coleco)
-      mediaDbSetDefaultRomType(ROM_COLECO);
    else
       mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
@@ -728,11 +738,12 @@ bool retro_load_game(const struct retro_game_info *info)
          break;
    }
 
-
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
+   /*    Breaks database detection
       if (properties->media.carts[i].fileName[0] && mapper_auto)
          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+   */
       if (properties->media.carts[i].fileName[0] && !mapper_auto)
          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
 
@@ -763,6 +774,7 @@ bool retro_load_game(const struct retro_game_info *info)
       else
          return false;
    }
+   
    boardSetFdcTimingEnable(properties->emulation.enableFdcTiming);
    boardSetY8950Enable(properties->sound.chip.enableY8950);
    boardSetYm2413Enable(properties->sound.chip.enableYM2413);
@@ -777,7 +789,7 @@ void timerCallback_global(void* timer);
 
 UInt8 archJoystickGetState(int joystickNo)
 {
-   return ((eventMap[EC_JOY1_UP]      << 0) |
+   return ((eventMap[EC_JOY1_UP]    << 0) |
          (eventMap[EC_JOY1_DOWN]    << 1) |
          (eventMap[EC_JOY1_LEFT]    << 2) |
          (eventMap[EC_JOY1_RIGHT]   << 3) |
@@ -865,7 +877,7 @@ void retro_run(void)
       for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
          eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
 
-      if (input_devices[0] == RETRO_DEVICE_MAPPER){
+      if (input_devices[0] == RETRO_DEVICE_MAPPER && !is_spectra){
          eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
          eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
          eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
@@ -874,6 +886,32 @@ void retro_run(void)
          eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
          eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
          eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+      }
+      
+      if (input_devices[0] == RETRO_DEVICE_MAPPER && is_spectra){
+         eventMap[EC_JOY1_LEFT]    = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
+         eventMap[EC_JOY1_RIGHT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
+         eventMap[EC_JOY1_UP]      = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
+         eventMap[EC_JOY1_DOWN]    = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
+         eventMap[EC_JOY1_BUTTON1] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
+         eventMap[EC_JOY1_BUTTON2] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
+         eventMap[EC_1]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+         eventMap[EC_2]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+         eventMap[EC_3]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+         eventMap[EC_4]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+         eventMap[EC_5]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+         eventMap[EC_6]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+         eventMap[EC_7]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+         eventMap[EC_8]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+         eventMap[EC_9]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+         eventMap[EC_0]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+
+         eventMap[EC_JOY2_LEFT]    = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
+         eventMap[EC_JOY2_RIGHT]   = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
+         eventMap[EC_JOY2_UP]      = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
+         eventMap[EC_JOY2_DOWN]    = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
+         eventMap[EC_JOY2_BUTTON1] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
+         eventMap[EC_JOY2_BUTTON2] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
       }
    }
 
