@@ -44,11 +44,12 @@ static Properties* properties;
 static Video* video;
 static Mixer* mixer;
 
-
 static uint16_t* image_buffer;
 static unsigned image_buffer_base_width;
 static unsigned image_buffer_current_width;
 static unsigned image_buffer_height;
+static unsigned width = 272;
+static unsigned height = 240;
 static int double_width;
 
 
@@ -58,6 +59,8 @@ static bool mapper_auto;
 static bool is_coleco, is_sega, is_spectra;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
+static bool use_overscan = true;
+static int msx2_dif = 0;
 
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
@@ -383,8 +386,10 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   info->geometry.base_width = image_buffer_base_width ;
-   info->geometry.base_height = image_buffer_height ;
+    width  = use_overscan ? 272 : (272 - 16);
+    height = use_overscan ? 240 : (240 - 48 + (msx2_dif * 2));
+   info->geometry.base_width = width ;
+   info->geometry.base_height = height ;
    info->geometry.max_width = FB_MAX_LINE_WIDTH ;
    info->geometry.max_height = FB_MAX_LINES ;
    info->geometry.aspect_ratio = 0;
@@ -462,6 +467,7 @@ void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_variable vars[] = {
       { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)|MSX|MSXturboR|MSX2" },
+      { "bluemsx_overscan", "Crop Overscan; disabled|enabled|MSX2" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
       { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher|SegaBasic|SG1000|SG1000Castle|SG1000RamA|SG1000RamB|SC3000" },
@@ -527,7 +533,10 @@ static void extract_directory(char *buf, const char *path, size_t size)
 
 static void check_variables(void)
 {
+   struct retro_system_av_info av_info;
+   bool geometry_update = false;
    struct retro_variable var;
+   
    var.key = "bluemsx_msxtype";
    var.value = NULL;
 
@@ -557,6 +566,29 @@ static void check_variables(void)
    else
       strcpy(msx_type, "MSX2+");
 
+   var.key = "bluemsx_overscan";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      bool newval = (!strcmp(var.value, "disabled"));
+      int msx2_dif_old = msx2_dif;
+      
+      if (!strcmp(var.value, "MSX2"))
+         msx2_dif = 10;
+      else
+         msx2_dif = 0;
+      
+      if (msx2_dif_old != msx2_dif)
+         geometry_update = true;
+         
+      if (newval != use_overscan)
+      {
+         use_overscan = newval;
+         geometry_update = true;
+      }
+   }
+   
    var.key = "bluemsx_vdp_synctype";
    var.value = NULL;
 
@@ -597,6 +629,12 @@ static void check_variables(void)
          strcpy(msx_cartmapper, var.value);
       }
    }
+   
+   if (geometry_update)
+   {
+      retro_get_system_av_info(&av_info);
+      environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &av_info);
+   }
 }
 
 bool retro_load_game(const struct retro_game_info *info)
@@ -627,7 +665,7 @@ bool retro_load_game(const struct retro_game_info *info)
    image_buffer_base_width    =  272;
    image_buffer_current_width =  image_buffer_base_width;
    image_buffer_height        =  240;
-   double_width               = 0;
+   double_width = 0;
 
    for (i = 0; i < MAX_PADS; i++)
       input_devices[i] = RETRO_DEVICE_JOYPAD;
@@ -803,7 +841,7 @@ void retro_run(void)
 {
    int i,j;
    bool updated = false;
-
+   
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       check_variables();
 
@@ -920,7 +958,11 @@ void retro_run(void)
 
    RETRO_PERFORMANCE_STOP(core_retro_run);
 
-   video_cb(image_buffer, image_buffer_current_width, image_buffer_height, image_buffer_current_width * sizeof(uint16_t));
+   if (!use_overscan)
+      video_cb(image_buffer + 8 + (image_buffer_current_width * sizeof(uint16_t) * (12 - (msx2_dif / 2))),
+         image_buffer_current_width - 16, image_buffer_height - 48 + (msx2_dif * 2), image_buffer_current_width * sizeof(uint16_t));
+   else
+      video_cb(image_buffer, image_buffer_current_width, image_buffer_height, image_buffer_current_width * sizeof(uint16_t));
 
 }
 
