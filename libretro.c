@@ -60,7 +60,7 @@ static bool is_coleco, is_sega, is_spectra;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
-static int msx2_dif = 0;
+int msx2_dif = 0;
 
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
