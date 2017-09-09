@@ -397,8 +397,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.sample_rate = 44100.0;
 }
 
-void init_input_descriptors(){
-   struct retro_input_descriptor desc[] = {
+void init_input_descriptors(unsigned device){
+   struct retro_input_descriptor desc_retropad[] = {
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Joy Left" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Joy Up" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Joy Down" },
@@ -436,7 +436,16 @@ void init_input_descriptors(){
       { 0, 0, 0, 0, NULL }
    };
 
-   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
+
+   struct retro_input_descriptor desc[] = {
+      { 0, 0, 0, 0, NULL }
+   };
+   /* Todo: RetroPad Keymapper binds */
+
+   if (device == RETRO_DEVICE_JOYPAD)
+      environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc_retropad);
+   else
+      environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 }
 
 void retro_init(void)
@@ -476,13 +485,14 @@ void retro_set_environment(retro_environment_t cb)
 
    static const struct retro_controller_description port[] = {
       { "RetroPad",              RETRO_DEVICE_JOYPAD },
+      { "RetroKeyboard",         RETRO_DEVICE_KEYBOARD },
       { "RetroPad Keyboard Map", RETRO_DEVICE_MAPPER },
       { 0 },
    };
 
    static const struct retro_controller_info ports[] = {
+      { port, 3 },
       { port, 2 },
-      { port, 1 },
       { NULL, 0 },
    };
 
@@ -498,10 +508,15 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
    {
       case RETRO_DEVICE_JOYPAD:
          input_devices[port] = RETRO_DEVICE_JOYPAD;
+         init_input_descriptors(RETRO_DEVICE_JOYPAD);
          break;
       case RETRO_DEVICE_MAPPER:
          input_devices[port] = RETRO_DEVICE_MAPPER;
+         init_input_descriptors(RETRO_DEVICE_MAPPER);
          break;
+      case RETRO_DEVICE_KEYBOARD:
+         input_devices[port] = RETRO_DEVICE_KEYBOARD;
+         init_input_descriptors(RETRO_DEVICE_KEYBOARD);
       default:
          if (log_cb)
             log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...\n");
@@ -658,8 +673,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
    if (!info)
       return false;
-
-   init_input_descriptors();
 
    image_buffer               = malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
    image_buffer_base_width    =  272;
@@ -954,8 +967,7 @@ void retro_run(void)
    }
 
    ((R800*)boardInfo.cpuRef)->terminate = 0;
-   boardInfo.run(boardInfo.cpuRef);
-
+   boardInfo.run(boardInfo.cpuRef);   
    RETRO_PERFORMANCE_STOP(core_retro_run);
 
    if (!use_overscan)
