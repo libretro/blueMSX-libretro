@@ -517,6 +517,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       case RETRO_DEVICE_KEYBOARD:
          input_devices[port] = RETRO_DEVICE_KEYBOARD;
          init_input_descriptors(RETRO_DEVICE_KEYBOARD);
+         break;
       default:
          if (log_cb)
             log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...\n");
