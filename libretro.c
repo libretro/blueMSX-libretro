@@ -478,6 +478,7 @@ void retro_set_environment(retro_environment_t cb)
       { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)|MSX|MSXturboR|MSX2" },
       { "bluemsx_overscan", "Crop Overscan; disabled|enabled|MSX2" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
+      { "bluemsx_nospritelimits", "No Sprite Limit; OFF|ON" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
       { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher|SegaBasic|SG1000|SG1000Castle|SG1000RamA|SG1000RamB|SC3000" },
       { NULL, NULL },
@@ -619,6 +620,19 @@ static void check_variables(void)
    }
    else
       msx_vdp_synctype = P_VDP_SYNCAUTO;
+
+   var.key = "bluemsx_nospritelimits";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "OFF"))
+         vdpSetNoSpriteLimits(0);
+      else
+         vdpSetNoSpriteLimits(1);
+   }
+   else
+      vdpSetNoSpriteLimits(0);
 
    var.key = "bluemsx_ym2413_enable";
    var.value = NULL;
