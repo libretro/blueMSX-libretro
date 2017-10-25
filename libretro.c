@@ -56,7 +56,7 @@ static int double_width;
 static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
-static bool is_coleco, is_sega, is_spectra, is_auto;
+bool is_coleco, is_sega, is_spectra, is_auto;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
