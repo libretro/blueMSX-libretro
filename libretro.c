@@ -56,7 +56,7 @@ static int double_width;
 static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
-static bool is_coleco, is_sega, is_spectra;
+static bool is_coleco, is_sega, is_spectra, is_auto;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
@@ -108,20 +108,50 @@ int getmediatype(const char* filename)
    lowerstring(workram);
    extension = workram + strlen(workram) - 4;
 
-   if(strcmp(extension,".dsk") == 0)
+   if(strcmp(extension,".dsk") == 0){
+      if (is_auto){
+         strcpy(msx_type, "MSX2+");
+      }
       return MEDIA_TYPE_DISK;
-   else if(strcmp(extension,".cas") == 0)
+   }
+   else if(strcmp(extension,".cas") == 0){
+      if (is_auto){
+         strcpy(msx_type, "MSX2+");
+      }
       return MEDIA_TYPE_TAPE;
-   else if(strcmp(extension,".rom") == 0)
+   }
+   else if(strcmp(extension,".rom") == 0){
+      if (is_auto){
+         strcpy(msx_type, "MSX2+");
+      }
       return MEDIA_TYPE_CART;
-   else if(strcmp(extension,".mx1") == 0)
+   }
+   else if(strcmp(extension,".mx1") == 0){
+      if (is_auto){
+         strcpy(msx_type, "MSX2+");
+      }
       return MEDIA_TYPE_CART;
-   else if(strcmp(extension,".mx2") == 0)
+   }
+   else if(strcmp(extension,".mx2") == 0){
+      if (is_auto){
+         strcpy(msx_type, "MSX2+");
+      }
       return MEDIA_TYPE_CART;
-   else if(strcmp(extension,".col") == 0)
+   }
+   else if(strcmp(extension,".col") == 0){
+      if (is_auto){
+         is_coleco = true;
+         strcpy(msx_type, "COL - ColecoVision");
+      }
       return MEDIA_TYPE_CART;
-   else if(strcmp(extension,".sg") == 0)
+   }
+   else if(strcmp(extension,".sg") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "SEGA - SC-3000");
+      }
       return MEDIA_TYPE_CART;
+   }
 
    return MEDIA_TYPE_OTHER;
 }
@@ -475,7 +505,7 @@ void retro_deinit(void)
 void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_variable vars[] = {
-      { "bluemsx_msxtype", "Machine Type (Restart); MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)|MSX|MSXturboR|MSX2" },
+      { "bluemsx_msxtype", "Machine Type (Restart); Auto|MSX|MSXturboR|MSX2|MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)" },
       { "bluemsx_overscan", "Crop Overscan; disabled|enabled|MSX2" },
       { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
       { "bluemsx_nospritelimits", "No Sprite Limit; OFF|ON" },
@@ -569,7 +599,7 @@ static void check_variables(void)
          is_coleco = true;
          strcpy(msx_type, "COL - Spectravideo SVI-603 Coleco");
       }
-      else
+      else if (strcmp(var.value, "Auto"))
       {
          is_coleco = false;
          strcpy(msx_type, var.value);
@@ -579,9 +609,18 @@ static void check_variables(void)
          if (!strncmp(var.value, "SVI", 3))
             is_spectra = true;
       }
+      else
+      {
+         is_auto = true;
+         strcpy(msx_type, "SEGA - SC-3000");
+      }
    }
    else
-      strcpy(msx_type, "MSX2+");
+   {
+      is_auto = true;
+      // Sega machines don't work if not set right from the start
+      strcpy(msx_type, "SEGA - SC-3000");
+   }
 
    var.key = "bluemsx_overscan";
    var.value = NULL;
@@ -722,6 +761,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
+   mediatype = getmediatype(info->path);
+
    if (is_coleco)
    {
       strcpy(properties->joy1.type, "coleco joystick");
@@ -787,7 +828,6 @@ bool retro_load_game(const struct retro_game_info *info)
    else
       mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
-   mediatype = getmediatype(info->path);
    switch(mediatype)
    {
       case MEDIA_TYPE_DISK:
