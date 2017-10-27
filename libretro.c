@@ -172,6 +172,7 @@ bool set_dsk_eject_state(bool ejected)
     
    if(disk_inserted)
    {
+      properties->diskdrive.autostartA = false;
       return insertDiskette(properties, 0 /*drive*/, disk_paths[disk_index] /*fname*/, NULL /*inZipFile*/, 0 /*forceAutostart*/);
    }
     
@@ -1115,6 +1116,9 @@ void retro_unload_game(void)
 {
    if (image_buffer)
       free(image_buffer);
+   
+   if (properties)
+      propDestroy(properties);
 
    image_buffer = NULL;
    image_buffer_base_width = 0;
