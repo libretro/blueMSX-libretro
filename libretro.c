@@ -90,7 +90,7 @@ enum{
    MEDIA_TYPE_OTHER
 };
 
-void lowerstring(char* str)
+void lower_string(char* str)
 {
    int i;
    for (i=0; str[i]; i++)
@@ -99,53 +99,53 @@ void lowerstring(char* str)
    }
 }
 
-int getmediatype(const char* filename)
+int get_media_type(const char* filename)
 {
    char workram[4096/*max path name length for all existing OSes*/];
    const char *extension = NULL;
 
-   strcpy(workram,filename);
-   lowerstring(workram);
+   strcpy(workram, filename);
+   lower_string(workram);
    extension = workram + strlen(workram) - 4;
 
-   if(strcmp(extension,".dsk") == 0){
+   if(strcmp(extension, ".dsk") == 0){
       if (is_auto){
          strcpy(msx_type, "MSX2+");
       }
       return MEDIA_TYPE_DISK;
    }
-   else if(strcmp(extension,".cas") == 0){
+   else if(strcmp(extension, ".cas") == 0){
       if (is_auto){
          strcpy(msx_type, "MSX2+");
       }
       return MEDIA_TYPE_TAPE;
    }
-   else if(strcmp(extension,".rom") == 0){
+   else if(strcmp(extension, ".rom") == 0){
       if (is_auto){
          strcpy(msx_type, "MSX2+");
       }
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension,".mx1") == 0){
+   else if(strcmp(extension, ".mx1") == 0){
       if (is_auto){
          strcpy(msx_type, "MSX2+");
       }
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension,".mx2") == 0){
+   else if(strcmp(extension, ".mx2") == 0){
       if (is_auto){
          strcpy(msx_type, "MSX2+");
       }
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension,".col") == 0){
+   else if(strcmp(extension, ".col") == 0){
       if (is_auto){
          is_coleco = true;
          strcpy(msx_type, "COL - ColecoVision");
       }
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension,".sg") == 0){
+   else if(strcmp(extension, ".sg") == 0){
       if (is_auto){
          is_sega = true;
          strcpy(msx_type, "SEGA - SC-3000");
@@ -159,67 +159,75 @@ int getmediatype(const char* filename)
 /* end .dsk support */
 /* .dsk swap support */
 struct retro_disk_control_callback dskcb;
-bool diskinserted = false;
+unsigned disk_index = 0;
+unsigned disk_images = 0;
+char disk_paths[10][4096/*max path name length for all existing OSes*/];
+bool disk_inserted = true;//default is true the first disk is the one that loads the core
 
-//all the fake functions used to limit swapping to 1 disk drive
-bool setdskeject(bool ejected)
+bool set_dsk_eject_state(bool ejected)
 {
-   diskinserted = !ejected;
-   return false;
-}
-
-bool getdskeject(void)
-{
-   return !diskinserted;
-}
-
-unsigned getdskindex(void)
-{
-   return 0;
-}
-
-bool setdskindex(unsigned index)
-{
-   /* fail on this one,only one disk slot */
-   if(index != 0)
-      return true;
-   return false;
-}
-
-unsigned getnumimages(void)
-{
-   return 1;
-}
-
-bool addimageindex(void)
-{
-   /* fail on this one,only one disk slot */
+   if(disk_inserted == !ejected)
+       return false;
+   disk_inserted = !ejected;
+    
+   if(disk_inserted)
+   {
+      return insertDiskette(properties, 0 /*drive*/, disk_paths[disk_index] /*fname*/, NULL /*inZipFile*/, 0 /*forceAutostart*/);
+   }
+    
+   //blueMSX does not have an eject disk function so just pretend it was ejected, will just swap when called with ejected = false;
+    
    return true;
 }
 
-/* this is the only real function,it will swap out the disk */
-bool replacedsk(unsigned index,const struct retro_game_info *info)
+bool get_dsk_eject_state(void)
 {
-   if(getmediatype(info->path) != MEDIA_TYPE_DISK)
-      return true;//cant swap a cart or tape into a disk slot
-
-   return insertDiskette(properties, 0 /*drive*/, info->path /*fname*/, NULL /*inZipFile*/, 0 /*forceAutostart*/);
+   return !disk_inserted;
 }
 
-void attachdiskswapinterface(void)
+unsigned get_dsk_index(void)
+{
+   return disk_index;
+}
+
+bool set_dsk_index(unsigned index)
+{
+   disk_index = index;
+   return true;
+}
+
+unsigned get_num_images(void)
+{
+   return 10;//support swapping out 10 floppy images
+}
+
+bool add_image_index(void)
+{
+   disk_index++;
+   return true;
+}
+
+bool replace_dsk_index(unsigned index, const struct retro_game_info *info)
+{
+   if(get_media_type(info->path) != MEDIA_TYPE_DISK)
+       return false;//cant swap a cart or tape into a disk slot
+    
+   strcpy(disk_paths[index], info->path);
+   return true;
+}
+
+void attach_disk_swap_interface(void)
 {
    /* these functions are unused */
-   dskcb.set_eject_state = setdskeject;
-   dskcb.get_eject_state = getdskeject;
-   dskcb.set_image_index = setdskindex;
-   dskcb.get_image_index = getdskindex;
-   dskcb.get_num_images  = getnumimages;
-   dskcb.add_image_index = addimageindex;
+   dskcb.set_eject_state = set_dsk_eject_state;
+   dskcb.get_eject_state = get_dsk_eject_state;
+   dskcb.set_image_index = set_dsk_index;
+   dskcb.get_image_index = get_dsk_index;
+   dskcb.get_num_images  = get_num_images;
+   dskcb.add_image_index = add_image_index;
+   dskcb.replace_image_index = replace_dsk_index;
 
-   /* this is the only real function,it will swap out the disk */
-   dskcb.replace_image_index = replacedsk;
-
-   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE,&dskcb);
+   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
 }
 /* end .dsk swap support */
 
@@ -535,24 +543,29 @@ void retro_set_environment(retro_environment_t cb)
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-   switch (device)
+   /*there was a buffer overflow when retroarch called this function with a value greater than 1
+   corrupting the framebuffer pointer and crashing on first render(MAX_PADS == 2 so any index that is not [0,1] is an overflow)*/
+   if(port < MAX_PADS)
    {
-      case RETRO_DEVICE_JOYPAD:
-         input_devices[port] = RETRO_DEVICE_JOYPAD;
-         init_input_descriptors(RETRO_DEVICE_JOYPAD);
-         break;
-      case RETRO_DEVICE_MAPPER:
-         input_devices[port] = RETRO_DEVICE_MAPPER;
-         init_input_descriptors(RETRO_DEVICE_MAPPER);
-         break;
-      case RETRO_DEVICE_KEYBOARD:
-         input_devices[port] = RETRO_DEVICE_KEYBOARD;
-         init_input_descriptors(RETRO_DEVICE_KEYBOARD);
-         break;
-      default:
-         if (log_cb)
-            log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...\n");
-         input_devices[port] = RETRO_DEVICE_JOYPAD;
+      switch (device)
+      {
+         case RETRO_DEVICE_JOYPAD:
+            input_devices[port] = RETRO_DEVICE_JOYPAD;
+            init_input_descriptors(RETRO_DEVICE_JOYPAD);
+            break;
+         case RETRO_DEVICE_MAPPER:
+            input_devices[port] = RETRO_DEVICE_MAPPER;
+            init_input_descriptors(RETRO_DEVICE_MAPPER);
+            break;
+         case RETRO_DEVICE_KEYBOARD:
+            input_devices[port] = RETRO_DEVICE_KEYBOARD;
+            init_input_descriptors(RETRO_DEVICE_KEYBOARD);
+            break;
+         default:
+            if (log_cb)
+               log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...\n");
+            input_devices[port] = RETRO_DEVICE_JOYPAD;
+      }
    }
 }
 
@@ -708,7 +721,7 @@ static void check_variables(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   int i, mediatype;
+   int i, media_type;
    char properties_dir[256], machines_dir[256], mediadb_dir[256];
    const char *dir = NULL;
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
@@ -728,7 +741,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (!info)
       return false;
 
-   image_buffer               = malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
+   image_buffer               =  malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
    image_buffer_base_width    =  272;
    image_buffer_current_width =  image_buffer_base_width;
    image_buffer_height        =  240;
@@ -761,7 +774,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
-   mediatype = getmediatype(info->path);
+   media_type = get_media_type(info->path);
 
    if (is_coleco)
    {
@@ -828,11 +841,11 @@ bool retro_load_game(const struct retro_game_info *info)
    else
       mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
-   switch(mediatype)
+   switch(media_type)
    {
       case MEDIA_TYPE_DISK:
          strcpy(properties->media.disks[0].fileName , info->path);
-         attachdiskswapinterface();
+         attach_disk_swap_interface();
          break;
       case MEDIA_TYPE_TAPE:
          strcpy(properties->media.tapes[0].fileName , info->path);
