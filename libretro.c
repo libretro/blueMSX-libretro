@@ -61,7 +61,6 @@ static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
 int msx2_dif = 0;
-bool did_reset = false;
 
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
@@ -777,6 +776,13 @@ bool retro_load_game(const struct retro_game_info *info)
 
    propertiesSetDirectory(properties_dir, properties_dir);
    machineSetDirectory(machines_dir);
+   
+   const char *save_dir = NULL;
+   if(environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
+   {
+      boardSetDirectory(save_dir);
+   }
+   
 #if 0
    boardSetDirectory(buffer);
 #endif
@@ -824,12 +830,6 @@ bool retro_load_game(const struct retro_game_info *info)
    actionInit(video, properties, mixer);
    langInit();
    tapeSetReadOnly(properties->cassette.readOnly);
-   
-   const char *save_dir = NULL;
-   if(environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
-   {
-      actionSetQuickSaveSetDirectory(save_dir, ".srm");
-   }
 
    langSetLanguage(properties->language);
 
