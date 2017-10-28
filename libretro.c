@@ -579,7 +579,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 void retro_reset(void)
 {
    actionEmuResetSoft();
-   did_reset = true;
+
+   /* Apply mapper override on reset, force mapper detection again */
+   if (properties->media.carts[0].fileName[0]){
+      if (!mapper_auto)
+         insertCartridge(properties, 0, properties->media.carts[0].fileName, properties->media.carts[0].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
+      else
+         insertCartridge(properties, 0, properties->media.carts[0].fileName, properties->media.carts[0].fileNameInZip, 0, -1);
+   }
 }
 
 static void extract_directory(char *buf, const char *path, size_t size)
@@ -939,17 +946,6 @@ void retro_run(void)
    
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       check_variables();
-   
-   /* Apply mapper override on reset, force mapper detection again */
-   if (did_reset){
-      if (properties->media.carts[0].fileName[0]){
-         if (!mapper_auto)
-            insertCartridge(properties, 0, properties->media.carts[0].fileName, properties->media.carts[0].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
-         else
-            insertCartridge(properties, 0, properties->media.carts[0].fileName, properties->media.carts[0].fileNameInZip, 0, -1);
-      }
-      did_reset = false;
-   }
 
    RETRO_PERFORMANCE_INIT(core_retro_run);
    RETRO_PERFORMANCE_START(core_retro_run);
