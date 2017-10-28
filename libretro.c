@@ -61,6 +61,7 @@ static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
 int msx2_dif = 0;
+bool did_reset = false;
 
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
@@ -160,55 +161,58 @@ int get_media_type(const char* filename)
 /* .dsk swap support */
 struct retro_disk_control_callback dskcb;
 unsigned disk_index = 0;
-unsigned disk_images = 0;
+unsigned disk_images = 1;
 char disk_paths[10][4096/*max path name length for all existing OSes*/];
 bool disk_inserted = true;//default is true the first disk is the one that loads the core
 
-bool set_dsk_eject_state(bool ejected)
+bool set_eject_state(bool ejected)
 {
-   if(disk_inserted == !ejected)
-       return false;
    disk_inserted = !ejected;
-    
-   if(disk_inserted)
-   {
-      properties->diskdrive.autostartA = false;
-      return insertDiskette(properties, 0 /*drive*/, disk_paths[disk_index] /*fname*/, NULL /*inZipFile*/, 0 /*forceAutostart*/);
-   }
-    
-   //blueMSX does not have an eject disk function so just pretend it was ejected, will just swap when called with ejected = false;
-    
    return true;
 }
 
-bool get_dsk_eject_state(void)
+bool get_eject_state(void)
 {
    return !disk_inserted;
 }
 
-unsigned get_dsk_index(void)
+unsigned get_image_index(void)
 {
    return disk_index;
 }
 
-bool set_dsk_index(unsigned index)
+bool set_image_index(unsigned index)
 {
    disk_index = index;
+   
+   if(disk_index == disk_images)
+   {
+      //retroarch is trying to set "no disk in tray"
+      return true;
+   }
+   
+   emulatorSuspend();
+   insertDiskette(properties, 0 /*drive*/, disk_paths[disk_index] /*fname*/, NULL /*inZipFile*/, -1 /*forceAutostart, -1 is force no autostart*/);
+   emulatorResume();
+   
    return true;
 }
 
 unsigned get_num_images(void)
 {
-   return 10;//support swapping out 10 floppy images
+   return disk_images;
 }
 
 bool add_image_index(void)
 {
-   disk_index++;
+   if (disk_images >= 10)
+      return false;
+   
+   disk_images++;
    return true;
 }
 
-bool replace_dsk_index(unsigned index, const struct retro_game_info *info)
+bool replace_image_index(unsigned index, const struct retro_game_info *info)
 {
    if(get_media_type(info->path) != MEDIA_TYPE_DISK)
        return false;//cant swap a cart or tape into a disk slot
@@ -220,13 +224,15 @@ bool replace_dsk_index(unsigned index, const struct retro_game_info *info)
 void attach_disk_swap_interface(void)
 {
    /* these functions are unused */
-   dskcb.set_eject_state = set_dsk_eject_state;
-   dskcb.get_eject_state = get_dsk_eject_state;
-   dskcb.set_image_index = set_dsk_index;
-   dskcb.get_image_index = get_dsk_index;
+   dskcb.set_eject_state = set_eject_state;
+   dskcb.get_eject_state = get_eject_state;
+   dskcb.set_image_index = set_image_index;
+   dskcb.get_image_index = get_image_index;
    dskcb.get_num_images  = get_num_images;
    dskcb.add_image_index = add_image_index;
-   dskcb.replace_image_index = replace_dsk_index;
+   dskcb.replace_image_index = replace_image_index;
+   
+   strcpy(disk_paths[0], properties->media.disks[0].fileName);
 
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
 }
@@ -570,8 +576,6 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
    }
 }
 
-bool did_reset;
-
 void retro_reset(void)
 {
    actionEmuResetSoft();
@@ -813,6 +817,12 @@ bool retro_load_game(const struct retro_game_info *info)
    actionInit(video, properties, mixer);
    langInit();
    tapeSetReadOnly(properties->cassette.readOnly);
+   
+   const char *save_dir = NULL;
+   if(environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
+   {
+      actionSetQuickSaveSetDirectory(save_dir, ".srm");
+   }
 
    langSetLanguage(properties->language);
 
