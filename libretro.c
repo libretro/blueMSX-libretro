@@ -87,6 +87,10 @@ static struct retro_perf_callback perf_cb;
 #define SLASH '/'
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX  4096
+#endif
+
 /* .dsk support */
 enum{
    MEDIA_TYPE_CART = 0,
@@ -106,7 +110,7 @@ void lower_string(char* str)
 
 int get_media_type(const char* filename)
 {
-   char workram[4096/*max path name length for all existing OSes*/];
+   char workram[PATH_MAX];
    const char *extension = NULL;
 
    strcpy(workram, filename);
@@ -166,7 +170,7 @@ int get_media_type(const char* filename)
 struct retro_disk_control_callback dskcb;
 unsigned disk_index = 0;
 unsigned disk_images = 1;
-char disk_paths[10][4096/*max path name length for all existing OSes*/];
+char disk_paths[10][PATH_MAX];
 bool disk_inserted = true;//default is true the first disk is the one that loads the core
 
 bool set_eject_state(bool ejected)
