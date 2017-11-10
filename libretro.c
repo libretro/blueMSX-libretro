@@ -729,7 +729,8 @@ static void check_variables(void)
    {
       if (!strcmp(var.value, "Auto"))
          mapper_auto = true;
-      else {
+      else 
+      {
          mapper_auto = false;
          strcpy(msx_cartmapper, var.value);
       }
