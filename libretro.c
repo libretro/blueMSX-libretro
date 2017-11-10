@@ -578,7 +578,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             break;
          default:
             if (log_cb)
-               log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...\n");
+               log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...");
             input_devices[port] = RETRO_DEVICE_JOYPAD;
       }
    }
@@ -752,7 +752,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
       if (log_cb)
-         log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
+         log_cb(RETRO_LOG_INFO, "%s\n", "RGB565 is not supported.");
       return false;
    }
 
