@@ -98,6 +98,7 @@ enum{
    MEDIA_TYPE_CART = 0,
    MEDIA_TYPE_TAPE,
    MEDIA_TYPE_DISK,
+   MEDIA_TYPE_DISK_BUNDLE,
    MEDIA_TYPE_OTHER
 };
 
@@ -124,6 +125,12 @@ int get_media_type(const char* filename)
          strcpy(msx_type, "MSX2+");
       }
       return MEDIA_TYPE_DISK;
+   }
+   else if(strcmp(extension, ".m3u") == 0){
+      if (is_auto){
+         strcpy(msx_type, "MSX2+");
+      }
+      return MEDIA_TYPE_DISK_BUNDLE;
    }
    else if(strcmp(extension, ".cas") == 0){
       if (is_auto){
@@ -170,10 +177,10 @@ int get_media_type(const char* filename)
 /* end .dsk support */
 /* .dsk swap support */
 struct retro_disk_control_callback dskcb;
-unsigned disk_index;
-unsigned disk_images;
+unsigned disk_index = 0;
+unsigned disk_images = 0;
 char disk_paths[10][PATH_MAX];
-bool disk_inserted = true;//default is true the first disk is the one that loads the core
+bool disk_inserted = false;
 
 bool set_eject_state(bool ejected)
 {
@@ -241,8 +248,6 @@ void attach_disk_swap_interface(void)
    dskcb.get_num_images  = get_num_images;
    dskcb.add_image_index = add_image_index;
    dskcb.replace_image_index = replace_image_index;
-   
-   strcpy(disk_paths[0], properties->media.disks[0].fileName);
 
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
 }
@@ -273,7 +278,8 @@ static bool read_m3u(const char *file)
       if (line[0] != '\0')
       {
          snprintf(name, sizeof(name), "%s%c%s", base_dir, SLASH, line);
-         strcpy(disk_paths[disk_images++], strdup(name));
+         strcpy(disk_paths[disk_images], name);
+         disk_images++;
       }
    }
 
@@ -784,7 +790,6 @@ bool retro_load_game(const struct retro_game_info *info)
    char properties_dir[256], machines_dir[256], mediadb_dir[256];
    const char *dir = NULL;
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
-   bool is_m3u = (strcasestr(info->path, ".m3u") != NULL);
 
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
@@ -806,6 +811,8 @@ bool retro_load_game(const struct retro_game_info *info)
       input_devices[i] = RETRO_DEVICE_JOYPAD;
 
    disk_index = 0;
+   disk_images = 0;
+   disk_inserted = false;
    extract_directory(base_dir, info->path, sizeof(base_dir));
    
    check_variables();
@@ -814,21 +821,6 @@ bool retro_load_game(const struct retro_game_info *info)
       strcpy(properties_dir, dir);
    else /* Fallback */
       extract_directory(properties_dir, info->path, sizeof(properties_dir));
-
-   if (is_m3u)
-   {
-      if (!read_m3u(info->path))
-      {
-         if (log_cb)
-            log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: failed to read m3u file ...");
-         return false;
-      }
-   }
-   else
-   {
-      disk_images = 1;
-      strcpy(disk_paths[0], strdup(info->path));
-   }
 
    snprintf(machines_dir, sizeof(machines_dir), "%s%c%s", properties_dir, SLASH, "Machines");
    snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, SLASH, "Databases");
@@ -854,7 +846,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
-   media_type = get_media_type(disk_paths[0]);
+   media_type = get_media_type(info->path);
 
    if (is_coleco)
    {
@@ -924,16 +916,28 @@ bool retro_load_game(const struct retro_game_info *info)
    switch(media_type)
    {
       case MEDIA_TYPE_DISK:
-         strcpy(properties->media.disks[0].fileName , disk_paths[0]);
+         strcpy(disk_paths[0] , info->path);
+         strcpy(properties->media.disks[0].fileName , info->path);
+         disk_inserted = true;
+         attach_disk_swap_interface();
+         break;
+      case MEDIA_TYPE_DISK_BUNDLE:
+         if (!read_m3u(info->path))
+         {
+            if (log_cb)
+               log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: failed to read m3u file ...");
+            return false;
+         }
+         disk_inserted = true;
          attach_disk_swap_interface();
          break;
       case MEDIA_TYPE_TAPE:
-         strcpy(properties->media.tapes[0].fileName , disk_paths[0]);
+         strcpy(properties->media.tapes[0].fileName , info->path);
          break;
       case MEDIA_TYPE_CART:
       case MEDIA_TYPE_OTHER:
       default:
-         strcpy(properties->media.carts[0].fileName , disk_paths[0]);
+         strcpy(properties->media.carts[0].fileName , info->path);
          break;
    }
 
