@@ -81,6 +81,11 @@ static struct retro_perf_callback perf_cb;
 #define RETRO_DEVICE_MAPPER RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 1)
 #define EC_KEYBOARD_KEYCOUNT  94
 
+#ifdef _WIN32
+#define SLASH '\\'
+#else
+#define SLASH '/'
+#endif
 
 /* .dsk support */
 enum{
@@ -739,11 +744,6 @@ bool retro_load_game(const struct retro_game_info *info)
    char properties_dir[256], machines_dir[256], mediadb_dir[256];
    const char *dir = NULL;
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
-#ifdef _WIN32
-   char slash = '\\';
-#else
-   char slash = '/';
-#endif
 
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
@@ -771,8 +771,8 @@ bool retro_load_game(const struct retro_game_info *info)
    else /* Fallback */
       extract_directory(properties_dir, info->path, sizeof(properties_dir));
 
-   snprintf(machines_dir, sizeof(machines_dir), "%s%c%s", properties_dir, slash, "Machines");
-   snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, slash, "Databases");
+   snprintf(machines_dir, sizeof(machines_dir), "%s%c%s", properties_dir, SLASH, "Machines");
+   snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, SLASH, "Databases");
 
    propertiesSetDirectory(properties_dir, properties_dir);
    machineSetDirectory(machines_dir);
