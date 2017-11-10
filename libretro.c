@@ -81,6 +81,17 @@ static struct retro_perf_callback perf_cb;
 #define RETRO_DEVICE_MAPPER RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 1)
 #define EC_KEYBOARD_KEYCOUNT  94
 
+#ifdef _WIN32
+#define SLASH '\\'
+#else
+#define SLASH '/'
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX  4096
+#endif
+
+static char base_dir[PATH_MAX];
 
 /* .dsk support */
 enum{
@@ -101,7 +112,7 @@ void lower_string(char* str)
 
 int get_media_type(const char* filename)
 {
-   char workram[4096/*max path name length for all existing OSes*/];
+   char workram[PATH_MAX];
    const char *extension = NULL;
 
    strcpy(workram, filename);
@@ -159,9 +170,9 @@ int get_media_type(const char* filename)
 /* end .dsk support */
 /* .dsk swap support */
 struct retro_disk_control_callback dskcb;
-unsigned disk_index = 0;
-unsigned disk_images = 1;
-char disk_paths[10][4096/*max path name length for all existing OSes*/];
+unsigned disk_index;
+unsigned disk_images;
+char disk_paths[10][PATH_MAX];
 bool disk_inserted = true;//default is true the first disk is the one that loads the core
 
 bool set_eject_state(bool ejected)
@@ -236,6 +247,39 @@ void attach_disk_swap_interface(void)
    environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
 }
 /* end .dsk swap support */
+
+static bool read_m3u(const char *file)
+{
+   char line[PATH_MAX];
+   char name[PATH_MAX];
+   FILE *f = fopen(file, "r");
+   
+   if (!f)
+      return false;
+
+   while (fgets(line, sizeof(line), f) && disk_images < sizeof(disk_paths) / sizeof(disk_paths[0])) 
+   {
+      if (line[0] == '#')
+         continue;
+
+      char *carriage_return = strchr(line, '\r');
+      if (carriage_return)
+         *carriage_return = '\0';
+      
+      char *newline = strchr(line, '\n');
+      if (newline)
+         *newline = '\0';
+
+      if (line[0] != '\0')
+      {
+         snprintf(name, sizeof(name), "%s%c%s", base_dir, SLASH, line);
+         strcpy(disk_paths[disk_images++], strdup(name));
+      }
+   }
+
+   fclose(f);
+   return (disk_images != 0);
+}
 
 extern BoardInfo boardInfo;
 
@@ -425,7 +469,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #endif
    info->need_fullpath = true;
    info->block_extract = false;
-   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|cas";
+   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|cas|m3u";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
@@ -569,7 +613,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
             break;
          default:
             if (log_cb)
-               log_cb(RETRO_LOG_ERROR, "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...\n");
+               log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: Invalid device, setting type to RETRO_DEVICE_JOYPAD ...");
             input_devices[port] = RETRO_DEVICE_JOYPAD;
       }
    }
@@ -720,7 +764,8 @@ static void check_variables(void)
    {
       if (!strcmp(var.value, "Auto"))
          mapper_auto = true;
-      else {
+      else 
+      {
          mapper_auto = false;
          strcpy(msx_cartmapper, var.value);
       }
@@ -739,16 +784,12 @@ bool retro_load_game(const struct retro_game_info *info)
    char properties_dir[256], machines_dir[256], mediadb_dir[256];
    const char *dir = NULL;
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
-#ifdef _WIN32
-   char slash = '\\';
-#else
-   char slash = '/';
-#endif
+   bool is_m3u = (strcasestr(info->path, ".m3u") != NULL);
 
    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
    {
       if (log_cb)
-         log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
+         log_cb(RETRO_LOG_INFO, "%s\n", "RGB565 is not supported.");
       return false;
    }
 
@@ -764,6 +805,9 @@ bool retro_load_game(const struct retro_game_info *info)
    for (i = 0; i < MAX_PADS; i++)
       input_devices[i] = RETRO_DEVICE_JOYPAD;
 
+   disk_index = 0;
+   extract_directory(base_dir, info->path, sizeof(base_dir));
+   
    check_variables();
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
@@ -771,8 +815,23 @@ bool retro_load_game(const struct retro_game_info *info)
    else /* Fallback */
       extract_directory(properties_dir, info->path, sizeof(properties_dir));
 
-   snprintf(machines_dir, sizeof(machines_dir), "%s%c%s", properties_dir, slash, "Machines");
-   snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, slash, "Databases");
+   if (is_m3u)
+   {
+      if (!read_m3u(info->path))
+      {
+         if (log_cb)
+            log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: failed to read m3u file ...");
+         return false;
+      }
+   }
+   else
+   {
+      disk_images = 1;
+      strcpy(disk_paths[0], strdup(info->path));
+   }
+
+   snprintf(machines_dir, sizeof(machines_dir), "%s%c%s", properties_dir, SLASH, "Machines");
+   snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, SLASH, "Databases");
 
    propertiesSetDirectory(properties_dir, properties_dir);
    machineSetDirectory(machines_dir);
@@ -795,7 +854,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
-   media_type = get_media_type(info->path);
+   media_type = get_media_type(disk_paths[0]);
 
    if (is_coleco)
    {
@@ -865,16 +924,16 @@ bool retro_load_game(const struct retro_game_info *info)
    switch(media_type)
    {
       case MEDIA_TYPE_DISK:
-         strcpy(properties->media.disks[0].fileName , info->path);
+         strcpy(properties->media.disks[0].fileName , disk_paths[0]);
          attach_disk_swap_interface();
          break;
       case MEDIA_TYPE_TAPE:
-         strcpy(properties->media.tapes[0].fileName , info->path);
+         strcpy(properties->media.tapes[0].fileName , disk_paths[0]);
          break;
       case MEDIA_TYPE_CART:
       case MEDIA_TYPE_OTHER:
       default:
-         strcpy(properties->media.carts[0].fileName , info->path);
+         strcpy(properties->media.carts[0].fileName , disk_paths[0]);
          break;
    }
 
