@@ -928,6 +928,7 @@ bool retro_load_game(const struct retro_game_info *info)
                log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: failed to read m3u file ...");
             return false;
          }
+         strcpy(properties->media.disks[0].fileName , disk_paths[0]);
          disk_inserted = true;
          attach_disk_swap_interface();
          break;
