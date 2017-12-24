@@ -264,14 +264,17 @@ static bool read_m3u(const char *file)
 
    while (fgets(line, sizeof(line), f) && disk_images < sizeof(disk_paths) / sizeof(disk_paths[0])) 
    {
+      char *carriage_return = NULL;
+      char *newline         = NULL;
+
       if (line[0] == '#')
          continue;
 
-      char *carriage_return = strchr(line, '\r');
+      carriage_return = strchr(line, '\r');
       if (carriage_return)
          *carriage_return = '\0';
       
-      char *newline = strchr(line, '\n');
+      newline = strchr(line, '\n');
       if (newline)
          *newline = '\0';
 
@@ -786,6 +789,7 @@ static void check_variables(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
+   const char *save_dir = NULL;
    int i, media_type;
    char properties_dir[256], machines_dir[256], mediadb_dir[256];
    const char *dir = NULL;
@@ -828,11 +832,8 @@ bool retro_load_game(const struct retro_game_info *info)
    propertiesSetDirectory(properties_dir, properties_dir);
    machineSetDirectory(machines_dir);
    
-   const char *save_dir = NULL;
    if(environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
-   {
       boardSetDirectory(save_dir);
-   }
    
 #if 0
    boardSetDirectory(buffer);
