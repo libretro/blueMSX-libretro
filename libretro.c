@@ -494,8 +494,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->timing.sample_rate = 44100.0;
 }
 
-void init_input_descriptors(unsigned device){
-   struct retro_input_descriptor desc_retropad[] = {
+void init_input_descriptors(){
+   struct retro_input_descriptor desc_retropad_p1[] = {
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Joy Left" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Joy Up" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Joy Down" },
@@ -512,7 +512,10 @@ void init_input_descriptors(unsigned device){
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "Button 8" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "Button 9" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "Button 10" },
+      { 0, 0, 0, 0, NULL }
+   };
 
+   struct retro_input_descriptor desc_retropad_p2[] = {
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Joy Left" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Joy Up" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Joy Down" },
@@ -529,18 +532,34 @@ void init_input_descriptors(unsigned device){
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "Button 8" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "Button 9" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "Button 10" },
-
       { 0, 0, 0, 0, NULL }
    };
 
-
-   struct retro_input_descriptor desc[] = {
+   struct retro_input_descriptor desc_empty[] = {
       { 0, 0, 0, 0, NULL }
    };
-   /* Todo: RetroPad Keymapper binds */
 
-   if (device == RETRO_DEVICE_JOYPAD)
-      environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc_retropad);
+   struct retro_input_descriptor desc[32];
+
+   for (int i = 0; i < 16; i++)
+   {
+      if(input_devices[0] == RETRO_DEVICE_JOYPAD && input_devices[1] == RETRO_DEVICE_JOYPAD)
+      {
+         desc[i] = desc_retropad_p1[i];
+         desc[i + 16] = desc_retropad_p2[i];
+      }
+      else if(input_devices[0] == RETRO_DEVICE_JOYPAD)
+      {
+         desc[i] = desc_retropad_p1[i];
+      }
+      else if(input_devices[1] == RETRO_DEVICE_JOYPAD)
+      {
+         desc[i] = desc_retropad_p2[i];
+      }
+   }
+
+   if (input_devices[0] == RETRO_DEVICE_NONE && input_devices[1] == RETRO_DEVICE_NONE)
+      environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc_empty);
    else
       environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 }
@@ -610,15 +629,19 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       {
          case RETRO_DEVICE_JOYPAD:
             input_devices[port] = RETRO_DEVICE_JOYPAD;
-            init_input_descriptors(RETRO_DEVICE_JOYPAD);
+            init_input_descriptors();
             break;
          case RETRO_DEVICE_MAPPER:
             input_devices[port] = RETRO_DEVICE_MAPPER;
-            init_input_descriptors(RETRO_DEVICE_MAPPER);
+            init_input_descriptors();
             break;
          case RETRO_DEVICE_KEYBOARD:
             input_devices[port] = RETRO_DEVICE_KEYBOARD;
-            init_input_descriptors(RETRO_DEVICE_KEYBOARD);
+            init_input_descriptors();
+            break;
+         case RETRO_DEVICE_NONE:
+            input_devices[port] = RETRO_DEVICE_NONE;
+            init_input_descriptors();
             break;
          default:
             if (log_cb)
@@ -1082,8 +1105,11 @@ void retro_run(void)
          }
       }
 
-      for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
-         eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
+      if (input_devices[0] != RETRO_DEVICE_NONE || input_devices[1] != RETRO_DEVICE_NONE)
+      {
+         for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
+            eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
+      }
 
       if (input_devices[0] == RETRO_DEVICE_MAPPER && !is_spectra){
          eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
