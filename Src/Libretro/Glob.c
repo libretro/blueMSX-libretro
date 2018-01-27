@@ -135,7 +135,10 @@ ArchGlob* archGlob(const char* pattern, int flags)
     globHandle = (ArchGlob*)calloc(1, sizeof(ArchGlob));
 
     for (i = 0; i < g.gl_pathc; i++) {
-        char* path = g.gl_pathv[i];
+        //char* path = g.gl_pathv[i];
+        char path[1024];
+        sprintf(path,"%s\0",g.gl_pathv[i]);
+
         int len = strlen(path);
 
         if ((flags & ARCH_GLOB_DIRS) && path[len - 1] == '/') {
