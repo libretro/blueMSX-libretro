@@ -469,11 +469,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 ifeq ($(STATIC_LINKING), 1)
-ifneq (,$(findstring msvc,$(platform)))
-	$(LD) $(LINKOUT)$@ $(OBJS)
-else
 	$(AR) rcs $@ $(OBJS)
-endif
 else
 	$(LD) $(LINKOUT)$@ $(SHARED) $(OBJS) $(LDFLAGS) $(LIBS)
 endif
