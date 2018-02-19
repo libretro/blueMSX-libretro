@@ -16,7 +16,9 @@
 
 #ifdef WII
 #define _CMSXGR
-#else
+#elif defined(_WIN32) && defined(_XBOX)
+#include <xtl.h>
+#elif defined(_WIN32)
 #include <windows.h>
 #endif
 

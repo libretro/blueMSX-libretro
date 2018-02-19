@@ -1,6 +1,8 @@
 #include "ArchTimer.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_XBOX)
+#include <xtl.h>
+#elif defined(_WIN32)
 #include <windows.h>
 #endif
 

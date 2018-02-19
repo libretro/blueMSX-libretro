@@ -53,8 +53,10 @@ class CMSXGr
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#ifdef _WIN32
-#include <Windows.h>
+#if defined(_WIN32) && defined(_XBOX)
+#include <xtl.h>
+#elif defined(_WIN32)
+#include <windows.h>
 #else
 #define GlobalAlloc(xxx, addr) malloc(addr)
 #define GlobalFree(addr) free(addr)

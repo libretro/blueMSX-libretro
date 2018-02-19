@@ -1,8 +1,11 @@
 #ifndef _GLOB_H
 #define _GLOB_H
 
+#ifndef _WIN32
 #include <sys/cdefs.h>
+#endif
 #include <sys/types.h>
+#include <stddef.h>
 
 typedef struct {
 	size_t gl_pathc;    /* Count of paths matched so far  */

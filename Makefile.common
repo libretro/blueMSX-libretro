@@ -27,6 +27,11 @@ INCFLAGS := -I$(CORE_DIR) \
 				-I$(CORE_DIR)/Src/Libretro \
 				-I$(DEPS_DIR)/zlib
 
+ifneq (,$(findstring msvc2003,$(platform)))
+INCFLAGS += -I$(LIBRETRO_COMM_DIR)/include/compat/msvc
+endif
+
+
 SOURCES_C   := $(CORE_DIR)/libretro.c \
 					$(CORE_DIR)/Src/Libretro/Dialog.c \
 					$(CORE_DIR)/Src/Libretro/Event.c \

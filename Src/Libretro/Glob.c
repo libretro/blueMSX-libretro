@@ -25,7 +25,7 @@
 **
 ******************************************************************************
 */
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_XBOX)
 
 #include "ArchGlob.h"
 #include <windows.h>
@@ -109,7 +109,7 @@ void archGlobFree(ArchGlob* globHandle)
 
 #else
 #include "ArchGlob.h"
-#if defined(PSP) || defined(__CELLOS_LV2__) || defined(ANDROID) || defined(WIIU)
+#if defined(PSP) || defined(__CELLOS_LV2__) || defined(ANDROID) || defined(WIIU) || defined(_XBOX)
 /* TODO/FIXME - might want to turn this into more generic define that we
  * flick on for consoles/portables */
 #include "psp/diet-glob.h"
@@ -122,8 +122,8 @@ void archGlobFree(ArchGlob* globHandle)
 
 ArchGlob* archGlob(const char* pattern, int flags)
 {
-    ArchGlob* globHandle;
     glob_t g;
+    ArchGlob* globHandle = NULL;
     int rv;
     int i;
 

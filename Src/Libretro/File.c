@@ -67,7 +67,7 @@ int archFileDelete(const char* fileName)
     return remove(fileName) == 0;
 }
 
-#elif defined(_WIN32)
+#elif defined(_WIN32) && !defined(_XBOX)
 
 #include <windows.h>
 #include <shlobj.h>
