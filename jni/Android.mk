@@ -1,39 +1,30 @@
 LOCAL_PATH := $(call my-dir)
 
-include $(CLEAR_VARS)
+CORE_DIR := $(LOCAL_PATH)/..
+
+HAVE_COMPAT := 1
+
+include $(CORE_DIR)/Makefile.common
+
+COREFLAGS := -DANDROID $(COREDEFINES) $(INCFLAGS)
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
-	LOCAL_CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+	COREFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 endif
 
-ifeq ($(TARGET_ARCH),arm)
-LOCAL_CFLAGS += -DANDROID_ARM
-LOCAL_ARM_MODE := arm
+include $(CLEAR_VARS)
+LOCAL_MODULE    := retro
+LOCAL_SRC_FILES := $(SOURCES_CXX) $(SOURCES_C)
+LOCAL_CXXFLAGS  := $(COREFLAGS)
+LOCAL_CFLAGS    := $(COREFLAGS)
+LOCAL_LDFLAGS   := -Wl,-version-script=$(CORE_DIR)/link.T
+LOCAL_LDLIBS    := -lz
+
+# armv5 clang workarounds
+ifeq ($(TARGET_ARCH_ABI),armeabi)
+	LOCAL_ARM_MODE := arm
+	LOCAL_LDLIBS   += -latomic
 endif
-
-ifeq ($(TARGET_ARCH),x86)
-LOCAL_CFLAGS +=  -DANDROID_X86
-endif
-
-ifeq ($(TARGET_ARCH),mips)
-LOCAL_CFLAGS += -DANDROID_MIPS
-endif
-
-CORE_DIR := ..
-
-LOCAL_MODULE    := libretro
-HAVE_COMPAT := 1
-SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
-
-include ../Makefile.common
-
-LOCAL_SRC_FILES    =  $(SOURCES_CXX) $(SOURCES_C)
-
-CORE_FLAGS    := $(COREDEFINES) $(INCFLAGS)
-LOCAL_CXXFLAGS = -DANDROID $(CORE_FLAGS) $(INCFLAGS)
-LOCAL_CFLAGS += -DANDROID $(CORE_FLAGS) $(INCFLAGS)
-LOCAL_C_INCLUDES = $(INCFLAGS)
-LOCAL_LDLIBS += -lz -latomic
 
 include $(BUILD_SHARED_LIBRARY)
