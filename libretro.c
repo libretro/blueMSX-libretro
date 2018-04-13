@@ -56,7 +56,7 @@ static int double_width;
 static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
-bool is_coleco, is_sega, is_spectra, is_auto;
+bool is_coleco, is_sega, is_spectra, is_auto, auto_rewind_cas;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
@@ -578,6 +578,7 @@ void retro_set_environment(retro_environment_t cb)
       { "bluemsx_nospritelimits", "No Sprite Limit; OFF|ON" },
       { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
       { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher|SegaBasic|SG1000|SG1000Castle|SG1000RamA|SG1000RamB|SC3000" },
+      { "bluemsx_auto_rewind_cas", "Auto Rewind Cassette; ON|OFF" },
       { NULL, NULL },
    };
 
@@ -779,7 +780,20 @@ static void check_variables(void)
          strcpy(msx_cartmapper, var.value);
       }
    }
-   
+
+   var.key = "bluemsx_auto_rewind_cas";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "OFF"))
+         auto_rewind_cas = false;
+      else
+         auto_rewind_cas = true;
+   }
+   else
+      auto_rewind_cas = true;
+
    if (geometry_update)
    {
       retro_get_system_av_info(&av_info);
@@ -882,6 +896,8 @@ bool retro_load_game(const struct retro_game_info *info)
    actionInit(video, properties, mixer);
    langInit();
    tapeSetReadOnly(properties->cassette.readOnly);
+   if (auto_rewind_cas)
+      tapeRewindNextInsert();
 
    langSetLanguage(properties->language);
 
