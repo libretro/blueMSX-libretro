@@ -122,5 +122,8 @@ void machineSaveState(Machine* machine);
 
 void machineSetDirectory(const char* dir);
 
+extern UInt8* g_mainRam;
+extern UInt32 g_mainRamSize;
+
 #endif
 

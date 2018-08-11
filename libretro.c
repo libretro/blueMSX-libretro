@@ -1230,8 +1230,18 @@ void retro_unload_game(void)
    image_buffer_height = 0;
 }
 unsigned retro_get_region(void){return RETRO_REGION_NTSC;}
-void *retro_get_memory_data(unsigned id){return NULL;}
-size_t retro_get_memory_size(unsigned id){return 0;}
+void *retro_get_memory_data(unsigned id)
+{
+   if ( id == RETRO_MEMORY_SYSTEM_RAM )
+      return g_mainRam;
+   return NULL;
+}
+size_t retro_get_memory_size(unsigned id)
+{
+   if ( id == RETRO_MEMORY_SYSTEM_RAM )
+      return g_mainRamSize;
+   return 0;
+}
 unsigned retro_api_version(void){return RETRO_API_VERSION;}
 size_t retro_serialize_size(void){return 0;}
 void retro_cheat_reset(void){}
