@@ -160,6 +160,8 @@
 
 #include "romExclusion.h"
 
+UInt8* g_mainRam=NULL;
+UInt32 g_mainRamSize=0;
 static char machinesDir[PROP_MAXPATH]  = "";
 
 int toint(char* buffer) 
@@ -1821,10 +1823,12 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize, UI
 
     if (mainRam != NULL) {
         *mainRam = ram;
+	g_mainRam = ram ;
     }
     
     if (mainRamSize != NULL) {
         *mainRamSize = ramSize;
+	g_mainRamSize = ramSize ;
     }
 
     if (mainRamStart != NULL) {
