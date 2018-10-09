@@ -30,6 +30,10 @@
 // already in the PSPSDK so the name is changed
 #include "diet-glob.h" 
 
+#ifdef __CELLOS_LV2__
+#define     S_ISDIR(m)      (((m)&S_IFMT) == S_IFDIR)
+#endif
+
 /* If i18n, should be using strcoll */
 static int cmp_func(const void * a, const void * b)
 {
