@@ -19,6 +19,16 @@ UInt32 archGetSystemUpTime(UInt32 frequency)
    return (rtc_tick / frequency);
 }
 
+#elif defined(__CELLOS_LV2__)
+#include <sys/sys_time.h>
+
+
+UInt32 archGetSystemUpTime(UInt32 frequency)
+{
+   u64 rtc_tick = _mftb();
+   return (rtc_tick / frequency);
+}
+
 #elif defined(_WIN32)
 static LONGLONG uptime_hfFrequency = 0;
 static signed long long uptime_offset = 0;
