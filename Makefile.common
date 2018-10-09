@@ -330,7 +330,8 @@ SOURCES_CXX  := $(CORE_DIR)/Src/SoundChips/Moonsound.cpp \
 #SOURCES_CXX  += $(CORE_DIR)/Src/IoDevice/msxgr.cpp
 ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += $(LIBRETRO_COMM_DIR)/file/retro_dirent.c \
-				 $(LIBRETRO_COMM_DIR)/compat/compat_snprintf.c
+				 $(LIBRETRO_COMM_DIR)/compat/compat_snprintf.c \
+				 $(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c
 
 #include zlib
 SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
