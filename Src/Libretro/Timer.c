@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "ArchTimer.h"
 
 #if defined(_WIN32) && defined(_XBOX)
@@ -25,7 +26,7 @@ UInt32 archGetSystemUpTime(UInt32 frequency)
 
 UInt32 archGetSystemUpTime(UInt32 frequency)
 {
-   u64 rtc_tick = _mftb();
+   uint64_t rtc_tick = _mftb();
    return (rtc_tick / frequency);
 }
 

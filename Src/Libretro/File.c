@@ -38,6 +38,25 @@
 
 #include <sys/stat.h>
 
+#if defined(__CELLOS_LV2__)
+char* getcwd( char* buf, size_t size )
+{
+  if ( buf != NULL && size >= 2 )
+  {
+    buf[ 0 ] = '.';
+    buf[ 1 ] = 0;
+    return buf;
+  }
+
+  return NULL;
+}
+
+int chdir( const char* path)
+{
+  return 0;
+}
+#endif
+
 #ifdef __MINGW32__
 
 int archCreateDirectory(const char* pathname)
@@ -136,27 +155,8 @@ int archFileDelete(const char* fileName)
 {
     return remove(fileName) == 0;
 }
-
 #endif
 
-#if defined(__CELLOS_LV2__)
-char* getcwd( char* buf, size_t size )
-{
-  if ( buf != NULL && size >= 2 )
-  {
-    buf[ 0 ] = '.';
-    buf[ 1 ] = 0;
-    return buf;
-  }
-
-  return NULL;
-}
-
-int chdir( const char* path)
-{
-  return 0;
-}
-#endif
 
 /* File dialogs: */
 char* archFilenameGetOpenRom(Properties* properties, int cartSlot, RomType* romType) { return NULL; }
