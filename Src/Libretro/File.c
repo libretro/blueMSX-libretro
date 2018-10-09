@@ -139,6 +139,25 @@ int archFileDelete(const char* fileName)
 
 #endif
 
+#if defined(__CELLOS_LV2__)
+char* getcwd( char* buf, size_t size )
+{
+  if ( buf != NULL && size >= 2 )
+  {
+    buf[ 0 ] = '.';
+    buf[ 1 ] = 0;
+    return buf;
+  }
+
+  return NULL;
+}
+
+int chdir( const char* path)
+{
+  return 0;
+}
+#endif
+
 /* File dialogs: */
 char* archFilenameGetOpenRom(Properties* properties, int cartSlot, RomType* romType) { return NULL; }
 char* archFilenameGetOpenDisk(Properties* properties, int drive, int allowCreate) { return NULL; }
