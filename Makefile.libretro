@@ -317,6 +317,19 @@ else ifeq ($(platform), emscripten)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
 	STATIC_LINKING = 1
 
+# Genode
+else ifeq ($(platform), genode)
+   TARGET   := $(TARGET_NAME)_libretro.lib.so
+   CFLAGS   += $(shell pkg-config --cflags genode-libc)
+   CXXFLAGS += $(shell pkg-config --cflags genode-stdcxx)
+
+   LDFLAGS += -shared --version-script=link.T
+   LDFLAGS += $(shell pkg-config --libs genode-lib genode-libc genode-stdcxx)
+
+   CC  := $(shell pkg-config genode-base --variable=cc)
+   CXX := $(shell pkg-config genode-base --variable=cxx)
+   LD  := $(shell pkg-config genode-base --variable=ld)
+
 # Windows MSVC 2010 x64
 else ifeq ($(platform), windows_msvc2010_x64)
 	CC  = cl.exe
@@ -475,7 +488,7 @@ ifneq (,$(findstring msvc,$(platform)))
 	OBJOUT = -Fo
 	LINKOUT = -out:
 	LD = link.exe
-else
+else ifneq ($(platform),genode)
 	LD = $(CXX)
 endif
 
