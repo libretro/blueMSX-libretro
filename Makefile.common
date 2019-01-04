@@ -356,5 +356,6 @@ ifeq ($(HAVE_COMPAT), 1)
 endif
 
 ifeq ($(HAVE_WIN32_MSX_MANAGER), 1)
+	COREDEFINES  += -DHAVE_WIN32_MSX_MANAGER
 	SOURCES_CXX  += $(CORE_DIR)/Src/IoDevice/msxgr.cpp
 endif

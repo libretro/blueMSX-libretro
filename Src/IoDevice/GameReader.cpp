@@ -29,7 +29,7 @@ extern "C" {
 #include "GameReader.h"
 };
 
-#ifdef _WIN32
+#ifdef HAVE_WIN32_MSX_MANAGER
 #include "msxgr.h"
 #else
 class CMSXGr
