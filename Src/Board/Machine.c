@@ -1823,16 +1823,19 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize, UI
 
     if (mainRam != NULL) {
         *mainRam = ram;
-	g_mainRam = ram ;
     }
     
     if (mainRamSize != NULL) {
         *mainRamSize = ramSize;
-	g_mainRamSize = ramSize ;
     }
 
     if (mainRamStart != NULL) {
         *mainRamStart = ramStart;
+    }
+
+    if (ramSize != 0) {
+        g_mainRamSize = ramSize;
+        g_mainRam = ram;
     }
 
     return success;
