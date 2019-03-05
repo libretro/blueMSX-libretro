@@ -283,7 +283,7 @@ SOURCES_C  += $(CORE_DIR)/Src/Utils/StrcmpNoCase.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/TokenExtract.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/IniFileParser.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/ZipFromMem.c
-SOURCES_C  += $(CORE_DIR)/Src/Utils/ziphelper.c
+#SOURCES_C  += $(CORE_DIR)/Src/Utils/ziphelper.c
 
 SOURCES_C  += $(CORE_DIR)/Src/Board/Board.c
 SOURCES_C  += $(CORE_DIR)/Src/Board/Machine.c
