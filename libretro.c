@@ -1260,23 +1260,23 @@ bool retro_serialize(void *data, size_t size)
 
    boardSaveState("mem0",0);
    memZipFile = memZipFileFind("mem0");
-   sz = sizeof(memZipFile->count); 
+   sz         = sizeof(memZipFile->count); 
    memcpy(data, & memZipFile->count, sz); 
-   data += sz;
+   data       = (char*)data + sz;
 
    for (c = 0;c<memZipFile->count;c++)
    {
-      memFile = memZipFile->memFiles[c];
+      memFile   = memZipFile->memFiles[c];
       zip_size += sizeof(MemFile) + memFile->size;
-      sz = sizeof(memFile->filename); 
+      sz        = sizeof(memFile->filename); 
       memcpy(data, memFile->filename, sz); 
-      data += sz;
-      sz = sizeof(memFile->size);     
+      data      = (char*)data + sz;
+      sz        = sizeof(memFile->size);     
       memcpy(data, &memFile->size, sz); 
-      data += sz;
-      sz = memFile->size;
+      data      = (char*)data + sz;
+      sz        = memFile->size;
       memcpy(data, memFile->buffer, sz); 
-      data += sz;
+      data      = (char*)data + sz;
    }
 
    memZipFileDestroy(memZipFile);
@@ -1288,16 +1288,16 @@ bool retro_unserialize(const void *data, size_t size)
    int c;
    int sz, count = * (int *) data;
    char  * filename;
-
-   data += sizeof(int); 
+   data = (char*)data + sizeof(int); 
    for (c = 0; c < count; c++)
    {
-      filename = (char *) data;
-      data += sizeof((MemFile){0}.filename); 
-      sz = * (int *) data;
-      data += sizeof(int); 
+      filename = (char *)data;
+      /* TODO/FIXME - not C89 compatible - error C2059 MSVC */
+      data     = (char*)data + sizeof((MemFile){0}.filename); 
+      sz       = * (int *)data;
+      data     = (char*)data + sizeof(int); 
       zipSaveFile("mem0", filename, 1, data, sz );
-      data += sz;
+      data     = (char*)data + sz;
    } 
    saveStateCreateForRead("mem0");
    boardInfo.loadState();
