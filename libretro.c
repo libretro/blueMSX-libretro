@@ -1249,17 +1249,23 @@ size_t retro_serialize_size(void){return 1<<21;}
 void retro_cheat_reset(void){}
 void retro_cheat_set(unsigned a, bool b, const char * c){}
 static int n_serialized = 0;
-bool retro_serialize(void *data, size_t size){
+
+bool retro_serialize(void *data, size_t size)
+{
+   int c;
    MemZipFile * memZipFile;
    size_t zip_size = 0, sz;
    char * files;
    MemFile * memFile;
+
    boardSaveState("mem0",0);
    memZipFile = memZipFileFind("mem0");
    sz = sizeof(memZipFile->count); 
    memcpy(data, & memZipFile->count, sz); 
    data += sz;
-   for (int c=0;c<memZipFile->count;c++) {
+
+   for (c=0;c<memZipFile->count;c++)
+   {
       memFile = memZipFile->memFiles[c];
       zip_size += sizeof(MemFile) + memFile->size;
       sz = sizeof(memFile->filename); 
@@ -1272,14 +1278,20 @@ bool retro_serialize(void *data, size_t size){
       memcpy(data, memFile->buffer, sz); 
       data += sz;
    }
+
    memZipFileDestroy(memZipFile);
    return true;
 }
-bool retro_unserialize(const void *data, size_t size){
+
+bool retro_unserialize(const void *data, size_t size)
+{
+   int c;
    int sz, count = * (int *) data;
    char  * filename;
+
    data += sizeof(int); 
-   for (int c=0; c < count; c++) {
+   for (=0; c < count; c++)
+   {
       filename = (char *) data;
       data += sizeof((MemFile){0}.filename); 
       sz = * (int *) data;
