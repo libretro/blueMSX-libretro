@@ -1264,7 +1264,7 @@ bool retro_serialize(void *data, size_t size)
    memcpy(data, & memZipFile->count, sz); 
    data += sz;
 
-   for (c=0;c<memZipFile->count;c++)
+   for (c = 0;c<memZipFile->count;c++)
    {
       memFile = memZipFile->memFiles[c];
       zip_size += sizeof(MemFile) + memFile->size;
@@ -1290,7 +1290,7 @@ bool retro_unserialize(const void *data, size_t size)
    char  * filename;
 
    data += sizeof(int); 
-   for (=0; c < count; c++)
+   for (c = 0; c < count; c++)
    {
       filename = (char *) data;
       data += sizeof((MemFile){0}.filename); 
