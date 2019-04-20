@@ -31,6 +31,7 @@
 #include "JoystickPort.h"
 #include "InputEvent.h"
 #include "R800.h"
+#include "Src/Utils/SaveState.h"
 
 #include "ziphelper.c"
 
