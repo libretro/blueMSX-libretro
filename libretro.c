@@ -1293,7 +1293,7 @@ bool retro_unserialize(const void *data, size_t size)
    {
       filename = (char *)data;
       /* TODO/FIXME - not C89 compatible - error C2059 MSVC */
-      data     = (char*)data + sizeof((MemFile){0}.filename); 
+      data     = (char*)data + sizeof(((MemFile*)0)->filename); 
       sz       = * (int *)data;
       data     = (char*)data + sizeof(int); 
       zipSaveFile("mem0", filename, 1, data, sz );
