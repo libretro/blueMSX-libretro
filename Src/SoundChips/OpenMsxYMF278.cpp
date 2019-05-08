@@ -145,8 +145,10 @@ const int vib_depth[8] = {
 
 #define SC(db) (unsigned int) (db * (2.0 / ENV_STEP))
 const int am_depth[8] = {
-	SC(0),	   SC(1.781), SC(2.906), SC(3.656),
-	SC(4.406), SC(5.906), SC(7.406), SC(11.91)
+	static_cast<int>(SC(0)), static_cast<int>(SC(1.781)),
+	static_cast<int>(SC(2.906)), static_cast<int>(SC(3.656)),
+	static_cast<int>(SC(4.406)), static_cast<int>(SC(5.906)),
+	static_cast<int>(SC(7.406)), static_cast<int>(SC(11.91))
 };
 #undef SC
 

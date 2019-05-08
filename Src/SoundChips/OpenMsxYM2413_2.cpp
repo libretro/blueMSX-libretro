@@ -783,10 +783,22 @@ void OpenYM2413_2::Slot::calc_envelope(int lfo_am)
 {
 	#define S2E(x) (SL2EG((int)(x / SL_STEP)) << (EG_DP_BITS - EG_BITS)) 
 	static unsigned int SL[16] = {
-		S2E( 0.0), S2E( 3.0), S2E( 6.0), S2E( 9.0),
-		S2E(12.0), S2E(15.0), S2E(18.0), S2E(21.0),
-		S2E(24.0), S2E(27.0), S2E(30.0), S2E(33.0),
-		S2E(36.0), S2E(39.0), S2E(42.0), S2E(48.0)
+		static_cast<unsigned int>(S2E( 0.0)),
+		static_cast<unsigned int>(S2E( 3.0)),
+		static_cast<unsigned int>(S2E( 6.0)),
+		static_cast<unsigned int>(S2E( 9.0)),
+		static_cast<unsigned int>(S2E(12.0)),
+		static_cast<unsigned int>(S2E(15.0)),
+		static_cast<unsigned int>(S2E(18.0)),
+		static_cast<unsigned int>(S2E(21.0)),
+		static_cast<unsigned int>(S2E(24.0)),
+		static_cast<unsigned int>(S2E(27.0)),
+		static_cast<unsigned int>(S2E(30.0)),
+		static_cast<unsigned int>(S2E(33.0)),
+		static_cast<unsigned int>(S2E(36.0)),
+		static_cast<unsigned int>(S2E(39.0)),
+		static_cast<unsigned int>(S2E(42.0)),
+		static_cast<unsigned int>(S2E(48.0))
 	};
 
 	unsigned out;
