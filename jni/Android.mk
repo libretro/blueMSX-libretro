@@ -6,7 +6,7 @@ HAVE_COMPAT := 1
 
 include $(CORE_DIR)/Makefile.common
 
-COREFLAGS := -DANDROID $(COREDEFINES) $(INCFLAGS)
+COREFLAGS := -DANDROID $(COREDEFINES) $(INCFLAGS) -Wno-c++11-narrowing
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
