@@ -35,7 +35,7 @@
 
 #include "ziphelper.c"
 
-
+#include "libretro_core_options.h"
 
 retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
@@ -574,17 +574,6 @@ void retro_deinit(void)
 
 void retro_set_environment(retro_environment_t cb)
 {
-   static const struct retro_variable vars[] = {
-      { "bluemsx_msxtype", "Machine Type (Restart); Auto|MSX|MSXturboR|MSX2|MSX2+|SEGA - SG-1000|SEGA - SC-3000|SEGA - SF-7000|SVI - Spectravideo SVI-318|SVI - Spectravideo SVI-328|SVI - Spectravideo SVI-328 MK2|ColecoVision|Coleco (Spectravideo SVI-603)" },
-      { "bluemsx_overscan", "Crop Overscan; disabled|enabled|MSX2" },
-      { "bluemsx_vdp_synctype", "VDP Sync Type (Restart); Auto|50Hz|60Hz" },
-      { "bluemsx_nospritelimits", "No Sprite Limit; OFF|ON" },
-      { "bluemsx_ym2413_enable", "Sound YM2413 Enable (Restart); enabled|disabled" },
-      { "bluemsx_cartmapper", "Cart Mapper Type (Restart); Auto|Normal|mirrored|basic|0x4000|0xC000|ascii8|ascii8sram|ascii16|ascii16sram|ascii16nf|konami4|konami4nf|konami5|konamisynth|korean80|korean90|korean126|MegaFlashRomScc|MegaFlashRomSccPlus|msxdos2|scc|sccexpanded|sccmirrored|sccplus|snatcher|sdsnatcher|SegaBasic|SG1000|SG1000Castle|SG1000RamA|SG1000RamB|SC3000" },
-      { "bluemsx_auto_rewind_cas", "Auto Rewind Cassette; ON|OFF" },
-      { NULL, NULL },
-   };
-
    static const struct retro_controller_description port[] = {
       { "RetroPad",              RETRO_DEVICE_JOYPAD },
       { "RetroKeyboard",         RETRO_DEVICE_KEYBOARD },
@@ -600,7 +589,7 @@ void retro_set_environment(retro_environment_t cb)
 
    environ_cb = cb;
 
-   cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
+   libretro_set_core_options(environ_cb);
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 }
 
