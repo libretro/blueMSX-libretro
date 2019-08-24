@@ -781,7 +781,7 @@ inline void OpenYM2413_2::update_noise()
 // EG
 void OpenYM2413_2::Slot::calc_envelope(int lfo_am)
 {
-	#define S2E(x) (SL2EG((int)(x / SL_STEP)) << (EG_DP_BITS - EG_BITS)) 
+	#define S2E(x) static_cast<unsigned int>(SL2EG((int)(x / SL_STEP)) << (EG_DP_BITS - EG_BITS))
 	static unsigned int SL[16] = {
 		S2E( 0.0), S2E( 3.0), S2E( 6.0), S2E( 9.0),
 		S2E(12.0), S2E(15.0), S2E(18.0), S2E(21.0),
