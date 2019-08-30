@@ -52,7 +52,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "bluemsx_overscan",
       "Crop Overscan",
-      "Forces cropping of overscanned frames",
+      "Forces cropping of overscanned frames.",
       {
          { "disabled",   NULL },
          { "enabled",   NULL },
@@ -87,7 +87,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "bluemsx_ym2413_enable",
       "Sound YM2413 Enable (Restart)",
-      "Awaiting description.",
+      "", //Awaiting description.
       {
          { "enabled",   NULL },
          { "disabled",   NULL },
@@ -187,6 +187,131 @@ struct retro_core_option_definition option_defs_us[] = {
 
 /* RETRO_LANGUAGE_TURKISH */
 
+struct retro_core_option_definition option_defs_tr[] = {
+   {
+      "bluemsx_msxtype",
+      "Makine Tipi (Yeniden Başlatma Gerektirir)",
+      "Çekirdeğin başlamasını istediğiniz makine tipini manuel olarak seçin.",
+      {
+         { "Auto",   "Otomatik" },
+         { "MSX",   NULL },
+         { "MSXturboR",   NULL },
+         { "MSX2",   NULL },
+         { "MSX2+",   NULL },
+         { "SEGA - SG-1000",   NULL },
+         { "SEGA - SC-3000",   NULL },
+         { "SEGA - SF-7000",   NULL },
+         { "SVI - Spectravideo SVI-318",   NULL },
+         { "SVI - Spectravideo SVI-328",   NULL },
+         { "SVI - Spectravideo SVI-328 MK2", NULL },
+         { "ColecoVision", NULL },
+         { "Coleco (Spectravideo SVI-603)", NULL },
+         { NULL, NULL },
+      },
+      "Auto"
+   },
+   {
+      "bluemsx_overscan",
+      "Taramayı Aşanları Kırp",
+      "Üst tarama karelerinin kırpılmasını sağlar.",
+      {
+         { "disabled",   "Devre Dışı" },
+         { "enabled",   "Etkin" },
+         { "MSX2",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "bluemsx_vdp_synctype",
+      "VDP Senkronizasyon Türü (Yeniden Başlatma Gerektirir)",
+      "Taklit edilmiş hız sorunlarından kaçınmak için oyun/makine bölgesi frekansını eşleştirin.",
+      {
+         { "Auto",   "Otomatik" },
+         { "50Hz",   NULL },
+         { "60Hz",   NULL },
+         { NULL, NULL },
+      },
+      "Auto"
+   },
+   {
+      "bluemsx_nospritelimits",
+      "Sprite Sınırı Yok",
+      "Bazı oyunlarda sprite titremesini azaltabilecek veya kaldırabilecek sınır başına 4 sprite'ı kaldırın.",
+      {
+         { "OFF",   "KAPALI" },
+         { "ON",   "AÇIK" },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "bluemsx_ym2413_enable",
+      "Ses YM2413 Etkinleştir (Yeniden BaşlatMA Gerektirir)",
+      "",
+      {
+         { "enabled",   "Etkin" },
+         { "disabled",   "Devre Dışı" },
+         { NULL, NULL },
+      },
+      "enabled"
+   },
+   {
+      "bluemsx_cartmapper",
+      "Sepet Eşleştiricisi Türü (Yeniden Başlatma Gerektirir)",
+      "Bir ROM oyunu veya uygulaması veritabanındayken, emülatör doğru eşleştiriciyi uygulamak için veritabanlarını kullanır. Dökümü sha1 değeri henüz veritabanlarında değilse, otomatik bir eşleyici algılama sistemi kullanır, ancak bazı durumlarda başarısız olabilir. Bu durumda, doğru eşleştiriciyi manuel olarak seçebilirsiniz.",
+      {
+         { "Auto",   "Otomatik" },
+         { "Normal",   NULL },
+         { "mirrored",   NULL },
+         { "basic",   "Basit" },
+         { "0x4000",   NULL },
+         { "0xC000",   NULL },
+         { "ascii8",   NULL },
+         { "ascii8sram",   NULL },
+         { "ascii16",   NULL },
+         { "ascii16sram",   NULL },
+         { "ascii16nf",   NULL },
+         { "konami4",   NULL },
+         { "konami4nf",   NULL },
+         { "konami5",   NULL },
+         { "konamisynth",   NULL },
+         { "korean80",   NULL },
+         { "korean90",   NULL },
+         { "korean126",   NULL },
+         { "MegaFlashRomScc",   NULL },
+         { "MegaFlashRomSccPlus",   NULL },
+         { "msxdos2",   NULL },
+         { "scc",   NULL },
+         { "sccexpanded",   NULL },
+         { "sccmirrored",   NULL },
+         { "sccplus",   NULL },
+         { "snatcher",   NULL },
+         { "sdsnatcher",   NULL },
+         { "SegaBasic",   NULL },
+         { "SG1000",   NULL },
+         { "SG1000Castle",   NULL },
+         { "SG1000RamA",   NULL },
+         { "SG1000RamB",   NULL },
+         { "SC3000",   NULL },
+         { NULL, NULL },
+      },
+      "Auto"
+   },
+   {
+      "bluemsx_auto_rewind_cas",
+      "Otomatik Geri Sarma Kaseti",
+      "",
+      {
+         { "ON",   "Açık" },
+         { "OFF",   "Kapalı" },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   { NULL, NULL, NULL, {{0}}, NULL },
+};
+
 /*
  ********************************
  * Language Mapping
@@ -212,7 +337,7 @@ struct retro_core_option_definition *option_defs_intl[RETRO_LANGUAGE_LAST] = {
    NULL,           /* RETRO_LANGUAGE_VIETNAMESE */
    NULL,           /* RETRO_LANGUAGE_ARABIC */
    NULL,           /* RETRO_LANGUAGE_GREEK */
-   NULL,           /* RETRO_LANGUAGE_TURKISH */
+   option_defs_tr, /* RETRO_LANGUAGE_TURKISH */
 };
 
 /*
