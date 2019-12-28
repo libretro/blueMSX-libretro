@@ -38,7 +38,7 @@
 
 #include <sys/stat.h>
 
-#if defined(__CELLOS_LV2__)
+#if defined(__CELLOS_LV2__) || defined(VITA)
 char* getcwd( char* buf, size_t size )
 {
   if ( buf != NULL && size >= 2 )
@@ -55,6 +55,14 @@ int chdir( const char* path)
 {
   return 0;
 }
+#endif
+
+#if defined(VITA)
+
+int mkdir(const char *path, mode_t mode){
+  return sceIoMkdir(path,mode);
+}
+
 #endif
 
 #ifdef __MINGW32__
