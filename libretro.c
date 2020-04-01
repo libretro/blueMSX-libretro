@@ -493,7 +493,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry.max_width = FB_MAX_LINE_WIDTH ;
    info->geometry.max_height = FB_MAX_LINES ;
    info->geometry.aspect_ratio = 0;
-   info->timing.fps = 60.0;
+   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? 60.0 : 50.0;
    info->timing.sample_rate = 44100.0;
 }
 
@@ -1221,7 +1221,20 @@ void retro_unload_game(void)
    image_buffer_current_width = 0;
    image_buffer_height = 0;
 }
-unsigned retro_get_region(void){return RETRO_REGION_NTSC;}
+unsigned retro_get_region(void){
+   switch (msx_vdp_synctype)
+   {
+      case P_VDP_SYNCAUTO:
+         if (!strcmp(msx_type, "MSX") || !strcmp(msx_type, "MSX2") || is_spectra)
+             return RETRO_REGION_PAL;
+         else
+             return RETRO_REGION_NTSC;
+      case P_VDP_SYNC50HZ:
+         return RETRO_REGION_PAL;
+      case P_VDP_SYNC60HZ:
+         return RETRO_REGION_NTSC;
+   }
+}
 void *retro_get_memory_data(unsigned id)
 {
    if ( id == RETRO_MEMORY_SYSTEM_RAM )
