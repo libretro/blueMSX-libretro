@@ -37,7 +37,8 @@ UInt32 archGetSystemUpTime(UInt32 frequency)
 
 UInt32 archGetSystemUpTime(UInt32 frequency)
 {
-   uint64_t rtc_tick = _mftb();
+   uint64_t rtc_tick;
+   asm volatile ("mftb %0" : "=r"(rtc_tick));
    return (rtc_tick / frequency);
 }
 
