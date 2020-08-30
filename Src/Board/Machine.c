@@ -217,6 +217,15 @@ char *strcasestr(const char *str1, const char *str2)
 
 #endif
 
+#if defined(__CELLOS_LV2__)
+char *strcasestr(const char *h, const char *n)
+{
+	size_t l = strlen(n);
+	for (; *h; h++) if (!strncasecmp(h, n, l)) return (char *)h;
+	return 0;
+}
+#endif
+
 static int readMachine(Machine* machine, const char* machineName, const char* file)
 {
     static char buffer[10000];
