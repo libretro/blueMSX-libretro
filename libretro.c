@@ -43,6 +43,8 @@ static retro_input_poll_t input_poll_cb;
 static retro_input_state_t input_state_cb;
 static retro_environment_t environ_cb;
 
+static bool libretro_supports_bitmasks = false;
+
 static Properties* properties;
 static Video* video;
 static Mixer* mixer;
@@ -563,6 +565,8 @@ void retro_init(void)
 #endif
    memZipFileSystemCreate(1);
 
+   if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
+      libretro_supports_bitmasks = true;
 }
 
 void retro_deinit(void)
@@ -570,6 +574,8 @@ void retro_deinit(void)
 #ifdef LOG_PERFORMANCE
    perf_cb.perf_log();
 #endif
+
+   libretro_supports_bitmasks = false;
 }
 
 void retro_set_environment(retro_environment_t cb)
@@ -1019,6 +1025,7 @@ void retro_run(void)
 {
    int i,j;
    bool updated = false;
+   int16_t joypad_bits[MAX_PADS] = {0};
    
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       check_variables();
@@ -1028,6 +1035,18 @@ void retro_run(void)
 
    input_poll_cb();
 
+   for (i = 0; i < MAX_PADS; i++)
+   {
+      if (libretro_supports_bitmasks)
+         joypad_bits[i] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+      else
+      {
+         joypad_bits[i] = 0;
+         for (j = 0; j < (RETRO_DEVICE_ID_JOYPAD_R3+1); j++)
+            joypad_bits[i] |= input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, j) ? (1 << j) : 0;
+      }
+   }
+
    if (is_coleco)
    {
       /* ColecoVision Input Part */
@@ -1036,39 +1055,41 @@ void retro_run(void)
          switch (input_devices[i])
          {
             case RETRO_DEVICE_JOYPAD:
+            {
                if (i == 0){
                   for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON2); j++)
-                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+                     eventMap[j] = joypad_bits[i] & (1 << btn_map[j]) ? 1 : 0;
                }else if (i == 1){
                   for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON2); j++)
-                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+                     eventMap[j] = joypad_bits[i] & (1 << btn_map[j]) ? 1 : 0;
                }
                break;
+            }
          }
       }
-      eventMap[EC_COLECO1_1]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
-      eventMap[EC_COLECO1_2]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
-      eventMap[EC_COLECO1_3]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
-      eventMap[EC_COLECO1_4]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
-      eventMap[EC_COLECO1_5]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
-      eventMap[EC_COLECO1_6]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
-      eventMap[EC_COLECO1_7]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
-      eventMap[EC_COLECO1_8]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
-      eventMap[EC_COLECO1_STAR]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
-      eventMap[EC_COLECO1_HASH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+      eventMap[EC_COLECO1_1]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+      eventMap[EC_COLECO1_2]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+      eventMap[EC_COLECO1_3]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+      eventMap[EC_COLECO1_4]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+      eventMap[EC_COLECO1_5]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+      eventMap[EC_COLECO1_6]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+      eventMap[EC_COLECO1_7]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+      eventMap[EC_COLECO1_8]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+      eventMap[EC_COLECO1_STAR]  = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+      eventMap[EC_COLECO1_HASH]  = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
       eventMap[EC_COLECO1_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_1)                    ? 1 : 0;
       eventMap[EC_COLECO1_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_2)                    ? 1 : 0;
 
-      eventMap[EC_COLECO2_1]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
-      eventMap[EC_COLECO2_2]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
-      eventMap[EC_COLECO2_3]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
-      eventMap[EC_COLECO2_4]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
-      eventMap[EC_COLECO2_5]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
-      eventMap[EC_COLECO2_6]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
-      eventMap[EC_COLECO2_7]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
-      eventMap[EC_COLECO2_8]     = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
-      eventMap[EC_COLECO2_STAR]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
-      eventMap[EC_COLECO2_HASH]  = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+      eventMap[EC_COLECO2_1]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+      eventMap[EC_COLECO2_2]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+      eventMap[EC_COLECO2_3]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+      eventMap[EC_COLECO2_4]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+      eventMap[EC_COLECO2_5]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+      eventMap[EC_COLECO2_6]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+      eventMap[EC_COLECO2_7]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+      eventMap[EC_COLECO2_8]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+      eventMap[EC_COLECO2_STAR]  = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+      eventMap[EC_COLECO2_HASH]  = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
       eventMap[EC_COLECO2_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_3)                    ? 1 : 0;
       eventMap[EC_COLECO2_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_4)                    ? 1 : 0;
    }
@@ -1082,10 +1103,10 @@ void retro_run(void)
             case RETRO_DEVICE_JOYPAD:
                if (i == 0)
                   for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON6); j++)
-                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+                     eventMap[j] = joypad_bits[i] & (1 << btn_map[j]) ? 1 : 0;
                else if (i == 1)
                   for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON6); j++)
-                     eventMap[j] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, btn_map[j]) ? 1 : 0;
+                     eventMap[j] = joypad_bits[i] & (1 << btn_map[j]) ? 1 : 0;
                break;
          }
       }
@@ -1094,40 +1115,40 @@ void retro_run(void)
          eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
 
       if (input_devices[0] == RETRO_DEVICE_MAPPER && !is_spectra){
-         eventMap[EC_LEFT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
-         eventMap[EC_RIGHT]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
-         eventMap[EC_UP]     = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
-         eventMap[EC_DOWN]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
-         eventMap[EC_RETURN] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
-         eventMap[EC_SPACE]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
-         eventMap[EC_CTRL]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
-         eventMap[EC_GRAPH]  = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
+         eventMap[EC_LEFT]   = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
+         eventMap[EC_RIGHT]  = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 1 : 0;
+         eventMap[EC_UP]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)    ? 1 : 0;
+         eventMap[EC_DOWN]   = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)  ? 1 : 0;
+         eventMap[EC_RETURN] = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_A)     ? 1 : 0;
+         eventMap[EC_SPACE]  = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_B)     ? 1 : 0;
+         eventMap[EC_CTRL]   = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_X)     ? 1 : 0;
+         eventMap[EC_GRAPH]  = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_Y)     ? 1 : 0;
       }
       
       if (input_devices[0] == RETRO_DEVICE_MAPPER && is_spectra){
-         eventMap[EC_JOY1_LEFT]    = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
-         eventMap[EC_JOY1_RIGHT]   = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
-         eventMap[EC_JOY1_UP]      = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
-         eventMap[EC_JOY1_DOWN]    = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
-         eventMap[EC_JOY1_BUTTON1] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
-         eventMap[EC_JOY1_BUTTON2] = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
-         eventMap[EC_1]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
-         eventMap[EC_2]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
-         eventMap[EC_3]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
-         eventMap[EC_4]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
-         eventMap[EC_5]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
-         eventMap[EC_6]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
-         eventMap[EC_7]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
-         eventMap[EC_8]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
-         eventMap[EC_9]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
-         eventMap[EC_0]            = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
+         eventMap[EC_JOY1_LEFT]    = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
+         eventMap[EC_JOY1_RIGHT]   = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
+         eventMap[EC_JOY1_UP]      = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
+         eventMap[EC_JOY1_DOWN]    = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
+         eventMap[EC_JOY1_BUTTON1] = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
+         eventMap[EC_JOY1_BUTTON2] = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
+         eventMap[EC_1]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
+         eventMap[EC_2]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
+         eventMap[EC_3]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
+         eventMap[EC_4]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_L)      ? 1 : 0;
+         eventMap[EC_5]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_R2)     ? 1 : 0;
+         eventMap[EC_6]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_L2)     ? 1 : 0;
+         eventMap[EC_7]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_R3)     ? 1 : 0;
+         eventMap[EC_8]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
+         eventMap[EC_9]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
+         eventMap[EC_0]            = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
 
-         eventMap[EC_JOY2_LEFT]    = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
-         eventMap[EC_JOY2_RIGHT]   = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
-         eventMap[EC_JOY2_UP]      = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
-         eventMap[EC_JOY2_DOWN]    = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
-         eventMap[EC_JOY2_BUTTON1] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
-         eventMap[EC_JOY2_BUTTON2] = input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
+         eventMap[EC_JOY2_LEFT]    = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)   ? 1 : 0;
+         eventMap[EC_JOY2_RIGHT]   = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)  ? 1 : 0;
+         eventMap[EC_JOY2_UP]      = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_UP)     ? 1 : 0;
+         eventMap[EC_JOY2_DOWN]    = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)   ? 1 : 0;
+         eventMap[EC_JOY2_BUTTON1] = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_A)      ? 1 : 0;
+         eventMap[EC_JOY2_BUTTON2] = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_B)      ? 1 : 0;
       }
    }
 
