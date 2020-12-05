@@ -95,6 +95,10 @@ void frameBufferSetBlendFrames(int blendFrames);
 #define BKMODE_TRANSPARENT 0x0020
 #define videoGetColor(R, G, B) \
           ((((int)(R) >> 3) << 11) | (((int)(G) >> 3) << 6) | ((int)(B) >> 3))
+#elif defined(PS2)
+#define BKMODE_TRANSPARENT 0x0000
+#define videoGetColor(R, G, B) \
+          ((((int)(B) >> 3) << 10) | (((int)(G) >> 3) << 5) | ((int)(R) >> 3))
 #else
 #if defined(VIDEO_COLOR_TYPE_RGB565)
 #define BKMODE_TRANSPARENT 0x0000
