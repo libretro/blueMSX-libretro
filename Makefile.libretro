@@ -652,6 +652,16 @@ else
 	CXXFLAGS += -O2 -fno-exceptions -fno-rtti -DHAVE_STDINT_H -DNDEBUG
 endif
 
+ifneq (,$(findstring msvc,$(platform)))
+ifeq ($(DEBUG), 1)
+	CFLAGS   += -MTd
+	CXXFLAGS += -MTd
+else
+	CFLAGS   += -MT
+	CXXFLAGS += -MT
+endif
+endif
+
 ifeq ($(LOG_PERFORMANCE), 1)
 	CFLAGS += -DLOG_PERFORMANCE
 	CXXFLAGS += -DLOG_PERFORMANCE
