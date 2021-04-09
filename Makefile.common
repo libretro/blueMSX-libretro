@@ -338,10 +338,6 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 				 $(DEPS_DIR)/zlib/compress.c \
 				 $(DEPS_DIR)/zlib/crc32.c \
 				 $(DEPS_DIR)/zlib/deflate.c \
-				 $(DEPS_DIR)/zlib/gzclose.c \
-				 $(DEPS_DIR)/zlib/gzlib.c \
-				 $(DEPS_DIR)/zlib/gzread.c \
-				 $(DEPS_DIR)/zlib/gzwrite.c \
 				 $(DEPS_DIR)/zlib/inffast.c \
 				 $(DEPS_DIR)/zlib/inflate.c \
 				 $(DEPS_DIR)/zlib/inftrees.c \
