@@ -56,8 +56,8 @@ const unsigned int dl_tab[16] = {
 };
 #undef SC
 
-const byte RATE_STEPS = 8;
-const byte eg_inc[15 * RATE_STEPS] = {
+const UINT8 RATE_STEPS = 8;
+const UINT8 eg_inc[15 * RATE_STEPS] = {
 //cycle:0 1  2 3  4 5  6 7
 	0, 1,  0, 1,  0, 1,  0, 1, //  0  rates 00..12 0 (increment by 0 or 1)
 	0, 1,  0, 1,  1, 1,  0, 1, //  1  rates 00..12 1
@@ -80,7 +80,7 @@ const byte eg_inc[15 * RATE_STEPS] = {
 };
 
 #define O(a) (a * RATE_STEPS)
-const byte eg_rate_select[64] = {
+const UINT8 eg_rate_select[64] = {
 	O( 0),O( 1),O( 2),O( 3),
 	O( 0),O( 1),O( 2),O( 3),
 	O( 0),O( 1),O( 2),O( 3),
@@ -104,7 +104,7 @@ const byte eg_rate_select[64] = {
 //shift 12,   11,   10,   9,   8,   7,   6,  5,  4,  3,  2,  1,  0,  0,  0,  0
 //mask  4095, 2047, 1023, 511, 255, 127, 63, 31, 15, 7,  3,  1,  0,  0,  0,  0
 #define O(a) (a)
-const byte eg_rate_shift[64] = {
+const UINT8 eg_rate_shift[64] = {
 	O(12),O(12),O(12),O(12),
 	O(11),O(11),O(11),O(11),
 	O(10),O(10),O(10),O(10),
@@ -255,13 +255,13 @@ void YMF278::advance()
 			// Envelope Generator
 			switch(op.state) {
 			case EG_ATT: {	// attack phase
-				byte rate = op.compute_rate(op.AR);
+				UINT8 rate = op.compute_rate(op.AR);
 				if (rate < 4) {
 					break;
 				}
-				byte shift = eg_rate_shift[rate];
+				UINT8 shift = eg_rate_shift[rate];
 				if (!(eg_cnt & ((1 << shift) -1))) {
-					byte select = eg_rate_select[rate];
+					UINT8 select = eg_rate_select[rate];
 					op.env_vol += (~op.env_vol * eg_inc[select + ((eg_cnt >> shift) & 7)]) >> 3;
 					if (op.env_vol <= MIN_ATT_INDEX) {
 						op.env_vol = MIN_ATT_INDEX;
@@ -276,13 +276,13 @@ void YMF278::advance()
 				break;
 			}
 			case EG_DEC: {	// decay phase
-				byte rate = op.compute_rate(op.D1R);
+				UINT8 rate = op.compute_rate(op.D1R);
 				if (rate < 4) {
 					break;
 				}
-				byte shift = eg_rate_shift[rate];
+				UINT8 shift = eg_rate_shift[rate];
 				if (!(eg_cnt & ((1 << shift) -1))) {
-					byte select = eg_rate_select[rate];
+					UINT8 select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
 
 					if (((unsigned int)op.env_vol > dl_tab[6]) && op.PRVB) {
@@ -296,13 +296,13 @@ void YMF278::advance()
 				break;
 			}
 			case EG_SUS: {	// sustain phase
-				byte rate = op.compute_rate(op.D2R);
+				UINT8 rate = op.compute_rate(op.D2R);
 				if (rate < 4) {
 					break;
 				}
-				byte shift = eg_rate_shift[rate];
+				UINT8 shift = eg_rate_shift[rate];
 				if (!(eg_cnt & ((1 << shift) -1))) {
-					byte select = eg_rate_select[rate];
+					UINT8 select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
 
 					if (((unsigned int)op.env_vol > dl_tab[6]) && op.PRVB) {
@@ -318,13 +318,13 @@ void YMF278::advance()
 				break;
 			}
 			case EG_REL: {	// release phase
-				byte rate = op.compute_rate(op.RR);
+				UINT8 rate = op.compute_rate(op.RR);
 				if (rate < 4) {
 					break;
 				}
-				byte shift = eg_rate_shift[rate];
+				UINT8 shift = eg_rate_shift[rate];
 				if (!(eg_cnt & ((1 << shift) -1))) {
-					byte select = eg_rate_select[rate];
+					UINT8 select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
 
 					if (((unsigned int)op.env_vol > dl_tab[6]) && op.PRVB) {
@@ -341,13 +341,13 @@ void YMF278::advance()
 			}
 			case EG_REV: {	//pseudo reverb
 				//TODO improve env_vol update
-				byte rate = op.compute_rate(5);
+				UINT8 rate = op.compute_rate(5);
 				//if (rate < 4) {
 				//	break;
 				//}
-				byte shift = eg_rate_shift[rate];
+				UINT8 shift = eg_rate_shift[rate];
 				if (!(eg_cnt & ((1 << shift) - 1))) {
-					byte select = eg_rate_select[rate];
+					UINT8 select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
 
 					if (op.env_vol >= MAX_ATT_INDEX) {
@@ -360,10 +360,10 @@ void YMF278::advance()
 			}
 			case EG_DMP: {	//damping
 				//TODO improve env_vol update, damp is just fastest decay now
-				byte rate = 56;
-				byte shift = eg_rate_shift[rate];
+				UINT8 rate = 56;
+				UINT8 shift = eg_rate_shift[rate];
 				if (!(eg_cnt & ((1 << shift) - 1))) {
-					byte select = eg_rate_select[rate];
+					UINT8 select = eg_rate_select[rate];
 					op.env_vol += eg_inc[select + ((eg_cnt >> shift) & 7)];
 
 					if (op.env_vol >= MAX_ATT_INDEX) {
@@ -523,7 +523,7 @@ void YMF278::keyOnHelper(YMF278Slot& slot)
 	slot.sample2 = getSample(slot);
 }
 
-void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
+void YMF278::writeRegOPL4(UINT8 reg, UINT8 data, const UINT32 &time)
 {
 	BUSY_Time = time + 88 * 6 / 9;
 
@@ -538,7 +538,7 @@ void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 			int base = (slot.wave < 384 || !wavetblhdr) ?
 			           (slot.wave * 12) :
 			           (wavetblhdr * 0x80000 + ((slot.wave - 384) * 12));
-			byte buf[12];
+			UINT8 buf[12];
 			for (int i = 0; i < 12; i++) {
 				buf[i] = readMem(base + i);
 			}
@@ -699,11 +699,11 @@ void YMF278::writeRegOPL4(byte reg, byte data, const EmuTime &time)
 	regs[reg] = data;
 }
 
-byte YMF278::peekRegOPL4(byte reg, const EmuTime &time)
+UINT8 YMF278::peekRegOPL4(UINT8 reg, const UINT32 &time)
 {
 	BUSY_Time = time;
 
-	byte result;
+	UINT8 result;
 	switch(reg) {
 		case 2: // 3 upper bits are device ID
 			result = (regs[2] & 0x1F) | 0x20;
@@ -720,11 +720,11 @@ byte YMF278::peekRegOPL4(byte reg, const EmuTime &time)
 	return result;
 }
 
-byte YMF278::readRegOPL4(byte reg, const EmuTime &time)
+UINT8 YMF278::readRegOPL4(UINT8 reg, const UINT32 &time)
 {
 	BUSY_Time = time;
 
-	byte result;
+	UINT8 result;
 	switch(reg) {
 		case 2: // 3 upper bits are device ID
 			result = (regs[2] & 0x1F) | 0x20;
@@ -743,9 +743,9 @@ byte YMF278::readRegOPL4(byte reg, const EmuTime &time)
 	return result;
 }
 
-byte YMF278::peekStatus(const EmuTime &time)
+UINT8 YMF278::peekStatus(const UINT32 &time)
 {
-	byte result = 0;
+	UINT8 result = 0;
 	if (time - BUSY_Time < 88 * 6 / 9) {
 		result |= 0x01;
 	}
@@ -755,9 +755,9 @@ byte YMF278::peekStatus(const EmuTime &time)
 	return result;
 }
 
-byte YMF278::readStatus(const EmuTime &time)
+UINT8 YMF278::readStatus(const UINT32 &time)
 {
-	byte result = 0;
+	UINT8 result = 0;
 	if (time - BUSY_Time < 88 * 6 / 9) {
 		result |= 0x01;
 	}
@@ -768,7 +768,7 @@ byte YMF278::readStatus(const EmuTime &time)
 }
 
 YMF278::YMF278(short volume, int ramSize, void* romData, int romSize,
-               const EmuTime &time)
+               const UINT32 &time)
 {
     LD_Time = 0;
     BUSY_Time = 0;
@@ -777,8 +777,8 @@ YMF278::YMF278(short volume, int ramSize, void* romData, int romSize,
 	ramSize *= 1024;	// in kb
 
     this->ramSize = ramSize;
-	rom = (byte*)romData;
-    ram = (byte*)calloc(1, ramSize);
+	rom = (UINT8*)romData;
+    ram = (UINT8*)calloc(1, ramSize);
 
     oplOversampling = 1;
 
@@ -793,7 +793,7 @@ YMF278::~YMF278()
 	free(rom);
 }
 
-void YMF278::reset(const EmuTime &time)
+void YMF278::reset(const UINT32 &time)
 {
 	eg_timer = 0;
 	eg_cnt   = 0;
@@ -831,7 +831,7 @@ void YMF278::setInternalVolume(short newVolume)
 	}
 }
 
-byte YMF278::readMem(unsigned int address)
+UINT8 YMF278::readMem(unsigned int address)
 {
 	if (address < endRom) {
 		return rom[address];
@@ -842,7 +842,7 @@ byte YMF278::readMem(unsigned int address)
 	}
 }
 
-void YMF278::writeMem(unsigned int address, byte value)
+void YMF278::writeMem(unsigned int address, UINT8 value)
 {
 	if (address < endRom) {
 		// can't write to ROM

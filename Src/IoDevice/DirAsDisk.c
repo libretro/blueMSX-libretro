@@ -262,8 +262,8 @@ static unsigned char msx2cpm3boot[512] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 
 };
 
-typedef unsigned char byte;
-typedef unsigned short word;
+typedef unsigned char UINT8;
+typedef unsigned short UINT16;
 typedef struct {
   char name[9];
   char ext[4];
@@ -276,12 +276,12 @@ typedef struct {
 } fileinfo;
 
 static int dskimagesize = 0;
-static byte *dskimage=NULL;
-static byte *fat;
-static byte *direc;
-static byte *cluster;
+static UINT8 *dskimage=NULL;
+static UINT8 *fat;
+static UINT8 *direc;
+static UINT8 *cluster;
 static int sectorsperfat,numberoffats,reservedsectors;
-static int bytespersector,direlements,fatelements;
+static int UINT8spersector,direlements,fatelements;
 static int availsectors;
 
 static int alBlockNo;
@@ -290,7 +290,7 @@ static void load_dsk_svi(int diskType)
 {
     int imageSize = 0;
     int dirOff = 0;
-    byte fatData = 0;
+    UINT8 fatData = 0;
 
     switch (diskType) {
     case 7:         // MSX2 CP/M 3 DSDD
@@ -321,7 +321,7 @@ static void load_dsk_svi(int diskType)
         break;
     }
 
-    dskimage = (byte *) calloc (1, imageSize * 1024);
+    dskimage = (UINT8 *) calloc (1, imageSize * 1024);
     memset(dskimage, 0xe5, imageSize * 1024);
     dskimagesize = imageSize * 1024;
 
@@ -353,19 +353,19 @@ static void load_dsk_svi(int diskType)
 
 static void load_dsk_msx(void) {
     dskimagesize = 720*1024;
-    dskimage=(byte *) calloc (1,720*1024);
+    dskimage=(UINT8 *) calloc (1,720*1024);
     memset (dskimage,0,720*1024);
     memcpy (dskimage,msxboot,512);
-    reservedsectors=*(word *)(dskimage+0x0E);
+    reservedsectors=*(UINT16 *)(dskimage+0x0E);
     numberoffats=*(dskimage+0x10);
-    sectorsperfat=*(word *)(dskimage+0x16);
-    bytespersector=*(word *)(dskimage+0x0B);
-    direlements=*(word *)(dskimage+0x11);
-    fat=dskimage+bytespersector*reservedsectors;
-    direc=fat+bytespersector*(sectorsperfat*numberoffats);
+    sectorsperfat=*(UINT16 *)(dskimage+0x16);
+    UINT8spersector=*(UINT16 *)(dskimage+0x0B);
+    direlements=*(UINT16 *)(dskimage+0x11);
+    fat=dskimage+UINT8spersector*reservedsectors;
+    direc=fat+UINT8spersector*(sectorsperfat*numberoffats);
     cluster=direc+direlements*32;
     availsectors=80*9*2-reservedsectors-sectorsperfat*numberoffats;
-    availsectors-=direlements*32/bytespersector;
+    availsectors-=direlements*32/UINT8spersector;
     fatelements=availsectors/2;
     fat[0]=0xF9;
     fat[1]=0xFF;
@@ -374,7 +374,7 @@ static void load_dsk_msx(void) {
 
 static fileinfo *getfileinfo(int pos) {
   fileinfo *file;  
-  byte *dir;
+  UINT8 *dir;
   int i;
 
   dir=direc+pos*32;
@@ -391,17 +391,17 @@ static fileinfo *getfileinfo(int pos) {
 
   file->size=*(int *)(dir+0x1C);
 
-  i=*(word *)(dir+0x16);
+  i=*(UINT16 *)(dir+0x16);
   file->sec=(i&0x1F)<<1;
   file->min=(i>>5)&0x3F;
   file->hour=i>>11;
 
-  i=*(word *)(dir+0x18);
+  i=*(UINT16 *)(dir+0x18);
   file->day=i&0x1F;
   file->month=(i>>5)&0xF;
   file->year=1980+(i>>9);
 
-  file->first=*(word *)(dir+0x1A);
+  file->first=*(UINT16 *)(dir+0x1A);
   file->pos=pos;
   file->attr=*(dir+0xB);
 
@@ -456,7 +456,7 @@ static int next_link(int link) {
     return (((int)(fat[pos+1]&0xF))<<8)+fat[pos];
 }
 
-static int bytes_free(void) {
+static int UINT8s_free(void) {
   int i,avail=0;
 
   for (i=2; i<2+fatelements; i++)
@@ -537,8 +537,8 @@ static int add_single_file(char *name, const char *pathname) {
   int i,total;
   fileinfo *file;
   int fileid;
-  byte *buffer;
-  byte *b;
+  UINT8 *buffer;
+  UINT8 *b;
   int size;
   struct stat s;
   struct tm *t;
@@ -568,7 +568,7 @@ static int add_single_file(char *name, const char *pathname) {
     }
   }
 
-  if ((size=getfilelength(fileid))>bytes_free())
+  if ((size=getfilelength(fileid))>UINT8s_free())
   {
     close (fileid);
     return 1;
@@ -585,7 +585,7 @@ static int add_single_file(char *name, const char *pathname) {
 
   pos=i;
 
-  b = buffer=(byte *) malloc ((size+1023)&(~1023));
+  b = buffer=(UINT8 *) malloc ((size+1023)&(~1023));
   read (fileid,buffer,size);
 
   close (fileid);
@@ -627,11 +627,11 @@ static int add_single_file(char *name, const char *pathname) {
       result = -1;
   }
   else {
-    *(word *)(direc+pos*32+0x1A)=first;
+    *(UINT16 *)(direc+pos*32+0x1A)=first;
     *(int *)(direc+pos*32+0x1C)=size;
-    *(word *)(direc+pos*32+0x16)=
+    *(UINT16 *)(direc+pos*32+0x16)=
         (t->tm_sec>>1)+(t->tm_min<<5)+(t->tm_hour<<11);
-    *(word *)(direc+pos*32+0x18)=
+    *(UINT16 *)(direc+pos*32+0x18)=
         (t->tm_mday)+(t->tm_mon<<5)+((t->tm_year-1980)<<9);
   }
   free (b);
@@ -655,9 +655,9 @@ static int add_single_file_svi(int diskType, char *name, const char *pathname)
     {
         char name[6];
         char ext[3];
-        byte attrib;
-        byte fatpointer;
-        byte reserved[5];
+        UINT8 attrib;
+        UINT8 fatpointer;
+        UINT8 reserved[5];
     } DirectoryEntry;
 
     FILE *fpImport;
@@ -667,8 +667,8 @@ static int add_single_file_svi(int diskType, char *name, const char *pathname)
     char *pname;
     char *pext;
     char myname[250];
-    byte fileBuf[17 * 256];
-    int bytesRead;
+    UINT8 fileBuf[17 * 256];
+    int UINT8sRead;
     int fileDone;
     int dirOff;
     int dirEntryNo = 0;
@@ -766,8 +766,8 @@ static int add_single_file_svi(int diskType, char *name, const char *pathname)
     do {
         memset(&fileBuf, 0x00, sizeof(fileBuf));
 
-        bytesRead = fread(fileBuf, 1, sizeof(fileBuf), fpImport);
-        fileDone = (bytesRead != sizeof(fileBuf));
+        UINT8sRead = fread(fileBuf, 1, sizeof(fileBuf), fpImport);
+        fileDone = (UINT8sRead != sizeof(fileBuf));
 
         track = fatCounter;
         if (track > 39) {
@@ -775,7 +775,7 @@ static int add_single_file_svi(int diskType, char *name, const char *pathname)
             track = 80 - fatCounter;
         }
         offset = ((track * sides + side) * 17 + 1 - 1) * 256 - 2048;
-        memcpy(dskimage + offset, &fileBuf, bytesRead);
+        memcpy(dskimage + offset, &fileBuf, UINT8sRead);
 
         if (!fileDone) {
             nextTrack = fatCounter;
@@ -791,7 +791,7 @@ static int add_single_file_svi(int diskType, char *name, const char *pathname)
 
     memcpy(dskimage + dirOff + dirEntryNo * 16, &myDir, sizeof(myDir));
 
-    dskimage[dirOff + 14 * 256 + fatCounter] = 0xC0 | (int)ceil(bytesRead / 256.00);
+    dskimage[dirOff + 14 * 256 + fatCounter] = 0xC0 | (int)ceil(UINT8sRead / 256.00);
 
     memcpy(dskimage + dirOff + 15 * 256, dskimage + dirOff + 14 * 256, 256);
     memcpy(dskimage + dirOff + 16 * 256, dskimage + dirOff + 14 * 256, 256);
@@ -804,14 +804,14 @@ static int add_single_file_cpm(int diskType, char *name, const char *pathname)
 {
     typedef struct
     {
-        byte status;    // UU
+        UINT8 status;    // UU
         char name[8];   // Fn
         char ext[3];    // Tn
-        byte extnol;    // EX
-        byte lrc;       // S2
-        byte extnoh;    // S1
-        byte blkcnt;    // RC
-        byte pointers[16];  // AL
+        UINT8 extnol;    // EX
+        UINT8 lrc;       // S2
+        UINT8 extnoh;    // S1
+        UINT8 blkcnt;    // RC
+        UINT8 pointers[16];  // AL
     } DirectoryEntry;
 
     DirectoryEntry myDir;
@@ -819,7 +819,7 @@ static int add_single_file_cpm(int diskType, char *name, const char *pathname)
     char fullname[250];
     int drm = 0;
     int drmFound = 0;
-    byte fileBuf[2048];
+    UINT8 fileBuf[2048];
     int fileSize;
     char myname[250];
     char filename[80];
@@ -831,7 +831,7 @@ static int add_single_file_cpm(int diskType, char *name, const char *pathname)
     int alCount = 0;
     int extent = 0;
     int fileRead;
-    word dirOffset;
+    UINT16 dirOffset;
     int dpbBLS;
     int sides;
     int trackOffset;

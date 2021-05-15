@@ -39,16 +39,16 @@ const int SIN_MASK = SIN_LEN - 1;
 const int TL_RES_LEN = 256;	// 8 bits addressing (real chip)
 
 // register number to channel number , slot offset
-const byte SLOT1 = 0;
-const byte SLOT2 = 1;
+const UINT8 SLOT1 = 0;
+const UINT8 SLOT2 = 1;
 
 // Envelope Generator phases
-const byte EG_DMP = 5;
-const byte EG_ATT = 4;
-const byte EG_DEC = 3;
-const byte EG_SUS = 2;
-const byte EG_REL = 1;
-const byte EG_OFF = 0;
+const UINT8 EG_DMP = 5;
+const UINT8 EG_ATT = 4;
+const UINT8 EG_DEC = 3;
+const UINT8 EG_SUS = 2;
+const UINT8 EG_REL = 1;
+const UINT8 EG_OFF = 0;
 
 // key scale level
 // table is 3dB/octave, DV converts this into 6dB/octave
@@ -108,7 +108,7 @@ static const int sl_tab[16] = {
 };
 
 const int RATE_STEPS = 8;
-static const byte eg_inc[15 * RATE_STEPS] =
+static const UINT8 eg_inc[15 * RATE_STEPS] =
 {
 	//cycle:0 1  2 3  4 5  6 7
 
@@ -134,7 +134,7 @@ static const byte eg_inc[15 * RATE_STEPS] =
 
 // note that there is no O(13) in this table - it's directly in the code
 #define O(a) (a * RATE_STEPS)
-static const byte eg_rate_select[16 + 64 + 16] =
+static const UINT8 eg_rate_select[16 + 64 + 16] =
 {
 	// Envelope Generator rates (16 + 64 rates + 16 RKS)
 	// 16 infinite time rates
@@ -176,7 +176,7 @@ static const byte eg_rate_select[16 + 64 + 16] =
 //mask  8191, 4095, 2047, 1023, 511, 255, 127, 63, 31, 15, 7,  3,  1,  0,  0,  0
 
 #define O(a) (a)
-static const byte eg_rate_shift[16 + 64 + 16] =
+static const UINT8 eg_rate_shift[16 + 64 + 16] =
 {
 	// Envelope Generator counter shifts (16 + 64 rates + 16 RKS)
 	// 16 infinite time rates
@@ -215,8 +215,8 @@ static const byte eg_rate_shift[16 + 64 + 16] =
 
 
 // multiple table
-#define ML(x) (byte)(2 * x)
-static const byte mul_tab[16] =
+#define ML(x) (UINT8)(2 * x)
+static const UINT8 mul_tab[16] =
 {
 	// 1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,10,12,12,15,15
 	ML(0.50), ML(1.00),ML( 2.00),ML( 3.00),ML( 4.00),ML( 5.00),ML( 6.00),ML( 7.00),
@@ -247,7 +247,7 @@ static unsigned sin_tab[SIN_LEN * 2];
 // We use data>>1, until we find what it really is on real chip...
 
 const unsigned LFO_AM_TAB_ELEMENTS = 210;
-static const byte lfo_am_table[LFO_AM_TAB_ELEMENTS] =
+static const UINT8 lfo_am_table[LFO_AM_TAB_ELEMENTS] =
 {
 	0,0,0,0,0,0,0,
 	1,1,1,1,
@@ -336,7 +336,7 @@ static const char lfo_pm_table[8 * 8] =
 // - multi parameters are 100% correct (instruments and drums)
 // - LFO PM and AM enable are 100% correct
 // - waveform DC and DM select are 100% correct
-static const byte table[19][8] = {
+static const UINT8 table[19][8] = {
 	// MULT  MULT modTL DcDmFb AR/DR AR/DR SL/RR SL/RR
 	//   0     1     2     3     4     5     6    7
 	  {0x49, 0x4c, 0x4c, 0x12, 0x00, 0x00, 0x00, 0x00 },	//0
@@ -538,7 +538,7 @@ inline void OpenYM2413::advance()
 			if (lfo_fn_table_index_offset) {
 				// LFO phase modulation active
 				block_fnum += lfo_fn_table_index_offset;
-				byte block = (block_fnum & 0x1C00) >> 10;
+				UINT8 block = (block_fnum & 0x1C00) >> 10;
 				op.phase += (fn_tab[block_fnum & 0x03FF] >> (7 - block)) * op.mul;
 			} else {
 				// LFO phase modulation = zero
@@ -600,13 +600,13 @@ inline int op_calc1(unsigned phase, int env, int pm, int wave_tab)
 	return tl_tab[p];
 }
 
-inline int Slot::volume_calc(byte LFO_AM)
+inline int Slot::volume_calc(UINT8 LFO_AM)
 {
 	return TLL + volume + (LFO_AM & AMmask);
 }
 
 // calculate output
-inline int Channel::chan_calc(byte LFO_AM)
+inline int Channel::chan_calc(UINT8 LFO_AM)
 {
 	// SLOT 1
 	int env = slots[SLOT1].volume_calc(LFO_AM);
@@ -903,7 +903,7 @@ void OpenYM2413::setSampleRate(int sampleRate, int Oversampling)
 	eg_timer_add  = (unsigned)((1 << EG_SH) * freqbase);
 }
 
-inline void Slot::KEY_ON(byte key_set)
+inline void Slot::KEY_ON(UINT8 key_set)
 {
 	if (!key) {
 		// do NOT restart Phase Generator (verified on real YM2413)
@@ -913,7 +913,7 @@ inline void Slot::KEY_ON(byte key_set)
 	key |= key_set;
 }
 
-inline void Slot::KEY_OFF(byte key_clr)
+inline void Slot::KEY_OFF(UINT8 key_clr)
 {
 	if (key) {
 		key &= key_clr;
@@ -960,7 +960,7 @@ inline void Channel::CALC_FCSLOT(Slot* slot)
 }
 
 // set multi,am,vib,EG-TYP,KSR,mul 
-inline void OpenYM2413::set_mul(byte sl, byte v)
+inline void OpenYM2413::set_mul(UINT8 sl, UINT8 v)
 {
 	Channel& ch = channels[sl / 2];
 	Slot& slot = ch.slots[sl & 1];
@@ -974,7 +974,7 @@ inline void OpenYM2413::set_mul(byte sl, byte v)
 }
 
 // set ksl, tl 
-inline void OpenYM2413::set_ksl_tl(byte chan, byte v)
+inline void OpenYM2413::set_ksl_tl(UINT8 chan, UINT8 v)
 {
 	Channel& ch = channels[chan];
 	Slot& slot = ch.slots[SLOT1]; // modulator 
@@ -987,7 +987,7 @@ inline void OpenYM2413::set_ksl_tl(byte chan, byte v)
 }
 
 // set ksl , waveforms, feedback 
-inline void OpenYM2413::set_ksl_wave_fb(byte chan, byte v)
+inline void OpenYM2413::set_ksl_wave_fb(UINT8 chan, UINT8 v)
 {
 	Channel& ch = channels[chan];
 	Slot& slot1 = ch.slots[SLOT1]; // modulator 
@@ -1002,7 +1002,7 @@ inline void OpenYM2413::set_ksl_wave_fb(byte chan, byte v)
 }
 
 // set attack rate & decay rate  
-inline void OpenYM2413::set_ar_dr(byte sl, byte v)
+inline void OpenYM2413::set_ar_dr(UINT8 sl, UINT8 v)
 {
 	Channel& ch = channels[sl / 2];
 	Slot& slot = ch.slots[sl & 1];
@@ -1022,7 +1022,7 @@ inline void OpenYM2413::set_ar_dr(byte sl, byte v)
 }
 
 // set sustain level & release rate 
-inline void OpenYM2413::set_sl_rr(byte sl, byte v)
+inline void OpenYM2413::set_sl_rr(UINT8 sl, UINT8 v)
 {
 	Channel& ch = channels[sl / 2];
 	Slot& slot = ch.slots[sl & 1];
@@ -1033,7 +1033,7 @@ inline void OpenYM2413::set_sl_rr(byte sl, byte v)
 	slot.eg_sel_rr = eg_rate_select[slot.rr + slot.ksr];
 }
 
-void OpenYM2413::load_instrument(byte chan, byte slot, byte* inst)
+void OpenYM2413::load_instrument(UINT8 chan, UINT8 slot, UINT8* inst)
 {
 	set_mul        (slot,     inst[0]);
 	set_mul        (slot + 1, inst[1]);
@@ -1045,12 +1045,12 @@ void OpenYM2413::load_instrument(byte chan, byte slot, byte* inst)
 	set_sl_rr      (slot + 1, inst[7]);
 }
 
-void OpenYM2413::update_instrument_zero(byte r)
+void OpenYM2413::update_instrument_zero(UINT8 r)
 {
-	byte* inst = &inst_tab[0][0]; // point to user instrument 
-    byte chan;
+	UINT8* inst = &inst_tab[0][0]; // point to user instrument 
+    UINT8 chan;
 
-	byte chan_max = (rhythm) ? 6 : 9;
+	UINT8 chan_max = (rhythm) ? 6 : 9;
 	switch (r) {
 	case 0:
 		for (chan = 0; chan < chan_max; chan++) {
@@ -1162,7 +1162,7 @@ void OpenYM2413::setRhythmMode(bool newMode)
 	}
 }
 
-void OpenYM2413::writeReg(byte r, byte v, const EmuTime &time)
+void OpenYM2413::writeReg(UINT8 r, UINT8 v, const UINT32 &time)
 {
     regs[r] = v;
 
@@ -1226,7 +1226,7 @@ void OpenYM2413::writeReg(byte r, byte v, const EmuTime &time)
 	}
 	case 0x10:
 	case 0x20: {
-		byte chan = (r & 0x0F) % 9;	// verified on real YM2413 
+		UINT8 chan = (r & 0x0F) % 9;	// verified on real YM2413 
 		Channel& ch = channels[chan];
 
 		int block_fnum;
@@ -1253,7 +1253,7 @@ void OpenYM2413::writeReg(byte r, byte v, const EmuTime &time)
 			ch.kcode    = (block_fnum & 0x0f00) >> 8;
 			ch.ksl_base = ksl_tab[block_fnum >> 5];
 			block_fnum  = block_fnum * 2;
-			byte block  = (block_fnum & 0x1C00) >> 10;
+			UINT8 block  = (block_fnum & 0x1C00) >> 10;
 			ch.fc       = fn_tab[block_fnum & 0x03FF] >> (7 - block);
 
 			// refresh Total Level in both SLOTs of this channel 
@@ -1269,8 +1269,8 @@ void OpenYM2413::writeReg(byte r, byte v, const EmuTime &time)
 
 	case 0x30: {
 		// inst 4 MSBs, VOL 4 LSBs 
-		byte chan = (r & 0x0F) % 9;	// verified on real YM2413 
-		byte old_instvol = instvol_r[chan];
+		UINT8 chan = (r & 0x0F) % 9;	// verified on real YM2413 
+		UINT8 old_instvol = instvol_r[chan];
 		instvol_r[chan] = v;  // store for later use 
 
 		Channel& ch = channels[chan];
@@ -1289,8 +1289,8 @@ void OpenYM2413::writeReg(byte r, byte v, const EmuTime &time)
 			}
 		} else {
 			if (!((old_instvol & 0xF0) == (v & 0xF0))) {
-				byte* inst = &inst_tab[instvol_r[chan] >> 4][0];
-				byte sl = chan * 2;
+				UINT8* inst = &inst_tab[instvol_r[chan] >> 4][0];
+				UINT8 sl = chan * 2;
 				load_instrument(chan, sl, inst);
 			}
 		}
@@ -1305,7 +1305,7 @@ void OpenYM2413::writeReg(byte r, byte v, const EmuTime &time)
 }
 
 
-void OpenYM2413::reset(const EmuTime &time)
+void OpenYM2413::reset(const UINT32 &time)
 {
 	eg_timer = 0;
 	eg_cnt   = 0;
@@ -1340,7 +1340,7 @@ void OpenYM2413::reset(const EmuTime &time)
 }
 
 
-OpenYM2413::OpenYM2413(const string &name, short volume, const EmuTime &time)
+OpenYM2413::OpenYM2413(const string &name, short volume, const UINT32 &time)
 {
 	eg_cnt = eg_timer = 0;
 	rhythm = 0;
@@ -1463,8 +1463,8 @@ void OpenYM2413::loadState()
     noise_p      = saveStateGet(state, "noise_p",      0);
     noise_f      = saveStateGet(state, "noise_f",      0);
 
-    LFO_AM       = (byte)saveStateGet(state, "LFO_AM",       0);
-    LFO_PM       = (byte)saveStateGet(state, "LFO_PM",       0);
+    LFO_AM       = (UINT8)saveStateGet(state, "LFO_AM",       0);
+    LFO_PM       = (UINT8)saveStateGet(state, "LFO_PM",       0);
 
     saveStateGetBuffer(state, "inst_tab", inst_tab, sizeof(inst_tab));
 
@@ -1475,7 +1475,7 @@ void OpenYM2413::loadState()
 
     for (i = 0; i < 9; i++) {
         sprintf(tag, "instvol_r%d", i);
-        instvol_r[i] = (byte)saveStateGet(state, tag, 0);
+        instvol_r[i] = (UINT8)saveStateGet(state, tag, 0);
         
         sprintf(tag, "block_fnum%d", i);
         channels[i].block_fnum = saveStateGet(state, tag, 0);
@@ -1487,32 +1487,32 @@ void OpenYM2413::loadState()
         channels[i].ksl_base = saveStateGet(state, tag, 0);
 
         sprintf(tag, "kcode%d", i);
-        channels[i].kcode = (byte)saveStateGet(state, tag, 0);
+        channels[i].kcode = (UINT8)saveStateGet(state, tag, 0);
 
         sprintf(tag, "sus%d", i);
-        channels[i].sus = (byte)saveStateGet(state, tag, 0);
+        channels[i].sus = (UINT8)saveStateGet(state, tag, 0);
         
         for (int j = 0; j < 2; j++) {
             sprintf(tag, "ar%d_%d", i, j);
-            channels[i].slots[j].ar = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].ar = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "dr%d_%d", i, j);
-            channels[i].slots[j].dr = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].dr = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "rr%d_%d", i, j);
-            channels[i].slots[j].rr = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].rr = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "KSR%d_%d", i, j);
-            channels[i].slots[j].KSR = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].KSR = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "ksl%d_%d", i, j);
-            channels[i].slots[j].ksl = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].ksl = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "ksr%d_%d", i, j);
-            channels[i].slots[j].ksr = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].ksr = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "mul%d_%d", i, j);
-            channels[i].slots[j].mul = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].mul = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "phase%d_%d", i, j);
             channels[i].slots[j].phase = saveStateGet(state, tag, 0);
@@ -1521,7 +1521,7 @@ void OpenYM2413::loadState()
             channels[i].slots[j].freq = saveStateGet(state, tag, 0);
             
             sprintf(tag, "fb_shift%d_%d", i, j);
-            channels[i].slots[j].fb_shift = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].fb_shift = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "op1_out%d_%d_0", i, j);
             channels[i].slots[j].op1_out[0] = saveStateGet(state, tag, 0);
@@ -1530,10 +1530,10 @@ void OpenYM2413::loadState()
             channels[i].slots[j].op1_out[1] = saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_type%d_%d", i, j);
-            channels[i].slots[j].eg_type = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_type = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "state%d_%d", i, j);
-            channels[i].slots[j].state = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].state = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "TL%d_%d", i, j);
             channels[i].slots[j].TL = saveStateGet(state, tag, 0);
@@ -1548,43 +1548,43 @@ void OpenYM2413::loadState()
             channels[i].slots[j].sl = saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sh_dp%d_%d", i, j);
-            channels[i].slots[j].eg_sh_dp = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sh_dp = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sel_dp%d_%d", i, j);
-            channels[i].slots[j].eg_sel_dp = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sel_dp = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sh_ar%d_%d", i, j);
-            channels[i].slots[j].eg_sh_ar = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sh_ar = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sel_ar%d_%d", i, j);
-            channels[i].slots[j].eg_sel_ar = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sel_ar = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sh_dr%d_%d", i, j);
-            channels[i].slots[j].eg_sh_dr = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sh_dr = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sel_dr%d_%d", i, j);
-            channels[i].slots[j].eg_sel_dr = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sel_dr = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sh_rr%d_%d", i, j);
-            channels[i].slots[j].eg_sh_rr = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sh_rr = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sel_rr%d_%d", i, j);
-            channels[i].slots[j].eg_sel_rr = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sel_rr = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sh_rs%d_%d", i, j);
-            channels[i].slots[j].eg_sh_rs = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sh_rs = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "eg_sel_rs%d_%d", i, j);
-            channels[i].slots[j].eg_sel_rs =(byte) saveStateGet(state, tag, 0);
+            channels[i].slots[j].eg_sel_rs =(UINT8) saveStateGet(state, tag, 0);
             
             sprintf(tag, "key%d_%d", i, j);
-            channels[i].slots[j].key = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].key = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "AMmask%d_%d", i, j);
-            channels[i].slots[j].AMmask = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].AMmask = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "vib%d_%d", i, j);
-            channels[i].slots[j].vib = (byte)saveStateGet(state, tag, 0);
+            channels[i].slots[j].vib = (UINT8)saveStateGet(state, tag, 0);
             
             sprintf(tag, "wavetable%d_%d", i, j);
             channels[i].slots[j].wavetable = saveStateGet(state, tag, 0);

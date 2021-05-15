@@ -66,7 +66,7 @@ extern "C" UInt32 boardSystemTime();
 Y8950Adpcm::Y8950Adpcm(Y8950& y8950_, const string& name_, int sampleRam)
 	: y8950(y8950_), name(name_ + " RAM"), ramSize(sampleRam), volume(0)
 {
-	ramBank = new byte[ramSize];
+	ramBank = new UINT8[ramSize];
 	memset(ramBank, 0xFF, ramSize);
     sysTime = oldTime = boardSystemTime();
     unschedule(oldTime);
@@ -80,7 +80,7 @@ Y8950Adpcm::~Y8950Adpcm()
 	delete[] ramBank;
 }
 
-void Y8950Adpcm::reset(const EmuTime &time)
+void Y8950Adpcm::reset(const UINT32 &time)
 {
 	playing = false;
 	startAddr = 0;
@@ -122,16 +122,16 @@ void Y8950Adpcm::restart()
 	volumeWStep = (int)((DoubleT)volume * step / MAX_STEP);
 }
 #if 0
-void Y8950Adpcm::schedule(const EmuTime &time)
+void Y8950Adpcm::schedule(const UINT32 &time)
 {
 	if (stopAddr > startAddr && delta != 0) {
-		uint64 samples = stopAddr - playAddr + 1;
+		UINT64 samples = stopAddr - playAddr + 1;
 		Clock<Y8950::CLK_FREQ> stop(time);
 		stop += (samples * (72 << 16) / delta);
 		Scheduler::instance().setSyncPoint(stop.getTime(), this);
 	}
 }
-void Y8950Adpcm::executeUntil(const EmuTime& time, int /*userData*/)
+void Y8950Adpcm::executeUntil(const UINT32& time, int /*userData*/)
 {
 	y8950.setStatus(Y8950::STATUS_EOS);
 	if (reg7 & R07_REPEAT) {
@@ -140,7 +140,7 @@ void Y8950Adpcm::executeUntil(const EmuTime& time, int /*userData*/)
 }
 #endif
 
-void Y8950Adpcm::pushTime(const EmuTime &time) {
+void Y8950Adpcm::pushTime(const UINT32 &time) {
     sysTime += time - oldTime;
     oldTime = time;
     if (sysTime >= syncTime) {
@@ -154,20 +154,20 @@ void Y8950Adpcm::pushTime(const EmuTime &time) {
     }
 }
 
-void Y8950Adpcm::schedule(const EmuTime &time)
+void Y8950Adpcm::schedule(const UINT32 &time)
 {
 	if (stopAddr > startAddr && delta != 0) {
-		uint64 samples = stopAddr - playAddr + 1;
+		UINT64 samples = stopAddr - playAddr + 1;
         syncTime = sysTime + 6 * ((samples * (72 << 16) / delta));
     }
 }
 
-void Y8950Adpcm::unschedule(const EmuTime &time)
+void Y8950Adpcm::unschedule(const UINT32 &time)
 {
 	syncTime = -1;
 }
 
-void Y8950Adpcm::executeUntil(const EmuTime& time, int /*userData*/)
+void Y8950Adpcm::executeUntil(const UINT32& time, int /*userData*/)
 {
 }
 
@@ -177,7 +177,7 @@ const string& Y8950Adpcm::schedName() const
 	return name;
 }
 
-void Y8950Adpcm::writeReg(byte rg, byte data, const EmuTime &time)
+void Y8950Adpcm::writeReg(UINT8 rg, UINT8 data, const UINT32 &time)
 {
 	//PRT_DEBUG("Y8950Adpcm: write "<<(int)rg<<" "<<(int)data);
 	switch (rg) {
@@ -271,9 +271,9 @@ void Y8950Adpcm::writeReg(byte rg, byte data, const EmuTime &time)
 	}
 }
 
-byte Y8950Adpcm::readReg(byte rg)
+UINT8 Y8950Adpcm::readReg(UINT8 rg)
 {
-	byte result;
+	UINT8 result;
 	switch (rg) {
 		case 0x0F: { // ADPCM-DATA
 			// TODO don't advance pointer when playing???
@@ -371,12 +371,12 @@ const string& Y8950Adpcm::getDescription() const
 	return desc;
 }
 
-byte Y8950Adpcm::read(unsigned address)
+UINT8 Y8950Adpcm::read(unsigned address)
 {
 	return ramBank[address];
 }
 
-void Y8950Adpcm::write(unsigned address, byte value)
+void Y8950Adpcm::write(unsigned address, UINT8 value)
 {
 	ramBank[address] = value;
 }

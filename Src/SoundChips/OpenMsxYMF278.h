@@ -9,9 +9,8 @@
 using namespace std;
 
 
-typedef unsigned long  EmuTime;
-typedef unsigned char  byte;
-typedef unsigned short word;
+typedef unsigned long  UINT32;
+typedef unsigned char  UINT8;
 
 
 #ifndef OPENMSX_SOUNDDEVICE
@@ -80,12 +79,12 @@ class YMF278Slot
 		short sample1, sample2;
 
 		bool active;		// slot keyed on
-		byte bits;		// width of the samples
+		UINT8 bits;		// width of the samples
 		int startaddr;
 		int loopaddr;
 		int endaddr;
 
-		byte state;
+		UINT8 state;
 		int env_vol;
 		unsigned int env_vol_step;
 		unsigned int env_vol_lim;
@@ -102,14 +101,14 @@ class YMF278 : public SoundDevice
 {
 	public:
 		YMF278(short volume, int ramSize, void* romData, int romSize,
-		       const EmuTime &time);
+		       const UINT32 &time);
 		virtual ~YMF278();
-		void reset(const EmuTime &time);
-		void writeRegOPL4(byte reg, byte data, const EmuTime &time);
-		byte peekRegOPL4(byte reg, const EmuTime &time);
-		byte readRegOPL4(byte reg, const EmuTime &time);
-		byte peekStatus(const EmuTime &time);
-		byte readStatus(const EmuTime &time);
+		void reset(const UINT32 &time);
+		void writeRegOPL4(UINT8 reg, UINT8 data, const UINT32 &time);
+		UINT8 peekRegOPL4(UINT8 reg, const UINT32 &time);
+		UINT8 readRegOPL4(UINT8 reg, const UINT32 &time);
+		UINT8 peekStatus(const UINT32 &time);
+		UINT8 readStatus(const UINT32 &time);
         void* getRom() { return rom; }	
         void* getRam() { return ram; }	
         int getRomSize() { return endRom; }
@@ -122,8 +121,8 @@ class YMF278 : public SoundDevice
         void saveState();
 	
 	private:
-		byte readMem(unsigned int address);
-		void writeMem(unsigned int address, byte value);
+		UINT8 readMem(unsigned int address);
+		void writeMem(unsigned int address, UINT8 value);
 		short getSample(YMF278Slot &op);
 		void advance();
 		void checkMute();
@@ -131,8 +130,8 @@ class YMF278 : public SoundDevice
 		void keyOnHelper(YMF278Slot& slot);
 
 		int buffer[AUDIO_STEREO_BUFFER_SIZE];
-		byte* rom;
-		byte* ram;
+		UINT8* rom;
+		UINT8* ram;
 
         int oplOversampling;
 		DoubleT freqbase;
@@ -160,7 +159,7 @@ class YMF278 : public SoundDevice
 		// enveloppe and pan levels
 		int volume[256 * 4];
 
-		byte regs[256];
+		UINT8 regs[256];
 
 		unsigned long LD_Time;
 		unsigned long BUSY_Time;

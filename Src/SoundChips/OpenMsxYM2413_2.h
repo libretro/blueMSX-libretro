@@ -9,9 +9,9 @@
 using namespace std;
 
 
-typedef unsigned long  EmuTime;
-typedef unsigned char  byte;
-typedef unsigned short word;
+typedef unsigned long  UINT32;
+typedef unsigned char  UINT8;
+typedef unsigned short UINT16;
 
 extern "C" {
 #include "AudioMixer.h"
@@ -52,9 +52,9 @@ public:
     OpenYM2413Base() {}
     virtual ~OpenYM2413Base() {}
 		
-	virtual void reset(const EmuTime &time) = 0;
-	virtual void writeReg(byte r, byte v, const EmuTime &time) = 0;
-	virtual byte peekReg(byte r) = 0;
+	virtual void reset(const UINT32 &time) = 0;
+	virtual void writeReg(UINT8 r, UINT8 v, const UINT32 &time) = 0;
+	virtual UINT8 peekReg(UINT8 r) = 0;
 	
 	virtual int* updateBuffer(int length) = 0;
 	virtual void setSampleRate(int sampleRate, int Oversampling) = 0;
@@ -132,21 +132,21 @@ class OpenYM2413_2 : public OpenYM2413Base
 {
 	struct Patch {
 		Patch();
-		Patch(int n, const byte* data);
+		Patch(int n, const UINT8* data);
 		
 		bool AM;
         bool PM;
         bool EG;
-		byte KR; // 0-1
-		byte ML; // 0-15
-		byte KL; // 0-3
-		byte TL; // 0-63
-		byte FB; // 0-7
-		byte WF; // 0-1
-		byte AR; // 0-15
-		byte DR; // 0-15
-		byte SL; // 0-15
-		byte RR; // 0-15
+		UINT8 KR; // 0-1
+		UINT8 ML; // 0-15
+		UINT8 KL; // 0-3
+		UINT8 TL; // 0-63
+		UINT8 FB; // 0-7
+		UINT8 WF; // 0-1
+		UINT8 AR; // 0-15
+		UINT8 DR; // 0-15
+		UINT8 SL; // 0-15
+		UINT8 RR; // 0-15
 	};
 	
 	class Slot {
@@ -188,7 +188,7 @@ class OpenYM2413_2 : public OpenYM2413Base
 		int output[5];	// Output value of slot 
 
 		// for Phase Generator (PG)
-		word* sintbl;		// Wavetable
+		UINT16* sintbl;		// Wavetable
         int sintblIdx;
 		unsigned int phase;	// Phase 
 		unsigned int dphase;	// Phase increment amount 
@@ -226,12 +226,12 @@ class OpenYM2413_2 : public OpenYM2413Base
 	};
 
 public:
-	OpenYM2413_2(const string& name, short volume, const EmuTime& time);
+	OpenYM2413_2(const string& name, short volume, const UINT32& time);
 	virtual ~OpenYM2413_2();
 
-	virtual void reset(const EmuTime& time);
-	virtual void writeReg(byte reg, byte value, const EmuTime& time);
-    virtual byte peekReg(byte r) { return reg[r]; }
+	virtual void reset(const UINT32& time);
+	virtual void writeReg(UINT8 reg, UINT8 value, const UINT32& time);
+    virtual UINT8 peekReg(UINT8 r) { return reg[r]; }
 
 	// SoundDevice
 	virtual const std::string& getName() const;
@@ -283,15 +283,15 @@ private:
 	// Debuggable
 	virtual unsigned getSize() const;
 	//virtual const std::string& getDescription() const;  // also in SoundDevice!!
-	virtual byte read(unsigned address);
-	virtual void write(unsigned address, byte value);
+	virtual UINT8 read(unsigned address);
+	virtual void write(unsigned address, UINT8 value);
 
     int filter(int input);
 private:
 	int maxVolume;
 
 	// Register
-	byte reg[0x40];
+	UINT8 reg[0x40];
 
 	// Pitch Modulator
 	unsigned int pm_phase;
@@ -318,12 +318,12 @@ private:
 	static short dB2LinTab[(DB_MUTE + DB_MUTE) * 2];
 
 	// WaveTable for each envelope amp
-	static word fullsintable[PG_WIDTH];
-	static word halfsintable[PG_WIDTH];
+	static UINT16 fullsintable[PG_WIDTH];
+	static UINT16 halfsintable[PG_WIDTH];
 
 	static unsigned int dphaseNoiseTable[512][8];
 
-	static word* waveform[2];
+	static UINT16* waveform[2];
 
 	// LFO Table
 	static int pmtable[PM_PG_WIDTH];
@@ -334,7 +334,7 @@ private:
 	static unsigned int am_dphase;
 
 	// Liner to Log curve conversion table (for Attack rate).
-	static word AR_ADJUST_TABLE[1 << EG_BITS];
+	static UINT16 AR_ADJUST_TABLE[1 << EG_BITS];
 
 	// Definition of envelope mode
 	enum { READY, ATTACK, DECAY, SUSHOLD, SUSTINE, RELEASE, SETTLE, FINISH };

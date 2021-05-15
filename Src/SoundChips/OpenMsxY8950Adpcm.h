@@ -9,10 +9,10 @@
 using namespace std;
 
 
-typedef unsigned long  EmuTime;
-typedef unsigned char  byte;
-typedef unsigned short word;
-typedef unsigned __int64 uint64;
+typedef unsigned long  UINT32;
+typedef unsigned char  UINT8;
+typedef unsigned short UINT16;
+typedef unsigned __int64 UINT64;
 class Y8950;
 
 class Y8950Adpcm
@@ -21,14 +21,14 @@ public:
 	Y8950Adpcm(Y8950& y8950, const string& name, int sampleRam);
 	virtual ~Y8950Adpcm();
 	
-	void reset(const EmuTime& time);
+	void reset(const UINT32& time);
 	void setSampleRate(int sr);
 	bool muted();
-	void writeReg(byte rg, byte data, const EmuTime& time);
-	byte readReg(byte rg);
+	void writeReg(UINT8 rg, UINT8 data, const UINT32& time);
+	UINT8 readReg(UINT8 rg);
 	int calcSample();
     
-    void pushTime(const EmuTime &time);
+    void pushTime(const UINT32 &time);
 
     void loadState();
     void saveState();
@@ -37,15 +37,15 @@ private:
 	// Debuggable
 	virtual unsigned getSize() const;
 	virtual const string& getDescription() const;
-	virtual byte read(unsigned address);
-	virtual void write(unsigned address, byte value);
+	virtual UINT8 read(unsigned address);
+	virtual void write(unsigned address, UINT8 value);
 	
 	// Schedulable
-	virtual void executeUntil(const EmuTime& time, int userData);
+	virtual void executeUntil(const UINT32& time, int userData);
 	virtual const string& schedName() const;
 
-	void schedule(const EmuTime& time);
-    void unschedule(const EmuTime &time);
+	void schedule(const UINT32& time);
+    void unschedule(const UINT32 &time);
 	int CLAP(int min, int x, int max);
 	void restart();
 
@@ -61,11 +61,11 @@ private:
 	int addrMask;
 	int memPntr;
 	bool romBank;
-	byte* ramBank;
+	UINT8* ramBank;
 	
 	bool playing;
 	int volume;
-	word delta;
+	UINT16 delta;
 	unsigned int nowStep, step;
 	int out, output;
 	int diff;
@@ -73,12 +73,12 @@ private:
 	int sampleStep;
 	int volumeWStep;
         
-    EmuTime oldTime;
-    uint64  sysTime;
-    uint64  syncTime;
+    UINT32 oldTime;
+    UINT64  sysTime;
+    UINT64  syncTime;
 	
-	byte reg7;
-	byte reg15;
+	UINT8 reg7;
+	UINT8 reg15;
 };
 
 
