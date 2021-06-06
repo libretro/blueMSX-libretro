@@ -1035,11 +1035,14 @@ void retro_run(void)
 
    input_poll_cb();
 
-   for (i = 0; i < MAX_PADS; i++)
+   if (libretro_supports_bitmasks)
    {
-      if (libretro_supports_bitmasks)
+      for (i = 0; i < MAX_PADS; i++)
          joypad_bits[i] = input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
-      else
+   }
+   else
+   {
+      for (i = 0; i < MAX_PADS; i++)
       {
          joypad_bits[i] = 0;
          for (j = 0; j < (RETRO_DEVICE_ID_JOYPAD_R3+1); j++)
@@ -1056,10 +1059,13 @@ void retro_run(void)
          {
             case RETRO_DEVICE_JOYPAD:
             {
-               if (i == 0){
+               if (i == 0)
+               {
                   for (j = EC_JOY1_UP; j <= (EC_JOY1_BUTTON2); j++)
                      eventMap[j] = joypad_bits[i] & (1 << btn_map[j]) ? 1 : 0;
-               }else if (i == 1){
+               }
+               else if (i == 1)
+               {
                   for (j = EC_JOY2_UP; j <= (EC_JOY2_BUTTON2); j++)
                      eventMap[j] = joypad_bits[i] & (1 << btn_map[j]) ? 1 : 0;
                }
