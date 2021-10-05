@@ -618,10 +618,6 @@ void actionWindowSizeFullscreen() {
     }
 }
 
-void actionWindowSizeMinimized() {
-    archMinimizeMainWindow();
-}
-
 void actionMaxSpeedToggle() {
     emulatorSetMaxSpeed(emulatorGetMaxSpeed() ? 0 : 1);
 }

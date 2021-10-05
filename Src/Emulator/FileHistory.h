@@ -34,7 +34,6 @@
 const char* stripPath(const char* filename);
 const char* stripPathExt(const char* filename);
 
-int tempStateExists();
 int fileExist(char* filename, char* zipFile);
 char* fileGetNext(char* filename, char* zipFile);
 void setExtendedRomName(int drive, const char* name);

@@ -46,10 +46,6 @@ void archThemeUpdate(struct Theme* theme) {}
 
 void archVideoOutputChange() {}
 void archUpdateWindow() {}
-int  archGetWindowedSize() { return 1; }
-void archMinimizeMainWindow() {}
-
-int archGetFramesPerSecond() { return 60; }
 
 void* archWindowCreate(struct Theme* theme, int childWindow) { return NULL; }
 void archWindowStartMove() {}

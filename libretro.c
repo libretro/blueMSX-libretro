@@ -9,7 +9,6 @@
 
 #include <retro_miscellaneous.h>
 
-#include "CommandLine.h"
 #include "Properties.h"
 #include "ArchFile.h"
 #include "VideoRender.h"

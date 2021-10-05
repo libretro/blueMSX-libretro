@@ -54,9 +54,6 @@ void archThemeUpdate(struct Theme* theme);
 
 void archVideoOutputChange();
 void archUpdateWindow();
-void archMinimizeMainWindow();
-
-int archGetFramesPerSecond();
 
 void* archWindowCreate(struct Theme* theme, int childWindow);
 void archWindowStartMove();
