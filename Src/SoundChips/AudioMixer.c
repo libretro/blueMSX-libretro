@@ -123,7 +123,6 @@ struct Mixer
     Int32   channelCount;
     Int32   handleCount;
     UInt32  oldTick;
-    Int32   logging;
     Int32   stereo;
     UInt32  rate;
     DoubleT  masterVolume;
@@ -179,10 +178,6 @@ void mixerSetStereo(Mixer* mixer, Int32 stereo)
 {
     int i;
 
-    if (mixer->logging == 1) {
-        mixerStopLog(mixer);
-    }
-        
     mixer->stereo = stereo;
     mixer->index = 0;
 
@@ -359,7 +354,6 @@ Mixer* mixerCreate()
 
 void mixerDestroy(Mixer* mixer)
 {
-    mixerStopLog(mixer);
     globalMixer = NULL;
     free(mixer);
 }
@@ -483,12 +477,8 @@ void mixerSync(Mixer* mixer)
             }
 
             if (mixer->index == mixer->fragmentSize) {
-                if (mixer->writeCallback != NULL) {
+                if (mixer->writeCallback != NULL)
                     mixer->writeCallback(mixer->writeRef, buffer, mixer->fragmentSize);
-                }
-                if (mixer->logging) {
-                    fwrite(buffer, 2 * mixer->fragmentSize, 1, mixer->file);
-                }
                 mixer->index = 0;
             }
         }
@@ -549,12 +539,8 @@ void mixerSync(Mixer* mixer)
             buffer[mixer->index++] = (Int16)right;
 
             if (mixer->index == mixer->fragmentSize) {
-                if (mixer->writeCallback != NULL) {
+                if (mixer->writeCallback != NULL)
                     mixer->writeCallback(mixer->writeRef, buffer, mixer->fragmentSize);
-                }
-                if (mixer->logging) {
-                    fwrite(buffer, 2 * mixer->fragmentSize, 1, mixer->file);
-                }
                 mixer->index = 0;
             }
 
@@ -596,12 +582,8 @@ void mixerSync(Mixer* mixer)
             buffer[mixer->index++] = (Int16)left;
             
             if (mixer->index == mixer->fragmentSize) {
-                if (mixer->writeCallback != NULL) {
+                if (mixer->writeCallback != NULL)
                     mixer->writeCallback(mixer->writeRef, buffer, mixer->fragmentSize);
-                }
-                if (mixer->logging) {
-                    fwrite(buffer, 2 * mixer->fragmentSize, 1, mixer->file);
-                }
                 mixer->index = 0;
             }
 
@@ -657,54 +639,6 @@ void mixerSync(Mixer* mixer)
         }
         mixer->volIndex = 0;
     }
-}
-
-void mixerStartLog(Mixer* mixer, char* fileName) 
-{
-    if (mixer->logging == 1) {
-        mixerStopLog(mixer);
-    }
-    mixer->file = fopen(fileName, "wb");
-    if (mixer->file != NULL) {
-        fseek(mixer->file, sizeof(WavHeader), SEEK_SET);
-        mixer->logging = 1;
-    }
-}
-
-int mixerIsLogging(Mixer* mixer) {
-    return mixer->logging;
-}
-
-void mixerStopLog(Mixer* mixer) 
-{
-    WavHeader header;
-    int fileSize;
-
-    if (mixer->logging == 0) {
-        return;
-    }
-
-    mixer->logging = 0;
-    
-    fileSize = ftell(mixer->file);
-    
-    header.riff                     = str2ul("RIFF");
-    header.fileSize                 = fileSize - 8;
-    header.wave                     = str2ul("WAVE");
-    header.wavHeader.fmt            = str2ul("fmt ");
-    header.wavHeader.chunkSize      = 16;
-    header.wavHeader.formatType     = 1;
-    header.wavHeader.channels       = (mixer->stereo ? 2 : 1);
-    header.wavHeader.samplesPerSec  = mixer->rate;
-    header.wavHeader.avgBytesPerSec = (mixer->stereo ? 2 : 1) * mixer->rate * BITSPERSAMPLE / 8;
-    header.wavHeader.blockAlign     = (mixer->stereo ? 2 : 1) * BITSPERSAMPLE / 8;
-    header.wavHeader.bitsPerSample  = BITSPERSAMPLE;
-    header.data                     = str2ul("data");
-    header.dataSize                 = fileSize - sizeof(WavHeader);
-
-    fseek(mixer->file, 0, SEEK_SET);
-    fwrite(&header, 1, sizeof(WavHeader), mixer->file);
-    fclose(mixer->file);
 }
 
 void mixerSetEnable(Mixer* mixer, int enable)

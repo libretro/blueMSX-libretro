@@ -85,11 +85,6 @@ Int32 mixerIsChannelTypeActive(Mixer* mixer, Int32 channelType, Int32 reset);
 /* Write callback registration for audio drivers */
 void mixerSetWriteCallback(Mixer* mixer, MixerWriteCallback callback, void*, int);
 
-/* File logging methods */
-void mixerStartLog(Mixer* mixer, char* fileName);
-int  mixerIsLogging(Mixer* mixer);
-void mixerStopLog(Mixer* mixer);
-
 /* Internal interface methods */
 void mixerReset(Mixer* mixer);
 void mixerSync(Mixer* mixer);

@@ -326,12 +326,6 @@ void actionQuit() {
 }
 
 void actionToggleWaveCapture() {
-    if (mixerIsLogging(state.mixer)) {
-        mixerStopLog(state.mixer);
-    }
-    else {
-        mixerStartLog(state.mixer, generateSaveFilename(state.properties, audioDir, audioPrefix, ".wav", 2));
-    }
     archUpdateMenu(0);
 }
 
@@ -1343,14 +1337,6 @@ void actionSetFdcTiming(int value) {
 }
 
 void actionSetWaveCapture(int value) {
-    if (value == 0) {
-        mixerStopLog(state.mixer);
-    }
-    else {
-        mixerStartLog(state.mixer, generateSaveFilename(state.properties, 
-                                                        audioDir, 
-                                                        audioPrefix, ".wav", 2));
-    }
     archUpdateMenu(0);
 }
 
