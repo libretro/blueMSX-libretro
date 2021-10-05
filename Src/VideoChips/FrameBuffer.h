@@ -37,26 +37,9 @@
 #endif
 #define FB_MAX_LINES      480
 
-#ifndef NO_FRAMEBUFFER
-typedef struct {
-    int doubleWidth; // 1 when normal, 2 when 2 src pixels per dest pixel
-    UInt16 buffer[FB_MAX_LINE_WIDTH];
-} LineBuffer;
-#endif
-
 typedef enum { INTERLACE_NONE, INTERLACE_ODD, INTERLACE_EVEN } InterlaceMode;
 
-#ifdef NO_FRAMEBUFFER
 typedef void FrameBuffer;
-#else
-typedef struct {
-    int age;           // Internal use
-    InterlaceMode interlace;
-    int maxWidth;
-    int lines;         // Number of lines in frame buffer
-    LineBuffer line[FB_MAX_LINES];
-} FrameBuffer;
-#endif
 
 typedef struct FrameBufferData FrameBufferData;
 
@@ -118,7 +101,6 @@ void frameBufferSetBlendFrames(int blendFrames);
 #define videoGetTransparentColor() BKMODE_TRANSPARENT
 
 
-#ifdef NO_FRAMEBUFFER
 // User implementation
 Pixel* frameBufferGetLine(FrameBuffer* frameBuffer, int y);
 int    frameBufferGetDoubleWidth(FrameBuffer* frameBuffer, int y);
@@ -128,15 +110,5 @@ void   frameBufferSetLineCount(FrameBuffer* frameBuffer, int val);
 int    frameBufferGetLineCount(FrameBuffer* frameBuffer);
 int    frameBufferGetMaxWidth(FrameBuffer* frameBuffer);
 
-#else
-
-#define frameBufferGetLine(frameBuffer, y)              (frameBuffer->line[y].buffer)
-#define frameBufferGetDoubleWidth(frameBuffer, y)       (frameBuffer->line[y].doubleWidth)
-#define frameBufferSetDoubleWidth(frameBuffer, y, val)  frameBuffer->line[y].doubleWidth = val
-#define frameBufferSetInterlace(frameBuffer, val)       frameBuffer->interlace = val
-#define frameBufferSetLineCount(frameBuffer, val)       frameBuffer->lines     = val
-#define frameBufferGetLineCount(frameBuffer)            frameBuffer->lines
-#define frameBufferGetMaxWidth(frameBuffer)             frameBuffer->maxWidth
-#endif
 
 #endif
