@@ -85,23 +85,6 @@ int scsiDeviceDataIn(SCSIDEVICE* scsi, int* blocks);
 int scsiDeviceDataOut(SCSIDEVICE* scsi, int* blocks);
 void scsiDeviceEnable(SCSIDEVICE* scsi, int enable);
 
-/*
-    debug routine
-*/
-//#define SCSIDEBUG "scsilog.txt"
-
-#ifdef SCSIDEBUG
-#include <stdio.h>
-
-FILE* scsiDeviceLogCreate();
-void scsiDeviceLogFlush();
-void scsiDeviceLogClose();
-#define SCSILOG(fmt) fprintf(scsiLog, fmt)
-#define SCSILOG1(fmt, arg1) fprintf(scsiLog, fmt, arg1)
-#define SCSILOG2(fmt, arg1, arg2) fprintf(scsiLog, fmt, arg1, arg2)
-#define SCSILOG3(fmt, arg1, arg2, arg3) fprintf(scsiLog, fmt, arg1, arg2, arg3)
-
-#else
 #define scsiDeviceLogCreate() NULL
 #define scsiDeviceLogFlush()
 #define scsiDeviceLogClose()
@@ -109,6 +92,5 @@ void scsiDeviceLogClose();
 #define SCSILOG1(fmt, arg1)
 #define SCSILOG2(fmt, arg1, arg2)
 #define SCSILOG3(fmt, arg1, arg2, arg3)
-#endif
 
 #endif

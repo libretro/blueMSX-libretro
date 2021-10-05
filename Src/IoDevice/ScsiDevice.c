@@ -115,38 +115,6 @@ static const char sdt_name[10][10] =
 // for FDSFORM.COM
 static const char fds120[28]  = "IODATA  LS-120 COSM     0001";
 
-/*
-    Log output routine for debug
-*/
-#ifdef SCSIDEBUG
-
-static int logNumber = 0;
-static FILE* scsiLog = NULL;
-
-FILE* scsiDeviceLogCreate()
-{
-    if (!logNumber) {
-        scsiLog = fopen(SCSIDEBUG, "w");
-    }
-    logNumber++;
-    return scsiLog;
-}
-
-void scsiDeviceLogFlush()
-{
-    fflush(scsiLog);
-}
-
-void scsiDeviceLogClose()
-{
-    logNumber--;
-    if (!logNumber) {
-        fclose(scsiLog);
-    }
-}
-
-#endif
-
 SCSIDEVICE* scsiDeviceCreate(int scsiId, int diskId, UInt8* buf, char* name,
                   int type, int mode, CdromXferCompCb xferCompCb, void* ref)
 {

@@ -79,23 +79,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#define MEGASCSIDEBUG "megascsilog.txt"
-
-#ifdef MEGASCSIDEBUG
-static FILE* logFd = NULL;
-static int megascsiTotal = 0;
-#define DBGLOG(fmt) fprintf(logFd, fmt)
-#define DBGLOG1(fmt, arg1) fprintf(logFd, fmt, arg1)
-#define DBGLOG2(fmt, arg1, arg2) fprintf(logFd, fmt, arg1, arg2)
-#define DBGLOG3(fmt, arg1, arg2, arg3) fprintf(logFd, fmt, arg1, arg2, arg3)
-#define DBGLOG4(fmt, arg1, arg2, arg3, arg4) fprintf(logFd, fmt, arg1, arg2, arg3, arg4)
-#else
 #define DBGLOG(fmt)
 #define DBGLOG1(fmt, arg1)
 #define DBGLOG2(fmt, arg1, arg2)
 #define DBGLOG3(fmt, arg1, arg2, arg3)
 #define DBGLOG4(fmt, arg1, arg2, arg3, arg4)
-#endif
 
 #define SPC_BANK 0x7f
 
@@ -162,11 +150,6 @@ static void reset(SramMapperMegaSCSI* rm)
     }
 
     if (rm->type) mb89352Reset(rm->spc, 1);
-
-#ifdef MEGASCSIDEBUG
-    fprintf(logFd, "Reset\n");
-    fflush(logFd);
-#endif
 }
 
 static void saveState(SramMapperMegaSCSI* rm)
@@ -228,15 +211,6 @@ static void destroy(SramMapperMegaSCSI* rm)
 
     free(rm->sramData);
     free(rm);
-
-#ifdef MEGASCSIDEBUG
-    --megascsiTotal;
-    fprintf(logFd, "%d close\n", megascsiTotal);
-    if (!megascsiTotal) {
-        fclose(logFd);
-        logFd = NULL;
-    }
-#endif
 }
 
 static UInt8 read(SramMapperMegaSCSI* rm, UInt16 address)
@@ -311,17 +285,6 @@ int sramMapperMegaSCSICreate(const char* filename, UInt8* buf, int size, int pSl
     rm = malloc(sizeof(SramMapperMegaSCSI));
     rm->type = flag & 1;
     rm->isZip = flag & 0x80;
-
-#ifdef MEGASCSIDEBUG
-    if (!megascsiTotal) {
-        logFd = fopen(MEGASCSIDEBUG, "w");
-    }
-    ++megascsiTotal;
-    DBGLOG2("%s %d: create\n", megascsiName[rm->type], megascsiTotal);
-    if (strlen(filename)) {
-        DBGLOG2("filename: %s size: %d\n", filename, size);
-    }
-#endif
 
     rm->deviceHandle = deviceManagerRegister(SRAM_MEGASCSI, &callbacks, rm);
 

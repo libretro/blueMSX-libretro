@@ -584,9 +584,6 @@ void mb89352WriteRegister(MB89352* spc, UInt8 reg, UInt8 value)
                 }
             } else {
                 err = 1;
-                #ifdef SCSIDEBUG
-                spc->targetId = -1;
-                #endif
             }
 
             if (err) {
