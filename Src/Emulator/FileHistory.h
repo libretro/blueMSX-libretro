@@ -34,11 +34,6 @@
 const char* stripPath(const char* filename);
 const char* stripPathExt(const char* filename);
 
-#ifndef NO_FILE_HISTORY
-void verifyFileHistory(char* history, RomType* historyType);
-void updateFileHistory(char* history, RomType* historyType, char* filename, RomType romType);
-#endif
-
 int tempStateExists();
 int fileExist(char* filename, char* zipFile);
 char* fileGetNext(char* filename, char* zipFile);

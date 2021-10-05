@@ -462,22 +462,6 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->ports.Eth.ethIndex       = -1;
     properties->ports.Eth.disabled       = 0;
     strcpy(properties->ports.Eth.macAddress, "00:00:00:00:00:00");
-
-#ifndef NO_FILE_HISTORY
-    for (i = 0; i < MAX_HISTORY; i++) {
-        properties->filehistory.cartridge[0][i][0] = 0;
-        properties->filehistory.cartridgeType[0][i] = ROM_UNKNOWN;
-        properties->filehistory.cartridge[1][i][0] = 0;
-        properties->filehistory.cartridgeType[1][i] = ROM_UNKNOWN;
-        properties->filehistory.diskdrive[0][i][0] = 0;
-        properties->filehistory.diskdrive[1][i][0] = 0;
-        properties->filehistory.cassette[0][i][0] = 0;
-    }
-
-    properties->filehistory.quicksave[0] = 0;
-    properties->filehistory.videocap[0]  = 0;
-    properties->filehistory.count        = 10;
-#endif
 }
 
 #define ROOT_ELEMENT "config"
@@ -527,9 +511,6 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
 
 static void propLoad(Properties* properties) 
 {
-#ifndef NO_FILE_HISTORY
-    IniFile *histFile;
-#endif
     IniFile *propFile = iniFileOpen(settFilename);
     int i;
 
@@ -711,77 +692,10 @@ static void propLoad(Properties* properties)
 
     iniFileClose(propFile);
     
-#ifndef NO_FILE_HISTORY
-    histFile = iniFileOpen(histFilename);
-    
-    GET_STR_VALUE_2(histFile, cartridge, defDir);
-    GET_STR_VALUE_2(histFile, cartridge, defDirSEGA);
-    GET_STR_VALUE_2(histFile, cartridge, defDirCOLECO);
-    GET_STR_VALUE_2(histFile, cartridge, defDirSVI);
-    GET_INT_VALUE_2(histFile, cartridge, autoReset);
-    GET_INT_VALUE_2(histFile, cartridge, quickStartDrive);
-
-    GET_STR_VALUE_2(histFile, diskdrive, defDir);
-    GET_STR_VALUE_2(histFile, diskdrive, defHdDir);
-    GET_INT_VALUE_2(histFile, diskdrive, autostartA);
-    GET_INT_VALUE_2(histFile, diskdrive, quickStartDrive);
-    
-    GET_STR_VALUE_2(histFile, cassette, defDir);
-
-    for (i = 0; i < PROP_MAX_CARTS; i++) {
-        GET_STR_VALUE_2i1(histFile, media, carts, i, fileName);
-        GET_STR_VALUE_2i1(histFile, media, carts, i, fileNameInZip);
-        GET_STR_VALUE_2i1(histFile, media, carts, i, directory);
-        GET_INT_VALUE_2i1(histFile, media, carts, i, extensionFilter);
-        GET_INT_VALUE_2i1(histFile, media, carts, i, type);
-    }
-    
-    for (i = 0; i < PROP_MAX_DISKS; i++) {
-        GET_STR_VALUE_2i1(histFile, media, disks, i, fileName);
-        GET_STR_VALUE_2i1(histFile, media, disks, i, fileNameInZip);
-        GET_STR_VALUE_2i1(histFile, media, disks, i, directory);
-        GET_INT_VALUE_2i1(histFile, media, disks, i, extensionFilter);
-        GET_INT_VALUE_2i1(histFile, media, disks, i, type);
-    }
-    
-    for (i = 0; i < PROP_MAX_TAPES; i++) {
-        GET_STR_VALUE_2i1(histFile, media, tapes, i, fileName);
-        GET_STR_VALUE_2i1(histFile, media, tapes, i, fileNameInZip);
-        GET_STR_VALUE_2i1(histFile, media, tapes, i, directory);
-        GET_INT_VALUE_2i1(histFile, media, tapes, i, extensionFilter);
-        GET_INT_VALUE_2i1(histFile, media, tapes, i, type);
-    }
-    
-    for (i = 0; i < MAX_HISTORY; i++) {
-        GET_STR_VALUE_2i(histFile, filehistory, cartridge[0], i);
-        GET_INT_VALUE_2i(histFile, filehistory, cartridgeType[0], i);
-        GET_STR_VALUE_2i(histFile, filehistory, cartridge[1], i);
-        GET_INT_VALUE_2i(histFile, filehistory, cartridgeType[1], i);
-        GET_STR_VALUE_2i(histFile, filehistory, diskdrive[0], i);
-        GET_STR_VALUE_2i(histFile, filehistory, diskdrive[1], i);
-        GET_STR_VALUE_2i(histFile, filehistory, cassette[0], i);
-    }
-
-    GET_STR_VALUE_2(histFile, filehistory, quicksave);
-    GET_STR_VALUE_2(histFile, filehistory, videocap);
-    GET_INT_VALUE_2(histFile, filehistory, count);
-
-    for (i = 0; i < DLG_MAX_ID; i++) {
-        GET_INT_VALUE_2i1(histFile, settings, windowPos, i, left);
-        GET_INT_VALUE_2i1(histFile, settings, windowPos, i, top);
-        GET_INT_VALUE_2i1(histFile, settings, windowPos, i, width);
-        GET_INT_VALUE_2i1(histFile, settings, windowPos, i, height);
-    }
-    
-    iniFileClose(histFile);
-#endif
 }
 
 void propSave(Properties* properties) 
 {
-#ifndef NO_FILE_HISTORY
-	IniFile *histFile;
-#endif
 	IniFile *propFile;
     int i;
     
@@ -974,71 +888,6 @@ void propSave(Properties* properties)
     SET_INT_VALUE_2(propFile, nowind,  partitionNumber);
 
     iniFileClose(propFile);
-
-#ifndef NO_FILE_HISTORY
-    histFile = iniFileOpen(histFilename);
-    
-    SET_STR_VALUE_2(histFile, cartridge, defDir);
-    SET_STR_VALUE_2(histFile, cartridge, defDirSEGA);
-    SET_STR_VALUE_2(histFile, cartridge, defDirCOLECO);
-    SET_STR_VALUE_2(histFile, cartridge, defDirSVI);
-    SET_INT_VALUE_2(histFile, cartridge, autoReset);
-    SET_INT_VALUE_2(histFile, cartridge, quickStartDrive);
-
-    SET_STR_VALUE_2(histFile, diskdrive, defDir);
-    SET_STR_VALUE_2(histFile, diskdrive, defHdDir);
-    SET_INT_VALUE_2(histFile, diskdrive, autostartA);
-    SET_INT_VALUE_2(histFile, diskdrive, quickStartDrive);
-    
-    SET_STR_VALUE_2(histFile, cassette, defDir);
-
-    for (i = 0; i < PROP_MAX_CARTS; i++) {
-        SET_STR_VALUE_2i1(histFile, media, carts, i, fileName);
-        SET_STR_VALUE_2i1(histFile, media, carts, i, fileNameInZip);
-        SET_STR_VALUE_2i1(histFile, media, carts, i, directory);
-        SET_INT_VALUE_2i1(histFile, media, carts, i, extensionFilter);
-        SET_INT_VALUE_2i1(histFile, media, carts, i, type);
-    }
-    
-    for (i = 0; i < PROP_MAX_DISKS; i++) {
-        SET_STR_VALUE_2i1(histFile, media, disks, i, fileName);
-        SET_STR_VALUE_2i1(histFile, media, disks, i, fileNameInZip);
-        SET_STR_VALUE_2i1(histFile, media, disks, i, directory);
-        SET_INT_VALUE_2i1(histFile, media, disks, i, extensionFilter);
-        SET_INT_VALUE_2i1(histFile, media, disks, i, type);
-    }
-    
-    for (i = 0; i < PROP_MAX_TAPES; i++) {
-        SET_STR_VALUE_2i1(histFile, media, tapes, i, fileName);
-        SET_STR_VALUE_2i1(histFile, media, tapes, i, fileNameInZip);
-        SET_STR_VALUE_2i1(histFile, media, tapes, i, directory);
-        SET_INT_VALUE_2i1(histFile, media, tapes, i, extensionFilter);
-        SET_INT_VALUE_2i1(histFile, media, tapes, i, type);
-    }
-    
-    for (i = 0; i < MAX_HISTORY; i++) {
-        SET_STR_VALUE_2i(histFile, filehistory, cartridge[0], i);
-        SET_INT_VALUE_2i(histFile, filehistory, cartridgeType[0], i);
-        SET_STR_VALUE_2i(histFile, filehistory, cartridge[1], i);
-        SET_INT_VALUE_2i(histFile, filehistory, cartridgeType[1], i);
-        SET_STR_VALUE_2i(histFile, filehistory, diskdrive[0], i);
-        SET_STR_VALUE_2i(histFile, filehistory, diskdrive[1], i);
-        SET_STR_VALUE_2i(histFile, filehistory, cassette[0], i);
-    }
-
-    SET_STR_VALUE_2(histFile, filehistory, quicksave);
-    SET_STR_VALUE_2(histFile, filehistory, videocap);
-    SET_INT_VALUE_2(histFile, filehistory, count);
-
-    for (i = 0; i < DLG_MAX_ID; i++) {
-        SET_INT_VALUE_2i1(histFile, settings, windowPos, i, left);
-        SET_INT_VALUE_2i1(histFile, settings, windowPos, i, top);
-        SET_INT_VALUE_2i1(histFile, settings, windowPos, i, width);
-        SET_INT_VALUE_2i1(histFile, settings, windowPos, i, height);
-    }
-    
-    iniFileClose(histFile);
-#endif
 }
 
 static Properties* globalProperties = NULL;

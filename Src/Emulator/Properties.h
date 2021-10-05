@@ -422,13 +422,6 @@ typedef struct {
 } CassetteProperties;
 
 typedef struct {
-#ifndef NO_FILE_HISTORY
-    int     count;
-    char    cartridge[2][MAX_HISTORY][PROP_MAXPATH];
-    RomType cartridgeType[2][MAX_HISTORY];
-    char    diskdrive[2][MAX_HISTORY][PROP_MAXPATH];
-    char    cassette[1][MAX_HISTORY][PROP_MAXPATH];
-#endif
     char    quicksave[PROP_MAXPATH];
     char    videocap[PROP_MAXPATH];
 } FileHistory;
