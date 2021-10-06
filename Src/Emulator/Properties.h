@@ -220,28 +220,10 @@ typedef struct {
     int  registerFileTypes;
     int  disableWinKeys;
     int  priorityBoost;
-    int  syncMethod;
-    int  syncMethodGdi;
-    int  syncMethodD3D;
-    int  syncMethodDirectX;
     int  vdpSyncMode;
     int  reverseEnable;
     int  reverseMaxTime;
 } EmulationProperties;
-
-typedef struct {
-		int linearFiltering;
-		int extendBorderColor;
-		int forceHighRes;
-
-		int aspectRatioType;
-		int cropType;
-
-		int cropLeft;
-		int cropRight;
-		int cropTop;
-		int cropBottom;
-} D3DProperties;
 
 typedef struct {
     int monitorColor;
@@ -275,34 +257,7 @@ typedef struct {
     int detectActiveMonitor;
     int captureFps;
     int captureSize;
-	D3DProperties d3d;
 } VideoProperties;
-
-enum {
-	P_D3D_AR_AUTO = 0,
-	P_D3D_AR_STRETCH,
-	P_D3D_AR_PAL,
-	P_D3D_AR_NTSC,
-	P_D3D_AR_1
-};
-
-enum {
-	P_D3D_RES_AUTO = 0,
-	P_D3D_RES_256,
-	P_D3D_RES_512
-};
-
-enum {
-	P_D3D_CROP_SIZE_NONE = 0,
-	P_D3D_CROP_SIZE_MSX1,
-	P_D3D_CROP_SIZE_MSX1_PLUS_8,
-	P_D3D_CROP_SIZE_MSX2,
-	P_D3D_CROP_SIZE_MSX2_PLUS_8,
-	P_D3D_CROP_SIZE_CUSTOM
-};
-
-
-
 
 typedef struct {
     int disabled;
@@ -495,6 +450,6 @@ void propDestroy(Properties* pProperties);
 
 void propertiesSetDirectory(const char* defDir, const char* altDir);
 
-Properties* propGetGlobalProperties();
+Properties* propGetGlobalProperties(void);
 
 #endif

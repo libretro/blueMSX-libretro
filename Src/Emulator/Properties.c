@@ -238,10 +238,6 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->emulation.shortcutProfile[0] = 0;
     strcpy(properties->emulation.machineName, "MSX2");
     properties->emulation.speed             = 50;
-    properties->emulation.syncMethod        = syncMode ? P_EMU_SYNCTOVBLANK : P_EMU_SYNCAUTO;
-    properties->emulation.syncMethodGdi     = P_EMU_SYNCAUTO;
-    properties->emulation.syncMethodD3D     = properties->emulation.syncMethod;
-    properties->emulation.syncMethodDirectX = properties->emulation.syncMethod;
     properties->emulation.vdpSyncMode       = P_VDP_SYNCAUTO;
     properties->emulation.enableFdcTiming   = 1;
     properties->emulation.noSpriteLimits    = 0;
@@ -284,17 +280,6 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->video.captureFps            = 60;
     properties->video.captureSize           = 1;
     
-    properties->video.d3d.aspectRatioType   = P_D3D_AR_NTSC;
-    properties->video.d3d.cropType          = P_D3D_CROP_SIZE_MSX2_PLUS_8;
-    properties->video.d3d.extendBorderColor = 1;
-    properties->video.d3d.linearFiltering   = 1;
-    properties->video.d3d.forceHighRes      = 0;
-
-    properties->video.d3d.cropLeft          = 0;
-    properties->video.d3d.cropRight         = 0;
-    properties->video.d3d.cropTop           = 0;
-    properties->video.d3d.cropBottom        = 0;
-
     properties->videoIn.disabled            = 0;
     properties->videoIn.inputIndex          = 0;
     properties->videoIn.inputName[0]        = 0;
@@ -466,433 +451,9 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
 
 #define ROOT_ELEMENT "config"
 
-#define GET_INT_VALUE_1(ini, v1)         properties->v1 = iniFileGetInt(ini, ROOT_ELEMENT, #v1, properties->v1);
-#define GET_INT_VALUE_2(ini, v1,v2)      properties->v1.v2 = iniFileGetInt(ini, ROOT_ELEMENT, #v1 "." #v2, properties->v1.v2);
-#define GET_INT_VALUE_3(ini, v1,v2,v3)   properties->v1.v2.v3 = iniFileGetInt(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3, properties->v1.v2.v3);
-#define GET_INT_VALUE_2s1(ini, v1,v2,v3,v4) properties->v1.v2[v3].v4 = iniFileGetInt(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3 "." #v4, properties->v1.v2[v3].v4);
-#define GET_INT_VALUE_2i(ini, v1, v2, i)      { char s[64]; sprintf(s, "%s.%s.i%d",#v1,#v2,i); properties->v1.v2[i] = iniFileGetInt(ini, ROOT_ELEMENT, s, properties->v1.v2[i]); }
-#define GET_INT_VALUE_2i1(ini, v1, v2, i, a1) { char s[64]; sprintf(s, "%s.%s.i%d.%s",#v1,#v2,i,#a1); properties->v1.v2[i].a1 = iniFileGetInt(ini, ROOT_ELEMENT, s, properties->v1.v2[i].a1); }
-
-#define GET_STR_VALUE_1(ini, v1)         iniFileGetString(ini, ROOT_ELEMENT, #v1, properties->v1, properties->v1, sizeof(properties->v1));
-#define GET_STR_VALUE_2(ini, v1,v2)      iniFileGetString(ini, ROOT_ELEMENT, #v1 "." #v2, properties->v1.v2, properties->v1.v2, sizeof(properties->v1.v2));
-#define GET_STR_VALUE_3(ini, v1,v2,v3)   iniFileGetString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3, properties->v1.v2.v3, properties->v1.v2.v3, sizeof(properties->v1.v2.v3));
-#define GET_STR_VALUE_2s1(ini, v1,v2,v3,v4) iniFileGetString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3 "." #v4, properties->v1.v2[v3].v4, properties->v1.v2[v3].v4, sizeof(properties->v1.v2[v3].v4));
-#define GET_STR_VALUE_2i(ini, v1, v2, i)      { char s[64]; sprintf(s, "%s.%s.i%d",#v1,#v2,i); iniFileGetString(ini, ROOT_ELEMENT, s, properties->v1.v2[i], properties->v1.v2[i], sizeof(properties->v1.v2[i])); }
-#define GET_STR_VALUE_2i1(ini, v1, v2, i, a1) { char s[64]; sprintf(s, "%s.%s.i%d.%s",#v1,#v2,i,#a1); iniFileGetString(ini, ROOT_ELEMENT, s, properties->v1.v2[i].a1, properties->v1.v2[i].a1, sizeof(properties->v1.v2[i].a1)); }
-
-#define GET_ENUM_VALUE_1(ini, v1, p)              { char q[64]; int v; iniFileGetString(ini, ROOT_ELEMENT, #v1, "", q,                         sizeof(q)); v = stringToEnum(p, q); if(v>=0) properties->v1 = v; }
-#define GET_ENUM_VALUE_2(ini, v1,v2, p)           { char q[64]; int v; iniFileGetString(ini, ROOT_ELEMENT, #v1 "." #v2, "", q,                 sizeof(q)); v = stringToEnum(p, q); if(v>=0) properties->v1.v2 = v; }
-#define GET_ENUM_VALUE_3(ini, v1,v2,v3, p)        { char q[64]; int v; iniFileGetString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3, "", q,         sizeof(q)); v = stringToEnum(p, q); if(v>=0) properties->v1.v2.v3 = v; }
-#define GET_ENUM_VALUE_2s1(ini, v1,v2,v3,v4, p)   { char q[64]; int v; iniFileGetString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3 "." #v4, "", q, sizeof(q)); v = stringToEnum(p, q); if(v>=0) properties->v1.v2[v3].v4 = v; }
-#define GET_ENUM_VALUE_2i(ini, v1, v2, i, p)      { char q[64]; int v; char s[64]; sprintf(s, "%s.%s.i%d",#v1,#v2,i);        iniFileGetString(ini, ROOT_ELEMENT, s, "", q, sizeof(q)); v = stringToEnum(p, q); if(v>=0) properties->v1.v2[i] = v; }
-#define GET_ENUM_VALUE_2i1(ini, v1, v2, i, a1, p) { char q[64]; int v; char s[64]; sprintf(s, "%s.%s.i%d.%s",#v1,#v2,i,#a1); iniFileGetString(ini, ROOT_ELEMENT, s, "", q, sizeof(q)); v = stringToEnum(p, q); if(v>=0) properties->v1.v2[i].a1 = v; }
-
-#define SET_INT_VALUE_1(ini, v1)         { char v[64]; sprintf(v, "%d", properties->v1); iniFileWriteString(ini, ROOT_ELEMENT, #v1, v); }
-#define SET_INT_VALUE_2(ini, v1,v2)      { char v[64]; sprintf(v, "%d", properties->v1.v2); iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2, v); }
-#define SET_INT_VALUE_3(ini, v1,v2,v3)   { char v[64]; sprintf(v, "%d", properties->v1.v2.v3); iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3, v); }
-#define SET_INT_VALUE_2s1(ini, v1,v2,v3,v4) { char v[64]; sprintf(v, "%d", properties->v1.v2[v3].v4); iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3 "." #v4, v); }
-#define SET_INT_VALUE_2i(ini, v1, v2, i)      { char s[64], v[64]; sprintf(s, "%s.%s.i%d",#v1,#v2,i); sprintf(v, "%d", properties->v1.v2[i]); iniFileWriteString(ini, ROOT_ELEMENT, s, v); }
-#define SET_INT_VALUE_2i1(ini, v1, v2, i, a1) { char s[64], v[64]; sprintf(s, "%s.%s.i%d.%s",#v1,#v2,i,#a1); sprintf(v, "%d", properties->v1.v2[i].a1); iniFileWriteString(ini, ROOT_ELEMENT, s, v); }
-
-#define SET_STR_VALUE_1(ini, v1)         iniFileWriteString(ini, ROOT_ELEMENT, #v1, properties->v1);
-#define SET_STR_VALUE_2(ini, v1,v2)      iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2, properties->v1.v2);
-#define SET_STR_VALUE_3(ini, v1,v2,v3)   iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3, properties->v1.v2.v3);
-#define SET_STR_VALUE_2s1(ini,v1,v2,v3,v4) iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3 "." #v4, properties->v1.v2[v3].v4);
-#define SET_STR_VALUE_2i(ini,v1, v2, i)      { char s[64]; sprintf(s, "%s.%s.i%d",#v1,#v2,i); iniFileWriteString(ini, ROOT_ELEMENT, s, properties->v1.v2[i]); }
-#define SET_STR_VALUE_2i1(ini,v1, v2, i, a1) { char s[64]; sprintf(s, "%s.%s.i%d.%s",#v1,#v2,i,#a1); iniFileWriteString(ini, ROOT_ELEMENT, s, properties->v1.v2[i].a1); }
-
-#define SET_ENUM_VALUE_1(ini,v1, p)         iniFileWriteString(ini, ROOT_ELEMENT, #v1, enumToString(p, properties->v1));
-#define SET_ENUM_VALUE_2(ini,v1,v2, p)      iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2, enumToString(p, properties->v1.v2));
-#define SET_ENUM_VALUE_3(ini,v1,v2,v3, p)   iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3, enumToString(p, properties->v1.v2.v3));
-#define SET_ENUM_VALUE_2s1(ini,v1,v2,v3,v4, p) iniFileWriteString(ini, ROOT_ELEMENT, #v1 "." #v2 "." #v3 "." #v4, enumToString(p, properties->v1.v2[v3].v4));
-#define SET_ENUM_VALUE_2i(ini,v1, v2, i, p)      { char s[64]; sprintf(s, "%s.%s.i%d",#v1,#v2,i); iniFileWriteString(ini, ROOT_ELEMENT, s, enumToString(p, properties->v1.v2[i])); }
-#define SET_ENUM_VALUE_2i1(ini,v1, v2, i, a1, p) { char s[64]; sprintf(s, "%s.%s.i%d.%s",#v1,#v2,i,#a1); iniFileWriteString(ini, ROOT_ELEMENT, s, enumToString(p, properties->v1.v2[i].a1)); }
-
-
-static void propLoad(Properties* properties) 
-{
-    IniFile *propFile = iniFileOpen(settFilename);
-    int i;
-
-    GET_STR_VALUE_2(propFile, settings, language);
-    i = langFromName(properties->settings.language, 0);
-    if (i != EMU_LANG_UNKNOWN) properties->language = i;
-
-    GET_ENUM_VALUE_2(propFile, settings, disableScreensaver, BoolPair);    
-    GET_ENUM_VALUE_2(propFile, settings, showStatePreview, BoolPair);
-    GET_ENUM_VALUE_2(propFile, settings, usePngScreenshots, BoolPair);
-    GET_ENUM_VALUE_2(propFile, settings, portable, BoolPair);
-    GET_STR_VALUE_2(propFile, settings, themeName);
-
-    GET_ENUM_VALUE_2(propFile, emulation, ejectMediaOnExit, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, registerFileTypes, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, disableWinKeys, BoolPair);
-    GET_STR_VALUE_2(propFile, emulation, statsDefDir);
-    GET_STR_VALUE_2(propFile, emulation, machineName);
-    GET_STR_VALUE_2(propFile, emulation, shortcutProfile);
-    GET_INT_VALUE_2(propFile, emulation, speed);
-    GET_ENUM_VALUE_2(propFile, emulation, syncMethod, EmuSyncPair);
-    GET_ENUM_VALUE_2(propFile, emulation, syncMethodGdi, EmuSyncPair);
-    GET_ENUM_VALUE_2(propFile, emulation, syncMethodD3D, EmuSyncPair);
-    GET_ENUM_VALUE_2(propFile, emulation, syncMethodDirectX, EmuSyncPair);
-    GET_ENUM_VALUE_2(propFile, emulation, vdpSyncMode, VdpSyncPair);
-    GET_ENUM_VALUE_2(propFile, emulation, enableFdcTiming, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, noSpriteLimits, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, frontSwitch, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, pauseSwitch, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, audioSwitch, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, priorityBoost, BoolPair);
-    GET_ENUM_VALUE_2(propFile, emulation, reverseEnable, BoolPair);
-    GET_INT_VALUE_2(propFile, emulation, reverseMaxTime);
-    
-    GET_ENUM_VALUE_2(propFile, video, monitorColor, MonitorColorPair);
-    GET_ENUM_VALUE_2(propFile, video, monitorType, MonitorTypePair);
-    GET_ENUM_VALUE_2(propFile, video, windowSize, WindowSizePair);
-    properties->video.windowSizeInitial = properties->video.windowSize;
-    GET_INT_VALUE_2(propFile, video, windowX);
-    GET_INT_VALUE_2(propFile, video, windowY);
-    GET_ENUM_VALUE_2(propFile, video, driver, VideoDriverPair);
-    GET_INT_VALUE_2(propFile, video, frameSkip);
-    GET_INT_VALUE_3(propFile, video, fullscreen, width);
-    GET_INT_VALUE_3(propFile, video, fullscreen, height);
-    GET_INT_VALUE_3(propFile, video, fullscreen, bitDepth);
-    GET_ENUM_VALUE_2(propFile, video, maximizeIsFullscreen, BoolPair);
-    GET_ENUM_VALUE_2(propFile, video, deInterlace, BoolPair);
-    GET_ENUM_VALUE_2(propFile, video, blendFrames, BoolPair);
-    GET_ENUM_VALUE_2(propFile, video, horizontalStretch, BoolPair);
-    GET_ENUM_VALUE_2(propFile, video, verticalStretch, BoolPair);
-    GET_INT_VALUE_2(propFile, video, contrast);
-    GET_INT_VALUE_2(propFile, video, brightness);
-    GET_INT_VALUE_2(propFile, video, saturation);
-    GET_INT_VALUE_2(propFile, video, gamma);
-    GET_ENUM_VALUE_2(propFile, video, scanlinesEnable, BoolPair);
-    GET_INT_VALUE_2(propFile, video, scanlinesPct);
-    GET_ENUM_VALUE_2(propFile, video, colorSaturationEnable, BoolPair);
-    GET_INT_VALUE_2(propFile, video, colorSaturationWidth);
-    GET_ENUM_VALUE_2(propFile, video, detectActiveMonitor, BoolPair);
-    GET_INT_VALUE_2(propFile, video, captureFps);
-    GET_INT_VALUE_2(propFile, video, captureSize);
-
-    GET_ENUM_VALUE_3(propFile, video, d3d, linearFiltering, BoolPair);
-    GET_ENUM_VALUE_3(propFile, video, d3d, extendBorderColor, BoolPair);
-    GET_ENUM_VALUE_3(propFile, video, d3d, forceHighRes, BoolPair);
-    GET_INT_VALUE_3(propFile, video, d3d, aspectRatioType);
-    GET_INT_VALUE_3(propFile, video, d3d, cropType);
-
-    GET_INT_VALUE_3(propFile, video, d3d, cropLeft);
-    GET_INT_VALUE_3(propFile, video, d3d, cropRight);
-    GET_INT_VALUE_3(propFile, video, d3d, cropTop);
-    GET_INT_VALUE_3(propFile, video, d3d, cropBottom);
-
-    GET_INT_VALUE_2(propFile, videoIn, disabled);
-    GET_INT_VALUE_2(propFile, videoIn, inputIndex);
-    GET_STR_VALUE_2(propFile, videoIn, inputName);
-
-    GET_ENUM_VALUE_2(propFile, sound, driver, SoundDriverPair);
-    GET_INT_VALUE_2(propFile, sound, bufSize);
-    GET_ENUM_VALUE_2(propFile, sound, stabilizeDSoundTiming, BoolPair);
-    GET_ENUM_VALUE_2(propFile, sound, stereo, BoolPair);
-    GET_INT_VALUE_2(propFile, sound, masterVolume);
-    GET_ENUM_VALUE_2(propFile, sound, masterEnable, BoolPair);
-    
-    GET_ENUM_VALUE_3(propFile, sound, chip, enableYM2413, BoolPair);
-    GET_ENUM_VALUE_3(propFile, sound, chip, enableY8950, BoolPair);
-    GET_ENUM_VALUE_3(propFile, sound, chip, enableMoonsound, BoolPair);
-    GET_INT_VALUE_3(propFile, sound, chip, moonsoundSRAMSize);
-    GET_INT_VALUE_3(propFile, sound, chip, ym2413Oversampling);
-    GET_INT_VALUE_3(propFile, sound, chip, y8950Oversampling);
-    GET_INT_VALUE_3(propFile, sound, chip, moonsoundOversampling);
-    GET_ENUM_VALUE_3(propFile, sound, YkIn, type, MidiTypePair);
-    GET_STR_VALUE_3(propFile, sound, YkIn, name);
-    GET_STR_VALUE_3(propFile, sound, YkIn, fileName);
-    GET_STR_VALUE_3(propFile, sound, YkIn, desc);
-    GET_INT_VALUE_3(propFile, sound, YkIn, channel);
-    GET_ENUM_VALUE_3(propFile, sound, MidiIn, type, MidiTypePair);
-    GET_STR_VALUE_3(propFile, sound, MidiIn, name);
-    GET_STR_VALUE_3(propFile, sound, MidiIn, fileName);
-    GET_STR_VALUE_3(propFile, sound, MidiIn, desc);
-    GET_ENUM_VALUE_3(propFile, sound, MidiOut, type, MidiTypePair);
-    GET_STR_VALUE_3(propFile, sound, MidiOut, name);
-    GET_STR_VALUE_3(propFile, sound, MidiOut, fileName);
-    GET_STR_VALUE_3(propFile, sound, MidiOut, desc);
-    GET_ENUM_VALUE_3(propFile, sound, MidiOut, mt32ToGm, BoolPair);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PSG, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PSG, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PSG, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_SCC, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_SCC, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_SCC, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXMUSIC, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXMUSIC, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXMUSIC, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXAUDIO, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXAUDIO, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXAUDIO, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_KEYBOARD, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_KEYBOARD, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_KEYBOARD, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MOONSOUND, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MOONSOUND, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MOONSOUND, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_YAMAHA_SFG, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_YAMAHA_SFG, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_YAMAHA_SFG, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PCM, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PCM, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PCM, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_IO, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_IO, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_IO, volume);
-    GET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MIDI, enable, BoolPair);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MIDI, pan);
-    GET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MIDI, volume);
-    
-    GET_ENUM_VALUE_2(propFile, joystick, POV0isAxes, BoolPair);
-    
-    GET_STR_VALUE_2(propFile, joy1, type);
-    properties->joy1.typeId = joystickPortNameToType(0, properties->joy1.type, 0);
-    GET_ENUM_VALUE_2(propFile, joy1, autofire, OnOffPair);
-    
-    GET_STR_VALUE_2(propFile, joy2, type);
-    properties->joy2.typeId = joystickPortNameToType(1, properties->joy2.type, 0);
-    GET_ENUM_VALUE_2(propFile, joy2, autofire, OnOffPair);
-    
-    GET_STR_VALUE_2(propFile, keyboard, configFile);
-    GET_INT_VALUE_2(propFile, keyboard, enableKeyboardQuirk);
-    
-    GET_ENUM_VALUE_3(propFile, ports, Lpt, type, PrinterTypePair);
-    GET_ENUM_VALUE_3(propFile, ports, Lpt, emulation, PrinterEmulationPair);
-    GET_STR_VALUE_3(propFile, ports, Lpt, name);
-    GET_STR_VALUE_3(propFile, ports, Lpt, fileName);
-    GET_STR_VALUE_3(propFile, ports, Lpt, portName);
-    GET_ENUM_VALUE_3(propFile, ports, Com, type, ComTypePair);
-    GET_STR_VALUE_3(propFile, ports, Com, name);
-    GET_STR_VALUE_3(propFile, ports, Com, fileName);
-    GET_STR_VALUE_3(propFile, ports, Com, portName);
-
-    GET_INT_VALUE_3(propFile, ports, Eth, ethIndex);
-    GET_INT_VALUE_3(propFile, ports, Eth, disabled);
-    GET_STR_VALUE_3(propFile, ports, Eth, macAddress);
-    
-    
-    GET_INT_VALUE_2(propFile, cartridge, defaultType);
-
-    GET_ENUM_VALUE_2(propFile, diskdrive, cdromMethod, CdromDrvPair);
-    GET_INT_VALUE_2(propFile, diskdrive, cdromDrive);
-    
-    GET_INT_VALUE_2(propFile, cassette, showCustomFiles);
-    GET_ENUM_VALUE_2(propFile, cassette, readOnly, BoolPair);
-    GET_ENUM_VALUE_2(propFile, cassette, rewindAfterInsert, BoolPair);
-    
-    GET_ENUM_VALUE_2(propFile, nowind, enableDos2, BoolPair);    
-    GET_ENUM_VALUE_2(propFile, nowind, enableOtherDiskRoms, BoolPair);    
-    GET_ENUM_VALUE_2(propFile, nowind, enablePhantomDrives, BoolPair);    
-    GET_ENUM_VALUE_2(propFile, nowind, ignoreBootFlag, BoolPair);   
-    GET_INT_VALUE_2(propFile, nowind,  partitionNumber);
-
-    iniFileClose(propFile);
-    
-}
-
-void propSave(Properties* properties) 
-{
-	IniFile *propFile;
-    int i;
-    
-    propFile = iniFileOpen(settFilename);
-
-    strcpy(properties->settings.language, langToName(properties->language, 0));
-    SET_STR_VALUE_2(propFile, settings, language);
-    
-    SET_ENUM_VALUE_2(propFile, settings, disableScreensaver, YesNoPair);    
-    SET_ENUM_VALUE_2(propFile, settings, showStatePreview, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, settings, usePngScreenshots, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, settings, portable, YesNoPair);
-    if (appConfigGetString("singletheme", NULL) == NULL) {
-        SET_STR_VALUE_2(propFile, settings, themeName);
-    }
-
-    SET_ENUM_VALUE_2(propFile, emulation, ejectMediaOnExit, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, emulation, registerFileTypes, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, emulation, disableWinKeys, YesNoPair);
-    SET_STR_VALUE_2(propFile, emulation, statsDefDir);
-    if (appConfigGetString("singlemachine", NULL) == NULL) {
-        SET_STR_VALUE_2(propFile, emulation, machineName);
-    }
-    SET_STR_VALUE_2(propFile, emulation, shortcutProfile);
-    SET_INT_VALUE_2(propFile, emulation, speed);
-    SET_ENUM_VALUE_2(propFile, emulation, syncMethod, EmuSyncPair);
-    SET_ENUM_VALUE_2(propFile, emulation, syncMethodGdi, EmuSyncPair);
-    SET_ENUM_VALUE_2(propFile, emulation, syncMethodD3D, EmuSyncPair);
-    SET_ENUM_VALUE_2(propFile, emulation, syncMethodDirectX, EmuSyncPair);
-    SET_ENUM_VALUE_2(propFile, emulation, vdpSyncMode, VdpSyncPair);
-    SET_ENUM_VALUE_2(propFile, emulation, enableFdcTiming, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, emulation, noSpriteLimits, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, emulation, frontSwitch, OnOffPair);
-    SET_ENUM_VALUE_2(propFile, emulation, pauseSwitch, OnOffPair);
-    SET_ENUM_VALUE_2(propFile, emulation, audioSwitch, OnOffPair);
-    SET_ENUM_VALUE_2(propFile, emulation, priorityBoost, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, emulation, reverseEnable, BoolPair);
-    SET_INT_VALUE_2(propFile, emulation, reverseMaxTime);
-    
-    SET_ENUM_VALUE_2(propFile, video, monitorColor, MonitorColorPair);
-    SET_ENUM_VALUE_2(propFile, video, monitorType, MonitorTypePair);
-    SET_INT_VALUE_2(propFile, video, contrast);
-    SET_INT_VALUE_2(propFile, video, brightness);
-    SET_INT_VALUE_2(propFile, video, saturation);
-    SET_INT_VALUE_2(propFile, video, gamma);
-    SET_ENUM_VALUE_2(propFile, video, scanlinesEnable, YesNoPair);
-    SET_INT_VALUE_2(propFile, video, scanlinesPct);
-    SET_ENUM_VALUE_2(propFile, video, colorSaturationEnable, YesNoPair);
-    SET_INT_VALUE_2(propFile, video, colorSaturationWidth);
-    SET_ENUM_VALUE_2(propFile, video, deInterlace, OnOffPair);
-    SET_ENUM_VALUE_2(propFile, video, blendFrames, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, video, detectActiveMonitor, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, video, horizontalStretch, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, video, verticalStretch, YesNoPair);
-    SET_INT_VALUE_2(propFile, video, frameSkip);
-    if (properties->video.windowSizeChanged) {
-    	SET_ENUM_VALUE_2(propFile, video, windowSize, WindowSizePair);
-    }
-    else {
-    	int temp=properties->video.windowSize;
-    	properties->video.windowSize=properties->video.windowSizeInitial;
-    	SET_ENUM_VALUE_2(propFile, video, windowSize, WindowSizePair);
-    	properties->video.windowSize=temp;
-    }
-    SET_INT_VALUE_2(propFile, video, windowX);
-    SET_INT_VALUE_2(propFile, video, windowY);
-    SET_INT_VALUE_3(propFile, video, fullscreen, width);
-    SET_INT_VALUE_3(propFile, video, fullscreen, height);
-    SET_INT_VALUE_3(propFile, video, fullscreen, bitDepth);
-    SET_ENUM_VALUE_2(propFile, video, maximizeIsFullscreen, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, video, driver, VideoDriverPair);
-    SET_INT_VALUE_2(propFile, video, captureFps);
-    
-    SET_INT_VALUE_2(propFile, video, captureSize);
-
-    SET_ENUM_VALUE_3(propFile, video, d3d, linearFiltering, BoolPair);
-    SET_ENUM_VALUE_3(propFile, video, d3d, extendBorderColor, BoolPair);
-    SET_ENUM_VALUE_3(propFile, video, d3d, forceHighRes, BoolPair);
-    SET_INT_VALUE_3(propFile, video, d3d, aspectRatioType);
-    SET_INT_VALUE_3(propFile, video, d3d, cropType);
-
-    SET_INT_VALUE_3(propFile, video, d3d, cropLeft);
-    SET_INT_VALUE_3(propFile, video, d3d, cropRight);
-    SET_INT_VALUE_3(propFile, video, d3d, cropTop);
-    SET_INT_VALUE_3(propFile, video, d3d, cropBottom);
-
-    SET_INT_VALUE_2(propFile, videoIn, disabled);
-    SET_INT_VALUE_2(propFile, videoIn, inputIndex);
-    SET_STR_VALUE_2(propFile, videoIn, inputName);
-
-    SET_ENUM_VALUE_2(propFile, sound, driver, SoundDriverPair);
-    SET_INT_VALUE_2(propFile, sound, bufSize);
-    SET_ENUM_VALUE_2(propFile, sound, stabilizeDSoundTiming, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, sound, stereo, YesNoPair);
-    SET_INT_VALUE_2(propFile, sound, masterVolume);
-    SET_ENUM_VALUE_2(propFile, sound, masterEnable, YesNoPair);
-    
-    SET_ENUM_VALUE_3(propFile, sound, chip, enableYM2413, YesNoPair);
-    SET_ENUM_VALUE_3(propFile, sound, chip, enableY8950, YesNoPair);
-    SET_ENUM_VALUE_3(propFile, sound, chip, enableMoonsound, YesNoPair);
-    SET_INT_VALUE_3(propFile, sound, chip, moonsoundSRAMSize);
-//    SET_INT_VALUE_3(sound, chip, ym2413Oversampling);
-//    SET_INT_VALUE_3(sound, chip, y8950Oversampling);
-//    SET_INT_VALUE_3(sound, chip, moonsoundOversampling);
-    SET_ENUM_VALUE_3(propFile, sound, YkIn, type, MidiTypePair);
-    SET_STR_VALUE_3(propFile, sound, YkIn, name);
-//    SET_STR_VALUE_3(sound, YkIn, fileName);
-//    SET_STR_VALUE_3(sound, YkIn, desc);
-    SET_INT_VALUE_3(propFile, sound, YkIn, channel);
-    SET_ENUM_VALUE_3(propFile, sound, MidiIn, type, MidiTypePair);
-    SET_STR_VALUE_3(propFile, sound, MidiIn, name);
-//    SET_STR_VALUE_3(sound, MidiIn, fileName);
-//    SET_STR_VALUE_3(sound, MidiIn, desc);
-    SET_ENUM_VALUE_3(propFile, sound, MidiOut, type, MidiTypePair);
-    SET_STR_VALUE_3(propFile, sound, MidiOut, name);
-//    SET_STR_VALUE_3(sound, MidiOut, fileName);
-//    SET_STR_VALUE_3(sound, MidiOut, desc);
-    SET_ENUM_VALUE_3(propFile, sound, MidiOut, mt32ToGm, YesNoPair);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PSG, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PSG, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PSG, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_SCC, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_SCC, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_SCC, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXMUSIC, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXMUSIC, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXMUSIC, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXAUDIO, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXAUDIO, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MSXAUDIO, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_KEYBOARD, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_KEYBOARD, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_KEYBOARD, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MOONSOUND, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MOONSOUND, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MOONSOUND, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_YAMAHA_SFG, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_YAMAHA_SFG, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_YAMAHA_SFG, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PCM, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PCM, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_PCM, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_IO, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_IO, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_IO, volume);
-    SET_ENUM_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MIDI, enable, YesNoPair);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MIDI, pan);
-    SET_INT_VALUE_2s1(propFile, sound, mixerChannel, MIXER_CHANNEL_MIDI, volume);
-    
-    SET_ENUM_VALUE_2(propFile, joystick, POV0isAxes, YesNoPair);
-    
-    strcpy(properties->joy1.type, joystickPortTypeToName(0, 0));
-    SET_STR_VALUE_2(propFile, joy1, type);
-    SET_ENUM_VALUE_2(propFile, joy1, autofire, OnOffPair);
-    
-    strcpy(properties->joy2.type, joystickPortTypeToName(1, 0));
-    SET_STR_VALUE_2(propFile, joy2, type);
-    SET_ENUM_VALUE_2(propFile, joy2, autofire, OnOffPair);
-    
-    SET_STR_VALUE_2(propFile, keyboard, configFile);
-    SET_INT_VALUE_2(propFile, keyboard, enableKeyboardQuirk);
-    
-    SET_ENUM_VALUE_3(propFile, ports, Lpt, type, PrinterTypePair);
-    SET_ENUM_VALUE_3(propFile, ports, Lpt, emulation, PrinterEmulationPair);
-    SET_STR_VALUE_3(propFile, ports, Lpt, name);
-    SET_STR_VALUE_3(propFile, ports, Lpt, fileName);
-    SET_STR_VALUE_3(propFile, ports, Lpt, portName);
-    SET_ENUM_VALUE_3(propFile, ports, Com, type, ComTypePair);
-    SET_STR_VALUE_3(propFile, ports, Com, name);
-    SET_STR_VALUE_3(propFile, ports, Com, fileName);
-    SET_STR_VALUE_3(propFile, ports, Com, portName);
-
-    SET_INT_VALUE_3(propFile, ports, Eth, ethIndex);
-    SET_INT_VALUE_3(propFile, ports, Eth, disabled);
-    SET_STR_VALUE_3(propFile, ports, Eth, macAddress);
-    
-    SET_INT_VALUE_2(propFile, cartridge, defaultType);
-
-    SET_ENUM_VALUE_2(propFile, diskdrive, cdromMethod, CdromDrvPair);
-    SET_INT_VALUE_2(propFile, diskdrive, cdromDrive);
-    
-    SET_INT_VALUE_2(propFile, cassette, showCustomFiles);
-    SET_ENUM_VALUE_2(propFile, cassette, readOnly, YesNoPair);
-    SET_ENUM_VALUE_2(propFile, cassette, rewindAfterInsert, YesNoPair);
-
-    SET_ENUM_VALUE_2(propFile, nowind, enableDos2, YesNoPair);    
-    SET_ENUM_VALUE_2(propFile, nowind, enableOtherDiskRoms, BoolPair);    
-    SET_ENUM_VALUE_2(propFile, nowind, enablePhantomDrives, BoolPair);    
-    SET_ENUM_VALUE_2(propFile, nowind, ignoreBootFlag, BoolPair);   
-    SET_INT_VALUE_2(propFile, nowind,  partitionNumber);
-
-    iniFileClose(propFile);
-}
-
 static Properties* globalProperties = NULL;
 
-Properties* propGetGlobalProperties()
+Properties* propGetGlobalProperties(void)
 {
     return globalProperties;
 }
@@ -903,21 +464,17 @@ void propertiesSetDirectory(const char* defDir, const char* altDir)
 
     sprintf(settFilename, "bluemsx.ini", defDir);
     f = fopen(settFilename, "r");
-    if (f != NULL) {
+    if (f != NULL)
         fclose(f);
-    }
-    else {
+    else
         sprintf(settFilename, "%s/bluemsx.ini", altDir);
-    }
 
     sprintf(histFilename, "bluemsx_history.ini", defDir);
     f = fopen(histFilename, "r");
-    if (f != NULL) {
+    if (f != NULL)
         fclose(f);
-    }
-    else {
+    else
         sprintf(histFilename, "%s/bluemsx_history.ini", altDir);
-    }
 }
 
 
@@ -927,15 +484,11 @@ Properties* propCreate(int useDefault, int langType, PropKeyboardLanguage kbdLan
 
     properties = malloc(sizeof(Properties));
 
-    if (globalProperties == NULL) {
+    if (globalProperties == NULL)
         globalProperties = properties;
-    }
 
     propInitDefaults(properties, langType, kbdLang, syncMode, themeName);
 
-    if (!useDefault) {
-        propLoad(properties);
-    }
 #if !defined(WII) && !defined(__LIBRETRO__)
     // Verify machine name
     {
@@ -989,9 +542,8 @@ Properties* propCreate(int useDefault, int langType, PropKeyboardLanguage kbdLan
 }
 
 
-void propDestroy(Properties* properties) {
-    propSave(properties);
-
+void propDestroy(Properties* properties)
+{
     free(properties);
 }
 
