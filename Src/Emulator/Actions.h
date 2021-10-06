@@ -33,8 +33,6 @@
 #include "AudioMixer.h"
 
 void actionInit(Video* video, Properties* properties, Mixer* mixer);
-void actionSetAudioCaptureSetDirectory(char* dir, char* prefix);
-void actionSetVideoCaptureSetDirectory(char* dir, char* prefix);
 void actionSetQuickSaveSetDirectory(char* dir, char* prefix);
 
 void actionCartInsert(int cartNo);
@@ -84,9 +82,6 @@ void actionCasSetPosition();
 void actionEmuResetSoft();
 void actionEmuResetHard();
 void actionEmuResetClean();
-void actionScreenCapture();
-void actionScreenCaptureUnfilteredSmall();
-void actionScreenCaptureUnfilteredLarge();
 void actionNextTheme();
 void actionCasRemove();
 void actionDiskRemoveA();
@@ -146,13 +141,6 @@ void actionToggleMsxKeyboardQuirk();
 void actionToggleMsxAudioSwitch();
 void actionToggleFrontSwitch();
 void actionTogglePauseSwitch();
-void actionToggleWaveCapture();
-void actionToggleMouseCapture();
-void actionVideoCaptureLoad();
-void actionVideoCapturePlay();
-void actionVideoCaptureRec();
-void actionVideoCaptureStop();
-void actionVideoCaptureSave();
 void actionMaxSpeedToggle();
 void actionFullscreenToggle();
 void actionCasToggleReadonly();
@@ -188,8 +176,6 @@ void actionSetFdcTiming(int value);
 void actionSetNoSpriteLimits(int value);
 void actionSetFrontSwitch(int value);
 void actionSetPauseSwitch(int value);
-void actionSetWaveCapture(int value);
-void actionSetMouseCapture(int value);
 void actionSetFullscreen(int value);
 void actionSetCasReadonly(int value);
 void actionSetVolumeMute(int value);

@@ -697,36 +697,8 @@ int boardRun(Machine* machine,
 
     boardUpdateDisketteInfo();
 
-    if (stateFile != NULL) {
-        int   size;
-        char *version;
-
-        saveStateCreateForRead(stateFile);
-
-        version = zipLoadFile(stateFile, "version", &size);
-        if (version != NULL) {
-            if (0 == strncmp(version, saveStateVersion, sizeof(saveStateVersion) - 1)) {
-                loadState = 1;
-
-                boardType = boardLoadState();
-
-                machineLoadState(boardMachine);
-            }
-            free(version);
-        }
-    }
-
     boardType = machine->board.type;
     PatchReset(boardType);
-
-#if 0
-    useRom     = 0;
-    useMegaRom = 0;
-    useMegaRam = 0;
-    useFmPac   = 0;
-    currentRomType[0] = ROM_UNKNOWN;
-    currentRomType[1] = ROM_UNKNOWN;
-#endif
 
     pendingInt = 0;
 
@@ -767,10 +739,6 @@ int boardRun(Machine* machine,
     if (success && loadState) {
         boardInfo.loadState();
         boardCaptureLoadState();
-    }
-
-    if (stateFile != NULL) {
-        saveStateDestroy();
     }
 
     if (success) {

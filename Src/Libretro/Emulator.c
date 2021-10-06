@@ -55,7 +55,6 @@ static UInt32 emuFrequency = 3579545;
 int           emuMaxSpeed = 0;
 int           emuPlayReverse = 0;
 int           emuMaxEmuSpeed = 0; // Max speed issued by emulation
-static char   emuStateName[512];
 static volatile int      emuSuspendFlag;
 static volatile EmuState emuState = EMU_STOPPED;
 static volatile int      emuSingleStep = 0;
@@ -217,7 +216,6 @@ void emulatorStart(const char* stateName) {
     archMidiEnable(1);
 
     emuState = EMU_PAUSED;
-    strcpy(emuStateName, stateName ? stateName : "");
 
     emuState = EMU_RUNNING;
 
@@ -234,7 +232,7 @@ void emulatorStart(const char* stateName) {
     success = boardRun(machine,
                        &deviceInfo,
                        mixer,
-                       *emuStateName ? emuStateName : NULL,
+                       NULL,
                        frequency,
                        0,
                        0,

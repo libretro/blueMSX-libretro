@@ -329,85 +329,6 @@ void actionToggleWaveCapture() {
     archUpdateMenu(0);
 }
 
-void actionVideoCaptureLoad() {
-    char* filename;
-
-    emulatorSuspend();
-    filename = archFilenameGetOpenCapture(state.properties);
-    if (filename != NULL) {
-        strcpy(state.properties->filehistory.videocap, filename);
-        emulatorStop();
-        emulatorStart(filename);
-    }
-    else {
-        emulatorResume();
-    }
-    archUpdateMenu(0);
-}
-
-void actionVideoCapturePlay() {
-    if (emulatorGetState() != EMU_STOPPED) {
-        emulatorStop();
-    }
-
-    if (fileExist(state.properties->filehistory.videocap, NULL)) {
-        emulatorStart(state.properties->filehistory.videocap);
-    }
-    archUpdateMenu(0);
-}
-
-void actionVideoCaptureSave() {
-    if (boardCaptureHasData()) {
-        archVideoCaptureSave();
-    }
-}
-
-void actionVideoCaptureStop() {
-    if (emulatorGetState() == EMU_STOPPED) {
-        return;
-    }
-    
-    emulatorSuspend();
-    
-    boardCaptureStop();
-
-    emulatorResume();
-    archUpdateMenu(0);
-}
-
-void actionVideoCaptureRec() {
-    if (emulatorGetState() == EMU_STOPPED) {
-        strcpy(state.properties->filehistory.videocap, generateSaveFilename(state.properties, videoDir, videoPrefix, ".cap", 2));
-        boardCaptureStart(state.properties->filehistory.videocap);
-        actionEmuTogglePause();
-        archUpdateMenu(0);
-        return;
-    }
-
-    emulatorSuspend();
-
-    strcpy(state.properties->filehistory.videocap, generateSaveFilename(state.properties, videoDir, videoPrefix, ".cap", 2));
-    boardCaptureStart(state.properties->filehistory.videocap);
-
-    emulatorResume();
-    archUpdateMenu(0);
-}
-
-void actionLoadState() {
-    char* filename;
-
-    emulatorSuspend();
-    filename = archFilenameGetOpenState(state.properties);
-    if (filename != NULL) {
-        emulatorStop();
-        emulatorStart(filename);
-    }
-    else {
-        emulatorResume();
-    }
-    archUpdateMenu(0);
-}
-
 void actionSaveState() {
     char* filename;
 
@@ -428,14 +349,6 @@ void actionSaveState() {
         }
         emulatorResume();
     }
-}
-
-void actionQuickLoadState() {
-    if (fileExist(state.properties->filehistory.quicksave, NULL)) {
-        emulatorStop();
-        emulatorStart(state.properties->filehistory.quicksave);
-    }
-    archUpdateMenu(0);
 }
 
 void actionQuickSaveState() {
