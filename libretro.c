@@ -840,7 +840,6 @@ bool retro_load_game(const struct retro_game_info *info)
    snprintf(machines_dir, sizeof(machines_dir), "%s%c%s", properties_dir, SLASH, "Machines");
    snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, SLASH, "Databases");
 
-   propertiesSetDirectory(properties_dir, properties_dir);
    machineSetDirectory(machines_dir);
    
    if(environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)

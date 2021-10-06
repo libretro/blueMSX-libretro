@@ -43,7 +43,6 @@
 #include "PacketFileSystem.h"
 
 static char settFilename[512];
-static char histFilename[512];
 
 
 typedef struct ValueNamePair {
@@ -457,26 +456,6 @@ Properties* propGetGlobalProperties(void)
 {
     return globalProperties;
 }
-
-void propertiesSetDirectory(const char* defDir, const char* altDir)
-{
-    FILE* f;
-
-    sprintf(settFilename, "bluemsx.ini", defDir);
-    f = fopen(settFilename, "r");
-    if (f != NULL)
-        fclose(f);
-    else
-        sprintf(settFilename, "%s/bluemsx.ini", altDir);
-
-    sprintf(histFilename, "bluemsx_history.ini", defDir);
-    f = fopen(histFilename, "r");
-    if (f != NULL)
-        fclose(f);
-    else
-        sprintf(histFilename, "%s/bluemsx_history.ini", altDir);
-}
-
 
 Properties* propCreate(int useDefault, int langType, PropKeyboardLanguage kbdLang, int syncMode, const char* themeName) 
 {
