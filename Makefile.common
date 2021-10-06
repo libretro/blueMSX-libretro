@@ -51,7 +51,6 @@ SOURCES_C   := $(CORE_DIR)/libretro.c \
 	       $(CORE_DIR)/Src/Libretro/Mouse.c \
 	       $(CORE_DIR)/Src/Libretro/Emulator.c \
 	       $(CORE_DIR)/Src/Common/ArrayList.c \
-	       $(CORE_DIR)/Src/Common/DebugMemory.c \
 	       $(CORE_DIR)/Src/Bios/Patch.c \
 	       $(CORE_DIR)/Src/Unzip/unzip.c \
 	       $(CORE_DIR)/Src/Unzip/ioapi.c \

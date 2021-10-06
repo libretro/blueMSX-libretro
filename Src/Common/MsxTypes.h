@@ -101,30 +101,6 @@ typedef UInt16 Pixel;
 
 #endif
 
-// Debug replacement for malloc and free to easier find memory leaks.
-#if 0
-
-#define malloc dbgMalloc
-#define calloc dbgCalloc
-#define free   dbgFree
-
-#include <stdlib.h>
-
-void* dbgMalloc(size_t size);
-void* dbgCalloc(size_t size, size_t count);
-void dbgFree(void* ptr);
-void dbgEnable();
-void dbgDisable();
-void dbgPrint();
-
-#else
-
-#define dbgEnable()
-#define dbgDisable()
-#define dbgPrint()
-
-#endif
-
 #ifdef __cplusplus
 }
 #endif
