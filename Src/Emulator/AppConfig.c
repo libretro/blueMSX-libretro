@@ -30,10 +30,6 @@
 #include <string.h>
 #include "AppConfig.h"
 
-// PacketFileSystem.h Need to be included after all other includes
-#include "PacketFileSystem.h"
-
-
 typedef struct
 {
     char key[32];
@@ -46,67 +42,6 @@ typedef struct
 static AppEntry appEntries[MAX_APP_ENTRIES];
 static int      appEntryCnt = 0;
 
-void appConfigLoad()
-{
-    FILE* f;
-
-    if (appEntryCnt == MAX_APP_ENTRIES) {
-        return;
-    }
-
-    f = fopen("blueMSX.cfg", "r");
-    if (f == NULL) {
-        return;
-    }
-    for (;;) {
-        char* key;
-        char* value;
-        char line[100];
-
-        if (fgets(line, sizeof(line), f) == NULL) {
-            break;
-        }
-
-        if (line[0] == '#') {
-            continue;
-        }
-
-        line[sizeof(line) - 1] = 0;
-
-        key = strtok(line, "=");
-        if (key == NULL) {
-            continue;
-        }
-        value = strtok(NULL, "\r\n");
-        if (value == NULL) {
-            continue;
-        }
-        
-        key[31] = 0;
-        value[31] = 0;
-
-        strcpy(appEntries[appEntryCnt].key, line);
-        strcpy(appEntries[appEntryCnt].value, value);
-        appEntries[appEntryCnt].intVal = atoi(value);
-
-        if (++appEntryCnt == MAX_APP_ENTRIES) {
-            break;
-        }
-    }
-    fclose(f);
-}
-
-int appConfigGetInt(const char* key, int defVal)
-{
-    int i;
-    for (i = 0; i < appEntryCnt; i++) {
-        if (strcmp(key, appEntries[i].key) == 0) {
-            return appEntries[i].intVal;
-        }
-    }
-    return defVal;
-}
-
 const char* appConfigGetString(const char* key, const char* defVal)
 {
     int i;
@@ -117,4 +52,3 @@ const char* appConfigGetString(const char* key, const char* defVal)
     }
     return defVal;
 }
-

@@ -125,39 +125,6 @@ ValueNamePair WindowSizePair[] = {
     { -1,                           "" },
 };
 
-#ifdef USE_SDL
-ValueNamePair VideoDriverPair[] = {
-    { P_VIDEO_DRVSDLGL,            "sdlgl" },
-    { P_VIDEO_DRVSDLGL_NODIRT,     "sdlgl noopt" },
-    { P_VIDEO_DRVSDL,              "sdl" },
-    { -1,                           "" },
-};
-#else
-ValueNamePair VideoDriverPair[] = {
-    { P_VIDEO_DRVDIRECTX_VIDEO,    "directx hw" },
-    { P_VIDEO_DRVDIRECTX,          "directx" },
-    { P_VIDEO_DRVGDI,              "gdi" },
-    { P_VIDEO_DRVDIRECTX_D3D,      "directx d3d" },
-    { -1,                           "" },
-};
-#endif
-
-#ifdef USE_SDL
-ValueNamePair SoundDriverPair[] = {
-    { P_SOUND_DRVNONE,             "none" },
-    { P_SOUND_DRVWMM,              "sdl" },
-    { P_SOUND_DRVDIRECTX,          "sdl" },
-    { -1,                           "" },
-};
-#else
-ValueNamePair SoundDriverPair[] = {
-    { P_SOUND_DRVNONE,             "none" },
-    { P_SOUND_DRVWMM,              "wmm" },
-    { P_SOUND_DRVDIRECTX,          "directx" },
-    { -1,                           "" },
-};
-#endif
-
 ValueNamePair MidiTypePair[] = {
     { P_MIDI_NONE,                 "none" },
     { P_MIDI_FILE,                 "file" },
@@ -257,7 +224,6 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->video.windowSizeChanged     = 0;
     properties->video.windowX               = -1;
     properties->video.windowY               = -1;
-    properties->video.driver                = P_VIDEO_DRVDIRECTX_VIDEO;
     properties->video.frameSkip             = 0;
     properties->video.fullscreen.width      = 640;
     properties->video.fullscreen.height     = 480;
@@ -283,7 +249,6 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->videoIn.inputIndex          = 0;
     properties->videoIn.inputName[0]        = 0;
 
-    properties->sound.driver                = P_SOUND_DRVDIRECTX;
     properties->sound.bufSize               = 100;
     properties->sound.stabilizeDSoundTiming = 1;
     

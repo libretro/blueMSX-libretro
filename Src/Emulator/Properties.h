@@ -95,8 +95,7 @@ typedef enum {
     PROP_SETTINGS, 
     PROP_DISK,
     PROP_APEARANCE, 
-    PROP_PORTS,
-	PROP_D3D
+    PROP_PORTS
 } PropPage;
 
 typedef enum { 
@@ -179,25 +178,6 @@ enum {
     P_VIDEO_FREQ_60HZ 
 };
 
-enum { 
-    P_SOUND_DRVNONE = 0, 
-    P_SOUND_DRVWMM, 
-    P_SOUND_DRVDIRECTX 
-};
-
-enum { 
-    P_VIDEO_DRVDIRECTX_VIDEO = 0, 
-    P_VIDEO_DRVDIRECTX, 
-    P_VIDEO_DRVGDI,
-    P_VIDEO_DRVDIRECTX_D3D
-};
-
-enum { 
-    P_VIDEO_DRVSDLGL = 0, 
-    P_VIDEO_DRVSDLGL_NODIRT,
-    P_VIDEO_DRVSDL
-};
-
 enum {
     P_CDROM_DRVNONE = 0,
     P_CDROM_DRVIOCTL,
@@ -233,7 +213,6 @@ typedef struct {
     int windowSizeChanged;
     int windowX;
     int windowY;
-    int driver;
     int frameSkip;
     struct {
         int width;
@@ -282,7 +261,6 @@ typedef struct {
 } SoundChip;
 
 typedef struct {
-    int  driver;
     int  bufSize;
     int  stabilizeDSoundTiming;
     SoundChip chip;
@@ -290,7 +268,6 @@ typedef struct {
     int  masterVolume;
     int  masterEnable;
     MixerChannel mixerChannel[MIXER_CHANNEL_TYPE_COUNT];
-    int  log[PROP_MAXPATH];
     struct {
         int  type;
         char name[256];

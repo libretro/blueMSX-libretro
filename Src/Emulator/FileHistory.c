@@ -71,10 +71,9 @@ const char* stripPath(const char* filename) {
     return filename;
 }
 
-int fileExist(char* fileName, char* zipFile) {
-    if (fileName == NULL || *fileName == 0) {
+static int fileExist(char* fileName, char* zipFile) {
+    if (fileName == NULL || *fileName == 0)
         return 0;
-    }
 
     if (zipFile == NULL || *zipFile == 0) {
         return archFileExists(fileName);
@@ -243,7 +242,7 @@ void setExtendedRomName(int drive, const char* name) {
     strcpy(extendedName[drive], name);
 }
 
-int createSaveFileBaseName(char* fileBase,Properties* properties, int useExtendedName)
+static int createSaveFileBaseName(char* fileBase,Properties* properties, int useExtendedName)
 {
     int done = 0;
     int i;
@@ -390,7 +389,7 @@ static UInt32 fileWriteTime(const char* filename)
   return rv < 0 ? 0 : (UInt32)s.st_mtime;
 }
 
-char* generateSaveFilename(Properties* properties, char* directory, char* prefix, char* extension, int digits)
+static char* generateSaveFilename(Properties* properties, char* directory, char* prefix, char* extension, int digits)
 {
     ArchGlob* glob;
     static char filename[512];

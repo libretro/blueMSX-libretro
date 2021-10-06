@@ -34,16 +34,10 @@
 const char* stripPath(const char* filename);
 const char* stripPathExt(const char* filename);
 
-int fileExist(char* filename, char* zipFile);
 char* fileGetNext(char* filename, char* zipFile);
 void setExtendedRomName(int drive, const char* name);
 void updateExtendedRomName(int drive, char* filename, char* zipFile);
 void updateExtendedDiskName(int drive, char* filename, char* zipFile);
 void updateExtendedCasName(int drive, char* filename, char* zipFile);
 
-int createSaveFileBaseName(char* fileBase,Properties* properties, int useExtendedName);
-char* generateSaveFilename(Properties* properties, char* directory, char* prefix, char* extension, int digits);
-
 #endif
-
-
