@@ -179,7 +179,6 @@ int romMapperGameReaderCreate(int cartSlot, int slot, int sslot)
     rm->sslot    = sslot;
     rm->cartSlot = cartSlot;
 
-//    f = fopen("c:\\grlog.txt", "w+");
     rm->gameReader = gameReaderCreate(cartSlot);
 
     for (i = 0; i < CACHE_LINES; i++) {

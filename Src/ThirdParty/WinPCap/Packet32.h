@@ -312,39 +312,8 @@ struct _PACKET_OID_DATA {
 typedef struct _PACKET_OID_DATA PACKET_OID_DATA, *PPACKET_OID_DATA;
 
 
-#if _DBG
-#define ODS(_x) OutputDebugString(TEXT(_x))
-#define ODSEx(_x, _y)
-#else
-#ifdef _DEBUG_TO_FILE
-/*! 
-  \brief Macro to print a debug string. The behavior differs depending on the debug level
-*/
-#define ODS(_x) { \
-	FILE *f; \
-	f = fopen("winpcap_debug.txt", "a"); \
-	fprintf(f, "%s", _x); \
-	fclose(f); \
-}
-/*! 
-  \brief Macro to print debug data with the printf convention. The behavior differs depending on 
-  the debug level
-*/
-#define ODSEx(_x, _y) { \
-	FILE *f; \
-	f = fopen("winpcap_debug.txt", "a"); \
-	fprintf(f, _x, _y); \
-	fclose(f); \
-}
-
-
-
-LONG PacketDumpRegistryKey(PCHAR KeyName, PCHAR FileName);
-#else
 #define ODS(_x)		
 #define ODSEx(_x, _y)
-#endif
-#endif
 
 /* We load dinamically the dag library in order link it only when it's present on the system */
 #ifdef HAVE_DAG_API
