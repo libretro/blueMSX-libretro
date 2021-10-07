@@ -292,7 +292,6 @@ void langInitFrench(LanguageStrings* ls)
 
     ls->propTitle               = "blueMSX - Configuration";
     ls->propEmulation           = "Emulation";
-    ls->propD3D                 = "Direct3D";
     ls->propVideo               = "Video";
     ls->propSound               = "Son";
     ls->propControls            = "Contrôles";
@@ -402,19 +401,6 @@ void langInitFrench(LanguageStrings* ls)
     ls->propCdromMethodAspi     = "ASPI";            // New in 2.7
     ls->propCdromDrive          = "Lecteur:";          // New in 2.7
 
-    ls->propD3DParametersGB         = "Paramètres ";
-    ls->propD3DAspectRatioText      = "Format d'image";
-    ls->propD3DLinearFilteringText  = " Fitrage linéaire";
-    ls->propD3DForceHighResText     = " Forcer haute résolution";
-    ls->propD3DExtendBorderColorText    = " Étendre la couleur du bord";
-
-    ls->propD3DCroppingGB               = "Rognage ";
-    ls->propD3DCroppingTypeText         = "Type de rognage:";
-    ls->propD3DCroppingLeftText         = "Gauche:";
-    ls->propD3DCroppingRightText        = "Droite:";
-    ls->propD3DCroppingTopText          = "Haut:";
-    ls->propD3DCroppingBottomText       = "Bas:";
-
     //----------------------
     // Dropdown related lines
     //----------------------
@@ -443,7 +429,6 @@ void langInitFrench(LanguageStrings* ls)
     ls->enumVideoDrvDirectDrawHW = "DirectDraw HW accél.";
     ls->enumVideoDrvDirectDraw  = "DirectDraw";
     ls->enumVideoDrvGDI         = "GDI";
-    ls->enumVideoDrvD3D         = "Direct3D";
 
     ls->enumVideoFrameskip0     = "Aucune";
     ls->enumVideoFrameskip1     = "1 image";
@@ -451,19 +436,6 @@ void langInitFrench(LanguageStrings* ls)
     ls->enumVideoFrameskip3     = "3 images";
     ls->enumVideoFrameskip4     = "4 images";
     ls->enumVideoFrameskip5     = "5 images";
-
-	ls->enumD3DARAuto           = "Automatique";
-	ls->enumD3DARStretch        = "Étirer";
-	ls->enumD3DARPAL            = "PAL";
-	ls->enumD3DARNTSC           = "NTSC";
-	ls->enumD3DAR11             = "1:1";
-
-	ls->enumD3DCropNone         = "Aucun";
-	ls->enumD3DCropMSX1         = "MSX1";
-	ls->enumD3DCropMSX1Plus8    = "MSX1+8";
-	ls->enumD3DCropMSX2         = "MSX2";
-	ls->enumD3DCropMSX2Plus8    = "MSX2+8";
-	ls->enumD3DCropCustom       = "Personnalisé";
 
     ls->enumSoundDrvNone        = "Pas de son";
     ls->enumSoundDrvWMM         = "Pilote WMM";

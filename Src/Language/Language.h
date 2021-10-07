@@ -312,7 +312,6 @@ char* langDlgRenderVideoCapture();
 
 char* langPropTitle();
 char* langPropEmulation();
-char* langPropD3D();
 char* langPropVideo();
 char* langPropSound();
 char* langPropControls();
@@ -422,19 +421,6 @@ char* langPropCdromMethodIoctl();
 char* langPropCdromMethodAspi();
 char* langPropCdromDrive();
 
-char* langPropD3DParametersGB();
-char* langPropD3DAspectRatioText();
-char* langPropD3DLinearFilteringText();
-char* langPropD3DForceHighResText();
-char* langPropD3DExtendBorderColorText();
-
-char* langpropD3DCroppingGB();
-char* langpropD3DCroppingTypeText();
-char* langpropD3DCroppingLeftText();
-char* langpropD3DCroppingRightText();
-char* langpropD3DCroppingTopText();
-char* langpropD3DCroppingBottomText();
-
 //----------------------
 // Dropdown related lines
 //----------------------
@@ -464,7 +450,6 @@ char* langEnumVideoSizeFullscreen();
 char* langEnumVideoDrvDirectDrawHW();
 char* langEnumVideoDrvDirectDraw();
 char* langEnumVideoDrvGDI();
-char* langEnumVideoDrvD3D();
 
 char* langEnumVideoFrameskip0();
 char* langEnumVideoFrameskip1();
@@ -472,19 +457,6 @@ char* langEnumVideoFrameskip2();
 char* langEnumVideoFrameskip3();
 char* langEnumVideoFrameskip4();
 char* langEnumVideoFrameskip5();
-
-char* langEnumD3DARAuto();
-char* langEnumD3DARStretch();
-char* langEnumD3DARPAL();
-char* langEnumD3DARNTSC();
-char* langEnumD3DAR11();
-
-char* langEnumD3DCropNone();
-char* langEnumD3DCropMSX1();
-char* langEnumD3DCropMSX1Plus8();
-char* langEnumD3DCropMSX2();
-char* langEnumD3DCropMSX2Plus8();
-char* langEnumD3DCropCustom();
 
 char* langEnumSoundDrvNone();
 char* langEnumSoundDrvWMM();

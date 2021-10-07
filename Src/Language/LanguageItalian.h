@@ -402,19 +402,6 @@ void langInitItalian(LanguageStrings* ls)
     ls->propCdromMethodAspi             = "ASPI";                // New in 2.7
     ls->propCdromDrive                  = "Lettera:";            // New in 2.7
 
-    ls->propD3DParametersGB         = "Parameters ";                // New in 2.9
-    ls->propD3DAspectRatioText      = "Aspect ratio";               // New in 2.9
-    ls->propD3DLinearFilteringText  = " Linear filtering";          // New in 2.9
-    ls->propD3DForceHighResText     = " Force high resolution";     // New in 2.9
-    ls->propD3DExtendBorderColorText    = " Extend border color";   // New in 2.9
-
-    ls->propD3DCroppingGB               = "Cropping ";              // New in 2.9
-    ls->propD3DCroppingTypeText         = "Cropping type:";         // New in 2.9
-    ls->propD3DCroppingLeftText         = "Left:";                  // New in 2.9
-    ls->propD3DCroppingRightText        = "Right:";                 // New in 2.9
-    ls->propD3DCroppingTopText          = "Top:";                   // New in 2.9
-    ls->propD3DCroppingBottomText       = "Bottom:";                // New in 2.9
-
 
     //------------------------
     // Dropdown related lines
@@ -444,7 +431,6 @@ void langInitItalian(LanguageStrings* ls)
     ls->enumVideoDrvDirectDrawHW        = "DirectDraw HW accelerato";
     ls->enumVideoDrvDirectDraw          = "DirectDraw";
     ls->enumVideoDrvGDI                 = "GDI";
-    ls->enumVideoDrvD3D         = "Direct3D";
 
     ls->enumVideoFrameskip0             = "Nessuno";
     ls->enumVideoFrameskip1             = "1 fotogramma";
@@ -452,19 +438,6 @@ void langInitItalian(LanguageStrings* ls)
     ls->enumVideoFrameskip3             = "3 fotogrammi";
     ls->enumVideoFrameskip4             = "4 fotogrammi";
     ls->enumVideoFrameskip5             = "5 fotogrammi";
-
-    ls->enumD3DARAuto           = "Auto";           // New in 2.9
-    ls->enumD3DARStretch        = "Stretch";        // New in 2.9
-    ls->enumD3DARPAL            = "PAL";            // New in 2.9
-    ls->enumD3DARNTSC           = "NTSC";           // New in 2.9
-    ls->enumD3DAR11             = "1:1";            // New in 2.9
-
-    ls->enumD3DCropNone         = "None";           // New in 2.9
-    ls->enumD3DCropMSX1         = "MSX1";           // New in 2.9
-    ls->enumD3DCropMSX1Plus8    = "MSX1+8";         // New in 2.9
-    ls->enumD3DCropMSX2         = "MSX2";           // New in 2.9
-    ls->enumD3DCropMSX2Plus8    = "MSX2+8";         // New in 2.9
-    ls->enumD3DCropCustom       = "Custom";         // New in 2.9
 
     ls->enumSoundDrvNone                = "Nessuno";
     ls->enumSoundDrvWMM                 = "Driver WMM";

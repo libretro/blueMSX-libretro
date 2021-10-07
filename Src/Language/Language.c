@@ -498,7 +498,6 @@ char* langDlgAboutLisence() { return ls->dlgAboutLisence; }
 
 char* langPropTitle() { return ls->propTitle; }
 char* langPropEmulation() { return ls->propEmulation; }
-char* langPropD3D() { return ls->propD3D; }
 char* langPropVideo() { return ls->propVideo; }
 char* langPropSound() { return ls->propSound; }
 char* langPropControls() { return ls->propControls; }
@@ -636,7 +635,6 @@ char* langEnumVideoSizeFullscreen() { return ls->enumVideoSizeFullscreen; }
 char* langEnumVideoDrvDirectDrawHW() { return ls->enumVideoDrvDirectDrawHW; }
 char* langEnumVideoDrvDirectDraw() { return ls->enumVideoDrvDirectDraw; }
 char* langEnumVideoDrvGDI() { return ls->enumVideoDrvGDI; }
-char* langEnumVideoDrvD3D() { return ls->enumVideoDrvD3D; }
 
 char* langEnumVideoFrameskip0() { return ls->enumVideoFrameskip0; }
 char* langEnumVideoFrameskip1() { return ls->enumVideoFrameskip1; }
@@ -644,32 +642,6 @@ char* langEnumVideoFrameskip2() { return ls->enumVideoFrameskip2; }
 char* langEnumVideoFrameskip3() { return ls->enumVideoFrameskip3; }
 char* langEnumVideoFrameskip4() { return ls->enumVideoFrameskip4; }
 char* langEnumVideoFrameskip5() { return ls->enumVideoFrameskip5; }
-
-char* langEnumD3DARAuto() { return ls->enumD3DARAuto; }
-char* langEnumD3DARStretch() { return ls->enumD3DARStretch; }
-char* langEnumD3DARPAL() { return ls->enumD3DARPAL; }
-char* langEnumD3DARNTSC() { return ls->enumD3DARNTSC; }
-char* langEnumD3DAR11() { return ls->enumD3DAR11; }
-
-char* langEnumD3DCropNone() { return ls->enumD3DCropNone; }
-char* langEnumD3DCropMSX1() { return ls->enumD3DCropMSX1; }
-char* langEnumD3DCropMSX1Plus8() { return ls->enumD3DCropMSX1Plus8; }
-char* langEnumD3DCropMSX2() { return ls->enumD3DCropMSX2; }
-char* langEnumD3DCropMSX2Plus8() { return ls->enumD3DCropMSX2Plus8; }
-char* langEnumD3DCropCustom() { return ls->enumD3DCropCustom; }
-
-char* langPropD3DParametersGB() { return ls->propD3DParametersGB; }
-char* langPropD3DAspectRatioText() { return ls->propD3DAspectRatioText; }
-char* langPropD3DLinearFilteringText() { return ls->propD3DLinearFilteringText; }
-char* langPropD3DForceHighResText() { return ls->propD3DForceHighResText; }
-char* langPropD3DExtendBorderColorText() { return ls->propD3DExtendBorderColorText; }
-
-char* langpropD3DCroppingGB() { return ls->propD3DCroppingGB; }
-char* langpropD3DCroppingTypeText() { return ls->propD3DCroppingTypeText; }
-char* langpropD3DCroppingLeftText() { return ls->propD3DCroppingLeftText; }
-char* langpropD3DCroppingRightText() { return ls->propD3DCroppingRightText; }
-char* langpropD3DCroppingTopText() { return ls->propD3DCroppingTopText; }
-char* langpropD3DCroppingBottomText() { return ls->propD3DCroppingBottomText; }
 
 char* langEnumSoundDrvNone() { return ls->enumSoundDrvNone; }
 char* langEnumSoundDrvWMM() { return ls->enumSoundDrvWMM; }
