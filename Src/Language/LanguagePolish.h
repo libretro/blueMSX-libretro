@@ -104,47 +104,7 @@ void langInitPolish(LanguageStrings* ls)
     ls->menuInsert              = "Wybierz";
     ls->menuEject               = "Wysuñ";
 
-    ls->menuCartGameReader      = "Game Reader";                        
-    ls->menuCartIde             = "IDE";                                
-    ls->menuCartBeerIde         = "Beer";                               
-    ls->menuCartGIde            = "GIDE";                               
-    ls->menuCartSunriseIde      = "Sunrise";                              
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG Cartridge"; // New in 2.9
-    ls->menuCartSCC             = "SCC Cartridge";
-    ls->menuCartSCCPlus         = "SCC-I Kartrid¿";
-    ls->menuCartFMPac           = "Kartrid¿ FM-PAC";
-    ls->menuCartPac             = "Kartrid¿ PAC";
-    ls->menuCartHBI55           = "Sony HBI-55 Cartridge";
-    ls->menuCartInsertSpecial   = "W³ó¿ inny";                     
-    ls->menuCartMegaRam         = "MegaRAM";                            
-    ls->menuCartExternalRam     = "Zewnêtrzny RAM";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "W³ó¿ nowy obraz dysku";              
-    ls->menuDiskInsertCdrom     = "Insert CD-Rom";       // New in 2.7
-    ls->menuDiskDirInsert       = "Podepnij folder";
-    ls->menuDiskAutoStart       = "Resetuj po zmianie dyskietki";
-    ls->menuCartAutoReset       = "Resetuj po zmianie kartrid¿a";
-    
-    ls->menuCasRewindAfterInsert = "Najpierw przewiñ do pocz¹tku";
-    ls->menuCasUseReadOnly       = "U¿ywaj kaset 'tylko do odczytu'";
-    ls->lmenuCasSaveAs           = "Zapisz kasetê jako...";
-    ls->menuCasSetPosition      = "Ustaw pozycjê";
-    ls->menuCasRewind           = "Przewiñ do pocz¹tku";
-
-    ls->menuVideoLoad           = "Load...";             // New in 2.6
-    ls->menuVideoPlay           = "Play Last Capture";   // New in 2.6
-    ls->menuVideoRecord         = "Record";              // New in 2.6
-    ls->menuVideoRecording      = "Recording";           // New in 2.6
-    ls->menuVideoRecAppend      = "Record (append)";     // New in 2.6
-    ls->menuVideoStop           = "Stop";                // New in 2.6
-    ls->menuVideoRender         = "Render Video File";   // New in 2.6
 
     ls->menuPrnFormfeed         = "Wysuñ papier";
 
@@ -162,12 +122,6 @@ void langInitPolish(LanguageStrings* ls)
     ls->menuPropsDisk           = "Disks";               // New in 2.7
     ls->menuPropsLanguage       = "Jêzyk";
     ls->menuPropsPorts          = "Porty";
-    
-    ls->menuVideoSource         = "ród³o wyjœcia 'Video Out'";                   
-    ls->menuVideoSourceDefault  = "Brak Ÿród³a dla 'Video Out'";      
-    ls->menuVideoChipAutodetect = "Autodetekcja koœci obrazu";    
-    ls->menuVideoInSource       = "ród³o 'Video In'";                    
-    ls->menuVideoInBitmap       = "Plik bitmapy";                        
     
     ls->menuEthInterface        = "Ethernet Interface"; // New in 2.6
 

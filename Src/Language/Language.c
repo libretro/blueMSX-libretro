@@ -321,47 +321,7 @@ char* langMenuNoRecentFiles() { return ls->menuNoRecentFiles; }
 char* langMenuInsert() { return ls->menuInsert; }
 char* langMenuEject() { return ls->menuEject; }
 
-char* langMenuCartGameReader() { return ls->menuCartGameReader; }
-char* langMenuCartIde() { return ls->menuCartIde; }
-char* langMenuCartBeerIde() { return ls->menuCartBeerIde; }
-char* langMenuCartGIde() { return ls->menuCartGIde; }
-char* langMenuCartSunriseIde() { return ls->menuCartSunriseIde; }
-char* langMenuCartScsi() { return ls->menuCartScsi; }
-char* langMenuCartMegaSCSI() { return ls->menuCartMegaSCSI; }
-char* langMenuCartWaveSCSI() { return ls->menuCartWaveSCSI; }
-char* langMenuCartGoudaSCSI() { return ls->menuCartGoudaSCSI; }
-char* langMenuCartSCC() { return ls->menuCartSCC; }
 char* langMenuCartJoyrexPsg() { return ls->menuJoyrexPsg; }
-char* langMenuCartSCCPlus() { return ls->menuCartSCCPlus; }
-char* langMenuCartFMPac()  { return ls->menuCartFMPac; }
-char* langMenuCartPac()  { return ls->menuCartPac; }
-char* langMenuCartHBI55() { return ls->menuCartHBI55; }
-char* langMenuCartInsertSpecial() { return ls->menuCartInsertSpecial; }
-char* langMenuCartMegaRam() { return ls->menuCartMegaRam; }
-char* langMenuCartExternalRam() { return ls->menuCartExternalRam; }
-char* langMenuCartEseRam() { return ls->menuCartEseRam; }
-char* langMenuCartEseSCC() { return ls->menuCartEseSCC; }
-char* langMenuCartMegaFlashRom() { return ls->menuCartMegaFlashRom; }
-
-char* langMenuDiskInsertNew() { return ls->menuDiskInsertNew; }
-char* langMenuDiskDirInsertCdrom() { return ls->menuDiskInsertCdrom; }
-char* langMenuDiskDirInsert() { return ls->menuDiskDirInsert; }
-char* langMenuDiskAutoStart() { return ls->menuDiskAutoStart; }
-char* langMenuCartAutoReset() { return ls->menuCartAutoReset; }
-
-char* langMenuCasRewindAfterInsert() { return ls->menuCasRewindAfterInsert; }
-char* langMenuCasUseReadOnly() { return ls->menuCasUseReadOnly; }
-char* langMenuCasSaveAs() { return ls->lmenuCasSaveAs; }
-char* langMenuCasSetPosition() { return ls->menuCasSetPosition; }
-char* langMenuCasRewind() { return ls->menuCasRewind; }
-
-char* langMenuVideoLoad() { return ls->menuVideoLoad; }
-char* langMenuVideoPlay() { return ls->menuVideoPlay; }
-char* langMenuVideoRecord() { return ls->menuVideoRecord; }
-char* langMenuVideoRecording() { return ls->menuVideoRecording; }
-char* langMenuVideoRecAppend() { return ls->menuVideoRecAppend; }
-char* langMenuVideoStop() { return ls->menuVideoStop; }
-char* langMenuVideoRender() { return ls->menuVideoRender; }
 
 char* langMenuPrnFormfeed() { return ls->menuPrnFormfeed; }
 
@@ -380,12 +340,6 @@ char* langMenuPropsDisk() { return ls->menuPropsDisk; }
 char* langMenuPropsLanguage() { return ls->menuPropsLanguage; }
 char* langMenuPropsPorts() { return ls->menuPropsPorts; }
 
-char* langMenuVideoSource()        { return ls->menuVideoSource; }
-char* langMenuVideoSourceDefault() { return ls->menuVideoSourceDefault; }
-char* langMenuVideoChipAutodetect() { return ls->menuVideoChipAutodetect; }
-char* langMenuVideoInSource() { return ls->menuVideoInSource; }
-char* langMenuVideoInBitmap() { return ls->menuVideoInBitmap; }
-    
 char* langMenuEthInterface() { return ls->menuEthInterface; }
 
 char* langMenuHelpHelp() { return ls->menuHelpHelp; }

@@ -106,48 +106,8 @@ void langInitJapanese(LanguageStrings* ls)
     ls->menuInsert              = "挿入";
     ls->menuEject               = "取り出し";
 
-    ls->menuCartGameReader      = "ゲームリーダーに接続";
-    ls->menuCartIde             = "IDE カートリッジ";
-    ls->menuCartBeerIde         = "Beer IDE";
-    ls->menuCartGIde            = "GIDE";
-    ls->menuCartSunriseIde      = "Sunrise IDE";
-    ls->menuCartScsi            = "SCSI カートリッジ";          // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";                  // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";                  // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";                 // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG カートリッジ"; // New in 2.9
-    ls->menuCartSCC             = "SCC カートリッジ";
-    ls->menuCartSCCPlus         = "SCC-I カートリッジ";
-    ls->menuCartFMPac           = "FMPAC+ カートリッジ";
-    ls->menuCartPac             = "PAC+ カートリッジ";
-    ls->menuCartHBI55           = "Sony HBI-55 カートリッジ";
-    ls->menuCartInsertSpecial   = "特殊カートリッジ";
-    ls->menuCartMegaRam         = "メガRAM カートリッジ";
-    ls->menuCartExternalRam     = "外部RAM カートリッジ"; 
-    ls->menuCartEseRam          = "似非RAM カートリッジ";       // New in 2.7
-    ls->menuCartEseSCC          = "似非SCC カートリッジ";       // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";             // New in 2.7
 
-    ls->menuDiskInsertNew       = "新規ディスクイメージを挿入";
-    ls->menuDiskInsertCdrom     = "CD-ROM挿入";          // New in 2.7
-    ls->menuDiskDirInsert       = "ディレクトリ挿入";
-    ls->menuDiskAutoStart       = "挿入/取り出し後リセット";
-    ls->menuCartAutoReset       = "挿入/取り出し後リセット";
-
-    ls->menuCasRewindAfterInsert = "挿入後巻き戻す";
-    ls->menuCasUseReadOnly       = "テープを読み込み専用にする";
-    ls->lmenuCasSaveAs           = "テープを別名で保存...";
-    ls->menuCasSetPosition      = "テープ位置セット";
-    ls->menuCasRewind           = "巻き戻し";
-
-    ls->menuVideoLoad           = "読み込み...";             
-    ls->menuVideoPlay           = "キャプチャ映像の再生";   
-    ls->menuVideoRecord         = "録画";              
-    ls->menuVideoRecording      = "録画中";           
-    ls->menuVideoRecAppend      = "録画 (付加する)";     
-    ls->menuVideoStop           = "停止";                
-    ls->menuVideoRender         = "ビデオファイルのレンダリング";   
-    
     ls->menuPrnFormfeed         = "紙送り"; 
 
     ls->menuZoomNormal          = "標準サイズ";
@@ -164,12 +124,6 @@ void langInitJapanese(LanguageStrings* ls)
     ls->menuPropsDisk           = "ディスク";            // New in 2.7
     ls->menuPropsLanguage       = "言語";
     ls->menuPropsPorts          = "ポート";
-    
-    ls->menuVideoChipAutodetect = "ビデオチップの自動認識";
-    ls->menuVideoSource         = "ビデオ出力";
-    ls->menuVideoSourceDefault  = "ビデオ出力が見つかりません";
-    ls->menuVideoInSource       = "ビデオ入力";
-    ls->menuVideoInBitmap       = "ビットマップファイル";
     
     ls->menuEthInterface        = "イーサーネット　インターフェース"; 
 

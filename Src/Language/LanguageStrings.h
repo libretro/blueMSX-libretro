@@ -101,47 +101,7 @@ typedef struct {
     char* menuInsert;
     char* menuEject;
 
-    char* menuCartGameReader;
-    char* menuCartIde;
-    char* menuCartBeerIde;
-    char* menuCartGIde;
-    char* menuCartSunriseIde;
-    char* menuCartScsi;
-    char* menuCartMegaSCSI;
-    char* menuCartWaveSCSI;
-    char* menuCartGoudaSCSI;
     char* menuJoyrexPsg;
-    char* menuCartSCC;
-    char* menuCartSCCPlus;
-    char* menuCartFMPac;
-    char* menuCartPac;
-    char* menuCartHBI55;
-    char* menuCartInsertSpecial;
-    char* menuCartMegaRam;
-    char* menuCartExternalRam;
-    char* menuCartEseRam;
-    char* menuCartEseSCC;
-    char* menuCartMegaFlashRom;
-
-    char* menuDiskInsertNew;
-    char* menuDiskInsertCdrom;
-    char* menuDiskDirInsert;
-    char* menuDiskAutoStart;
-    char* menuCartAutoReset;
-
-    char* menuCasRewindAfterInsert;
-    char* menuCasUseReadOnly;
-    char* lmenuCasSaveAs;
-    char* menuCasSetPosition;
-    char* menuCasRewind;
-
-    char* menuVideoLoad;
-    char* menuVideoPlay;
-    char* menuVideoRecord;
-    char* menuVideoRecording;
-    char* menuVideoRecAppend;
-    char* menuVideoStop;
-    char* menuVideoRender;
 
     char* menuPrnFormfeed;
 
@@ -160,12 +120,6 @@ typedef struct {
     char* menuPropsLanguage;
     char* menuPropsPorts;
 
-    char* menuVideoSource;
-    char* menuVideoSourceDefault;
-    char* menuVideoChipAutodetect;
-    char* menuVideoInSource;
-    char* menuVideoInBitmap;
-    
     char* menuEthInterface;
 
     char* menuHelpHelp;

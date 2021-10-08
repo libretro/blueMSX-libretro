@@ -104,47 +104,7 @@ void langInitChineseSimplified(LanguageStrings* ls)
     ls->menuInsert              = "插入";
     ls->menuEject               = "弹出";
     
-    ls->menuCartGameReader      = "Game Reader";                        
-    ls->menuCartIde             = "IDE";                                
-    ls->menuCartBeerIde         = "Beer";                               
-    ls->menuCartGIde            = "GIDE";                               
-    ls->menuCartSunriseIde      = "Sunrise";                            
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG 卡带"; // New in 2.9
-    ls->menuCartSCCPlus         = "SCC-I 卡带";
-    ls->menuCartSCC             = "SCC 卡带";
-    ls->menuCartFMPac           = "FM-PAC 卡带";
-    ls->menuCartPac             = "PAC 卡带";
-    ls->menuCartHBI55           = "Sony HBI-55 卡带";
-    ls->menuCartInsertSpecial   = "插入特殊";                     
-    ls->menuCartMegaRam         = "MegaRAM";                            
-    ls->menuCartExternalRam     = "扩展内存";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "插入新的软盘映像";              
-    ls->menuDiskInsertCdrom     = "Insert CD-Rom";       // New in 2.7
-    ls->menuDiskDirInsert       = "插入目录";
-    ls->menuDiskAutoStart       = "插入后重置";
-    ls->menuCartAutoReset       = "插入/移除后重置";
-
-    ls->menuCasRewindAfterInsert = "插入后倒带";
-    ls->menuCasUseReadOnly       = "使用磁带时只读";
-    ls->lmenuCasSaveAs           = "另存为...";
-    ls->menuCasSetPosition      = "磁带位置设置";
-    ls->menuCasRewind           = "倒带";
-
-    ls->menuVideoLoad           = "读取...";             
-    ls->menuVideoPlay           = "播放上一个截取视频";   
-    ls->menuVideoRecord         = "录制";              
-    ls->menuVideoRecording      = "正在录制";           
-    ls->menuVideoRecAppend      = "录制 （附加）";     
-    ls->menuVideoStop           = "停止";                
-    ls->menuVideoRender         = "渲染视频文件";   
 
     ls->menuZoomNormal          = "标准尺寸";
     ls->menuZoomDouble          = "两倍尺寸";
@@ -162,12 +122,6 @@ void langInitChineseSimplified(LanguageStrings* ls)
     ls->menuPropsDisk           = "Disks";               // New in 2.7
     ls->menuPropsLanguage       = "语言";
     ls->menuPropsPorts          = "端口";
-    
-    ls->menuVideoSource         = "视频输出源";                   
-    ls->menuVideoSourceDefault  = "未连接视频输出源";      
-    ls->menuVideoChipAutodetect = "自动检测显示芯片";
-    ls->menuVideoInSource       = "视频输入源";                    
-    ls->menuVideoInBitmap       = "位图文件";                        
     
     ls->menuEthInterface        = "Ethernet"; 
 

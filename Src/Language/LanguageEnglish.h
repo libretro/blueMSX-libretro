@@ -104,47 +104,7 @@ void langInitEnglish(LanguageStrings* ls)
     ls->menuInsert              = "Insert";
     ls->menuEject               = "Eject";
 
-    ls->menuCartGameReader      = "Game Reader";
-    ls->menuCartIde             = "IDE";
-    ls->menuCartBeerIde         = "Beer";
-    ls->menuCartGIde            = "GIDE";
-    ls->menuCartSunriseIde      = "Sunrise";  
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG Cartridge"; // New in 2.9
-    ls->menuCartSCC             = "SCC Cartridge";
-    ls->menuCartSCCPlus         = "SCC-I Cartridge";
-    ls->menuCartFMPac           = "FM-PAC Cartridge";
-    ls->menuCartPac             = "PAC Cartridge";
-    ls->menuCartHBI55           = "Sony HBI-55 Cartridge";
-    ls->menuCartInsertSpecial   = "Insert Special";
-    ls->menuCartMegaRam         = "MegaRAM";
-    ls->menuCartExternalRam     = "External RAM";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "Insert New Disk Image";
-    ls->menuDiskInsertCdrom     = "Insert CD-ROM";       // New in 2.7
-    ls->menuDiskDirInsert       = "Insert Directory";
-    ls->menuDiskAutoStart       = "Reset After Insert";
-    ls->menuCartAutoReset       = "Reset After Insert/Remove";
-
-    ls->menuCasRewindAfterInsert= "Rewind After Insert";
-    ls->menuCasUseReadOnly      = "Use Cassette Image Read Only";
-    ls->lmenuCasSaveAs          = "Save Cassette Image As...";
-    ls->menuCasSetPosition      = "Set Position";
-    ls->menuCasRewind           = "Rewind";
-
-    ls->menuVideoLoad           = "Load...";             
-    ls->menuVideoPlay           = "Play Last Capture";   
-    ls->menuVideoRecord         = "Record";              
-    ls->menuVideoRecording      = "Recording";           
-    ls->menuVideoRecAppend      = "Record (append)";     
-    ls->menuVideoStop           = "Stop";                
-    ls->menuVideoRender         = "Render Video File";   
 
     ls->menuPrnFormfeed         = "Form Feed";
 
@@ -162,12 +122,6 @@ void langInitEnglish(LanguageStrings* ls)
     ls->menuPropsDisk           = "Disks";               // New in 2.7
     ls->menuPropsLanguage       = "Language";
     ls->menuPropsPorts          = "Ports";
-    
-    ls->menuVideoSource         = "Video Out Source";
-    ls->menuVideoSourceDefault  = "No Video Out Source Connected";
-    ls->menuVideoChipAutodetect = "Autodetect Video Chip";
-    ls->menuVideoInSource       = "Video In Source";
-    ls->menuVideoInBitmap       = "Bitmap File";
     
     ls->menuEthInterface        = "Ethernet Interface"; 
 

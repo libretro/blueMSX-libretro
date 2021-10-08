@@ -104,47 +104,7 @@ void langInitSpanish(LanguageStrings* ls)
     ls->menuInsert              = "Insertar";
     ls->menuEject               = "Sacar";
 
-    ls->menuCartGameReader      = "Game Reader";                        
-    ls->menuCartIde             = "IDE";                                
-    ls->menuCartBeerIde         = "Beer";                               
-    ls->menuCartGIde            = "GIDE";                               
-    ls->menuCartSunriseIde      = "Sunrise";                              
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Cartucho Joyrex PSG"; // New in 2.9
-    ls->menuCartSCCPlus         = "Cartucho SCC-I";
-    ls->menuCartSCC             = "Cartucho SCC";
-    ls->menuCartFMPac           = "Cartucho FM-PAC";
-    ls->menuCartPac             = "Cartucho PAC";
-    ls->menuCartHBI55           = "Cartucho Sony HBI-55"; 
-    ls->menuCartInsertSpecial   = "Insertar Especial";                     
-    ls->menuCartMegaRam         = "MegaRAM";                            
-    ls->menuCartExternalRam     = "RAM externo"; 
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "Insertar nueva imagen de Disco";              
-    ls->menuDiskInsertCdrom     = "Insertar CD-Rom";       // New in 2.7
-    ls->menuDiskDirInsert       = "Insertar directorio"; 
-    ls->menuDiskAutoStart       = "Reinicio Tras Insertar";
-    ls->menuCartAutoReset       = "Reinicio Tras Insertar/Sacar";
-
-    ls->menuCasRewindAfterInsert = "Rebobinar tras Insertar";
-    ls->menuCasUseReadOnly       = "Usar Imagen de Cassette Sólo Lectura";
-    ls->lmenuCasSaveAs           = "Salvar Imagen de Cassette Como...";
-    ls->menuCasSetPosition      = "Posicionar";
-    ls->menuCasRewind           = "Rebobinar";
-
-    ls->menuVideoLoad           = "Cargar...";             
-    ls->menuVideoPlay           = "Ver la más reciente captura";   
-    ls->menuVideoRecord         = "Grabar";              
-    ls->menuVideoRecording      = "Grabar en curso";           
-    ls->menuVideoRecAppend      = "Grabar (añadir)";     
-    ls->menuVideoStop           = "Parada";                
-    ls->menuVideoRender         = "Crear video clip";   
 
     ls->menuPrnFormfeed         = "Página siguiente"; 
 
@@ -163,12 +123,6 @@ void langInitSpanish(LanguageStrings* ls)
     ls->menuPropsLanguage       = "Idioma";
     ls->menuPropsPorts          = "Puertos"; 
 
-    ls->menuVideoSource         = "Salida Vídeo";                   
-    ls->menuVideoSourceDefault  = "Salida Vídeo no conectada";      
-    ls->menuVideoChipAutodetect = "Detección automática";     
-    ls->menuVideoInSource       = "Entrada vídeo";                    
-    ls->menuVideoInBitmap       = "Archivo Bitmap";                        
-    
     ls->menuEthInterface        = "Interfaz De Ethernet"; 
 
     ls->menuHelpHelp            = "Ayuda";

@@ -104,47 +104,7 @@ void langInitKorean(LanguageStrings* ls)
     ls->menuInsert              = "삽입";
     ls->menuEject               = "꺼내기";
 
-    ls->menuCartGameReader      = "게임 리더";                        
-    ls->menuCartIde             = "IDE";                                
-    ls->menuCartBeerIde         = "Beer";                               
-    ls->menuCartGIde            = "GIDE";                               
-    ls->menuCartSunriseIde      = "Sunrise";                              
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG 카트리지"; // New in 2.9
-    ls->menuCartSCC             = "SCC 카트리지";
-    ls->menuCartSCCPlus         = "SCC-I 카트리지";
-    ls->menuCartFMPac           = "FM-PAC 카트리지";
-    ls->menuCartPac             = "PAC 카트리지";
-    ls->menuCartHBI55           = "Sony HBI-55 카트리지";
-    ls->menuCartInsertSpecial   = "특수 카트리지 삽입";                     
-    ls->menuCartMegaRam         = "메가램";                            
-    ls->menuCartExternalRam     = "외장램";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "새로운 디스크 이미지 삽입";              
-    ls->menuDiskInsertCdrom     = "시디롬 삽입";       // New in 2.7
-    ls->menuDiskDirInsert       = "디렉토리 삽입";
-    ls->menuDiskAutoStart       = "삽입후에 재시작";
-    ls->menuCartAutoReset       = "삽입/제거 후에 재시작";
-
-    ls->menuCasRewindAfterInsert = "삽입후에 되감기";
-    ls->menuCasUseReadOnly       = "읽기전용";
-    ls->lmenuCasSaveAs           = "다른 이름으로 저장...";
-    ls->menuCasSetPosition      = "위치 설정";
-    ls->menuCasRewind           = "되감기";
-
-    ls->menuVideoLoad           = "불러오기...";             
-    ls->menuVideoPlay           = "마지막으로 녹화한 영상 재생";   
-    ls->menuVideoRecord         = "녹화";              
-    ls->menuVideoRecording      = "녹화중";           
-    ls->menuVideoRecAppend      = "녹화 (추가)";     
-    ls->menuVideoStop           = "정지";                
-    ls->menuVideoRender         = "동영상 파일로 저장";   
 
     ls->menuPrnFormfeed         = "폼피드";
 
@@ -162,12 +122,6 @@ void langInitKorean(LanguageStrings* ls)
     ls->menuPropsDisk           = "디스크";               // New in 2.7
     ls->menuPropsLanguage       = "언어";
     ls->menuPropsPorts          = "포트"; 
-    
-    ls->menuVideoSource         = "비디오 출력 소스";                   
-    ls->menuVideoSourceDefault  = "비디오 출력 소스 연결안됨";      
-    ls->menuVideoChipAutodetect = "비디오 칩 자동감지";    
-    ls->menuVideoInSource       = "비디오 입력 소스";                    
-    ls->menuVideoInBitmap       = "비트맵 파일";                        
     
     ls->menuEthInterface        = "이더넷 인터페이스"; 
 

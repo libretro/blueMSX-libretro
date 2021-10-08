@@ -106,48 +106,7 @@ void langInitFinnish(LanguageStrings* ls)
     ls->menuInsert              = "Aseta...";
     ls->menuEject               = "Poista";
 
-    ls->menuCartGameReader      = "Game Reader";
-    ls->menuCartIde             = "IDE";
-    ls->menuCartBeerIde         = "Beer";
-    ls->menuCartGIde            = "GIDE";
-    ls->menuCartSunriseIde      = "Sunrise";  
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG Moduli"; // New in 2.9
-    ls->menuCartSCC             = "SCC Moduli";
-    ls->menuCartSCCPlus         = "SCC-I Moduli";
-    ls->menuCartFMPac           = "FM-PAC Moduli";
-    ls->menuCartPac             = "PAC Moduli";
-    ls->menuCartHBI55           = "Sony HBI-55 Moduli";
-    ls->menuCartInsertSpecial   = "Erikoismoduli";
-    ls->menuCartMegaRam         = "MegaRAM";
-    ls->menuCartExternalRam     = "Ulkoinen muisti";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "Uusi levytiedosto";
-    ls->menuDiskInsertCdrom     = "Aseta CD-ROM";       // New in 2.7
-    ls->menuDiskDirInsert       = "Aseta hakemisto";
-    ls->menuDiskAutoStart       = "Käynnistä uudelleen asettamisen jälkeen";
-    ls->menuCartAutoReset       = "Käynnistä uudelleen muutettaessa";
-
-    ls->menuCasRewindAfterInsert = "Kelaa alkuun asetettaessa";
-    ls->menuCasUseReadOnly       = "Kirjoitussuojaa kasetti";
-    ls->lmenuCasSaveAs           = "Tallenna kasetti nimellä";
-    ls->menuCasSetPosition      = "Valitse kohta";
-    ls->menuCasRewind           = "Kelaa alkuun";
-
-    ls->menuVideoLoad           = "Lataa...";             
-    ls->menuVideoPlay           = "Toista viimeisin kaappaus";   
-    ls->menuVideoRecord         = "Nauhoita";              
-    ls->menuVideoRecording      = "Nauhoittaa";           
-    ls->menuVideoRecAppend      = "Jatka nauhoitusta";     
-    ls->menuVideoStop           = "Pysäytä";                
-    ls->menuVideoRender         = "Koosta videotiedosto";   
-
     ls->menuPrnFormfeed         = "Paperin vaihto";
 
     ls->menuZoomNormal          = "Pieni koko";
@@ -164,12 +123,6 @@ void langInitFinnish(LanguageStrings* ls)
     ls->menuPropsDisk           = "Levyt";               // New in 2.7
     ls->menuPropsLanguage       = "Kieli";
     ls->menuPropsPorts          = "Liitännät";
-    
-    ls->menuVideoSource         = "Videoulostulo";
-    ls->menuVideoSourceDefault  = "Videoulostuloa ei ole kytketty.";
-    ls->menuVideoChipAutodetect = "Tunnista videopiiri automaattisesti";
-    ls->menuVideoInSource       = "Videosisääntulo";
-    ls->menuVideoInBitmap       = "Bittikarttatiedosto";
     
     ls->menuEthInterface        = "Verkkokortti"; 
 

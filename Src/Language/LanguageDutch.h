@@ -104,47 +104,7 @@ void langInitDutch(LanguageStrings* ls)
     ls->menuInsert              = "Invoeren";
     ls->menuEject               = "Uitwerpen";
 
-    ls->menuCartGameReader      = "Game Reader";
-    ls->menuCartIde             = "IDE";
-    ls->menuCartBeerIde         = "Beer";
-    ls->menuCartGIde            = "GIDE";
-    ls->menuCartSunriseIde      = "Sunrise";  
-    ls->menuCartScsi            = "SCSI";
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";
     ls->menuJoyrexPsg           = "Joyrex PSG Cartridge"; // New in 2.9
-    ls->menuCartSCC             = "SCC Cartridge";
-    ls->menuCartSCCPlus         = "SCC-I Cartridge";
-    ls->menuCartFMPac           = "FM-PAC Cartridge";
-    ls->menuCartPac             = "PAC Cartridge";
-    ls->menuCartHBI55           = "Sony HBI-55 Cartridge";
-    ls->menuCartInsertSpecial   = "Voer Speciale Cartridge in";
-    ls->menuCartMegaRam         = "MegaRAM";
-    ls->menuCartExternalRam     = "Extern RAM-geheugen";
-    ls->menuCartEseRam          = "Ese-RAM";
-    ls->menuCartEseSCC          = "Ese-SCC";
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";
-
-    ls->menuDiskInsertNew       = "Voer Nieuw Diskettebestand in";
-    ls->menuDiskInsertCdrom     = "Voer CD-ROM in";
-    ls->menuDiskDirInsert       = "Voer Map in";
-    ls->menuDiskAutoStart       = "Herstart na invoeren";
-    ls->menuCartAutoReset       = "Herstart na invoeren/uitwerpen";
-
-    ls->menuCasRewindAfterInsert= "Terugspoelen na invoeren";
-    ls->menuCasUseReadOnly      = "Gebruik Cassettebestand als Alleen-Lezen";
-    ls->lmenuCasSaveAs          = "Cassettebestand opslaan als...";
-    ls->menuCasSetPosition      = "Bepaal positie";
-    ls->menuCasRewind           = "Terugspoelen cassette";
-
-    ls->menuVideoLoad           = "Laden...";
-    ls->menuVideoPlay           = "Laatste opname afspelen";
-    ls->menuVideoRecord         = "Opnemen";
-    ls->menuVideoRecording      = "Bezig met opnemen";
-    ls->menuVideoRecAppend      = "Opnemen (invoeren)";
-    ls->menuVideoStop           = "Stoppen";
-    ls->menuVideoRender         = "Maak Videobestand";
 
     ls->menuPrnFormfeed         = "Paginadoorvoer";
 
@@ -162,12 +122,6 @@ void langInitDutch(LanguageStrings* ls)
     ls->menuPropsDisk           = "Diskettes";
     ls->menuPropsLanguage       = "Taal";
     ls->menuPropsPorts          = "Poorten";
-
-    ls->menuVideoSource         = "Video Uit-bron";
-    ls->menuVideoSourceDefault  = "Geen Video Uit-bron verbonden";
-    ls->menuVideoChipAutodetect = "Automatische detectie Videochip";
-    ls->menuVideoInSource       = "Video In-bron";
-    ls->menuVideoInBitmap       = "Afbeedingsbestand";
 
     ls->menuEthInterface        = "Ethernet koppeling";
 

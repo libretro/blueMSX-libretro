@@ -104,47 +104,7 @@ void langInitGerman(LanguageStrings* ls)
     ls->menuInsert               = "Einfügen";
     ls->menuEject                = "Auswurf";
 
-    ls->menuCartGameReader       = "Game Reader";                        
-    ls->menuCartIde              = "IDE";                                
-    ls->menuCartBeerIde          = "Beer";                               
-    ls->menuCartGIde             = "GIDE";                               
-    ls->menuCartSunriseIde       = "Sunrise";                              
-    ls->menuCartScsi             = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI         = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI         = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI        = "Gouda-SCSI";          // New in 2.7
     ls->menuJoyrexPsg            = "Joyrex PSG Cartridge"; // New in 2.9
-    ls->menuCartSCC              = "SCC Cartridge";
-    ls->menuCartSCCPlus          = "SCC-I Cartridge";
-    ls->menuCartFMPac            = "FM-PAC-Cartridge";
-    ls->menuCartPac              = "PAC-Cartridge";
-    ls->menuCartHBI55            = "Sony HBI-55 Cartridge";
-    ls->menuCartInsertSpecial    = "Insert Special";                     
-    ls->menuCartMegaRam          = "MegaRAM";                            
-    ls->menuCartExternalRam      = "Externes RAM";
-    ls->menuCartEseRam           = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC           = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom     = "Mega Flash-ROM";      // New in 2.7
-
-    ls->menuCasRewindAfterInsert = "Zurück nach Einfügen";
-    ls->menuCasUseReadOnly       = "Cassetten-Image nur lesend benutzen";
-    ls->lmenuCasSaveAs           = "Speichere Cassetten-Image als ...";
-    ls->menuCasSetPosition       = "Positionieren";
-    ls->menuCasRewind            = "Zurück";
-
-    ls->menuVideoLoad            = "Laden ...";                  // New in 2.6
-    ls->menuVideoPlay            = "Letzte Aufnahme abspielen";  // New in 2.6 -- "Play Last Capture";
-    ls->menuVideoRecord          = "Aufnehmen";                  // New in 2.6
-    ls->menuVideoRecording       = "Nimmt auf ...";              // New in 2.6 -- "Recording";
-    ls->menuVideoRecAppend       = "Aufnehmen (anfügen)";        // New in 2.6
-    ls->menuVideoStop            = "Stopp";                      // New in 2.6
-    ls->menuVideoRender          = "Videofile wiedergeben";      // New in 2.6 -- "Render Video File";
-
-    ls->menuDiskInsertNew        = "Neues Disk-Image einfügen";              
-    ls->menuDiskInsertCdrom      = "CDROM einfügen";             // New in 2.7 -- "Insert CD-Rom";
-    ls->menuDiskDirInsert        = "Directory einfügen";
-    ls->menuDiskAutoStart        = "Reset nach Einfügen";
-    ls->menuCartAutoReset        = "Reset nach Einfügen/Entfernen";
 
     ls->menuPrnFormfeed          = "Seitenvorschub";
 
@@ -162,12 +122,6 @@ void langInitGerman(LanguageStrings* ls)
     ls->menuPropsDisk            = "Disks";               // New in 2.7
     ls->menuPropsLanguage        = "Sprache";
     ls->menuPropsPorts           = "Ports";
-    
-    ls->menuVideoSource          = "Video-Out Source";                      // "Video Out Source";                  
-    ls->menuVideoSourceDefault   = "Keine Video-Out Source angeschlossen";  // "No Video Out Source Connected";      
-    ls->menuVideoChipAutodetect  = "Selbständige Videochip-Erkennung";      // "Autodetect Video-Chip";   
-    ls->menuVideoInSource        = "Video-In Source";                       // "Video In Source";                    
-    ls->menuVideoInBitmap        = "Bitmap-File";                        
     
     ls->menuEthInterface         = "Ethernet"; // New in 2.6
 

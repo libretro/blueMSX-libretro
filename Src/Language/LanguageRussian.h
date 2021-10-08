@@ -104,47 +104,7 @@ void langInitRussian(LanguageStrings* ls)
     ls->menuInsert              = "Вставить";
     ls->menuEject               = "Убрать";
 
-    ls->menuCartGameReader      = "Game Reader";
-    ls->menuCartIde             = "IDE";
-    ls->menuCartBeerIde         = "Beer";
-    ls->menuCartGIde            = "GIDE";
-    ls->menuCartSunriseIde      = "Sunrise";  
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG картридж"; // New in 2.9
-    ls->menuCartSCC             = "SCC картридж";
-    ls->menuCartSCCPlus         = "SCC-I картридж";
-    ls->menuCartFMPac           = "FM-PAC картридж";
-    ls->menuCartPac             = "PAC Cartridge";
-    ls->menuCartHBI55           = "Sony HBI-55 Cartridge";
-    ls->menuCartInsertSpecial   = "Вставить другое";
-    ls->menuCartMegaRam         = "MegaRAM";
-    ls->menuCartExternalRam     = "Внешняя RAM";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "Вставить новый образ дискеты";
-    ls->menuDiskInsertCdrom     = "Вставить CD-Rom диск";       // New in 2.7
-    ls->menuDiskDirInsert       = "Вставить папку";
-    ls->menuDiskAutoStart       = "Сбросить после загрузки дискеты";
-    ls->menuCartAutoReset       = "Сбросить после загрузки/удаления";
-
-    ls->menuCasRewindAfterInsert= "Промотать после загрузки";
-    ls->menuCasUseReadOnly      = "Испольовать образ кассеты только для чтения";
-    ls->lmenuCasSaveAs          = "Сохранить образ кассеты как...";
-    ls->menuCasSetPosition      = "Задать позицию";
-    ls->menuCasRewind           = "Промотать";
-
-    ls->menuVideoLoad           = "Загрузить...";             
-    ls->menuVideoPlay           = "Воспроизвести последнее видео";   
-    ls->menuVideoRecord         = "Записать";              
-    ls->menuVideoRecording      = "Запись";           
-    ls->menuVideoRecAppend      = "Дописать";     
-    ls->menuVideoStop           = "Остановить";                
-    ls->menuVideoRender         = "Сохранить видео в файл";   
 
     ls->menuPrnFormfeed         = "Печать страницы";
 
@@ -162,12 +122,6 @@ void langInitRussian(LanguageStrings* ls)
     ls->menuPropsDisk           = "Дискеты";               // New in 2.7
     ls->menuPropsLanguage       = "Выбор языка";
     ls->menuPropsPorts          = "Порты";
-    
-    ls->menuVideoSource         = "Вывод видеоданных";
-    ls->menuVideoSourceDefault  = "Не обнаружен видеоисточник";
-    ls->menuVideoChipAutodetect = "Автоматически обнаруживать видеочип";
-    ls->menuVideoInSource       = "Входной видеосигнал";
-    ls->menuVideoInBitmap       = "Файл Bitmap";
     
     ls->menuEthInterface        = "Сетевой интерфейс"; 
 

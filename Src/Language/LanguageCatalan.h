@@ -104,47 +104,7 @@ void langInitCatalan(LanguageStrings* ls)
     ls->menuInsert              = "Insereix";
     ls->menuEject               = "Expulsa";
 
-    ls->menuCartGameReader      = "Game Reader";
-    ls->menuCartIde             = "IDE";
-    ls->menuCartBeerIde         = "Beer";
-    ls->menuCartGIde            = "GIDE";
-    ls->menuCartSunriseIde      = "Sunrise";  
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Cartutx Joyrex PSG"; // New in 2.9
-    ls->menuCartSCC             = "Cartutx SCC";
-    ls->menuCartSCCPlus         = "Cartutx SCC-I";
-    ls->menuCartFMPac           = "Cartutx FM-PAC";
-    ls->menuCartPac             = "Cartutx PAC";
-    ls->menuCartHBI55           = "Cartutx Sony HBI-55";
-    ls->menuCartInsertSpecial   = "Insereix Especial";
-    ls->menuCartMegaRam         = "MegaRAM";
-    ls->menuCartExternalRam     = "RAM externa";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "Insereix una nova imatge de disc";
-    ls->menuDiskInsertCdrom     = "Insereix un CD-Rom";       // New in 2.7
-    ls->menuDiskDirInsert       = "Insereix directori";
-    ls->menuDiskAutoStart       = "Reinicia després de la inserció";
-    ls->menuCartAutoReset       = "Reinicia després de la inserció/expulsió";
-
-    ls->menuCasRewindAfterInsert= "Rebobina després de la inserció";
-    ls->menuCasUseReadOnly      = "Utilitza una imatge de casset només lectura";
-    ls->lmenuCasSaveAs          = "Anomena i desa la imatge de casset...";
-    ls->menuCasSetPosition      = "Estableix la posició";
-    ls->menuCasRewind           = "Rebobina";
-
-    ls->menuVideoLoad           = "Carrega...";             
-    ls->menuVideoPlay           = "Reprodueix la darrera captura";   
-    ls->menuVideoRecord         = "Enregistra";              
-    ls->menuVideoRecording      = "Enregistrant";           
-    ls->menuVideoRecAppend      = "Enregistra (afig)";     
-    ls->menuVideoStop           = "Atura";                
-    ls->menuVideoRender         = "Renderitza el fitxer de vídeo";   
 
     ls->menuPrnFormfeed         = "Pàgina següent";
 
@@ -162,12 +122,6 @@ void langInitCatalan(LanguageStrings* ls)
     ls->menuPropsDisk           = "Discs";               // New in 2.7
     ls->menuPropsLanguage       = "Idioma";
     ls->menuPropsPorts          = "Ports";
-    
-    ls->menuVideoSource         = "Font de la sortida de vídeo";
-    ls->menuVideoSourceDefault  = "No hi ha conectada cap font de sortida de vídeo";
-    ls->menuVideoChipAutodetect = "Detecció automàtica del xip de vídeo";
-    ls->menuVideoInSource       = "Font de la entrada de vídeo";
-    ls->menuVideoInBitmap       = "Fitxer de mapa de bits";
     
     ls->menuEthInterface        = "Interfície Ethernet"; 
 

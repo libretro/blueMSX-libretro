@@ -104,47 +104,7 @@ void langInitSwedish(LanguageStrings* ls)
     ls->menuInsert              = "Sätt in";
     ls->menuEject               = "Ta ur";
 
-    ls->menuCartGameReader      = "Game Reader";
-    ls->menuCartIde             = "IDE";
-    ls->menuCartBeerIde         = "Beer";
-    ls->menuCartGIde            = "GIDE";
-    ls->menuCartSunriseIde      = "Sunrise";  
-    ls->menuCartScsi            = "SCSI";                // New in 2.7
-    ls->menuCartMegaSCSI        = "MEGA-SCSI";           // New in 2.7
-    ls->menuCartWaveSCSI        = "WAVE-SCSI";           // New in 2.7
-    ls->menuCartGoudaSCSI       = "Gouda SCSI";          // New in 2.7
     ls->menuJoyrexPsg           = "Joyrex PSG Cartridge"; // New in 2.9
-    ls->menuCartSCC             = "SCC Cartridge";
-    ls->menuCartSCCPlus         = "SCC-I Cartridge";
-    ls->menuCartFMPac           = "FM-PAC Cartridge";
-    ls->menuCartPac             = "PAC Cartridge";
-    ls->menuCartHBI55           = "Sony HBI-55 Cartridge";
-    ls->menuCartInsertSpecial   = "Sätt in Special";
-    ls->menuCartMegaRam         = "MegaRAM";
-    ls->menuCartExternalRam     = "Externt RAM";
-    ls->menuCartEseRam          = "Ese-RAM";             // New in 2.7
-    ls->menuCartEseSCC          = "Ese-SCC";             // New in 2.7
-    ls->menuCartMegaFlashRom    = "Mega Flash ROM";      // New in 2.7
-
-    ls->menuDiskInsertNew       = "Sätt in ny diskett fil";
-    ls->menuDiskInsertCdrom     = "Sätt in CD-Rom";      // New in 2.7
-    ls->menuDiskDirInsert       = "Sätt in mapp";
-    ls->menuDiskAutoStart       = "Starta om efter insättning/urdragning";
-    ls->menuCartAutoReset       = "Starta om efter insättning/urdragning";
-
-    ls->menuCasRewindAfterInsert= "Spola tillbaka vid insättning";
-    ls->menuCasUseReadOnly      = "Tillåt endast läsning av kassett";
-    ls->lmenuCasSaveAs          = "Spara kassett som...";
-    ls->menuCasSetPosition      = "Sätt position";
-    ls->menuCasRewind           = "Spola tillbaka";
-
-    ls->menuVideoLoad           = "Ladda...";             
-    ls->menuVideoPlay           = "Spela upp senaste";   
-    ls->menuVideoRecord         = "Spela in";              
-    ls->menuVideoRecording      = "Spelar in";           
-    ls->menuVideoRecAppend      = "Spela in (lägg till)";     
-    ls->menuVideoStop           = "Stopp";                
-    ls->menuVideoRender         = "Spara videofil";   
 
     ls->menuPrnFormfeed         = "Pappersmatning";
 
@@ -162,12 +122,6 @@ void langInitSwedish(LanguageStrings* ls)
     ls->menuPropsDisk           = "Enheter";               // New in 2.7
     ls->menuPropsLanguage       = "Språk";
     ls->menuPropsPorts          = "Portar";
-    
-    ls->menuVideoSource         = "Video ut källa";
-    ls->menuVideoSourceDefault  = "Ingen videokälla inkopplad";
-    ls->menuVideoChipAutodetect = "Automatisk detektering av video chip";    
-    ls->menuVideoInSource       = "Video in källa";
-    ls->menuVideoInBitmap       = "Bitmap fil";
     
     ls->menuEthInterface        = "Nätverksanslutning"; 
 
