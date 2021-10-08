@@ -139,7 +139,6 @@ struct Mixer
 static void recalculateChannelVolume(Mixer* mixer, MixerChannel* channel);
 static void updateVolumes(Mixer* mixer);
 
-
 ///////////////////////////////////////////////////////
 
 static void mixerRecalculateType(Mixer* mixer, int audioType) 
@@ -226,31 +225,6 @@ void mixerEnableChannelType(Mixer* mixer, Int32 type, Int32 enable)
     mixerRecalculateType(mixer, type);
 }
 
-Int32 mixerGetChannelTypeVolume(Mixer* mixer, Int32 type, int leftRight)
-{
-    int i;
-    Int32 volume = 0;
-
-    updateVolumes(mixer);
-
-    if (type == MIXER_CHANNEL_MIDI) {
-        return leftRight ? mixer->midi.volIntRight : mixer->midi.volIntLeft;
-    }
-
-    for (i = 0; i < mixer->channelCount; i++) {
-        if (mixer->channels[i].type == type) {
-            Int32 channelVol = leftRight ? 
-                               mixer->channels[i].volIntRight :
-                               mixer->channels[i].volIntLeft;
-            if (channelVol > volume) {
-                volume = channelVol;
-            }
-        }
-    }
-
-    return volume;
-}
-
 Int32 mixerIsChannelTypeActive(Mixer* mixer, Int32 type, Int32 reset)
 {
     int i;
@@ -334,18 +308,18 @@ static void updateVolumes(Mixer* mixer)
 
 static Mixer* globalMixer = NULL;
 
-Mixer* mixerGetGlobalMixer()
+Mixer* mixerGetGlobalMixer(void)
 {
     return globalMixer;
 }
 
-Mixer* mixerCreate()
+Mixer* mixerCreate(void)
 {
-    Mixer* mixer = (Mixer*)calloc(1, sizeof(Mixer));
+    Mixer* mixer        = (Mixer*)calloc(1, sizeof(Mixer));
 
     mixer->fragmentSize = 512;
-    mixer->enable = 1;
-    mixer->rate = AUDIO_SAMPLERATE;
+    mixer->enable       = 1;
+    mixer->rate         = AUDIO_SAMPLERATE;
 
     if (globalMixer == NULL) globalMixer = mixer;
 
@@ -415,31 +389,24 @@ void mixerUnregisterChannel(Mixer* mixer, Int32 handle)
 {
     int i;
 
-    if (mixer->channelCount == 0) {
+    if (mixer->channelCount == 0)
         return;
+
+    for (i = 0; i < mixer->channelCount; i++)
+    {
+	    if (mixer->channels[i].handle == handle)
+		    break;
     }
 
-    for (i = 0; i < mixer->channelCount; i++) {
-        if (mixer->channels[i].handle == handle) {
-            break;
-        }
-    }
-
-    if (i == mixer->channelCount) {
+    if (i == mixer->channelCount)
         return;
-    }
 
     mixer->channelCount--;
-    while (i < mixer->channelCount) {
-        mixer->channels[i] = mixer->channels[i + 1];
-        i++;
+    while (i < mixer->channelCount)
+    {
+	    mixer->channels[i] = mixer->channels[i + 1];
+	    i++;
     }
-}
-
-Int32 mixerGetMasterVolume(Mixer* mixer, int leftRight)
-{
-    updateVolumes(mixer);
-    return leftRight ? mixer->volIntRight : mixer->volIntLeft;
 }
 
 void mixerReset(Mixer* mixer)
@@ -644,5 +611,4 @@ void mixerSync(Mixer* mixer)
 void mixerSetEnable(Mixer* mixer, int enable)
 {
     mixer->enable = enable;
-//    printf("AUDIO: %s\n", enable?"enabled":"disabled");
 }

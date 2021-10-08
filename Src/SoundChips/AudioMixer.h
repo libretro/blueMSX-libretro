@@ -69,14 +69,12 @@ void mixerDestroy(Mixer* mixer);
 
 Mixer* mixerGetGlobalMixer();
 
-Int32 mixerGetMasterVolume(Mixer* mixer, int leftRight);
 void mixerSetMasterVolume(Mixer* mixer, Int32 volume);
 void mixerEnableMaster(Mixer* mixer, Int32 enable);
 void mixerSetStereo(Mixer* mixer, Int32 stereo);
 UInt32 mixerGetSampleRate(Mixer* mixer);
 void mixerSetSampleRate(Mixer* mixer, UInt32 rate);
 
-Int32 mixerGetChannelTypeVolume(Mixer* mixer, Int32 channelType, int leftRight);
 void mixerSetChannelTypeVolume(Mixer* mixer, Int32 channelType, Int32 volume);
 void mixerSetChannelTypePan(Mixer* mixer, Int32 channelType, Int32 pan);
 void mixerEnableChannelType(Mixer* mixer, Int32 channelType, Int32 enable);

@@ -38,9 +38,9 @@ class CMSXGr
 		CMSXGr() {};
 		~CMSXGr() {};
 
-        int  Init() { return 0; }
+		int  Init() { return 0; }
 
-        bool IsSlotEnable(int) { return false; }
+		bool IsSlotEnable(int) { return false; }
 		bool IsCartridgeInserted(int) { return false; }
 
 		int  ReadMemory(int,char*,int,int) { return 0; }
@@ -61,15 +61,6 @@ class CMSXGr
 #define GlobalAlloc(xxx, addr) malloc(addr)
 #define GlobalFree(addr) free(addr)
 #endif
-
-
-//#define ENABLE_DEBUG
-#ifdef ENABLE_DEBUG
-#define dprintf printf
-#else
-#define dprintf if (0) printf
-#endif
-
 
 static CMSXGr* MsxGr;
 
@@ -105,34 +96,31 @@ GameReader::~GameReader() {
 
 bool GameReader::readMemory(UInt16 address, void* buffer, int length)
 {
-    if (slot == -1) {
+    if (slot == -1)
         return false;
-    }
     
-    if (!inserted) {
+    if (!inserted)
         inserted = MsxGr->IsCartridgeInserted(slot);
-    }
     
-    if (inserted) {
-        //printf("### Reading address %.4x - %.4x\n", address, address + length - 1);
-        if (MsxGr->ReadMemory(slot, globalBuffer, address, length) != 0) {
-            inserted = MsxGr->IsCartridgeInserted(slot);
-            return false;
-        }
-        memcpy(buffer, globalBuffer, length);
+    if (inserted)
+    {
+	    //printf("### Reading address %.4x - %.4x\n", address, address + length - 1);
+	    if (MsxGr->ReadMemory(slot, globalBuffer, address, length) != 0) {
+		    inserted = MsxGr->IsCartridgeInserted(slot);
+		    return false;
+	    }
+	    memcpy(buffer, globalBuffer, length);
     }
     return true;
 }
 
 bool GameReader::writeMemory(UInt16 address, void* buffer, int length)
 {
-    if (slot == -1) {
+    if (slot == -1)
         return false;
-    }
     
-    if (!inserted) {
+    if (!inserted)
         inserted = MsxGr->IsCartridgeInserted(slot);
-    }
     
     if (inserted) {
         memcpy(globalBuffer, buffer, length);
@@ -147,13 +135,11 @@ bool GameReader::writeMemory(UInt16 address, void* buffer, int length)
 
 bool GameReader::readIo(UInt16 port, UInt8* value)
 {
-    if (slot == -1) {
+    if (slot == -1)
         return false;
-    }
     
-    if (!inserted) {
+    if (!inserted)
         inserted = MsxGr->IsCartridgeInserted(slot);
-    }
 
     if (inserted) {
         if (MsxGr->ReadIO(slot, globalBuffer, port, 1) != 0) {
@@ -167,13 +153,11 @@ bool GameReader::readIo(UInt16 port, UInt8* value)
 
 bool GameReader::writeIo(UInt16 port, UInt8 value)
 {
-    if (slot == -1) {
+    if (slot == -1)
         return false;
-    }
     
-    if (!inserted) {
+    if (!inserted)
         inserted = MsxGr->IsCartridgeInserted(slot);
-    }
 
     if (inserted) {
         *(UInt8*)globalBuffer = value;
@@ -191,22 +175,23 @@ static GameReader* GameReaders[MAX_GAMEREADERS] = { NULL, NULL };
 
 static void InitializeGameReaders()
 {
-    if (MsxGr == NULL) {
-        MsxGr = new CMSXGr;
+    if (MsxGr == NULL)
+    {
+	    MsxGr = new CMSXGr;
 
-        int gameReaderCount = 0;
+	    int gameReaderCount = 0;
 
-        if (MsxGr->Init() == 0) {
-            for (int i = 0; i < 16 && gameReaderCount < MAX_GAMEREADERS; i++) {
-                if (MsxGr->IsSlotEnable(i)) {
-                    GameReaders[gameReaderCount++] = new GameReader(i);
-                }
-            }
-        }
+	    if (MsxGr->Init() == 0) {
+		    for (int i = 0; i < 16 && gameReaderCount < MAX_GAMEREADERS; i++) {
+			    if (MsxGr->IsSlotEnable(i)) {
+				    GameReaders[gameReaderCount++] = new GameReader(i);
+			    }
+		    }
+	    }
 
-        for (; gameReaderCount < 2; gameReaderCount++) {
-            GameReaders[gameReaderCount] = new GameReader;
-        }
+	    for (; gameReaderCount < 2; gameReaderCount++) {
+		    GameReaders[gameReaderCount] = new GameReader;
+	    }
     }
 }
 
@@ -258,13 +243,4 @@ extern "C" int gameReaderReadIo(GrHandle* grHandle, UInt16 port, UInt8* value)
 extern "C" int gameReaderWriteIo(GrHandle* grHandle, UInt16 port, UInt8 value)
 {
     return ((GameReader*)grHandle)->writeIo(port, value) ? 1 : 0;
-}
-
-extern "C" int gameReaderSupported()
-{
-#ifdef WII
-    return 0;
-#else
-    return 1;
-#endif
 }

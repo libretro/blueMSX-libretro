@@ -32,8 +32,6 @@
 
 typedef void* GrHandle;
 
-int gameReaderSupported();
-
 GrHandle* gameReaderCreate(int slot);
 void gameReaderDestroy(GrHandle* grHandle);
 

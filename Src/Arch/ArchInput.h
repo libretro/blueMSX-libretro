@@ -37,16 +37,4 @@ void archMouseSetForceLock(int lock);
 void archMouseGetState(int* dx, int* dy);
 int  archMouseGetButtonState(int checkAlways);
 
-int   archPollEvent();
-
-void  archPollInput();
-void  archKeyboardSetSelectedKey(int keyCode);
-char* archGetSelectedKey();
-char* archGetMappedKey();
-int   archKeyboardIsKeyConfigured(int msxKeyCode);
-int   archKeyboardIsKeySelected(int msxKeyCode);
-char* archKeyconfigSelectedKeyTitle();
-char* archKeyconfigMappedToTitle();
-char* archKeyconfigMappingSchemeTitle();
-
 #endif

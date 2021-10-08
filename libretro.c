@@ -110,9 +110,7 @@ void lower_string(char* str)
 {
    int i;
    for (i=0; str[i]; i++)
-   {
       str[i] = tolower(str[i]);
-   }
 }
 
 int get_media_type(const char* filename)
@@ -125,39 +123,33 @@ int get_media_type(const char* filename)
    extension = workram + strlen(workram) - 4;
 
    if(strcmp(extension, ".dsk") == 0){
-      if (is_auto){
+      if (is_auto)
          strcpy(msx_type, "MSX2+");
-      }
       return MEDIA_TYPE_DISK;
    }
    else if(strcmp(extension, ".m3u") == 0){
-      if (is_auto){
+      if (is_auto)
          strcpy(msx_type, "MSX2+");
-      }
       return MEDIA_TYPE_DISK_BUNDLE;
    }
    else if(strcmp(extension, ".cas") == 0){
-      if (is_auto){
+      if (is_auto)
          strcpy(msx_type, "MSX2+");
-      }
       return MEDIA_TYPE_TAPE;
    }
    else if(strcmp(extension, ".rom") == 0){
-      if (is_auto){
+      if (is_auto)
          strcpy(msx_type, "MSX2+");
-      }
       return MEDIA_TYPE_CART;
    }
    else if(strcmp(extension, ".mx1") == 0){
-      if (is_auto){
+      if (is_auto)
          strcpy(msx_type, "MSX2+");
-      }
       return MEDIA_TYPE_CART;
    }
    else if(strcmp(extension, ".mx2") == 0){
-      if (is_auto){
+      if (is_auto)
          strcpy(msx_type, "MSX2+");
-      }
       return MEDIA_TYPE_CART;
    }
    else if(strcmp(extension, ".col") == 0){
@@ -233,10 +225,11 @@ bool add_image_index(void)
    return true;
 }
 
-bool replace_image_index(unsigned index, const struct retro_game_info *info)
+bool replace_image_index(unsigned index,
+      const struct retro_game_info *info)
 {
    if(get_media_type(info->path) != MEDIA_TYPE_DISK)
-       return false;//cant swap a cart or tape into a disk slot
+       return false; /* can't swap a cart or tape into a disk slot */
     
    strcpy(disk_paths[index], info->path);
    return true;
@@ -262,11 +255,13 @@ static bool read_m3u(const char *file)
    char line[PATH_MAX];
    char name[PATH_MAX];
    FILE *f = fopen(file, "r");
-   
+
    if (!f)
       return false;
 
-   while (fgets(line, sizeof(line), f) && disk_images < sizeof(disk_paths) / sizeof(disk_paths[0])) 
+   while (fgets(line, sizeof(line), f)
+         && disk_images < 
+         sizeof(disk_paths) / sizeof(disk_paths[0])) 
    {
       char *carriage_return = NULL;
       char *newline         = NULL;
@@ -277,7 +272,7 @@ static bool read_m3u(const char *file)
       carriage_return = strchr(line, '\r');
       if (carriage_return)
          *carriage_return = '\0';
-      
+
       newline = strchr(line, '\n');
       if (newline)
          *newline = '\0';
@@ -474,14 +469,14 @@ static unsigned btn_map[EC_KEYCOUNT] =
 
 void retro_get_system_info(struct retro_system_info *info)
 {
-   info->library_name = "blueMSX";
+   info->library_name     = "blueMSX";
 #ifdef GIT_VERSION
-   info->library_version = "git" GIT_VERSION;
+   info->library_version  = "git" GIT_VERSION;
 #else
-   info->library_version = "svn";
+   info->library_version  = "svn";
 #endif
-   info->need_fullpath = true;
-   info->block_extract = false;
+   info->need_fullpath    = true;
+   info->block_extract    = false;
    info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|cas|m3u";
 }
 
@@ -661,7 +656,7 @@ static void check_variables(void)
    struct retro_system_av_info av_info;
    bool geometry_update = false;
    struct retro_variable var;
-   
+
    var.key = "bluemsx_msxtype";
    var.value = NULL;
 
@@ -681,7 +676,7 @@ static void check_variables(void)
       {
          is_coleco = false;
          strcpy(msx_type, var.value);
-         
+
          if (!strncmp(var.value, "SEGA", 4))
             is_sega = true;
          if (!strncmp(var.value, "SVI", 3))
@@ -707,22 +702,22 @@ static void check_variables(void)
    {
       bool newval = (!strcmp(var.value, "disabled"));
       int msx2_dif_old = msx2_dif;
-      
+
       if (!strcmp(var.value, "MSX2"))
          msx2_dif = 10;
       else
          msx2_dif = 0;
-      
+
       if (msx2_dif_old != msx2_dif)
          geometry_update = true;
-         
+
       if (newval != use_overscan)
       {
          use_overscan = newval;
          geometry_update = true;
       }
    }
-   
+
    var.key = "bluemsx_vdp_synctype";
    var.value = NULL;
 
@@ -829,7 +824,7 @@ bool retro_load_game(const struct retro_game_info *info)
    disk_images = 0;
    disk_inserted = false;
    extract_directory(base_dir, info->path, sizeof(base_dir));
-   
+
    check_variables();
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
@@ -841,10 +836,10 @@ bool retro_load_game(const struct retro_game_info *info)
    snprintf(mediadb_dir, sizeof(mediadb_dir), "%s%c%s", properties_dir, SLASH, "Databases");
 
    machineSetDirectory(machines_dir);
-   
+
    if(environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
       boardSetDirectory(save_dir);
-   
+
 #if 0
    boardSetDirectory(buffer);
 #endif
@@ -960,10 +955,10 @@ bool retro_load_game(const struct retro_game_info *info)
 
    for (i = 0; i < PROP_MAX_CARTS; i++)
    {
-   /*    Breaks database detection
-      if (properties->media.carts[i].fileName[0] && mapper_auto)
-         insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
-   */
+      /*    Breaks database detection
+            if (properties->media.carts[i].fileName[0] && mapper_auto)
+            insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+       */
       if (properties->media.carts[i].fileName[0] && !mapper_auto)
          insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
 
@@ -986,15 +981,12 @@ bool retro_load_game(const struct retro_game_info *info)
 
    {
       Machine* machine = machineCreate(properties->emulation.machineName);
-      if (machine != NULL)
-      {
-         boardSetMachine(machine);
-         machineDestroy(machine);
-      }
-      else
+      if (!machine)
          return false;
+      boardSetMachine(machine);
+      machineDestroy(machine);
    }
-   
+
    boardSetFdcTimingEnable(properties->emulation.enableFdcTiming);
    boardSetY8950Enable(properties->sound.chip.enableY8950);
    boardSetYm2413Enable(properties->sound.chip.enableYM2413);
@@ -1175,22 +1167,25 @@ uint16_t* frameBufferGetLine(FrameBuffer* frameBuffer, int y)
    return (image_buffer + y * image_buffer_current_width);
 }
 
-FrameBuffer* frameBufferGetDrawFrame()
+FrameBuffer* frameBufferGetDrawFrame(void)
 {
    return (void*)image_buffer;
 }
-FrameBuffer* frameBufferFlipDrawFrame()
+
+FrameBuffer* frameBufferFlipDrawFrame(void)
 {
    return (void*)image_buffer;
 }
 
 static int fbScanLine = 0;
+
 void frameBufferSetScanline(int scanline)
 {
    fbScanLine = scanline;
 }
 
-int frameBufferGetScanline() {
+int frameBufferGetScanline(void)
+{
    return fbScanLine;
 }
 
@@ -1213,17 +1208,17 @@ int    frameBufferGetLineCount(FrameBuffer* frameBuffer) {
    return image_buffer_height;
 }
 
-int    frameBufferGetMaxWidth(FrameBuffer* frameBuffer)
+int frameBufferGetMaxWidth(FrameBuffer* frameBuffer)
 {
    return FB_MAX_LINE_WIDTH;
 }
 
-int    frameBufferGetDoubleWidth(FrameBuffer* frameBuffer, int y)
+int frameBufferGetDoubleWidth(FrameBuffer* frameBuffer, int y)
 {
    return double_width;
 }
 
-void   frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val)
+void frameBufferSetDoubleWidth(FrameBuffer* frameBuffer, int y, int val)
 {
    double_width = val;
    image_buffer_current_width = double_width ? image_buffer_base_width * 2 : image_buffer_base_width;
@@ -1241,19 +1236,20 @@ void retro_unload_game(void)
    if (properties)
       propDestroy(properties);
 
-   image_buffer = NULL;
-   image_buffer_base_width = 0;
+   image_buffer               = NULL;
+   image_buffer_base_width    = 0;
    image_buffer_current_width = 0;
-   image_buffer_height = 0;
+   image_buffer_height        = 0;
 }
-unsigned retro_get_region(void){
+
+unsigned retro_get_region(void)
+{
    switch (msx_vdp_synctype)
    {
       case P_VDP_SYNCAUTO:
          if (!strcmp(msx_type, "MSX") || !strcmp(msx_type, "MSX2") || is_spectra)
-             return RETRO_REGION_PAL;
-         else
-             return RETRO_REGION_NTSC;
+            return RETRO_REGION_PAL;
+         return RETRO_REGION_NTSC;
       case P_VDP_SYNC50HZ:
          return RETRO_REGION_PAL;
       case P_VDP_SYNC60HZ:
@@ -1276,7 +1272,6 @@ unsigned retro_api_version(void){return RETRO_API_VERSION;}
 size_t retro_serialize_size(void){return 1<<21;}
 void retro_cheat_reset(void){}
 void retro_cheat_set(unsigned a, bool b, const char * c){}
-static int n_serialized = 0;
 
 bool retro_serialize(void *data, size_t size)
 {
@@ -1329,10 +1324,10 @@ bool retro_unserialize(const void *data, size_t size)
    saveStateCreateForRead("mem0");
    boardInfo.loadState();
    memZipFileDestroy(memZipFileFind("mem0"));
-   return true;}
+   return true;
+}
 
 /* Core stubs */
-int archPollEvent(){return 0;}
 void frameBufferDataDestroy(FrameBufferData* frameData){}
 void frameBufferSetActive(FrameBufferData* frameData){}
 void frameBufferSetMixMode(FrameBufferMixMode mode, FrameBufferMixMode mask){}

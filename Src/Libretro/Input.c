@@ -29,20 +29,4 @@
 */
 #include "ArchInput.h"
 
-void  archUpdateJoystick() {}
-
-//UInt8 archJoystickGetState(int joystickNo) { return 0; }
-int  archJoystickGetCount() { return 1; }
-char* archJoystickGetName(int index) { return ""; }
 void archMouseSetForceLock(int lock) { }
-
-void  archPollInput() {}
-void  archKeyboardSetSelectedKey(int keyCode) {}
-char* archGetSelectedKey() { return ""; }
-char* archGetMappedKey() { return ""; }
-int   archKeyboardIsKeyConfigured(int msxKeyCode) { return 0; }
-int   archKeyboardIsKeySelected(int msxKeyCode) { return 0; }
-char* archKeyconfigSelectedKeyTitle() { return ""; }
-char* archKeyconfigMappedToTitle() { return ""; }
-char* archKeyconfigMappingSchemeTitle() { return ""; }
-

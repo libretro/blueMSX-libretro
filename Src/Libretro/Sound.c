@@ -45,5 +45,3 @@ void archSoundCreate(Mixer* mixer, UInt32 sampleRate, UInt32 bufferSize, Int16 c
 }
 
 void archSoundDestroy(void) {}
-void archSoundResume(void) {}
-void archSoundSuspend(void) {}

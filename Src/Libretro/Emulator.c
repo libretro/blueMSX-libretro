@@ -93,14 +93,10 @@ EmuState emulatorGetState() {
 }
 
 void emulatorSetState(EmuState state) {
-    if (state == EMU_RUNNING) {
-        archSoundResume();
+    if (state == EMU_RUNNING)
         archMidiEnable(1);
-    }
-    else {
-        archSoundSuspend();
+    else
         archMidiEnable(0);
-    }
     if (state == EMU_STEP) {
         state = EMU_RUNNING;
         emuSingleStep = 1;
@@ -212,7 +208,6 @@ void emulatorStart(const char* stateName) {
 
     inputEventReset();
 
-    archSoundResume();
     archMidiEnable(1);
 
     emuState = EMU_PAUSED;
@@ -255,7 +250,6 @@ void emulatorStop() {
 
     emuExitFlag = 1;
 
-    archSoundSuspend();
     archMidiEnable(0);
     machineDestroy(machine);
 
@@ -285,7 +279,6 @@ void emulatorSetFrequency(int logFrequency, int* frequency) {
 void emulatorSuspend() {
     if (emuState == EMU_RUNNING) {
         emuState = EMU_SUSPENDED;
-        archSoundSuspend();
         archMidiEnable(0);
     }
 }
@@ -293,8 +286,6 @@ void emulatorSuspend() {
 void emulatorResume() {
     if (emuState == EMU_SUSPENDED) {
         emuSysTime = 0;
-
-        archSoundResume();
         archMidiEnable(1);
         emuState = EMU_RUNNING;
     }
