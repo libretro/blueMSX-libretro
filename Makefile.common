@@ -229,7 +229,7 @@ SOURCES_C  += $(CORE_DIR)/Src/IoDevice/wd33c93.c
 SOURCES_C  += $(CORE_DIR)/Src/IoDevice/WDCRC.c
 SOURCES_C  += $(CORE_DIR)/Src/IoDevice/Z8530.c
 
-SOURCES_C  += $(CORE_DIR)/Src/Language/Language.c
+SOURCES_C  += $(CORE_DIR)/Src/Language/LanguageMinimal.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/AudioMixer.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/AY8910.c
 SOURCES_C  += $(CORE_DIR)/Src/SoundChips/DAC.c
