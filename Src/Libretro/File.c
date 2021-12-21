@@ -38,7 +38,7 @@
 
 #include <sys/stat.h>
 
-#if defined(__CELLOS_LV2__) || defined(VITA)
+#if defined(__CELLOS_LV2__)
 char* getcwd( char* buf, size_t size )
 {
   if ( buf != NULL && size >= 2 )
@@ -55,14 +55,6 @@ int chdir( const char* path)
 {
   return 0;
 }
-#endif
-
-#if defined(VITA)
-
-int mkdir(const char *path, mode_t mode){
-  return sceIoMkdir(path,mode);
-}
-
 #endif
 
 #ifdef __MINGW32__
@@ -164,7 +156,6 @@ int archFileDelete(const char* fileName)
     return remove(fileName) == 0;
 }
 #endif
-
 
 /* File dialogs: */
 char* archFilenameGetOpenRom(Properties* properties, int cartSlot, RomType* romType) { return NULL; }
