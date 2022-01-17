@@ -20,7 +20,7 @@ UInt32 archGetSystemUpTime(UInt32 frequency)
    return (rtc_tick / frequency);
 }
 
-#elif defined(__PSL1GHT__)
+#elif defined(__PS3__)
 
 #include <ppu_intrinsics.h>
 
@@ -31,7 +31,7 @@ UInt32 archGetSystemUpTime(UInt32 frequency)
    return (rtc_tick / frequency);
 }
 
-#elif defined(__CELLOS_LV2__)
+#elif defined(__PS3__) && !defined(__PSL1GHT__)
 #include <sys/sys_time.h>
 
 

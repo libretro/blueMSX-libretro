@@ -30,7 +30,7 @@
 // already in the PSPSDK so the name is changed
 #include "diet-glob.h" 
 
-#ifdef __CELLOS_LV2__
+#ifdef __PS3__
 #define     S_ISDIR(m)      (((m)&S_IFMT) == S_IFDIR)
 #endif
 

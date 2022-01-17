@@ -217,7 +217,7 @@ char *strcasestr(const char *str1, const char *str2)
 
 #endif
 
-#if defined(__CELLOS_LV2__) || defined(PS2)
+#if defined(__PS3__) || defined(PS2)
 char *strcasestr(const char *h, const char *n)
 {
 	size_t l = strlen(n);
