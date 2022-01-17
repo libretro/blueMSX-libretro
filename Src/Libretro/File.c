@@ -38,7 +38,7 @@
 
 #include <sys/stat.h>
 
-#if defined(__CELLOS_LV2__)
+#if defined(__PS3__)
 char* getcwd( char* buf, size_t size )
 {
   if ( buf != NULL && size >= 2 )

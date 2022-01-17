@@ -109,7 +109,7 @@ void archGlobFree(ArchGlob* globHandle)
 
 #else
 #include "ArchGlob.h"
-#if defined(PSP) || defined(__CELLOS_LV2__) || defined(ANDROID) || defined(WIIU) || defined(_XBOX) || defined(VITA) || defined(PS2) || defined(_3DS) || defined(__SWITCH__)
+#if defined(PSP) || defined(__PS3__) || defined(ANDROID) || defined(WIIU) || defined(_XBOX) || defined(VITA) || defined(PS2) || defined(_3DS) || defined(__SWITCH__)
 /* TODO/FIXME - might want to turn this into more generic define that we
  * flick on for consoles/portables */
 #include "psp/diet-glob.h"
