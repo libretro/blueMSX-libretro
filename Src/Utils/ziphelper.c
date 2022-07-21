@@ -427,23 +427,23 @@ void* _zipLoadFile(const char* zipName, const char* fileName, int* size, zlib_fi
     char name[256];
     unzFile zip;
     unz_file_info info;
+    size_t zipName_len;
+    size_t fileName_len = strlen(fileName);
 
     *size = 0;
 
     if (fileName[0] == '*') {
         strcpy(name, zipName);
-        name[strlen(zipName) - 3] = fileName[strlen(fileName) - 3];
-        name[strlen(zipName) - 2] = fileName[strlen(fileName) - 2];
-        name[strlen(zipName) - 1] = fileName[strlen(fileName) - 1];
+        zipName_len = strlen(zipName);
+        name[zipName_len - 3] = fileName[fileName_len - 3];
+        name[zipName_len - 2] = fileName[fileName_len - 2];
+        name[zipName_len - 1] = fileName[fileName_len - 1];
     }
-    else {
+    else
         strcpy(name, fileName);
-    }
 
-    zip = unzOpen2(zipName, filefunc);
-    if (!zip) {
+    if (!(zip = unzOpen2(zipName, filefunc)))
         return NULL;
-    }
 
 #ifdef __APPLE__
     // Most OS X installs are on a case-insensitive FS
@@ -455,9 +455,8 @@ void* _zipLoadFile(const char* zipName, const char* fileName, int* size, zlib_fi
         return NULL;
     }
 
-    if (unzOpenCurrentFile(zip) != UNZ_OK) {
+    if (unzOpenCurrentFile(zip) != UNZ_OK)
         return NULL;
-    }
 
     unzGetCurrentFileInfo(zip,&info,NULL,0,NULL,0,NULL,0);
 
@@ -629,20 +628,20 @@ int zipFileExists(const char* zipName, const char* fileName)
     char name[256];
     unzFile zip;
 
-    if (fileName[0] == '*') {
+    if (fileName[0] == '*')
+    {
+        size_t zipName_len  = strlen(zipName);
+	size_t fileName_len = strlen(fileName);
         strcpy(name, zipName);
-        name[strlen(zipName) - 3] = fileName[strlen(fileName) - 3];
-        name[strlen(zipName) - 2] = fileName[strlen(fileName) - 2];
-        name[strlen(zipName) - 1] = fileName[strlen(fileName) - 1];
+        name[zipName_len - 3] = fileName[fileName_len - 3];
+        name[zipName_len - 2] = fileName[fileName_len - 2];
+        name[zipName_len - 1] = fileName[fileName_len - 1];
     }
-    else {
+    else
         strcpy(name, fileName);
-    }
 
-    zip = unzOpen(zipName);
-    if (!zip) {
+    if (!(zip = unzOpen(zipName)))
         return 0;
-    }
 
 #ifdef __APPLE__
     // Most OS X installs are on a case-insensitive FS
@@ -652,10 +651,10 @@ int zipFileExists(const char* zipName, const char* fileName)
 #endif
         unzClose(zip);
         return 0;
-    }else{
-        unzClose(zip);
-        return 1;
     }
+
+    unzClose(zip);
+    return 1;
 }
 
 /******************************************************************************
@@ -706,7 +705,7 @@ char* zipGetFileList(const char* zipName, const char* ext, int* count) {
         toLower(tmp);
         if (strstr(tmp, extension) != NULL) {
             int entryLen = strlen(tempName) + 1;
-            fileArray = realloc(fileArray, totalLen +  entryLen + 1);
+            fileArray    = realloc(fileArray, totalLen +  entryLen + 1);
             strcpy(fileArray + totalLen, tempName);
             totalLen += entryLen;
             fileArray[totalLen] = '\0'; // double null termination at end

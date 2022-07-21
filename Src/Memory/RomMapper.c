@@ -235,9 +235,8 @@ RomType romMapperRomFromFile(const void *romData, int size, char* extendedName)
                     }
 
                     length = strlen(extendedName);
-                    if (length > 10 && extendedName[length - 1] == ']' && extendedName[length - 10] == '[') {
+                    if (length > 10 && extendedName[length - 1] == ']' && extendedName[length - 10] == '[')
                         extendedName[length - 10] = 0;
-                    }
                 }
             }
         }
@@ -429,9 +428,8 @@ void romMapperGetDiskInfo(const void *data, int size, char* extendedName)
                     }
 
                     length = strlen(extendedName);
-                    if (length > 10 && extendedName[length - 1] == ']' && extendedName[length - 10] == '[') {
+                    if (length > 10 && extendedName[length - 1] == ']' && extendedName[length - 10] == '[')
                         extendedName[length - 10] = 0;
-                    }
                 }
             }
         }
@@ -479,9 +477,8 @@ void romMapperGetCasInfo(const void *data, int size, char* extendedName)
                     }
 
                     length = strlen(extendedName);
-                    if (length > 10 && extendedName[length - 1] == ']' && extendedName[length - 10] == '[') {
+                    if (length > 10 && extendedName[length - 1] == ']' && extendedName[length - 10] == '[')
                         extendedName[length - 10] = 0;
-                    }
                 }
             }
         }

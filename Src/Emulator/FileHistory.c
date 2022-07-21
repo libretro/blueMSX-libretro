@@ -49,12 +49,12 @@ static char extendedCasName[PROP_MAX_TAPES][256];
 
 const char* stripPathExt(const char* filename) {
     static char buffer[128];
-
+    size_t buffer_len;
     strcpy(buffer, stripPath(filename));
+    buffer_len = strlen(buffer);
 
-    if (buffer[strlen(buffer) - 4] == '.') {
-        buffer[strlen(buffer) - 4] = 0;
-    }
+    if (buffer[buffer_len - 4] == '.')
+        buffer[buffer_len - 4] = 0;
 
     return buffer;
 }
@@ -62,10 +62,10 @@ const char* stripPathExt(const char* filename) {
 const char* stripPath(const char* filename) {
     const char* ptr = filename + strlen(filename) - 1;
 
-    while (--ptr >= filename) {
-        if (*ptr == '/' || *ptr == '\\') {
+    while (--ptr >= filename)
+    {
+        if (*ptr == '/' || *ptr == '\\')
             return ptr + 1;
-        }
     }
 
     return filename;
@@ -101,9 +101,8 @@ char* fileGetNext(char* filename, char* zipFile) {
 
     pos = strlen(name) - 5;
 
-    if (pos < 0) {
+    if (pos < 0)
         return name;
-    }
 
     while (pos >= 0) {
         c = name[pos];
@@ -111,16 +110,14 @@ char* fileGetNext(char* filename, char* zipFile) {
         if (c >= '0' && c <= '9') {
             if (c < '9') {
                 name[pos] = c + 1;
-                if (fileExist(name, zipFile)) {
+                if (fileExist(name, zipFile))
                     return name;
-                }
             }
 
             for (j = '0'; j < c; j++) {
                 name[pos] = j;
-                if (fileExist(name, zipFile)) {
+                if (fileExist(name, zipFile))
                     return name;
-                }
             }
             name[pos] = c;
         }
@@ -173,12 +170,12 @@ void updateExtendedRomName(int drive, char* filename, char* zipFile) {
     int size;
     char* buf = romLoad(filename, zipFile[0] ? zipFile : NULL, &size);
 
-    if (buf != NULL) {
+    if (buf)
+    {
         strcpy(extendedName[drive], mediaDbGetPrettyString(mediaDbLookupRom(buf, size)));
         free(buf);
-        if (extendedName[drive][0] == 0) {
+        if (extendedName[drive][0] == 0)
             strcpy(extendedName[drive], stripPathExt(zipFile[0] ? zipFile : filename));
-        }
     }
 }
 
@@ -355,15 +352,12 @@ static int createSaveFileBaseName(char* fileBase,Properties* properties, int use
 
     for (i = 0; !done && i < PROP_MAX_TAPES; i++) {
         if (properties->media.tapes[0].fileName[0]) {
-            if (useExtendedName && extendedCasName[i][0]) {
+            if (useExtendedName && extendedCasName[i][0])
                 strcpy(fileBase, extendedCasName[i]);
-            }
-            else if (*properties->media.tapes[i].fileNameInZip) {
+            else if (*properties->media.tapes[i].fileNameInZip)
                 strcpy(fileBase, stripPathExt(properties->media.tapes[i].fileNameInZip));
-            }
-            else {
+            else
                 strcpy(fileBase, stripPathExt(properties->media.tapes[i].fileName));
-            }
             done = 1;
         }
     }
