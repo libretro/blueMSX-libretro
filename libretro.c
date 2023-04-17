@@ -166,6 +166,20 @@ int get_media_type(const char* filename)
       }
       return MEDIA_TYPE_CART;
    }
+   else if(strcmp(extension, ".sc") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "SEGA - SC-3000");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".sf") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "SEGA - SF-7000");
+      }
+      return MEDIA_TYPE_CART;
+   }
 
    return MEDIA_TYPE_OTHER;
 }
@@ -477,7 +491,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #endif
    info->need_fullpath    = true;
    info->block_extract    = false;
-   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|cas|m3u";
+   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|sf|cas|m3u";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
