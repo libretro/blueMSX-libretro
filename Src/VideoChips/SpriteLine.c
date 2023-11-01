@@ -66,7 +66,8 @@ void spriteLineSetAttributes(int tabBase, int genBase, int big, int dblSize) {
     spritesDouble = dblSize;
 }
 
-UInt8 spriteLineGetStatus() {
+UInt8 spriteLineGetStatus(void)
+{
     UInt8 s = status;
     status &= 0x1f;
     return s;
@@ -77,7 +78,6 @@ void spriteLineShow(int show) {
 }
 
 UInt8* spritesLine(int line) {
-    int bufIndex;
     UInt8 collisionBuf[384];
     UInt8* attrib;
     UInt8* attribTable[4];
@@ -87,10 +87,10 @@ UInt8* spritesLine(int line) {
     int scale;
     int visibleCnt;
     int collision;
+    int bufIndex = line & 1;
 
-    bufIndex = line & 1;
-
-    if (showSprites) {
+    if (showSprites)
+    {
         lineBufs[bufIndex] = NULL;
         return lineBufs[bufIndex ^ 1];
     }
@@ -102,15 +102,14 @@ UInt8* spritesLine(int line) {
     scale  = spritesBig ? 2 : 1;
     line   = (line + VScroll) & 0xff;
     
-	patternMask = spritesDouble ? 0xfc : 0xff;
-    visibleCnt = 0;
+    patternMask = spritesDouble ? 0xfc : 0xff;
+    visibleCnt  = 0;
 
     /* Find visible sprites on current line */
     for (idx = 0; idx < 32; idx++, attrib += 4) {
         int spriteLine = attrib[0];
-        if (spriteLine == 208) {
+        if (spriteLine == 208)
             break;
-        }
        
         spriteLine = ((line - spriteLine) & 0xff) / scale;
 		if (spriteLine >= size) {
@@ -118,9 +117,8 @@ UInt8* spritesLine(int line) {
         }
         
         if (visibleCnt == 4) {
-			if (~status & 0xc0) {
+			if (~status & 0xc0)
 				status = (status & 0xe0) | 0x40 | idx;
-			}
             break;
         }
 
@@ -132,9 +130,8 @@ UInt8* spritesLine(int line) {
         return lineBufs[bufIndex ^ 1];
     }
 
-	if (~status & 0x40) {
+	if (~status & 0x40)
 		status = (status & 0xe0) | (idx < 32 ? idx : 31);
-	}
     
     lineBuf = lineBuffer[bufIndex];
     memset(lineBuf, 0, 384);
@@ -210,9 +207,8 @@ UInt8* spritesLine(int line) {
         }
     }
 
-    if (collision) {
+    if (collision)
         status |= 0x20;
-    }
 
     lineBufs[bufIndex] = lineBuf + 32;
     return lineBufs[bufIndex ^ 1];
@@ -264,31 +260,26 @@ UInt8* colorSpritesLine(int line, int solidColor) {
         int color;
 
         spriteLine = *MAP_VRAM(attribOffset);
-        if (spriteLine == 216) {
+        if (spriteLine == 216)
             break;
-        }
        
         spriteLine = ((line - spriteLine) & 0xff) / scale;
-		if (spriteLine >= size) {
+		if (spriteLine >= size)
             continue;
-        }
 
         if (visibleCnt == 8) {
-			if (~status & 0xc0) {
+			if (~status & 0xc0)
 				status = (status & 0xe0) | 0x40 | sprite;
-			}
             break;
         }
 
         offset = (sprGenBase & 0x1f800) + ((int)(*MAP_VRAM(attribOffset + 2) & patternMask) << 3) + spriteLine;
         color  = *MAP_VRAM(sprTabBase & ((-1 << 10) | (sprite * 16 + spriteLine)));
 
-        if (color & 0x40) {
+        if (color & 0x40)
             color &= ccColorMask;
-        }
-        else if ((color & 0x0f) || solidColor) {
+        else if ((color & 0x0f) || solidColor)
             ccColorCheckMask = 0xff;
-        }
 
         attribTable[visibleCnt].color           = color;
         attribTable[visibleCnt].horizontalPos   = (int)*MAP_VRAM(attribOffset + 1) + 24 - ((attribTable[visibleCnt].color >> 2) & 0x20);
@@ -305,9 +296,8 @@ UInt8* colorSpritesLine(int line, int solidColor) {
         return lineBufs[bufIndex ^ 1];
     }
 
-    if (~status & 0x40) {
+    if (~status & 0x40)
 		status = (status & 0xe0) | (sprite < 32 ? sprite : 31);
-	}
     
     lineBuf = lineBuffer[bufIndex];
     memset(lineBuf, 0, 384);
@@ -324,9 +314,8 @@ UInt8* colorSpritesLine(int line, int solidColor) {
         int idx2;
 
         color = ((attrib->color & 0x0f) << 1) | solidColor;
-        if (color == 0) {
+        if (color == 0)
             continue;
-        }
 
         colPtr  = collisionBuf + attrib->horizontalPos;
         linePtr = lineBuf + attrib->horizontalPos;
@@ -423,9 +412,8 @@ UInt8* colorSpritesLine(int line, int solidColor) {
         }
     }
 
-    if (collision) {
+    if (collision)
         status |= 0x20;
-    }
 
     lineBufs[bufIndex] = lineBuf + 32;
     return lineBufs[bufIndex ^ 1];

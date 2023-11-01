@@ -5720,6 +5720,8 @@ static void r800SwitchCpu(R800* r800) {
     case CPU_R800:
         r800->regBanks[1] = r800->regs;
         break;
+    case CPU_UNKNOWN:
+	break;
     }
 
     r800->oldCpuMode = CPU_UNKNOWN;
@@ -5731,6 +5733,8 @@ static void r800SwitchCpu(R800* r800) {
     case CPU_R800:
         r800->regs = r800->regBanks[1];
         break;
+    case CPU_UNKNOWN:
+	break;
     }
 
     switch (r800->cpuMode) {
@@ -5741,6 +5745,8 @@ static void r800SwitchCpu(R800* r800) {
     case CPU_R800:
         freqAdjust = R800_MASTER_FREQUENCY / (r800->frequencyR800 - 1);
         break;
+    case CPU_UNKNOWN:
+	break;
     }
 
     switch (r800->cpuMode) {
@@ -5974,6 +5980,8 @@ void r800SetFrequency(R800* r800, CpuMode cpuMode, UInt32 frequency) {
     case CPU_R800:
         r800->frequencyR800 = frequency;
         break;
+    case CPU_UNKNOWN:
+	break;
     }
 
     r800->oldCpuMode = r800->cpuMode;
@@ -6070,9 +6078,8 @@ void r800Execute(R800* r800) {
 
         executeInstruction(r800, readOpcode(r800, r800->regs.PC.W++));
 
-        if (r800->regs.halt) {
+        if (r800->regs.halt)
 			continue;
-        }
 
 		if (r800->regs.ei_mode) {
 			r800->regs.ei_mode=0;

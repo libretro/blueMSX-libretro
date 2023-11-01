@@ -99,14 +99,12 @@ static FrameBuffer* frameBufferFlipViewFrame2(int mixFrames)
 {
     int index;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
     waitSem();
     index = currentBuffer->viewFrame == 1 ? 0 : 1;
-    if (currentBuffer->frame[index].age > currentBuffer->frame[currentBuffer->viewFrame].age) {
+    if (currentBuffer->frame[index].age > currentBuffer->frame[currentBuffer->viewFrame].age)
         currentBuffer->viewFrame = index;
-    }
     signalSem();
     return currentBuffer->frame + currentBuffer->viewFrame;
 }
@@ -115,9 +113,8 @@ static FrameBuffer* frameBufferFlipViewFrame3(int mixFrames)
 {
     int index;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
     waitSem();
     switch (currentBuffer->viewFrame) {
     case 0: index = currentBuffer->drawFrame == 1 ? 2 : 1; break;
@@ -135,9 +132,8 @@ static FrameBuffer* frameBufferFlipViewFrame4(int mixFrames)
 {
     int i;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
     waitSem();
     for (i = 0; i < 4; i++) {
         if (i == currentBuffer->drawFrame) continue;
@@ -179,9 +175,8 @@ static FrameBuffer* frameBufferFlipDrawFrame2()
 {
     FrameBuffer* frame;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer) 
         return NULL;
-    }
     waitSem();
     currentBuffer->drawFrame = currentBuffer->viewFrame;
     frame = currentBuffer->frame + currentBuffer->drawFrame;
@@ -194,9 +189,8 @@ static FrameBuffer* frameBufferFlipDrawFrame3()
 {
     FrameBuffer* frame;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
     waitSem();
     switch (currentBuffer->drawFrame) {
     case 0: currentBuffer->drawFrame = currentBuffer->viewFrame == 1 ? 2 : 1; break;
@@ -217,9 +211,8 @@ static FrameBuffer* frameBufferFlipDrawFrame4()
     int drawAge = 0x7fffffff;
     int i;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
 
     waitSem();
 
@@ -237,9 +230,7 @@ static FrameBuffer* frameBufferFlipDrawFrame4()
     return frame;
 }
 
-
-
-FrameBuffer* frameBufferGetViewFrame()
+FrameBuffer* frameBufferGetViewFrame(void)
 {
     return currentBuffer ? currentBuffer->frame + currentBuffer->viewFrame : NULL;
 }
@@ -249,28 +240,25 @@ void frameBufferSetScanline(int scanline)
     curScanline = scanline;
 }
 
-int frameBufferGetScanline()
+int frameBufferGetScanline(void)
 {
     return curScanline;
 }
 
-FrameBuffer* frameBufferGetDrawFrame()
+FrameBuffer* frameBufferGetDrawFrame(void)
 {
     FrameBuffer* frameBuffer;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
 #ifdef WII
 
     frameBuffer = currentBuffer->frame + currentBuffer->drawFrame;
 #else
-    if (confBlendFrames) {
+    if (confBlendFrames)
         frameBuffer = currentBuffer->blendFrame + currentBuffer->currentBlendFrame;
-    }
-    else {
+    else
         frameBuffer = currentBuffer->frame + currentBuffer->drawFrame;
-    }
 #endif
 
     return frameBuffer;
@@ -284,10 +272,8 @@ void frameBufferSetFrameCount(int frameCount)
         int i;
         currentBuffer->viewFrame = 0;
         currentBuffer->drawFrame = 0;
-
-        for (i = 0; i < MAX_FRAMES_PER_FRAMEBUFFER; i++) {
+        for (i = 0; i < MAX_FRAMES_PER_FRAMEBUFFER; i++)
             currentBuffer->frame[i].age = 0;
-        }
     }
     signalSem();
 }
@@ -296,9 +282,8 @@ FrameBuffer* frameBufferFlipViewFrame(int mixFrames)
 {
     FrameBuffer* frameBuffer;
 
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
 
     switch (frameBufferCount) {
     case 2:
@@ -324,26 +309,21 @@ FrameBuffer* frameBufferFlipDrawFrame()
 #ifdef WII
     archThreadSleep(0); // wait one frame
 #endif
-    if (currentBuffer == NULL) {
+    if (!currentBuffer)
         return NULL;
-    }
 #ifndef WII
-    if (confBlendFrames) {
+    if (confBlendFrames)
         mixFrame(currentBuffer->frame + currentBuffer->drawFrame,
                  &currentBuffer->blendFrame[0], &currentBuffer->blendFrame[1], 50);
-    }
 #endif
     curScanline = 0;
 
-    if (mixMode == MIXMODE_EXTERNAL) {
+    if (mixMode == MIXMODE_EXTERNAL)
         frameBufferExternal(currentBuffer->frame + currentBuffer->drawFrame);
-    }
-    else if (mixMode == MIXMODE_BOTH) {
+    else if (mixMode == MIXMODE_BOTH)
         frameBufferSuperimpose(currentBuffer->frame + currentBuffer->drawFrame);
-    }
-    else if (mixMode == MIXMODE_NONE) {
+    else if (mixMode == MIXMODE_NONE)
         frameBufferBlack(currentBuffer->frame + currentBuffer->drawFrame);
-    }
 
 //    ++xxxx;
     //printf("%d\n", xxxx);
@@ -402,9 +382,8 @@ FrameBufferData* frameBufferDataCreate(int maxWidth, int maxHeight, int defaultH
 
         frameData->blendFrame[i].maxWidth = maxWidth;
         frameData->blendFrame[i].lines = maxHeight;
-        for (j = 0; j < FB_MAX_LINES; j++) {
+        for (j = 0; j < FB_MAX_LINES; j++)
             frameData->blendFrame[i].line[j].doubleWidth = defaultHorizZoom - 1;
-        }
     }
 #endif
     return frameData;
@@ -412,11 +391,11 @@ FrameBufferData* frameBufferDataCreate(int maxWidth, int maxHeight, int defaultH
 
 void frameBufferDataDestroy(FrameBufferData* frameData)
 {
-    if (frameData == currentBuffer) {
+    if (frameData == currentBuffer)
         currentBuffer = NULL;
-    }
     free(frameData);
-    if (semaphore != NULL) {
+    if (semaphore != NULL)
+    {
         archSemaphoreDestroy(semaphore);
         semaphore = NULL;
     }
@@ -426,9 +405,8 @@ void frameBufferDataDestroy(FrameBufferData* frameData)
 void frameBufferSetActive(FrameBufferData* frameData)
 {
     currentBuffer = frameData;
-    if (frameData == NULL) {
+    if (!frameData)
         mixMode = MIXMODE_INTERNAL;
-    }
 }
 
 void frameBufferSetMixMode(FrameBufferMixMode mode,  FrameBufferMixMode mask)
@@ -437,29 +415,30 @@ void frameBufferSetMixMode(FrameBufferMixMode mode,  FrameBufferMixMode mask)
     mixMask = mask;
 }
 
-FrameBufferData* frameBufferGetActive()
+FrameBufferData* frameBufferGetActive(void)
 {
     return currentBuffer;
 }
 
-FrameBuffer* frameBufferGetWhiteNoiseFrame()
+FrameBuffer* frameBufferGetWhiteNoiseFrame(void)
 {
     static FrameBuffer* frameBuffer = NULL;
     UInt16 colors[32];
     static UInt32 r = 13;
     int y;
 
-    for (y = 0; y < 32; y++) {
+    for (y = 0; y < 32; y++)
         colors[y] = videoGetColor(y << 3, y << 3, y << 3);
-    }
 
-    if (frameBuffer == NULL) {
-        frameBuffer = calloc(1, sizeof(FrameBuffer));
-        frameBuffer->lines = 240;
+    if (!frameBuffer)
+    {
+        frameBuffer           = (FrameBuffer*)calloc(1, sizeof(FrameBuffer));
+        frameBuffer->lines    = 240;
         frameBuffer->maxWidth = 320;
     }
 
-    for (y = 0; y < 240; y++) {
+    for (y = 0; y < 240; y++)
+    {
         int x;
         UInt16* buffer = frameBuffer->line[y].buffer;
         frameBuffer->line[y].doubleWidth = 0;
@@ -472,9 +451,10 @@ FrameBuffer* frameBufferGetWhiteNoiseFrame()
     return frameBuffer;
 }
 
-void frameBufferClearDeinterlace()
+void frameBufferClearDeinterlace(void)
 {
-    if (deintBuffer != NULL) {
+    if (deintBuffer)
+    {
         void* buf = deintBuffer;
         deintBuffer = NULL;
         free(buf);
@@ -485,15 +465,13 @@ FrameBuffer* frameBufferDeinterlace(FrameBuffer* frameBuffer)
 {
     int y;
 
-    if (deintBuffer == NULL) {
+    if (!deintBuffer)
         deintBuffer = calloc(1, sizeof(FrameBuffer));
-    }
-    deintBuffer->lines = frameBuffer->lines < FB_MAX_LINES / 2 ? 2 * frameBuffer->lines : FB_MAX_LINES;
+    deintBuffer->lines    = frameBuffer->lines < FB_MAX_LINES / 2 ? 2 * frameBuffer->lines : FB_MAX_LINES;
     deintBuffer->maxWidth = frameBuffer->maxWidth;
 
-    for (y = frameBuffer->interlace == INTERLACE_ODD ? 1 : 0; y < FB_MAX_LINES; y += 2) {
+    for (y = frameBuffer->interlace == INTERLACE_ODD ? 1 : 0; y < FB_MAX_LINES; y += 2)
         deintBuffer->line[y] = frameBuffer->line[y / 2];
-    }
     return deintBuffer;
 }
 
@@ -509,23 +487,20 @@ static FrameBuffer* mixFrame(FrameBuffer* d, FrameBuffer* a, FrameBuffer* b, int
     int x;
     int y;
 
-    if (d == NULL) {
-        if (dst == NULL) {
+    if (d == NULL)
+    {
+        if (dst == NULL)
             dst = (FrameBuffer*)malloc(sizeof(FrameBuffer));
-        }
         d = dst;
     }
 
-    if (a->interlace != INTERLACE_NONE) {
+    if (a->interlace != INTERLACE_NONE)
         return mixFrameInterlace(d, a, b, pct);
-    }
 
-    if (p == 0x20) {
+    if (p == 0x20)
         return a;
-    }
-    if (n == 0x20) {
+    if (n == 0x20)
         return b;
-    }
 
     d->lines = a->lines;
     d->interlace = a->interlace;
@@ -567,10 +542,10 @@ static FrameBuffer* mixFrameInterlace(FrameBuffer* d, FrameBuffer* a, FrameBuffe
     int x;
     int y;
 
-    if (d == NULL) {
-        if (dst == NULL) {
+    if (d == NULL)
+    {
+        if (dst == NULL)
             dst = (FrameBuffer*)malloc(sizeof(FrameBuffer));
-        }
         d = dst;
     }
 
@@ -640,10 +615,8 @@ static FrameBuffer* mixFrameInterlace(FrameBuffer* d, FrameBuffer* a, FrameBuffe
 static UInt16* getBlackImage()
 {
     static UInt16* blackImage = NULL;
-
-    if (blackImage == NULL) {
+    if (!blackImage)
         blackImage = calloc(sizeof(UInt16), FB_MAX_LINE_WIDTH * FB_MAX_LINES);
-    }
     return blackImage;
 }
 
@@ -677,27 +650,25 @@ static void frameBufferExternal(FrameBuffer* a)
         imageHeight *= 2;
     }
     else if (a->lines <= FB_MAX_LINES / 2) {
-        if (a->interlace == INTERLACE_NONE) {
+        if (a->interlace == INTERLACE_NONE)
             scaleHeight = 1;
-        }
         imageHeight *= 2;
     }
 
-    if (mixMode & mixMask) {
+    if (mixMode & mixMask)
         pImage = archVideoInBufferGet(imageWidth, imageHeight);
-    }
-    if (pImage == NULL) {
+    if (pImage == NULL)
         pImage = getBlackImage();
-    }
 
-    if (scaleHeight) {
+    if (scaleHeight)
+    {
         a->lines *= 2;
 
-        for (y = 0; y < a->lines; y++) {
+        for (y = 0; y < a->lines; y++)
+	{
             memcpy(a->line[y].buffer, pImage + y * imageWidth, imageWidth * sizeof(UInt16));
-            if (scaleWidth) {
+            if (scaleWidth)
                 a->line[y].doubleWidth = 1;
-            }
         }
     }
 }
@@ -721,18 +692,15 @@ static void frameBufferSuperimpose(FrameBuffer* a)
         imageHeight *= 2;
     }
     else if (a->lines <= FB_MAX_LINES / 2) {
-        if (a->interlace == INTERLACE_NONE) {
+        if (a->interlace == INTERLACE_NONE)
             scaleHeight = 1;
-        }
         imageHeight *= 2;
     }
 
-    if (mixMode & mixMask) {
+    if (mixMode & mixMask)
         pImage = archVideoInBufferGet(imageWidth, imageHeight);
-    }
-    if (pImage == NULL) {
+    if (pImage == NULL)
         pImage = getBlackImage();
-    }
 
     if (scaleHeight) {
         for (y = a->lines - 1; y >= 0; y--) {
@@ -796,12 +764,10 @@ static void frameBufferSuperimpose(FrameBuffer* a)
             if (scaleWidth && a->line[y].doubleWidth) {
                 for (x = imageWidth - 1; x >= 0; x--) {
                     UInt16 val = pSrc[x];
-                    if (val & BKMODE_TRANSPARENT) {
+                    if (val & BKMODE_TRANSPARENT)
                         pDst[x] = pImg[x];
-                    }
-                    else {
+                    else
                         pDst[x] = val;
-                    }
                 }
             }
             else {
@@ -819,9 +785,8 @@ static void frameBufferSuperimpose(FrameBuffer* a)
                     }
                 }
             }
-            if (scaleWidth) {
+            if (scaleWidth)
                 a->line[y].doubleWidth = 1;
-            }
         }
     }
 }

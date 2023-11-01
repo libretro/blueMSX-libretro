@@ -52,33 +52,32 @@ typedef struct {
 
 static VideoManager videoManager;
 
-void videoManagerReset() 
+void videoManagerReset(void)
 {
     videoManager.count = 0;
     videoManager.lastHandle = 0;
 }
 
-int videoManagerGetCount() 
+int videoManagerGetCount(void)
 {
     return videoManager.count;
 }
 
 int videoManagerIsActive(int index) 
 {
-    if (index >= videoManager.count) {
+    if (index >= videoManager.count)
         return 0;
-    }
 
     return videoManager.di[index].frameBufer == frameBufferGetActive();
 }
 
-int videoManagerGetActive()
+int videoManagerGetActive(void)
 {
     int index;
-    for (index = 0; index < videoManager.count; index++) {
-        if (videoManagerIsActive(index)) {
+    for (index = 0; index < videoManager.count; index++)
+    {
+        if (videoManagerIsActive(index))
             return index;
-        }
     }
     return -1;
 }
@@ -87,9 +86,8 @@ void videoManagerSetMode(int index, VideoMode videoMode, VideoMode modeMask)
 {
     videoManager.di[index].videoMode = videoMode;
     videoManager.di[index].videoMask = modeMask;
-    if (videoManagerIsActive(index)) {
+    if (videoManagerIsActive(index))
         frameBufferSetMixMode(videoManager.di[index].videoMode, videoManager.di[index].videoMask);
-    }
 }
 
 void videoManagerSetActive(int index)
@@ -101,44 +99,38 @@ void videoManagerSetActive(int index)
         return;
     }
 
-    if (index >= videoManager.count) {
+    if (index >= videoManager.count)
         return;
-    }
 
     for (activeIndex = 0; activeIndex < videoManager.count; activeIndex++) {
         if (videoManagerIsActive(activeIndex)) {
-            if (activeIndex != index && videoManager.di[activeIndex].callbacks.disable != NULL) {
+            if (activeIndex != index && videoManager.di[activeIndex].callbacks.disable != NULL)
                 videoManager.di[activeIndex].callbacks.disable(videoManager.di[activeIndex].ref);
-            }
         }
     }
 
-    if (index < 0) {
+    if (index < 0)
         frameBufferSetActive(NULL);
-    }
     else {
         frameBufferSetActive(videoManager.di[index].frameBufer);
         frameBufferSetMixMode(videoManager.di[index].videoMode, videoManager.di[index].videoMask);
-        if (activeIndex != index && videoManager.di[index].callbacks.enable != NULL) {
+        if (activeIndex != index && videoManager.di[index].callbacks.enable != NULL)
             videoManager.di[index].callbacks.enable(videoManager.di[index].ref);
-        }
     }
 }
 
 char* videoManagerGetName(int index)
 {
-    if (index >= videoManager.count) {
+    if (index >= videoManager.count)
         return index == 0 ? "Default" : NULL;
-    }
     return videoManager.di[index].name;
 }
 
 int videoManagerRegister(const char* name, FrameBufferData* frameBuffer, 
                          VideoCallbacks* callbacks, void* ref)
 {
-    if (videoManager.count >= MAX_DEVICES) {
+    if (videoManager.count >= MAX_DEVICES)
         return 0;
-    }
 
     videoManager.di[videoManager.count].handle      = ++videoManager.lastHandle;
     videoManager.di[videoManager.count].frameBufer  = frameBuffer;
@@ -151,9 +143,8 @@ int videoManagerRegister(const char* name, FrameBufferData* frameBuffer,
 
     videoManager.count++;
 
-    if (videoManager.count == 1) {
+    if (videoManager.count == 1)
         videoManagerSetActive(0);
-    }
     
     archVideoOutputChange();
 
@@ -165,19 +156,16 @@ void videoManagerUnregister(int handle)
     int isActive;
     int i;
 
-    if (videoManager.count == 0) {
+    if (videoManager.count == 0)
         return;
-    }
 
     for (i = 0; i < videoManager.count; i++) {
-        if (videoManager.di[i].handle == handle + 1) {
+        if (videoManager.di[i].handle == handle + 1)
             break;
-        }
     }
 
-    if (i == videoManager.count) {
+    if (i == videoManager.count)
         return;
-    }
 
     isActive = videoManagerIsActive(i);
 
@@ -187,19 +175,17 @@ void videoManagerUnregister(int handle)
         i++;
     }
 
-    if (isActive || videoManager.count == 0) {
+    if (isActive || videoManager.count == 0)
         videoManagerSetActive(0);
-    }
 
-    if (videoManager.count == 0) {
+    if (videoManager.count == 0)
         frameBufferClearDeinterlace();
-    }
 
     archVideoOutputChange();
 }
 
 
-void videoManagerLoadState()
+void videoManagerLoadState(void)
 {
     SaveState* state = saveStateOpenForRead("VideoManager");
     int index = saveStateGet(state, "ActiveFrameBuffer",  0);
@@ -208,7 +194,7 @@ void videoManagerLoadState()
 
 }
 
-void videoManagerSaveState()
+void videoManagerSaveState(void)
 {
     SaveState* state = saveStateOpenForWrite("VideoManager");
     saveStateSet(state, "ActiveFrameBuffer",  videoManagerGetActive());

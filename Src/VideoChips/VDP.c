@@ -288,7 +288,7 @@ static void RefreshLine8(VDP*, int, int, int);
 static void RefreshLine10(VDP*, int, int, int);
 static void RefreshLine12(VDP*, int, int, int);
 
-static void sync(VDP*, UInt32);
+static void vdp_sync(void *, UInt32);
 
 struct VDP {
     VdpCmdState* cmdEngine;
@@ -401,8 +401,8 @@ struct VDP {
 #include "Common.h"
 
 
-static void digitize(VDP* vdp);
-static void updateOutputMode(VDP* vdp);
+static void vdp_digitize(VDP* vdp);
+static void vdp_updateOutputMode(VDP* vdp);
 
 
 #include "SpriteLine.h"
@@ -526,7 +526,7 @@ static void scheduleDrawAreaStart(VDP* vdp)
 
 static void onHint(VDP* vdp, UInt32 time)
 {
-    sync(vdp, time);
+    vdp_sync(vdp, time);
 
     vdp->timeHintEn = 0;
 
@@ -543,7 +543,7 @@ extern BoardInfo boardInfo;
 
 static void onVint(VDP* vdp, UInt32 time)
 {
-    sync(vdp, time);
+    vdp_sync(vdp, time);
 
     vdp->timeVintEn = 0;
 
@@ -568,7 +568,7 @@ static void onVint(VDP* vdp, UInt32 time)
 
 static void onDrawAreaEnd(VDP* vdp, UInt32 time)
 {
-    sync(vdp, time);
+    vdp_sync(vdp, time);
 
     vdp->timeDrawAreaEndEn = 0;
     vdp->drawArea = 0;
@@ -576,14 +576,13 @@ static void onDrawAreaEnd(VDP* vdp, UInt32 time)
 
 static void onTmsVint(VDP* vdp, UInt32 time)
 {
-    if (vdp->vdpRegs[1] & 0x20) {
+    if (vdp->vdpRegs[1] & 0x20)
         boardSetInt(INT_IE0);
-    }
 }
 
 static void onVStart(VDP* vdp, UInt32 time)
 {
-    sync(vdp, time);
+    vdp_sync(vdp, time);
 
     vdp->timeVStartEn = 0;
 //    vdp->lineOffset = -1;
@@ -592,7 +591,7 @@ static void onVStart(VDP* vdp, UInt32 time)
 
 static void onDrawAreaStart(VDP* vdp, UInt32 time)
 {
-    sync(vdp, time);
+    vdp_sync(vdp, time);
     
     vdp->timeDrawAreaStartEn = 0;
 
@@ -613,26 +612,23 @@ static void onDisplay(VDP* vdp, UInt32 time)
 {
     int isPal = vdpIsVideoPal(vdp); 
     
-    sync(vdp, time);
+    vdp_sync(vdp, time);
 
     vdp->timeDisplayEn = 0;
 
     if (vdp->videoEnabled) {
         FrameBuffer* frameBuffer;
-        if (canFlipFrameBuffer >= 2) {
+        if (canFlipFrameBuffer >= 2)
             frameBuffer = frameBufferFlipDrawFrame();
-        }
         else {
             frameBuffer = frameBufferGetDrawFrame();
             canFlipFrameBuffer++;
         }
         frameBufferSetLineCount(frameBuffer, 240);
-        if (vdpIsInterlaceOn(vdp->vdpRegs)) {
+        if (vdpIsInterlaceOn(vdp->vdpRegs))
             frameBufferSetInterlace(frameBuffer, (vdp->vdpStatus[2] & 0x02) && (vdp->vdpRegs[9]  & 0x04) && vdp->vram128 ? INTERLACE_EVEN : INTERLACE_ODD );
-        }
-        else {
+        else
             frameBufferSetInterlace(frameBuffer, INTERLACE_NONE);
-        }
     }
 
     refreshRate = isPal ? 50 : 60; // Update global refresh rate
@@ -644,9 +640,8 @@ static void onDisplay(VDP* vdp, UInt32 time)
     vdp->lastLine = isPal ? 313 : 262;
     vdp->displayOffest = isPal ? 27 : 0;
     vdp->firstLine = vdp->displayOffest + (vdpIsScanLines212(vdp->vdpRegs) ? 14 : 24) + vdp->VAdjust;
-    if (!(vdp->vdpRegs[0] & 0x10)) {
+    if (!(vdp->vdpRegs[0] & 0x10))
         boardClearInt(INT_IE1);
-    }
     vdp->vdpStatus[2] ^= 0x02;
     RefreshScreen(vdp->screenMode);
 
@@ -666,7 +661,7 @@ static void onDisplay(VDP* vdp, UInt32 time)
 
     if (vdp->vdpRegs[0] & 0x40) {
         if (vdp->screenMode >= 5 && vdp->screenMode <= 12) {
-            digitize(vdp);
+            vdp_digitize(vdp);
         }
     }
 }
@@ -740,9 +735,8 @@ static int updateScreenMode(VDP* vdp) {
             break;
         }
     case 8: 
-        if(screenMode == 8 && !vdpIsModeYJK(vdp->vdpRegs)) {
+        if(screenMode == 8 && !vdpIsModeYJK(vdp->vdpRegs))
             vdp->RefreshLine = RefreshLine8; 
-        }
         else if (vdpIsModeYAE(vdp->vdpRegs)) {
             vdp->RefreshLine = RefreshLine10; 
             screenMode = 10;
@@ -754,21 +748,17 @@ static int updateScreenMode(VDP* vdp) {
         break;
     case 16:
         screenMode = 0;
-        if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A) {
+        if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A)
             vdp->RefreshLine = RefreshLine0Plus; 
-        }
-        else {
+        else
             vdp->RefreshLine = RefreshLineBlank; 
-        }
         break;
     case 32:
         screenMode = 0;
-        if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A) {
+        if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A)
             vdp->RefreshLine = RefreshLine0Mix; 
-        }
-        else {
+        else
             vdp->RefreshLine = RefreshLineBlank; 
-        }
         break;
     case 13:
         vdp->RefreshLine = RefreshLineTx80; break;
@@ -787,7 +777,7 @@ static void onScrModeChange(VDP* vdp, UInt32 time)
 {
     int scanLine = (boardSystemTime() - vdp->frameStartTime) / HPERIOD;
     int screenMode = vdp->screenMode;
-    sync(vdp, time);
+    vdp_sync(vdp, time);
     
     vdp->timeScrModeEn = 0;
     
@@ -803,9 +793,8 @@ static void onScrModeChange(VDP* vdp, UInt32 time)
 #ifdef ENABLE_VRAM_DECAY
     if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A) {
         if ((vdp->screenOn ^ vdp->vdpRegs[1]) & 0x40) {
-            if ((~vdp->vdpRegs[1] & 0x80) && !vdp->screenOn) {
+            if ((~vdp->vdpRegs[1] & 0x80) && !vdp->screenOn)
                simulateVramDecay(vdp);
-            }
             vdp->screenOffTime = boardSystemTime();
         }
     }
@@ -814,9 +803,8 @@ static void onScrModeChange(VDP* vdp, UInt32 time)
     
     vdpSetScreenMode(vdp->cmdEngine, vdp->screenMode & 0x0f, vdp->vdpRegs[25] & 0x40);
 
-    if (screenMode != vdp->screenMode) {
+    if (screenMode != vdp->screenMode)
         vdp->scr0splitLine = (scanLine - vdp->firstLine) & ~7;
-    }
 
     if (vdp->screenMode == 0 || vdp->screenMode == 13) {
         vdp->displayArea = 960;
@@ -828,9 +816,8 @@ static void onScrModeChange(VDP* vdp, UInt32 time)
     }
 
     vdp->HAdjust = (-((Int8)(vdp->vdpRegs[18] << 4) >> 4));
-	if (vdp->vdpRegs[25] & 0x08) {
+	if (vdp->vdpRegs[25] & 0x08)
 		vdp->HAdjust += 4;
-	}
     vdp->leftBorder += vdp->HAdjust;
 }
 
@@ -840,7 +827,7 @@ static void vdpUpdateRegisters(VDP* vdp, UInt8 reg, UInt8 value)
 
     reg   &= vdp->registerMask;
     value &= vdp->registerValueMask[reg];
-    sync(vdp, boardSystemTime());
+    vdp_sync(vdp, boardSystemTime());
 
 //    if (reg == 0 || reg == 1 || reg == 5 || reg == 6 || reg == 8 || reg == 9 || reg == 11 || reg == 23)
 //        printf("W %.2x: 0x%.2x\t%d\n", reg, value, boardSystemTime());
@@ -866,33 +853,24 @@ static void vdpUpdateRegisters(VDP* vdp, UInt8 reg, UInt8 value)
 
     switch (reg) {
     case 0: 
-        if (!(value & 0x10)) {
+        if (!(value & 0x10))
             boardClearInt(INT_IE1);
-        }
-
-        if (change & 0x0e) {
+        if (change & 0x0e)
             scheduleScrModeChange(vdp);
-        }
-        
-        if (change & 0x40) {
-             updateOutputMode(vdp);
-        }
-
+        if (change & 0x40)
+             vdp_updateOutputMode(vdp);
         break;
 
     case 1: 
         if (vdp->vdpStatus[0] & 0x80) {
-			if (value & 0x20) {
+			if (value & 0x20)
 				boardSetInt(INT_IE0);
-			}
-			else {
+			else
 				boardClearInt(INT_IE0);
-			}
         }
 
-        if (change & 0x58) {
+        if (change & 0x58)
             scheduleScrModeChange(vdp);
-        }
         
         vdpSetTimingMode(vdp->cmdEngine, ((value >> 6) & vdp->drawArea) | (vdp->vdpRegs[8] & 2));
         break;
@@ -920,25 +898,22 @@ static void vdpUpdateRegisters(VDP* vdp, UInt8 reg, UInt8 value)
     case 7: 
         vdp->FGColor = value >> 4;
         vdp->BGColor = value & 0x0F;
-        updateOutputMode(vdp);
+        vdp_updateOutputMode(vdp);
         break;
 
     case 8:
         vdp->vramAccMask  = vdp->vramMasks[((vdp->vdpRegs[8] & 0x08) >> 2) | (((vdp->vdpRegs[0x2d] >> 6) & 1))];
         vdpSetTimingMode(vdp->cmdEngine, ((vdp->vdpRegs[1] >> 6) & vdp->drawArea) | (value & 2));
-        if (change & 0xb0) {
-            updateOutputMode(vdp);
-        }
+        if (change & 0xb0)
+            vdp_updateOutputMode(vdp);
         break;
 
     case 9:
         value = (value & vdp->palMask) | vdp->palValue;
-        if (change & 0x80) {
+        if (change & 0x80)
             scheduleVint(vdp);
-        }
-        if (change & 0x30) {
-            updateOutputMode(vdp);
-        }
+        if (change & 0x30)
+            vdp_updateOutputMode(vdp);
         break;
 
     case 10: 
@@ -955,9 +930,8 @@ static void vdpUpdateRegisters(VDP* vdp, UInt8 reg, UInt8 value)
     case 14:
         value &= vdp->vramPages - 1;
         vdp->vramPage = (int)value << 14; 
-        if (vdp->vram16) {
+        if (vdp->vram16)
             vdp->vramEnable = value == 0;
-        }
         break;
 
     case 16: 
@@ -965,16 +939,14 @@ static void vdpUpdateRegisters(VDP* vdp, UInt8 reg, UInt8 value)
         break;
 
     case 18:
-        if (change) {
+        if (change)
             scheduleScrModeChange(vdp);
-        }
         break;
 
     case 19:
         boardClearInt(INT_IE1);
-        if (change) {
+        if (change)
             scheduleHint(vdp);
-        }
         break;
 
     case 23:
@@ -982,15 +954,13 @@ static void vdpUpdateRegisters(VDP* vdp, UInt8 reg, UInt8 value)
             scheduleHint(vdp);
             spriteLineInvalidate(vdp, (boardSystemTime() - vdp->frameStartTime) / HPERIOD);
         }
-        if (!(vdp->vdpRegs[0] & 0x10)) {
+        if (!(vdp->vdpRegs[0] & 0x10))
             boardClearInt(INT_IE1);
-        }
         break;
 
     case 25: 
-        if (change) {
+        if (change)
             scheduleScrModeChange(vdp);
-        }
         break;
 
     default:
@@ -1000,9 +970,8 @@ static void vdpUpdateRegisters(VDP* vdp, UInt8 reg, UInt8 value)
 
 static UInt8 peek(VDP* vdp, UInt16 ioPort) 
 {
-    if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958) {
+    if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958)
         vdpCmdExecute(vdp->cmdEngine, boardSystemTime());
-    }
 
 	return vdp->vdpData;
 }
@@ -1011,51 +980,47 @@ static UInt8 readNoTimingCheck(VDP* vdp, UInt16 ioPort)
 {
     UInt8 value;
 
-    if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958) {
+    if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958)
         vdpCmdExecute(vdp->cmdEngine, boardSystemTime());
-    }
 
-	value = vdp->vdpData;
-    vdp->vdpData = vdp->vramEnable ? *MAP_VRAM(vdp, (vdp->vdpRegs[14] << 14) | vdp->vramAddress) : 0xff;
-	vdp->vramAddress = (vdp->vramAddress + 1) & 0x3fff;
-    if (vdp->vramAddress == 0 && vdp->screenMode > 3) {
+    value            = vdp->vdpData;
+    vdp->vdpData     = vdp->vramEnable ? *MAP_VRAM(vdp, (vdp->vdpRegs[14] << 14) | vdp->vramAddress) : 0xff;
+    vdp->vramAddress = (vdp->vramAddress + 1) & 0x3fff;
+    if (vdp->vramAddress == 0 && vdp->screenMode > 3)
         vdp->vdpRegs[14] = (vdp->vdpRegs[14] + 1) & (vdp->vramPages - 1);
-    }
-	vdp->vdpKey = 0;
+    vdp->vdpKey      = 0;
 
     return value;
 }
 
-static UInt8 read(VDP* vdp, UInt16 ioPort) 
+static UInt8 vdp_read(void *data, UInt16 ioPort) 
 {
-    if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A) {
+    VDP *vdp = (VDP*)data;
+    if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A)
         checkVramAccessTimeTms(vdp);
-    }
 
     return readNoTimingCheck(vdp, ioPort);
 }
 
-static UInt8 peekStatus(VDP* vdp, UInt16 ioPort)
+static UInt8 vdp_peekStatus(void *data, UInt16 ioPort)
 {
     UInt8 vdpStatus;
+    VDP *vdp = (VDP*)data;
 
-    sync(vdp, boardSystemTime());
-    if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A) {
+    vdp_sync(vdp, boardSystemTime());
+    if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A)
         return vdp->vdpStatus[0];
-    }
     vdpStatus = vdp->vdpStatus[vdp->vdpRegs[15]];
 
     switch(vdp->vdpRegs[15]) {
     case 1: 
         if (vdp->vdpRegs[0] & 0x10) {
-            if (boardGetInt(INT_IE1)) {
+            if (boardGetInt(INT_IE1))
                 vdpStatus |=  0x01;
-            }
         }
         else {
-            if (boardSystemTime() - vdp->timeHint < HPERIOD - vdp->displayArea) {
+            if (boardSystemTime() - vdp->timeHint < HPERIOD - vdp->displayArea)
                 vdpStatus |= 0x01;
-            }
         }
         break;
 
@@ -1063,12 +1028,10 @@ static UInt8 peekStatus(VDP* vdp, UInt16 ioPort)
         {
             UInt32 frameTime = boardSystemTime() - vdp->frameStartTime;
             vdpStatus |= 0x40 | 0x20 | vdpGetStatus(vdp->cmdEngine);
-            if (vdp->drawArea || (frameTime - ((vdp->firstLine - 1) * HPERIOD + vdp->leftBorder - 10) < 4 * HPERIOD)) {
+            if (vdp->drawArea || (frameTime - ((vdp->firstLine - 1) * HPERIOD + vdp->leftBorder - 10) < 4 * HPERIOD))
                 vdpStatus &= ~0x40;
-            }
-            if (frameTime % HPERIOD - vdp->leftBorder - 30 < (UInt32)vdp->displayArea + 30) {
+            if (frameTime % HPERIOD - vdp->leftBorder - 30 < (UInt32)vdp->displayArea + 30)
                 vdpStatus &= ~0x20;
-            }
         }
         break;
 
@@ -1088,11 +1051,12 @@ static UInt8 peekStatus(VDP* vdp, UInt16 ioPort)
     return vdpStatus;
 }
 
-static UInt8 readStatus(VDP* vdp, UInt16 ioPort)
+static UInt8 vdp_readStatus(void *data, UInt16 ioPort)
 {
+    VDP *vdp = (VDP*)data;
     UInt8 vdpStatus;
 
-    sync(vdp, boardSystemTime());
+    vdp_sync(vdp, boardSystemTime());
 
     vdp->vdpKey = 0;
 
@@ -1120,9 +1084,8 @@ static UInt8 readStatus(VDP* vdp, UInt16 ioPort)
             }
         }
         else {
-            if (boardSystemTime() - vdp->timeHint < HPERIOD - vdp->displayArea) {
+            if (boardSystemTime() - vdp->timeHint < HPERIOD - vdp->displayArea)
                 vdpStatus |= 0x01;
-            }
         }
         break;
 
@@ -1130,12 +1093,10 @@ static UInt8 readStatus(VDP* vdp, UInt16 ioPort)
         {
             UInt32 frameTime = boardSystemTime() - vdp->frameStartTime;
             vdpStatus |= 0x40 | 0x20 | vdpGetStatus(vdp->cmdEngine);
-            if (vdp->drawArea || (frameTime - ((vdp->firstLine - 1) * HPERIOD + vdp->leftBorder - 10) < 4 * HPERIOD)) {
+            if (vdp->drawArea || (frameTime - ((vdp->firstLine - 1) * HPERIOD + vdp->leftBorder - 10) < 4 * HPERIOD))
                 vdpStatus &= ~0x40;
-            }
-            if (frameTime % HPERIOD - vdp->leftBorder - 30 < (UInt32)vdp->displayArea + 30) {
+            if (frameTime % HPERIOD - vdp->leftBorder - 30 < (UInt32)vdp->displayArea + 30)
                 vdpStatus &= ~0x20;
-            }
         }
         break;
 
@@ -1161,11 +1122,10 @@ static UInt8 peekVram(VDP* vdp, int address) {
                   
 static void write(VDP* vdp, UInt16 ioPort, UInt8 value)
 {
-    sync(vdp, boardSystemTime());
+    vdp_sync(vdp, boardSystemTime());
 
-    if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A) {
+    if (vdp->vdpVersion == VDP_TMS9929A || vdp->vdpVersion == VDP_TMS99x8A)
         checkVramAccessTimeTms(vdp);
-    }
 
     if (vdp->vramEnable) {
         int index = MAP_VRAMINDEX(vdp, (vdp->vdpRegs[14] << 14) | vdp->vramAddress);
@@ -1180,12 +1140,10 @@ static void write(VDP* vdp, UInt16 ioPort, UInt8 value)
 	vdp->vdpData = value;
 	vdp->vdpKey = 0;
     vdp->vramAddress = (vdp->vramAddress + 1) & 0x3fff;
-    if (vdp->vramAddress == 0 && vdp->screenMode > 3) {
+    if (vdp->vramAddress == 0 && vdp->screenMode > 3)
         vdp->vdpRegs[14] = (vdp->vdpRegs[14] + 1 )& (vdp->vramPages - 1);
-    }
-    if (!vdp->videoEnabled && boardGetVideoAutodetect() && videoManagerGetCount() > 1) {
+    if (!vdp->videoEnabled && boardGetVideoAutodetect() && videoManagerGetCount() > 1)
         videoManagerSetActive(vdp->videoHandle);
-    }
 }
 
 static void writeLatch(VDP* vdp, UInt16 ioPort, UInt8 value)
@@ -1278,7 +1236,7 @@ static void initPalette(VDP* vdp)
     vdp->paletteSprite8[15] = videoGetColor(7 * 255 / 7, 7 * 255 / 7, 7 * 255 / 7);
 }
 
-static void digitize(VDP* vdp)
+static void vdp_digitize(VDP* vdp)
 {
     UInt8 colorMask = vdp->vdpRegs[7];
     int yDelta = 14 + vdp->VAdjust;
@@ -1328,7 +1286,7 @@ static void digitize(VDP* vdp)
     vdpDaDevice.callbacks.daEnd(vdpDaDevice.ref);
 }
 
-static void updateOutputMode(VDP* vdp)
+static void vdp_updateOutputMode(VDP* vdp)
 {
     int mode = (vdp->vdpRegs[9] >> 4) & 3;
     int transparency = (vdp->screenMode < 8 || vdp->screenMode > 12) && (vdp->vdpRegs[8] & 0x20) == 0;
@@ -1363,13 +1321,12 @@ static void updatePalette(VDP* vdp, int palEntry, int r, int g, int b)
     Pixel color = videoGetColor(r, g, b);
     if (palEntry == 0) {
         vdp->palette0 = color;
-        updateOutputMode(vdp);
+        vdp_updateOutputMode(vdp);
     }
     else {
         vdp->palette[palEntry] = color;
-        if (palEntry == vdp->BGColor) {
-            updateOutputMode(vdp);
-        }
+        if (palEntry == vdp->BGColor)
+            vdp_updateOutputMode(vdp);
     }
 }
 
@@ -1377,7 +1334,7 @@ static void writePaletteLatch(VDP* vdp, UInt16 ioPort, UInt8 value)
 {
     if (vdp->palKey) {
 		int palEntry = vdp->vdpRegs[16];
-        sync(vdp, boardSystemTime());
+        vdp_sync(vdp, boardSystemTime());
         vdp->paletteReg[palEntry] = 256 * (value & 0x07) | (vdp->vdpDataLatch & 0x77);
         updatePalette(vdp, palEntry, (vdp->vdpDataLatch & 0x70) * 255 / 112, 
                                      (value & 0x07) * 255 / 7,
@@ -1392,47 +1349,43 @@ static void writePaletteLatch(VDP* vdp, UInt16 ioPort, UInt8 value)
 	}
 }
 
-static void writeRegister(VDP* vdp, UInt16 ioPort, UInt8 value)
+static void vdp_writeRegister(void *data, UInt16 ioPort, UInt8 value)
 {
     int reg;
+    VDP *vdp = (VDP*)data;
 
-	vdp->vdpDataLatch = value;
-    reg = vdp->vdpRegs[17];
-    if((reg & 0x3f) != 17) {
+    vdp->vdpDataLatch = value;
+    reg               = vdp->vdpRegs[17];
+    if((reg & 0x3f) != 17)
         vdpUpdateRegisters(vdp, reg, value);
-    }
-    if(~reg & 0x80) {
+    if(~reg & 0x80)
         vdp->vdpRegs[17] = (reg + 1) & 0x3f;
-    }
 }
 
-void vdpForceSync()
+void vdpForceSync(void)
 {
-    if (theVdp != NULL) {
-        sync(theVdp, boardSystemTime());
-    }
+    if (theVdp)
+        vdp_sync(theVdp, boardSystemTime());
 }
 
-static void sync(VDP* vdp, UInt32 systemTime) 
+static void vdp_sync(void *data, UInt32 systemTime) 
 {
+    VDP *vdp      = (VDP*)data;
     int frameTime = systemTime - vdp->frameStartTime;
-    int scanLine = frameTime / HPERIOD;
-    int lineTime = frameTime % HPERIOD - (vdp->leftBorder - 20);
+    int scanLine  = frameTime / HPERIOD;
+    int lineTime  = frameTime % HPERIOD - (vdp->leftBorder - 20);
     int curLineOffset;
 
-    if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958) {
+    if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958)
         vdpCmdExecute(vdp->cmdEngine, boardSystemTime());
-    }
 
-    if (!vdp->videoEnabled || !displayEnable || frameBufferGetDrawFrame() == NULL) {
+    if (!vdp->videoEnabled || !displayEnable || frameBufferGetDrawFrame() == NULL)
         return;
-    }
 
     if (vdp->curLine < scanLine) {
         if (vdp->lineOffset <= 32) {
-            if (vdp->curLine >= vdp->displayOffest && vdp->curLine < vdp->displayOffest + SCREEN_HEIGHT) {
+            if (vdp->curLine >= vdp->displayOffest && vdp->curLine < vdp->displayOffest + SCREEN_HEIGHT)
                 vdp->RefreshLine(vdp, vdp->curLine, vdp->lineOffset, 33);
-            }
         }
         vdp->lineOffset = -1;
         vdp->curLine++;
@@ -1891,7 +1844,7 @@ static void getDebugInfo(VDP* vdp, DbgDevice* dbgDevice)
         break;
     }
 
-    sync(vdp, boardSystemTime());
+    vdp_sync(vdp, boardSystemTime());
 
     dbgDeviceAddMemoryBlock(dbgDevice, langDbgMemVram(), 0, 0, vdp->vramSize, vdp->vram);
 
@@ -1959,14 +1912,14 @@ static void getDebugInfo(VDP* vdp, DbgDevice* dbgDevice)
         if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958) {
             ioPorts = dbgDeviceAddIoPorts(dbgDevice, vdpVersionName, 4);
             dbgIoPortsAddPort(ioPorts, 0, 0x98, DBG_IO_READWRITE,  peek(vdp, 0x98));
-            dbgIoPortsAddPort(ioPorts, 1, 0x99, DBG_IO_READWRITE,  peekStatus(vdp, 0x99));
+            dbgIoPortsAddPort(ioPorts, 1, 0x99, DBG_IO_READWRITE,  vdp_peekStatus(vdp, 0x99));
             dbgIoPortsAddPort(ioPorts, 2, 0x9a, DBG_IO_WRITE, 0);
             dbgIoPortsAddPort(ioPorts, 3, 0x9b, DBG_IO_WRITE, 0);
         }
         else {
             ioPorts = dbgDeviceAddIoPorts(dbgDevice, vdpVersionName, 2);
             dbgIoPortsAddPort(ioPorts, 0, 0x98, DBG_IO_READWRITE,  peek(vdp, 0x98));
-            dbgIoPortsAddPort(ioPorts, 1, 0x99, DBG_IO_READWRITE,  peekStatus(vdp, 0x99));
+            dbgIoPortsAddPort(ioPorts, 1, 0x99, DBG_IO_READWRITE,  vdp_peekStatus(vdp, 0x99));
         }
         break;
 
@@ -1975,14 +1928,14 @@ static void getDebugInfo(VDP* vdp, DbgDevice* dbgDevice)
         dbgIoPortsAddPort(ioPorts, 0, 0x80, DBG_IO_WRITE, 0);
         dbgIoPortsAddPort(ioPorts, 1, 0x81, DBG_IO_WRITE, 0);
         dbgIoPortsAddPort(ioPorts, 2, 0x84, DBG_IO_READ,  peek(vdp, 0x84));
-        dbgIoPortsAddPort(ioPorts, 3, 0x85, DBG_IO_READ,  peekStatus(vdp, 0x85));
+        dbgIoPortsAddPort(ioPorts, 3, 0x85, DBG_IO_READ,  vdp_peekStatus(vdp, 0x85));
         break;
 
     case VDP_COLECO:
         ioPorts = dbgDeviceAddIoPorts(dbgDevice, vdpVersionName, 32);
         for (i = 0; i < 32; i += 2) {
             dbgIoPortsAddPort(ioPorts, 0,     i + 0xa0, DBG_IO_READWRITE, peek(vdp, i + 0xa0));
-            dbgIoPortsAddPort(ioPorts, i + 1, i + 0xa1, DBG_IO_READWRITE, peekStatus(vdp, i + 0xa1));
+            dbgIoPortsAddPort(ioPorts, i + 1, i + 0xa1, DBG_IO_READWRITE, vdp_peekStatus(vdp, i + 0xa1));
         }
         break;
 
@@ -1990,7 +1943,7 @@ static void getDebugInfo(VDP* vdp, DbgDevice* dbgDevice)
         ioPorts = dbgDeviceAddIoPorts(dbgDevice, vdpVersionName, 64);
 		for (i=0; i<64; i+=2) {
 			dbgIoPortsAddPort(ioPorts, 0, i+0x80, DBG_IO_READWRITE,  peek(vdp, i+0x80));
-			dbgIoPortsAddPort(ioPorts, 1, i+0x81, DBG_IO_READWRITE,  peekStatus(vdp, i+0x81));
+			dbgIoPortsAddPort(ioPorts, 1, i+0x81, DBG_IO_READWRITE,  vdp_peekStatus(vdp, i+0x81));
 		}
         break;
     }
@@ -2323,31 +2276,31 @@ void vdpCreate(VdpConnector connector, VdpVersion version, VdpSyncMode sync, int
 
     switch (vdp->vdpConnector) {
     case VDP_MSX:
-        ioPortRegister(0x98, read,       write,      vdp);
-        ioPortRegister(0x99, readStatus, writeLatch, vdp);
+        ioPortRegister(0x98, vdp_read,       write,      vdp);
+        ioPortRegister(0x99, vdp_readStatus, writeLatch, vdp);
         if (vdp->vdpVersion == VDP_V9938 || vdp->vdpVersion == VDP_V9958) {
             ioPortRegister(0x9a, NULL, writePaletteLatch, vdp);
-            ioPortRegister(0x9b, NULL, writeRegister,     vdp);
+            ioPortRegister(0x9b, NULL, vdp_writeRegister,     vdp);
         }
         break;
 
     case VDP_SVI:
         ioPortRegister(0x80, NULL,       write,      vdp); // vdp->vdpRegs vdp->vram Write
         ioPortRegister(0x81, NULL,       writeLatch, vdp); // vdp->vdpRegs Address Latch
-        ioPortRegister(0x84, read,       NULL,       vdp); // vdp->vdpRegs vdp->vram Read
-        ioPortRegister(0x85, readStatus, NULL,       vdp); // vdp->vdpRegs Status Read
+        ioPortRegister(0x84, vdp_read,       NULL,       vdp); // vdp->vdpRegs vdp->vram Read
+        ioPortRegister(0x85, vdp_readStatus, NULL,       vdp); // vdp->vdpRegs Status Read
         break;
 
     case VDP_COLECO:
         for (i = 0xa0; i < 0xc0; i += 2) {
-            ioPortRegister(i,     read,       write,      vdp);
-            ioPortRegister(i + 1, readStatus, writeLatch, vdp);
+            ioPortRegister(i,     vdp_read,       write,      vdp);
+            ioPortRegister(i + 1, vdp_readStatus, writeLatch, vdp);
         }
         break;
         
     case VDP_SG1000:
-        ioPortRegister(0xbe, read,       write,      vdp);
-        ioPortRegister(0xbf, readStatus, writeLatch, vdp);
+        ioPortRegister(0xbe, vdp_read,       write,      vdp);
+        ioPortRegister(0xbf, vdp_readStatus, writeLatch, vdp);
         break;
     }
 }
