@@ -164,7 +164,7 @@ static void setDeviceInfo(BoardDeviceInfo* deviceInfo)
         strcpy(deviceInfo->tapes[i].inZipName, properties->media.tapes[i].fileNameInZip);
     }
 
-    deviceInfo->video.vdpSyncMode = properties->emulation.vdpSyncMode;
+    deviceInfo->video.vdpSyncMode = (VdpSyncMode)properties->emulation.vdpSyncMode;
 }
 
 

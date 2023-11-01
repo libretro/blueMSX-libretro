@@ -825,7 +825,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (!info)
       return false;
 
-   image_buffer               =  malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
+   image_buffer               =  (uint16_t*)malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
    image_buffer_base_width    =  272;
    image_buffer_current_width =  image_buffer_base_width;
    image_buffer_height        =  240;
@@ -904,10 +904,8 @@ bool retro_load_game(const struct retro_game_info *info)
    if (auto_rewind_cas)
       tapeRewindNextInsert();
 
-   langSetLanguage(properties->language);
-
-   joystickPortSetType(0, properties->joy1.typeId);
-   joystickPortSetType(1, properties->joy2.typeId);
+   joystickPortSetType(0, (JoystickPortType)properties->joy1.typeId);
+   joystickPortSetType(1, (JoystickPortType)properties->joy2.typeId);
 
 #if 0
    printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
@@ -1205,12 +1203,12 @@ int frameBufferGetScanline(void)
 
 FrameBufferData* frameBufferDataCreate(int maxWidth, int maxHeight, int defaultHorizZoom)
 {
-   return (void*)image_buffer;
+   return (FrameBufferData*)image_buffer;
 }
 
-FrameBufferData* frameBufferGetActive()
+FrameBufferData* frameBufferGetActive(void)
 {
-   return (void*)image_buffer;
+   return (FrameBufferData*)image_buffer;
 }
 
 void   frameBufferSetLineCount(FrameBuffer* frameBuffer, int val)
@@ -1332,7 +1330,7 @@ bool retro_unserialize(const void *data, size_t size)
       data     = (char*)data + sizeof(((MemFile*)0)->filename); 
       sz       = * (int *)data;
       data     = (char*)data + sizeof(int); 
-      zipSaveFile("mem0", filename, 1, data, sz );
+      zipSaveFile("mem0", filename, 1, (void*)data, sz );
       data     = (char*)data + sz;
    } 
    saveStateCreateForRead("mem0");

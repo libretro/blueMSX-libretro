@@ -34,11 +34,11 @@
  */
 static int decrypt_byte(unsigned long* pkeys, const unsigned long* pcrc_32_tab)
 {
-    unsigned temp;  /* POTENTIAL BUG:  temp*(temp^1) may overflow in an
+    /* POTENTIAL BUG:  temp*(temp^1) may overflow in an
                      * unpredictable manner on 16-bit systems; not a problem
                      * with any known compiler so far, though */
 
-    temp = ((unsigned)(*(pkeys+2)) & 0xffff) | 2;
+    unsigned temp = ((unsigned)(*(pkeys+2)) & 0xffff) | 2;
     return (int)(((temp * (temp ^ 1)) >> 8) & 0xff);
 }
 
@@ -87,13 +87,7 @@ static void init_keys(const char* passwd,unsigned long* pkeys,const unsigned lon
 #    define ZCR_SEED2 3141592654UL     /* use PI as default pattern */
 #  endif
 
-static int crypthead(passwd, buf, bufSize, pkeys, pcrc_32_tab, crcForCrypting)
-    const char *passwd;         /* password string */
-    unsigned char *buf;         /* where to write header */
-    int bufSize;
-    unsigned long* pkeys;
-    const unsigned long* pcrc_32_tab;
-    unsigned long crcForCrypting;
+static int crypthead(const char *passwd, unsigned char *buf, int bufSize, unsigned long *pkeys, const unsigned long *pcrc_32_tab, unsigned long crcForCrypting)
 {
     int n;                       /* index in random header */
     int t;                       /* temporary */

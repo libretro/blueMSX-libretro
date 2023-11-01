@@ -49,8 +49,9 @@ typedef struct {
     int    romMapper;
 } RomMapperA1FMModem;
 
-static void saveState(RomMapperA1FMModem* rm)
+static void rommappera1fm_saveState(void *data)
 {
+    RomMapperA1FMModem *rm = (RomMapperA1FMModem*)data;
     SaveState* state = saveStateOpenForWrite("mapperPanasonicA1FM");
 
     saveStateSet(state, "romMapper", rm->romMapper);
@@ -58,18 +59,20 @@ static void saveState(RomMapperA1FMModem* rm)
     saveStateClose(state);
 }
 
-static void loadState(RomMapperA1FMModem* rm)
+static void rommappera1fm_loadState(void *data)
 {
-    SaveState* state = saveStateOpenForRead("mapperPanasonicA1FM");
-    rm->romMapper = saveStateGet(state, "romMapper", 0);
+    RomMapperA1FMModem *rm = (RomMapperA1FMModem*)data;
+    SaveState* state       = saveStateOpenForRead("mapperPanasonicA1FM");
+    rm->romMapper          = saveStateGet(state, "romMapper", 0);
     
     saveStateClose(state);
     
     slotMapPage(rm->slot, rm->sslot, rm->startPage, rm->romData + rm->romMapper * 0x2000, 1, 0);
 }
 
-static void destroy(RomMapperA1FMModem* rm)
+static void rommappera1fm_destroy(void *data)
 {
+    RomMapperA1FMModem *rm = (RomMapperA1FMModem*)data;
     slotUnregister(rm->slot, rm->sslot, rm->startPage);
     deviceManagerUnregister(rm->deviceHandle);
 
@@ -77,8 +80,9 @@ static void destroy(RomMapperA1FMModem* rm)
     free(rm);
 }
 
-static UInt8 read(RomMapperA1FMModem* rm, UInt16 address) 
+static UInt8 rommappera1fm_read(void *data, UInt16 address) 
 {
+    RomMapperA1FMModem* rm = (RomMapperA1FMModem*)data;
     address += 0x4000;
 
     if (address >= 0x7fc0 && address < 0x7fd0) {
@@ -95,8 +99,9 @@ static UInt8 read(RomMapperA1FMModem* rm, UInt16 address)
     return panasonicSramGet(address & 0x1fff);
 }
 
-static void write(RomMapperA1FMModem* rm, UInt16 address, UInt8 value) 
+static void rommappera1fm_write(void *data, UInt16 address, UInt8 value) 
 {
+    RomMapperA1FMModem *rm = (RomMapperA1FMModem*)data;
     address += 0x4000;
 
     if (address >= 0x6000 && address < 0x8000) {
@@ -109,8 +114,9 @@ static void write(RomMapperA1FMModem* rm, UInt16 address, UInt8 value)
 	}
 }
 
-static void reset(RomMapperA1FMModem* rm)
+static void rommappera1fm_reset(void *data)
 {
+    RomMapperA1FMModem *rm = (RomMapperA1FMModem*)data;
     slotMapPage(rm->slot, rm->sslot, rm->startPage + 0, rm->romData + rm->romMapper * 0x2000, 1, 0);
     slotMapPage(rm->slot, rm->sslot, rm->startPage + 1, NULL, 0, 0);
 }
@@ -118,15 +124,13 @@ static void reset(RomMapperA1FMModem* rm)
 int romMapperA1FMModemCreate(const char* filename, UInt8* romData, 
                              int size, int slot, int sslot, int startPage) 
 {
-    DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };
-    RomMapperA1FMModem* rm;
-
-    rm = malloc(sizeof(RomMapperA1FMModem));
+    DeviceCallbacks callbacks = { rommappera1fm_destroy, rommappera1fm_reset, rommappera1fm_saveState, rommappera1fm_loadState };
+    RomMapperA1FMModem *rm    = (RomMapperA1FMModem*)malloc(sizeof(RomMapperA1FMModem));
 
     rm->deviceHandle = deviceManagerRegister(ROM_FSA1FMMODEM, &callbacks, rm);
-    slotRegister(slot, sslot, startPage, 2, read, read, write, destroy, rm);
+    slotRegister(slot, sslot, startPage, 2, rommappera1fm_read, rommappera1fm_read, rommappera1fm_write, rommappera1fm_destroy, rm);
 
-    rm->romData = malloc(size);
+    rm->romData = (UInt8*)malloc(size);
     memcpy(rm->romData, romData, size);
     rm->romSize = size;
     rm->slot  = slot;
@@ -135,7 +139,7 @@ int romMapperA1FMModemCreate(const char* filename, UInt8* romData,
 
     rm->romMapper = 0;
 
-    reset(rm);
+    rommappera1fm_reset(rm);
 
     return 1;
 }

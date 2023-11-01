@@ -79,12 +79,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DBGLOG(fmt)
-#define DBGLOG1(fmt, arg1)
-#define DBGLOG2(fmt, arg1, arg2)
-#define DBGLOG3(fmt, arg1, arg2, arg3)
-#define DBGLOG4(fmt, arg1, arg2, arg3, arg4)
-
 #define SPC_BANK 0x7f
 
 typedef struct {
@@ -115,8 +109,6 @@ static void setMapper(SramMapperMegaSCSI* rm, int page, UInt8 value)
     int     readFlag;
     UInt8*  adr;
 
-    DBGLOG2("setMapper: %x %x\n", page, value);
-
     if (rm->type && (value & 0xc0) == 0x40) {
         readFlag  = 0;
         writeFlag = 0;
@@ -131,11 +123,8 @@ static void setMapper(SramMapperMegaSCSI* rm, int page, UInt8 value)
 
     if (rm->mapper[page] != value) {
         rm->mapper[page] = value;
-        DBGLOG4("bank change: p%x v%x r%d w%d\n", page, value, readFlag, writeFlag);
         slotMapPage(rm->pSlot, rm->sSlot, rm->startPage + page,
                     adr, readFlag, writeFlag);
-    } else {
-        DBGLOG("bank not changed\n");
     }
 }
 
@@ -166,9 +155,8 @@ static void saveState(SramMapperMegaSCSI* rm)
     }
     saveStateClose(state);
 
-    if (rm->type) {
+    if (rm->type)
         mb89352SaveState(rm->spc);
-    }
 }
 
 static void loadState(SramMapperMegaSCSI* rm)
@@ -176,8 +164,6 @@ static void loadState(SramMapperMegaSCSI* rm)
     SaveState* state = saveStateOpenForRead("mapperMegaSCSI");
     char tag[16];
     int i;
-
-    DBGLOG("load State\n");
 
     saveStateGetBuffer(state, "sramData", rm->sramData, rm->sramSize);
 
@@ -187,27 +173,23 @@ static void loadState(SramMapperMegaSCSI* rm)
     }
     saveStateClose(state);
 
-    if (rm->type) {
+    if (rm->type)
         mb89352LoadState(rm->spc);
-    }
 }
 
 static void destroy(SramMapperMegaSCSI* rm)
 {
-    if (!rm->isZip) {
+    if (!rm->isZip)
         sramSave(rm->sramFilename, rm->sramData, rm->sramSize, NULL, 0);
-    }
 
     slotUnregister(rm->pSlot, rm->sSlot, rm->startPage);
     deviceManagerUnregister(rm->deviceHandle);
 
-    if (rm->type) {
+    if (rm->type)
         mb89352Destroy(rm->spc);
-    }
 
-    if (rm->isAutoName) {
+    if (rm->isAutoName)
         --autoNameCounter[rm->type][rm->element];
-    }
 
     free(rm->sramData);
     free(rm);
@@ -221,15 +203,13 @@ static UInt8 read(SramMapperMegaSCSI* rm, UInt16 address)
         address &= 0x1fff;
 
         // SPC read
-        if (address < 0x1000) {
+        if (address < 0x1000)
             // Data Register
             return mb89352ReadDREG(rm->spc);
-        }
         address &= 0x0f;
         return mb89352ReadRegister(rm->spc, (UInt8)address);
-    } else {
-        return 0xff;
     }
+    return 0xff;
 }
 
 static UInt8 peek(SramMapperMegaSCSI* rm, UInt16 address)
@@ -246,10 +226,10 @@ static UInt8 peek(SramMapperMegaSCSI* rm, UInt16 address)
         }
         address &= 0x0f;
         return mb89352PeekRegister(rm->spc, (UInt8)address);
-    } else {
-        return 0xff;
     }
+    return 0xff;
 }
+
 static void write(SramMapperMegaSCSI* rm, UInt16 address, UInt8 value)
 {
     int page = (address >> 13);
@@ -261,11 +241,10 @@ static void write(SramMapperMegaSCSI* rm, UInt16 address, UInt8 value)
 
     if (rm->type && (rm->mapper[page] == SPC_BANK)){
         address &= 0x1fff;
-        if (address < 0x1000) {
+        if (address < 0x1000)
             mb89352WriteDREG(rm->spc, value);
-        } else {
+        else
             mb89352WriteRegister(rm->spc, address & 0x0f, value);
-        }
     }
 }
 
@@ -278,9 +257,8 @@ int sramMapperMegaSCSICreate(const char* filename, UInt8* buf, int size, int pSl
     int i;
 
     if  (((size != 0x100000) && (size != 0x80000)  &&
-          (size !=  0x40000) && (size != 0x20000)) || (flag & ~0x81)) {
+          (size !=  0x40000) && (size != 0x20000)) || (flag & ~0x81))
         return 0;
-    }
 
     rm = malloc(sizeof(SramMapperMegaSCSI));
     rm->type = flag & 1;
@@ -288,24 +266,22 @@ int sramMapperMegaSCSICreate(const char* filename, UInt8* buf, int size, int pSl
 
     rm->deviceHandle = deviceManagerRegister(SRAM_MEGASCSI, &callbacks, rm);
 
-    if (rm->type) {
+    if (rm->type)
         slotRegister(pSlot, sSlot, startPage, 4,
                     (SlotRead)read, (SlotRead)peek, (SlotWrite)write,
                     (SlotEject)destroy, rm);
-    } else {
+    else
         slotRegister(pSlot, sSlot, startPage, 4, NULL, NULL, (SlotWrite)write,
                     (SlotEject)destroy, rm);
-    }
 
     rm->pSlot       = pSlot;
     rm->sSlot       = sSlot;
     rm->startPage   = startPage;
     rm->mapperMask  = ((size >> 13) - 1) | 0x80;
-    DBGLOG1("mapper mask: %x\n", (unsigned int)rm->mapperMask);
 
-    if (strlen(filename)) {
+    if (strlen(filename))
         rm->isAutoName = 0;
-    } else {
+    else {
         rm->element    = EseRamSize(size);
         rm->isAutoName = 1;
     }

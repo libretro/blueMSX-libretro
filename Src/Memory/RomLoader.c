@@ -39,36 +39,34 @@ UInt8* romLoad(const char *fileName, const char *fileInZipFile, int* size)
     UInt8* buf = NULL;
     FILE *file;
 
-    if (fileName == NULL || strlen(fileName) == 0) {
+    if (!fileName || strlen(fileName) == 0)
         goto error;
-    }
 
-    if (fileInZipFile != NULL && strlen(fileInZipFile) == 0) {
+    if (fileInZipFile && strlen(fileInZipFile) == 0)
         fileInZipFile = NULL;
-    }
 
-    if (fileInZipFile != NULL) {
-        buf = zipLoadFile(fileName, fileInZipFile, size);
-        if (buf == NULL)
+    if (fileInZipFile)
+    {
+        buf = (UInt8*)zipLoadFile(fileName, fileInZipFile, size);
+        if (!buf)
            goto error;
         return buf;
     }
 
     file = fopen(fileName, "rb");
-    if (file == NULL) {
+    if (!file)
         goto error;
-    }
 
     fseek(file, 0, SEEK_END);
     *size = ftell(file);
     if (*size == 0) {
         fclose(file);
-        return malloc(1);
+        return (UInt8*)malloc(1);
     }
 
     fseek(file, 0, SEEK_SET);
 
-    buf = malloc(*size);
+    buf = (UInt8*)malloc(*size);
     
     *size = fread(buf, 1, *size, file);
     fclose(file);
@@ -80,4 +78,3 @@ error:
       fflush(stdout);
     return NULL;
 }
-

@@ -39,7 +39,6 @@
 #include <string.h>
 #include <stdio.h>
 
-
 typedef struct {
     int deviceHandle;
     UInt8* ramData;
@@ -54,10 +53,9 @@ typedef struct {
     int size;
 } RamMapper;
 
-static void writeIo(RamMapper* rm, UInt16 page, UInt8 value);
-
-static void saveState(RamMapper* rm)
+static void rammapper_saveState(void *data)
 {
+    RamMapper *rm = (RamMapper*)rm;
     SaveState* state = saveStateOpenForWrite("mapperRam");
     
     saveStateSet(state, "mask",     rm->mask);
@@ -69,39 +67,10 @@ static void saveState(RamMapper* rm)
     saveStateClose(state);
 }
 
-static void loadState(RamMapper* rm)
+static void rammapper_writeIo(void *data, UInt16 page, UInt8 value)
 {
-    SaveState* state = saveStateOpenForRead("mapperRam");
-    int i;
-    
-    rm->mask     = saveStateGet(state, "mask", 0);
-    rm->dramMode = saveStateGet(state, "dramMode", 0);
-    
-    saveStateGetBuffer(state, "port", rm->port, 4);
-    saveStateGetBuffer(state, "ramData", rm->ramData, 0x4000 * (rm->mask + 1));
-
-    saveStateClose(state);
-
-#if 1
-    for (i = 0; i < 4; i++) {
-        writeIo(rm, i, rm->port[i]);
-    }
-#else
-    ramMapperIoRemove(rm->handle);
-    rm->handle  = ramMapperIoAdd(0x4000 * (rm->mask + 1), writeIo, rm);
-
-    for (i = 0; i < 4; i++) {
-        int value = ramMapperIoGetPortValue(i) & rm->mask;
-        int mapped = rm->dramMode && (rm->mask - value < 4) ? 0 : 1;
-        slotMapPage(rm->slot, rm->sslot, 2 * i,     rm->ramData + 0x4000 * value, 1, mapped);
-        slotMapPage(rm->slot, rm->sslot, 2 * i + 1, rm->ramData + 0x4000 * value + 0x2000, 1, mapped);
-    }
-#endif
-}
-
-static void writeIo(RamMapper* rm, UInt16 page, UInt8 value)
-{
-    int baseAddr = 0x4000 * (value & rm->mask);
+    RamMapper *rm  = (RamMapper*)rm;
+    int baseAddr   = 0x4000 * (value & rm->mask);
     rm->port[page] = value;
     if (rm->dramMode && baseAddr >= (rm->size - 0x10000)) {
         slotMapPage(rm->slot, rm->sslot, 2 * page,     NULL, 0, 0);
@@ -113,24 +82,55 @@ static void writeIo(RamMapper* rm, UInt16 page, UInt8 value)
     }
 }
 
-static void setDram(RamMapper* rm, int enable)
+static void rammapper_loadState(void *data)
 {
     int i;
+    RamMapper *rm    = (RamMapper*)data;
+    SaveState* state = saveStateOpenForRead("mapperRam");
+    
+    rm->mask     = saveStateGet(state, "mask", 0);
+    rm->dramMode = saveStateGet(state, "dramMode", 0);
+    
+    saveStateGetBuffer(state, "port", rm->port, 4);
+    saveStateGetBuffer(state, "ramData", rm->ramData, 0x4000 * (rm->mask + 1));
+
+    saveStateClose(state);
+
+#if 1
+    for (i = 0; i < 4; i++)
+        rammapper_writeIo(rm, i, rm->port[i]);
+#else
+    ramMapperIoRemove(rm->handle);
+    rm->handle  = ramMapperIoAdd(0x4000 * (rm->mask + 1), rammapper_writeIo, rm);
+
+    for (i = 0; i < 4; i++) {
+        int value = ramMapperIoGetPortValue(i) & rm->mask;
+        int mapped = rm->dramMode && (rm->mask - value < 4) ? 0 : 1;
+        slotMapPage(rm->slot, rm->sslot, 2 * i,     rm->ramData + 0x4000 * value, 1, mapped);
+        slotMapPage(rm->slot, rm->sslot, 2 * i + 1, rm->ramData + 0x4000 * value + 0x2000, 1, mapped);
+    }
+#endif
+}
+
+static void rammapper_setDram(void *data, int enable)
+{
+    int i;
+    RamMapper *rm    = (RamMapper*)data;
 
     rm->dramMode = enable;
 
-    for (i = 0; i < 4; i++) {
-        writeIo(rm, i, ramMapperIoGetPortValue(i));
-    }
+    for (i = 0; i < 4; i++)
+        rammapper_writeIo(rm, i, ramMapperIoGetPortValue(i));
 }
 
-static void reset(RamMapper* rm)
+static void rammapper_reset(RamMapper* rm)
 {
-    setDram(rm, 0);
+    rammapper_setDram(rm, 0);
 }
 
-static void destroy(RamMapper* rm)
+static void rammapper_destroy(void *data)
 {
+    RamMapper *rm = (RamMapper*)data;
     debugDeviceUnregister(rm->debugHandle);
     ramMapperIoRemove(rm->handle);
     slotUnregister(rm->slot, rm->sslot, 0);
@@ -141,26 +141,27 @@ static void destroy(RamMapper* rm)
     free(rm);
 }
 
-static void getDebugInfo(RamMapper* rm, DbgDevice* dbgDevice)
+static void rammapper_getDebugInfo(void *data, DbgDevice* dbgDevice)
 {
+    RamMapper *rm = (RamMapper*)data;
     dbgDeviceAddMemoryBlock(dbgDevice, langDbgMemRamMapped(), 0, 0, rm->size, rm->ramData);
 }
 
-static int dbgWriteMemory(RamMapper* rm, char* name, void* data, int start, int size)
+static int rammapper_dbgWriteMemory(void *data1, char* name, void *data2, int start, int size)
 {
-    if (strcmp(name, "Mapped") || start + size > rm->size) {
+    RamMapper *rm = (RamMapper*)data1;
+    if (strcmp(name, "Mapped") || start + size > rm->size)
         return 0;
-    }
 
-    memcpy(rm->ramData + start, data, size);
+    memcpy(rm->ramData + start, data2, size);
 
     return 1;
 }
 
 int ramMapperCreate(int size, int slot, int sslot, int startPage, UInt8** ramPtr, UInt32* ramSize) 
 {
-    DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };
-    DebugCallbacks dbgCallbacks = { getDebugInfo, dbgWriteMemory, NULL, NULL };
+    DeviceCallbacks callbacks = { rammapper_destroy, NULL, rammapper_saveState, rammapper_loadState };
+    DebugCallbacks dbgCallbacks = { rammapper_getDebugInfo, rammapper_dbgWriteMemory, NULL, NULL };
     RamMapper* rm;
     int pages = size / 0x4000;
     int i;
@@ -168,20 +169,18 @@ int ramMapperCreate(int size, int slot, int sslot, int startPage, UInt8** ramPtr
     // Check that memory is a power of 2 and at least 64kB
     for (i = 4; i < pages; i <<= 1);
 
-    if (i != pages) {
+    if (i != pages)
         return 0;
-    }
 
     size = pages * 0x4000;
 
     // Start page must be zero (only full slot allowed)
-    if (startPage != 0) {
+    if (startPage != 0)
         return 0;
-    }
 
-    rm = malloc(sizeof(RamMapper));
+    rm           = (RamMapper*)malloc(sizeof(RamMapper));
 
-    rm->ramData  = malloc(size);
+    rm->ramData  = (UInt8*)malloc(size);
     rm->size     = size;
     rm->slot     = slot;
     rm->sslot    = sslot;
@@ -190,23 +189,22 @@ int ramMapperCreate(int size, int slot, int sslot, int startPage, UInt8** ramPtr
 
     memset(rm->ramData, 0xff, size);
 
-    rm->handle  = ramMapperIoAdd(pages * 0x4000, writeIo, rm);
+    rm->handle  = ramMapperIoAdd(pages * 0x4000, rammapper_writeIo, rm);
     
     rm->debugHandle = debugDeviceRegister(DBGTYPE_RAM, langDbgDevRam(), &dbgCallbacks, rm);
 
     rm->deviceHandle = deviceManagerRegister(RAM_MAPPER, &callbacks, rm);
-    slotRegister(slot, sslot, 0, 8, NULL, NULL, NULL, destroy, rm);
+    slotRegister(slot, sslot, 0, 8, NULL, NULL, NULL, rammapper_destroy, rm);
 
-    reset(rm);
+    rammapper_reset(rm);
 
     if (ramPtr != NULL) {
         // Main RAM
-        rm->dramHandle = panasonicDramRegister(setDram, rm);
+        rm->dramHandle = panasonicDramRegister(rammapper_setDram, rm);
         *ramPtr = rm->ramData;
     }
-    if (ramSize != NULL) {
+    if (ramSize != NULL)
         *ramSize = size;
-    }
 
     return 1;
 }
