@@ -55,7 +55,7 @@ typedef struct {
 
 static void rammapper_saveState(void *data)
 {
-    RamMapper *rm = (RamMapper*)rm;
+    RamMapper *rm    = (RamMapper*)data;
     SaveState* state = saveStateOpenForWrite("mapperRam");
     
     saveStateSet(state, "mask",     rm->mask);
@@ -69,7 +69,7 @@ static void rammapper_saveState(void *data)
 
 static void rammapper_writeIo(void *data, UInt16 page, UInt8 value)
 {
-    RamMapper *rm  = (RamMapper*)rm;
+    RamMapper *rm  = (RamMapper*)data;
     int baseAddr   = 0x4000 * (value & rm->mask);
     rm->port[page] = value;
     if (rm->dramMode && baseAddr >= (rm->size - 0x10000)) {
