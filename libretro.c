@@ -52,7 +52,7 @@ static uint16_t* image_buffer;
 static unsigned image_buffer_base_width;
 static unsigned image_buffer_current_width;
 static unsigned image_buffer_height;
-static unsigned width = 272;
+static unsigned width = 284;
 static unsigned height = 240;
 static int double_width;
 
@@ -162,7 +162,7 @@ int get_media_type(const char* filename)
    else if(strcmp(extension, ".sg") == 0){
       if (is_auto){
          is_sega = true;
-         strcpy(msx_type, "SEGA - SC-3000");
+         strcpy(msx_type, "SEGA - SG-1000");
       }
       return MEDIA_TYPE_CART;
    }
@@ -177,6 +177,27 @@ int get_media_type(const char* filename)
       if (is_auto){
          is_sega = true;
          strcpy(msx_type, "SEGA - SF-7000");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".sf7") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "SEGA - SF-7000");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".mv") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "Othello Multivision");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".omv") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "Othello Multivision");
       }
       return MEDIA_TYPE_CART;
    }
