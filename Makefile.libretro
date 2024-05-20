@@ -253,7 +253,7 @@ else ifeq ($(platform), tvos-arm64)
 	SHARED := -dynamiclib
 
 	ifeq ($(IOSSDK),)
-		IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
+		IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
 	endif
 	CC = cc -arch arm64 -isysroot $(IOSSDK)
 	CC_AS = perl ./tools/gas-preprocessor.pl $(CC)
