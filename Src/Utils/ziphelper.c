@@ -152,7 +152,7 @@ MemZipFile* memZipFileCreate(const char* zipName)
     {
         if (memZipFiles[i] == NULL)
         {
-            memZipFiles[i] = malloc(sizeof(MemZipFile));
+            memZipFiles[i] = (MemZipFile*)malloc(sizeof(MemZipFile));
             strcpy(memZipFiles[i]->zipName, zipName);
             memZipFiles[i]->count = 0;
             return memZipFiles[i];
@@ -202,20 +202,16 @@ int memFileSave(const char* zipName, const char* filename, int append, void* buf
         memZipFile = NULL;
     }
 
-    if (memZipFile == NULL)
-    {
+    if (!memZipFile)
         memZipFile = memZipFileCreate(zipName);
-    }
 
     if (memZipFile == NULL || memZipFile->count == MAX_FILES_IN_ZIP)
-    {
         return 0;
-    }
     
-    memFile = malloc(sizeof(MemFile));
-    memFile->buffer = malloc(size);
+    memFile         = (MemFile*)malloc(sizeof(MemFile));
+    memFile->buffer = (char*)malloc(size);
     memcpy(memFile->buffer, buffer, size);
-    memFile->size = size;
+    memFile->size   = size;
     strcpy(memFile->filename, filename);
 
     memZipFile->memFiles[memZipFile->count++] = memFile;
@@ -519,12 +515,11 @@ void zipCacheReadOnlyZip(const char* zipName)
             filesize = ftell(file);
             fill_fopen_memfunc(&cacheFilefunc, filesize);
             fseek(file, 0, SEEK_SET);
-            cacheData = malloc(filesize);
+            cacheData = (char*)malloc(filesize);
             if( cacheData != NULL ) {
                 size_t size = fread(cacheData, 1, filesize, file);
-                if( size == filesize ) {
+                if( size == filesize )
                     strcpy(cacheFile, zipName);
-                }
             }
             fclose(file);
         }
@@ -704,8 +699,8 @@ char* zipGetFileList(const char* zipName, const char* ext, int* count) {
 
         toLower(tmp);
         if (strstr(tmp, extension) != NULL) {
-            int entryLen = strlen(tempName) + 1;
-            fileArray    = realloc(fileArray, totalLen +  entryLen + 1);
+            size_t entryLen = strlen(tempName) + 1;
+            fileArray       = (char*)realloc(fileArray, totalLen +  entryLen + 1);
             strcpy(fileArray + totalLen, tempName);
             totalLen += entryLen;
             fileArray[totalLen] = '\0'; // double null termination at end
@@ -918,9 +913,9 @@ void* zipCompress(void* buffer, int size, unsigned long* retSize)
     void* retBuf;
 
     *retSize = (size * 1001) / 1000 + 12;
-    retBuf = malloc(*retSize);
+    retBuf   = malloc(*retSize);
 
-    if (compress(retBuf, retSize, buffer, size) != Z_OK) {
+    if (compress((Bytef*)retBuf, retSize, (const Bytef*)buffer, size) != Z_OK) {
         free(retBuf);
         retBuf = NULL;
     }
@@ -932,7 +927,7 @@ void* zipUncompress(void* buffer, int size, unsigned long* retSize)
 {
     void* retBuf = malloc(*retSize);
 
-    if (uncompress(retBuf, retSize, buffer, size) != Z_OK) {
+    if (uncompress((Bytef*)retBuf, retSize, (const Bytef*)buffer, size) != Z_OK) {
         free(retBuf);
         retBuf = NULL;
     }

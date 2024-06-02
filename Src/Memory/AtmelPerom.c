@@ -244,23 +244,20 @@ AtmelPerom* atmelPeromCreate(AmdType type, int flashSize, int sectorSize, UInt32
     rm->flashSize = flashSize;
     rm->sectorSize = sectorSize;
 
-    rm->romData = malloc(flashSize);
-    if (size >= flashSize) {
+    rm->romData = (UInt8*)malloc(flashSize);
+    if (size >= flashSize)
         size = flashSize;
-    }
 
     if (rm->sramFilename[0]) {
         memset(rm->romData + size, 0xff, flashSize - size);
         sramLoad(rm->sramFilename, rm->romData, rm->flashSize, NULL, 0);
     }
 
-    if (size > 0) {
+    if (size > 0)
         memcpy(rm->romData, romData, size);
-    }
 #if 0
-    if (rm->sramFilename[0] && loadSram) {
+    if (rm->sramFilename[0] && loadSram)
         sramLoad(rm->sramFilename, rm->romData, rm->flashSize, NULL, 0);
-    }
 #endif
 
     return rm;
@@ -268,8 +265,7 @@ AtmelPerom* atmelPeromCreate(AmdType type, int flashSize, int sectorSize, UInt32
 
 void atmelPeromDestroy(AtmelPerom* rm)
 {
-    if (rm->sramFilename[0]) {
+    if (rm->sramFilename[0])
         sramSave(rm->sramFilename, rm->romData, rm->flashSize, NULL, 0);
-    }
     free(rm);
 }

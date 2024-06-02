@@ -147,9 +147,8 @@ static void write(RomMapperSunriseIde* rm, UInt16 address, UInt8 value)
 	}
 
 	if (rm->ideEnabled && (address & 0x3e00) == 0x3c00) {
-		if ((address & 1) == 0) {
+		if ((address & 1) == 0)
             rm->writeLatch = value;
-		} 
         else {
             sunriseIdeWrite(rm->ide, (value << 8) | rm->writeLatch);
 		}
@@ -181,19 +180,15 @@ int romMapperSunriseIdeCreate(int hdId, const char* filename, UInt8* romData,
     int i;
     int origSize = size;
 
-    if (startPage != 0) {
+    if (startPage != 0)
         return 0;
-    }
-
     
     size = 0x4000;
-    while (size < origSize) {
+    while (size < origSize)
         size *= 2;
-    }
 
-    if (romData == NULL) {
+    if (romData == NULL)
         size = 0x80000;
-    }
 
     rm = malloc(sizeof(RomMapperSunriseIde));
 
@@ -203,12 +198,10 @@ int romMapperSunriseIdeCreate(int hdId, const char* filename, UInt8* romData,
     rm->ide = sunriseIdeCreate(hdId);
 
     rm->romData = calloc(1, size);
-    if (romData != NULL) {
+    if (romData != NULL)
         memcpy(rm->romData, romData, origSize);
-    }
-    else {
+    else
         memset(rm->romData, 0xff, size);
-    }
     rm->romMask = size / 0x4000 - 1;
     rm->slot  = slot;
     rm->sslot = sslot;
@@ -216,9 +209,8 @@ int romMapperSunriseIdeCreate(int hdId, const char* filename, UInt8* romData,
 
     rm->romMapper = 0;
 
-    for (i = 0; i < 8; i++) {   
+    for (i = 0; i < 8; i++)
         slotMapPage(rm->slot, rm->sslot, rm->startPage + i, NULL, 0, 0);
-    }
 
     rm->ideEnabled = 1;
     rm->romMapper = 0;

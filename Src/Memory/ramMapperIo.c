@@ -63,16 +63,16 @@ static int ramMapperIoGetMask(RamMapperIo* rm)
     int i;
 
     for (i = 0; i < rm->count; i++) {
-        while (size < rm->mapperCb[i].size) {
+        while (size < rm->mapperCb[i].size)
             size <<= 1;
-        }
     }
 
     return (size / 0x4000) - 1;
 }
 
-static void saveState(RamMapperIo* rm)
+static void rammapperio_saveState(void *data)
 {
+    RamMapperIo *rm  = (RamMapperIo*)data;
     SaveState* state = saveStateOpenForWrite("mapperRamIo");
     saveStateSet(state, "port0", rm->port[0]);
     saveStateSet(state, "port1", rm->port[1]);
@@ -82,8 +82,9 @@ static void saveState(RamMapperIo* rm)
     saveStateClose(state);
 }
 
-static void loadState(RamMapperIo* rm)
+static void rammapperio_loadState(void *data)
 {
+    RamMapperIo *rm  = (RamMapperIo*)data;
     SaveState* state = saveStateOpenForRead("mapperRamIo");
     rm->port[0] = saveStateGet(state, "port0", 3);
     rm->port[1] = saveStateGet(state, "port1", 2);
@@ -95,8 +96,9 @@ static void loadState(RamMapperIo* rm)
     saveStateClose(state);
 }
 
-static void destroy(RamMapperIo* rm) 
+static void rammapperio_destroy(void *data) 
 {
+    RamMapperIo *rm = (RamMapperIo*)data;
     ioPortUnregister(0xfc);
     ioPortUnregister(0xfd);
     ioPortUnregister(0xfe);
@@ -109,13 +111,15 @@ static void destroy(RamMapperIo* rm)
     mapperIo = NULL;
 }
 
-static UInt8 read(RamMapperIo* rm, UInt16 ioPort)
+static UInt8 rammapperio_read(void *data, UInt16 ioPort)
 {
+    RamMapperIo *rm = (RamMapperIo*)data;
     return rm->port[ioPort & 3] | ~rm->mask;
 }
 
-static void write(RamMapperIo* rm, UInt16 ioPort, UInt8 value)
+static void rammapperio_write(void *data, UInt16 ioPort, UInt8 value)
 {
+    RamMapperIo *rm = (RamMapperIo*)data;
     ioPort &= 3;
 
     if (rm->port[ioPort] != value) {
@@ -124,31 +128,28 @@ static void write(RamMapperIo* rm, UInt16 ioPort, UInt8 value)
         rm->port[ioPort] = value;
 
         for (i = 0; i < rm->count; i++) {
-            if (rm->mapperCb[i].write != NULL) {
+            if (rm->mapperCb[i].write != NULL)
                 rm->mapperCb[i].write(rm->mapperCb[i].ref, ioPort, value);
-            }
         }
     }
 }
 
-static void getDebugInfo(RamMapperIo* rm, DbgDevice* dbgDevice)
+static void rammapperio_getDebugInfo(void *data, DbgDevice* dbgDevice)
 {
-    DbgIoPorts* ioPorts;
     int i;
-
-    ioPorts = dbgDeviceAddIoPorts(dbgDevice, langDbgDevRamMapper(), 4);
-    for (i = 0; i < 4; i++) {
-        dbgIoPortsAddPort(ioPorts, i, 0xfc + i, DBG_IO_READWRITE, read(rm, 0xfc + i));
-    }
+    RamMapperIo *rm     = (RamMapperIo*)data;
+    DbgIoPorts *ioPorts = dbgDeviceAddIoPorts(dbgDevice, langDbgDevRamMapper(), 4);
+    for (i = 0; i < 4; i++)
+        dbgIoPortsAddPort(ioPorts, i, 0xfc + i, DBG_IO_READWRITE, rammapperio_read(rm, 0xfc + i));
 }
 
 int ramMapperIoCreate() 
 {
     RamMapperIo* rm;
-    DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };
-    DebugCallbacks dbgCallbacks = { getDebugInfo, NULL, NULL, NULL };
+    DeviceCallbacks callbacks = { rammapperio_destroy, NULL, rammapperio_saveState, rammapperio_loadState };
+    DebugCallbacks dbgCallbacks = { rammapperio_getDebugInfo, NULL, NULL, NULL };
 
-    rm = malloc(sizeof(RamMapperIo));
+    rm        = (RamMapperIo*)malloc(sizeof(RamMapperIo));
     rm->count = 0;
     rm->mask  = 0;
     rm->handleCount = 0;
@@ -161,10 +162,10 @@ int ramMapperIoCreate()
     rm->deviceHandle = deviceManagerRegister(RAM_MAPPER, &callbacks, rm);
     rm->debugHandle = debugDeviceRegister(DBGTYPE_BIOS, langDbgDevRamMapper(), &dbgCallbacks, rm);
 
-    ioPortRegister(0xfc, read, write, rm);
-    ioPortRegister(0xfd, read, write, rm);
-    ioPortRegister(0xfe, read, write, rm);
-    ioPortRegister(0xff, read, write, rm);
+    ioPortRegister(0xfc, rammapperio_read, rammapperio_write, rm);
+    ioPortRegister(0xfd, rammapperio_read, rammapperio_write, rm);
+    ioPortRegister(0xfe, rammapperio_read, rammapperio_write, rm);
+    ioPortRegister(0xff, rammapperio_read, rammapperio_write, rm);
 
     mapperIo = rm;
 
@@ -174,10 +175,8 @@ int ramMapperIoCreate()
 int ramMapperIoGetPortValue(int ioPort)
 {
     RamMapperIo* rm = mapperIo;
-    if (rm == NULL) {
+    if (rm == NULL)
         return 0xff;
-    }
-
     return rm->port[ioPort & 3];
 }
 

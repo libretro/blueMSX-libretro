@@ -47,8 +47,9 @@ typedef struct {
     UInt8 ramData[0x10000];
 } RamNormal;
 
-static void saveState(RamNormal* rm)
+static void ramnormal_saveState(void *data)
 {
+    RamNormal *rm    = (RamNormal*)data;
     SaveState* state = saveStateOpenForWrite("mapperNormalRam");
 
     saveStateSet(state, "pages", rm->pages);
@@ -57,10 +58,11 @@ static void saveState(RamNormal* rm)
     saveStateClose(state);
 }
 
-static void loadState(RamNormal* rm)
+static void ramnormal_loadState(void *data)
 {
-    SaveState* state = saveStateOpenForRead("mapperNormalRam");
     int i;
+    RamNormal *rm = (RamNormal*)data;
+    SaveState* state = saveStateOpenForRead("mapperNormalRam");
 
     rm->pages = saveStateGet(state, "pages", 0);
     
@@ -68,13 +70,16 @@ static void loadState(RamNormal* rm)
 
     saveStateClose(state);
 
+#if 0
     for (i = 0; i < rm->pages; i++) {
 //        slotMapPage(rm->slot, rm->sslot, i + rm->startPage, rm->ramData + 0x2000 * i, 1, 1);
     }
+#endif
 }
 
-static void destroy(RamNormal* rm)
+static void ramnormal_destroy(void *data)
 {
+    RamNormal *rm = (RamNormal*)data;
     debugDeviceUnregister(rm->debugHandle);
 
     slotUnregister(rm->slot, rm->sslot, 0);
@@ -83,40 +88,39 @@ static void destroy(RamNormal* rm)
     free(rm);
 }
 
-static void getDebugInfo(RamNormal* rm, DbgDevice* dbgDevice)
+static void ramnormal_getDebugInfo(void *data, DbgDevice* dbgDevice)
 {
+    RamNormal *rm = (RamNormal*)data;
     dbgDeviceAddMemoryBlock(dbgDevice, langDbgMemRamNormal(), 0, 0, rm->pages * 0x2000, rm->ramData);
 }
 
-static int dbgWriteMemory(RamNormal* rm, char* name, void* data, int start, int size)
+static int ramnormal_dbgWriteMemory(void *data1, char* name, void* data2, int start, int size)
 {
-    if (strcmp(name, "Normal") || start + size > rm->pages * 0x2000) {
+    RamNormal *rm = (RamNormal*)data1;
+    if (strcmp(name, "Normal") || start + size > rm->pages * 0x2000)
         return 0;
-    }
 
-    memcpy(rm->ramData + start, data, size);
+    memcpy(rm->ramData + start, data2, size);
 
     return 1;
 }
 
 int ramNormalCreate(int size, int slot, int sslot, int startPage, UInt8** ramPtr, UInt32* ramSize) 
 {
-    DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };
-    DebugCallbacks dbgCallbacks = { getDebugInfo, dbgWriteMemory, NULL, NULL };
+    DeviceCallbacks callbacks = { ramnormal_destroy, NULL, ramnormal_saveState, ramnormal_loadState };
+    DebugCallbacks dbgCallbacks = { ramnormal_getDebugInfo, ramnormal_dbgWriteMemory, NULL, NULL };
     RamNormal* rm;
     int pages = size / 0x2000;
     int i;
 
-    if (size > 0x10000 || (size & 0x1fff)) {
+    if (size > 0x10000 || (size & 0x1fff))
         return 0;
-    }
 
     // Start page must be zero (only full slot allowed)
-    if (startPage + pages > 8) {
+    if (startPage + pages > 8)
         return 0;
-    }
 
-    rm = malloc(sizeof(RamNormal));
+    rm            = (RamNormal*)malloc(sizeof(RamNormal));
 
     rm->slot      = slot;
     rm->sslot     = sslot;
@@ -127,20 +131,17 @@ int ramNormalCreate(int size, int slot, int sslot, int startPage, UInt8** ramPtr
 
     rm->debugHandle = debugDeviceRegister(DBGTYPE_RAM, langDbgDevRam(), &dbgCallbacks, rm);
 
-    for (i = 0; i < pages; i++) {
+    for (i = 0; i < pages; i++)
         slotMapPage(slot, sslot, i + startPage, rm->ramData + 0x2000 * i, 1, 1);
-    }
 
     rm->deviceHandle = deviceManagerRegister(RAM_NORMAL, &callbacks, rm);
-    slotRegister(slot, sslot, startPage, pages, NULL, NULL, NULL, destroy, rm);
+    slotRegister(slot, sslot, startPage, pages, NULL, NULL, NULL, ramnormal_destroy, rm);
 
-    if (ramPtr != NULL) {
+    if (ramPtr)
         *ramPtr = rm->ramData;
-    }
 
-    if (ramSize != NULL) {
+    if (ramSize)
         *ramSize = pages * 0x2000;
-    }
 
     return 1;
 }

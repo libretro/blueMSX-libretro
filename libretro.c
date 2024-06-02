@@ -52,7 +52,7 @@ static uint16_t* image_buffer;
 static unsigned image_buffer_base_width;
 static unsigned image_buffer_current_width;
 static unsigned image_buffer_height;
-static unsigned width = 272;
+static unsigned width = 284;
 static unsigned height = 240;
 static int double_width;
 
@@ -162,7 +162,42 @@ int get_media_type(const char* filename)
    else if(strcmp(extension, ".sg") == 0){
       if (is_auto){
          is_sega = true;
+         strcpy(msx_type, "SEGA - SG-1000");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".sc") == 0){
+      if (is_auto){
+         is_sega = true;
          strcpy(msx_type, "SEGA - SC-3000");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".sf") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "SEGA - SF-7000");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".sf7") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "SEGA - SF-7000");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".mv") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "Othello Multivision");
+      }
+      return MEDIA_TYPE_CART;
+   }
+   else if(strcmp(extension, ".omv") == 0){
+      if (is_auto){
+         is_sega = true;
+         strcpy(msx_type, "Othello Multivision");
       }
       return MEDIA_TYPE_CART;
    }
@@ -477,7 +512,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #endif
    info->need_fullpath    = true;
    info->block_extract    = false;
-   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|cas|m3u";
+   info->valid_extensions = "rom|ri|mx1|mx2|dsk|col|sg|sc|sf|cas|m3u";
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
@@ -811,7 +846,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (!info)
       return false;
 
-   image_buffer               =  malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
+   image_buffer               =  (uint16_t*)malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
    image_buffer_base_width    =  272;
    image_buffer_current_width =  image_buffer_base_width;
    image_buffer_height        =  240;
@@ -890,10 +925,8 @@ bool retro_load_game(const struct retro_game_info *info)
    if (auto_rewind_cas)
       tapeRewindNextInsert();
 
-   langSetLanguage(properties->language);
-
-   joystickPortSetType(0, properties->joy1.typeId);
-   joystickPortSetType(1, properties->joy2.typeId);
+   joystickPortSetType(0, (JoystickPortType)properties->joy1.typeId);
+   joystickPortSetType(1, (JoystickPortType)properties->joy2.typeId);
 
 #if 0
    printerIoSetType(properties->ports.Lpt.type, properties->ports.Lpt.fileName);
@@ -1191,12 +1224,12 @@ int frameBufferGetScanline(void)
 
 FrameBufferData* frameBufferDataCreate(int maxWidth, int maxHeight, int defaultHorizZoom)
 {
-   return (void*)image_buffer;
+   return (FrameBufferData*)image_buffer;
 }
 
-FrameBufferData* frameBufferGetActive()
+FrameBufferData* frameBufferGetActive(void)
 {
-   return (void*)image_buffer;
+   return (FrameBufferData*)image_buffer;
 }
 
 void   frameBufferSetLineCount(FrameBuffer* frameBuffer, int val)
@@ -1318,7 +1351,7 @@ bool retro_unserialize(const void *data, size_t size)
       data     = (char*)data + sizeof(((MemFile*)0)->filename); 
       sz       = * (int *)data;
       data     = (char*)data + sizeof(int); 
-      zipSaveFile("mem0", filename, 1, data, sz );
+      zipSaveFile("mem0", filename, 1, (void*)data, sz );
       data     = (char*)data + sz;
    } 
    saveStateCreateForRead("mem0");

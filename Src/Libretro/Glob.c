@@ -79,7 +79,7 @@ ArchGlob* archGlob(const char* pattern, int flags)
             strcat(path, wfd.cFileName);
 
             glob->count++;
-            glob->pathVector = realloc(glob->pathVector, sizeof(char*) * glob->count);
+            glob->pathVector = (char**)realloc(glob->pathVector, sizeof(char*) * glob->count);
             glob->pathVector[glob->count - 1] = path;
         }
     } while (FindNextFile(handle, &wfd));
@@ -124,13 +124,10 @@ ArchGlob* archGlob(const char* pattern, int flags)
 {
     glob_t g;
     ArchGlob* globHandle = NULL;
-    int rv;
     int i;
-
-    rv = glob(pattern, GLOB_MARK, NULL, &g);
-    if (rv != 0) {
+    int rv = glob(pattern, GLOB_MARK, NULL, &g);
+    if (rv != 0)
         return NULL;
-    }
 
     globHandle = (ArchGlob*)calloc(1, sizeof(ArchGlob));
 
@@ -139,18 +136,18 @@ ArchGlob* archGlob(const char* pattern, int flags)
         int len = strlen(path);
 
         if ((flags & ARCH_GLOB_DIRS) && path[len - 1] == '/') {
-            char* storePath = calloc(1, len);
+            char* storePath = (char*)calloc(1, len);
             memcpy(storePath, path, len - 1);
             globHandle->count++;
-            globHandle->pathVector = realloc(globHandle->pathVector, sizeof(char*) * globHandle->count);
+            globHandle->pathVector = (char**)realloc(globHandle->pathVector, sizeof(char*) * globHandle->count);
             globHandle->pathVector[globHandle->count - 1] = storePath;
         }
 
         if ((flags & ARCH_GLOB_FILES) && path[len - 1] != '/') {
-            char* storePath = calloc(1, len + 1);
+            char* storePath = (char*)calloc(1, len + 1);
             memcpy(storePath, path, len);
             globHandle->count++;
-            globHandle->pathVector = realloc(globHandle->pathVector, sizeof(char*) * globHandle->count);
+            globHandle->pathVector = (char**)realloc(globHandle->pathVector, sizeof(char*) * globHandle->count);
             globHandle->pathVector[globHandle->count - 1] = storePath;
         }
     }

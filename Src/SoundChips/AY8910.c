@@ -239,12 +239,10 @@ AY8910* ay8910Create(Mixer* mixer, Ay8910Connector connector, PsgType type, Int3
         }
     }
 
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i < 16; i++)
         voltTable[i] -= voltTable[0];
-    }
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < 32; i++)
         voltEnvTable[i] -= voltEnvTable[0];
-    }
 
     ay8910->mixer = mixer;
     ay8910->connector = connector;

@@ -44,14 +44,7 @@ EmuLanguageType langGetType(int i)
     return i == 0 ? EMU_LANG_ENGLISH : EMU_LANG_UNKNOWN;
 }
 
-void langInit() {
-}
-
-int langSetLanguage(EmuLanguageType languageType)
-{
-    return languageType == EMU_LANG_ENGLISH ? 1 : 0;
-}
-
+void langInit(void) { }
 
 //----------------------
 // Generic lines

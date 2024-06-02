@@ -31,8 +31,6 @@
 #include <string.h>
 #include <stdio.h>
 
-
-
 const char* sramCreateFilenameWithSuffix(const char* romFilename, char* suffix, char* ext)
 {
     static char SRAMfileName[512];
@@ -78,6 +76,7 @@ const char* sramCreateFilenameWithSuffix(const char* romFilename, char* suffix, 
 const char* sramCreateFilename(const char* romFilename) {
     return sramCreateFilenameWithSuffix(romFilename, "", NULL);
 }
+
 void sramLoad(const char* filename, UInt8* sram, int length, void* header, int headerLength) {
     FILE* file;
 

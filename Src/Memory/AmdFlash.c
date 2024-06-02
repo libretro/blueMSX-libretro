@@ -97,9 +97,8 @@ static int checkCommandProgram(AmdFlash* rm)
 
     if (rm->cmdIdx < 4) return 1;
 
-    if (((rm->writeProtectMask >> (rm->cmd[3].address / rm->sectorSize)) & 1) == 0) {
+    if (((rm->writeProtectMask >> (rm->cmd[3].address / rm->sectorSize)) & 1) == 0)
         rm->romData[rm->cmd[3].address & (rm->flashSize - 1)] &= rm->cmd[3].value;
-    }
     return 0;
 }
 
@@ -109,9 +108,8 @@ static int checkCommandManifacturer(AmdFlash* rm)
     if (rm->cmdIdx > 1 && ((rm->cmd[1].address & 0x7ff) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
     if (rm->cmdIdx > 2 && ((rm->cmd[2].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[2].value != 0x90)) return 0;
 
-    if (rm->cmdIdx == 3) {
+    if (rm->cmdIdx == 3)
         rm->state = ST_IDENT;
-    }
     if (rm->cmdIdx < 4) return 1;
 
     return 0;
@@ -121,7 +119,6 @@ UInt8 amdFlashRead(AmdFlash* rm, UInt32 address)
 {
     if (rm->state == ST_IDENT) {
         rm->cmdIdx = 0;
-//        printf("R %.4x: XX\n", address);
         switch (address & 0x03) {
         case 0: 
             return 0x01;
@@ -134,7 +131,6 @@ UInt8 amdFlashRead(AmdFlash* rm, UInt32 address)
         }
         return 0xff;
     }
-//    printf("R %.4x: %.2x\n", address, rm->romData[address & (rm->flashSize - 1)]);
 
     address &= rm->flashSize - 1;
 
@@ -145,8 +141,6 @@ void amdFlashWrite(AmdFlash* rm, UInt32 address, UInt8 value)
 {
     if (rm->cmdIdx < sizeof(rm->cmd) / sizeof(rm->cmd[0])) {
         int stateValid = 0;
-
-//        { static int x = 0; if (++x < 220) printf("W %.4x: %.2x  %d\n", address, value, rm->cmdIdx);}
 
         rm->cmd[rm->cmdIdx].address = address;
         rm->cmd[rm->cmdIdx].value   = value;
@@ -244,19 +238,17 @@ AmdFlash* amdFlashCreate(AmdType type, int flashSize, int sectorSize, UInt32 wri
     rm->flashSize = flashSize;
     rm->sectorSize = sectorSize;
 
-    rm->romData = malloc(flashSize);
-    if (size >= flashSize) {
+    rm->romData = (UInt8*)malloc(flashSize);
+    if (size >= flashSize)
         size = flashSize;
-    }
 
     if (rm->sramFilename[0]) {
         memset(rm->romData + size, 0xff, flashSize - size);
         sramLoad(rm->sramFilename, rm->romData, rm->flashSize, NULL, 0);
     }
 
-    if (size > 0) {
+    if (size > 0)
         memcpy(rm->romData, romData, size);
-    }
 #if 0
     if (rm->sramFilename[0] && loadSram) {
         sramLoad(rm->sramFilename, rm->romData, rm->flashSize, NULL, 0);
@@ -268,8 +260,7 @@ AmdFlash* amdFlashCreate(AmdType type, int flashSize, int sectorSize, UInt32 wri
 
 void amdFlashDestroy(AmdFlash* rm)
 {
-    if (rm->sramFilename[0]) {
+    if (rm->sramFilename[0])
         sramSave(rm->sramFilename, rm->romData, rm->flashSize, NULL, 0);
-    }
     free(rm);
 }

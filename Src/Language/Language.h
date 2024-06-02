@@ -49,10 +49,9 @@ typedef enum {
     EMU_LANG_UNKNOWN     = -1 
 } EmuLanguageType;
 
-void langInit();
+void langInit(void);
 
-int langSetLanguage(EmuLanguageType languageType);
-EmuLanguageType langGetLanguage();
+EmuLanguageType langGetLanguage(void);
 EmuLanguageType langFromName(char* name, int translate);
 const char* langToName(EmuLanguageType languageType, int translate);
 EmuLanguageType langGetType(int i);
