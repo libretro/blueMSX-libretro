@@ -822,7 +822,10 @@ static void check_variables(void)
    else
       auto_rewind_cas = true;
 
-   reevaluate_variables_io_sound(true);
+   if (properties != NULL) // Avoid first run (check_variables() is called before propCreate())
+   {
+      reevaluate_variables_io_sound(true);
+   }
 
    if (geometry_update)
    {
@@ -835,24 +838,21 @@ static void reevaluate_variables_io_sound(bool setToMixer)
 {
    struct retro_variable var;
 
-   if (properties != NULL)
+   var.key = "bluemsx_sound_io_enable";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      var.key = "bluemsx_sound_io_enable";
-      var.value = NULL;
-
-      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-      {
-         if (!strcmp(var.value, "disabled"))
-            properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 0;
-         else if (!strcmp(var.value, "enabled"))
-            properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 1;
-      }
-      else
+      if (!strcmp(var.value, "disabled"))
          properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 0;
-
-      if (setToMixer)
-         mixerEnableChannelType(mixer, MIXER_CHANNEL_IO, properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable);
+      else if (!strcmp(var.value, "enabled"))
+         properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 1;
    }
+   else
+      properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 0;
+
+   if (setToMixer)
+      mixerEnableChannelType(mixer, MIXER_CHANNEL_IO, properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable);
 }
 
 bool retro_load_game(const struct retro_game_info *info)
