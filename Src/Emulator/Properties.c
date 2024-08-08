@@ -292,8 +292,8 @@ void propInitDefaults(Properties* properties, int langType, PropKeyboardLanguage
     properties->sound.mixerChannel[MIXER_CHANNEL_PCM].pan = 50;
     properties->sound.mixerChannel[MIXER_CHANNEL_PCM].volume = 95;
 
-    properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 1;
-    properties->sound.mixerChannel[MIXER_CHANNEL_IO].pan = 60;
+    properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 0;
+    properties->sound.mixerChannel[MIXER_CHANNEL_IO].pan = 50;
     properties->sound.mixerChannel[MIXER_CHANNEL_IO].volume = 50;
 
     properties->sound.mixerChannel[MIXER_CHANNEL_MIDI].enable = 1;

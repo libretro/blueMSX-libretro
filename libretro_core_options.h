@@ -148,6 +148,17 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "ON"
    },
+   {
+      "bluemsx_sound_io_enable",
+      "I/O Sound Enable",
+      "Enable the I/O sound (floppy disk access sound).",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
 

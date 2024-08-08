@@ -66,6 +66,7 @@ static bool msx_ym2413_enable;
 static bool use_overscan = true;
 int msx2_dif = 0;
 
+static void reevaluate_variables_io_sound(bool setToMixer);
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
 void retro_set_input_poll(retro_input_poll_t cb) { input_poll_cb = cb; }
@@ -821,10 +822,36 @@ static void check_variables(void)
    else
       auto_rewind_cas = true;
 
+   reevaluate_variables_io_sound(true);
+
    if (geometry_update)
    {
       retro_get_system_av_info(&av_info);
       environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &av_info);
+   }
+}
+
+static void reevaluate_variables_io_sound(bool setToMixer)
+{
+   struct retro_variable var;
+
+   if (properties != NULL)
+   {
+      var.key = "bluemsx_sound_io_enable";
+      var.value = NULL;
+
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      {
+         if (!strcmp(var.value, "disabled"))
+            properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 0;
+         else if (!strcmp(var.value, "enabled"))
+            properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 1;
+      }
+      else
+         properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable = 0;
+
+      if (setToMixer)
+         mixerEnableChannelType(mixer, MIXER_CHANNEL_IO, properties->sound.mixerChannel[MIXER_CHANNEL_IO].enable);
    }
 }
 
@@ -937,6 +964,7 @@ bool retro_load_game(const struct retro_game_info *info)
 #endif
 
    emulatorRestartSound();
+   reevaluate_variables_io_sound(false);
 
    for (i = 0; i < MIXER_CHANNEL_TYPE_COUNT; i++)
    {
