@@ -258,6 +258,7 @@ else ifeq ($(platform), tvos-arm64)
 	CC = cc -arch arm64 -isysroot $(IOSSDK)
 	CC_AS = perl ./tools/gas-preprocessor.pl $(CC)
 	CXX = c++ -arch arm64 -isysroot $(IOSSDK)
+	CFLAGS += -Wno-incompatible-function-pointer-types
 
 # Theos
 else ifeq ($(platform), theos_ios)
