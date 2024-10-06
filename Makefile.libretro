@@ -241,6 +241,7 @@ endif
 
 ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
 	MINVERSION = -miphoneos-version-min=8.0
+	CFLAGS += -Wno-incompatible-function-pointer-types
 else
 	MINVERSION = -miphoneos-version-min=5.0
 endif
