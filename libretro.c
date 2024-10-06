@@ -104,7 +104,8 @@ enum{
    MEDIA_TYPE_TAPE,
    MEDIA_TYPE_DISK,
    MEDIA_TYPE_DISK_BUNDLE,
-   MEDIA_TYPE_OTHER
+   MEDIA_TYPE_OTHER,
+   MEDIA_NOT_AVAILABLE
 };
 
 void lower_string(char* str)
@@ -408,7 +409,7 @@ static unsigned btn_map[EC_KEYCOUNT] =
    RETROK_COMMA,           //EC_COMMA    61
    RETROK_PERIOD,          //EC_PERIOD   62
    RETROK_SLASH,           //EC_DIV      63
-   RETROK_0,               //EC_UNDSCRE  64 (as Shift+0)
+   RETROK_UNDERSCORE,      //EC_UNDSCRE  64
    RETROK_RSHIFT,          //EC_RSHIFT   65
 
    // ROW 5
@@ -627,6 +628,10 @@ void retro_set_environment(retro_environment_t cb)
 
    libretro_set_core_options(environ_cb);
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+
+   bool no_content = true;
+    cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
+
 }
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
@@ -696,6 +701,11 @@ static void check_variables(void)
    var.key = "bluemsx_msxtype";
    var.value = NULL;
 
+   is_auto = false;
+   is_coleco = false;
+   is_sega = false;
+   is_spectra = false;
+
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (!strcmp(var.value, "ColecoVision"))
@@ -708,26 +718,26 @@ static void check_variables(void)
          is_coleco = true;
          strcpy(msx_type, "COL - Spectravideo SVI-603 Coleco");
       }
-      else if (strcmp(var.value, "Auto"))
+      else if (strcmp(var.value, "Auto")) // Not auto
       {
-         is_coleco = false;
          strcpy(msx_type, var.value);
-
          if (!strncmp(var.value, "SEGA", 4))
             is_sega = true;
          if (!strncmp(var.value, "SVI", 3))
             is_spectra = true;
       }
-      else
+      else  // Auto
       {
          is_auto = true;
-         strcpy(msx_type, "SEGA - SC-3000");
+         is_sega = true;
+         strcpy(msx_type, "SEGA - SC-3000"); // Default machine
       }
    }
-   else
+   else  // Variable not defined
    {
       is_auto = true;
       // Sega machines don't work if not set right from the start
+      is_sega = true;
       strcpy(msx_type, "SEGA - SC-3000");
    }
 
@@ -870,8 +880,9 @@ bool retro_load_game(const struct retro_game_info *info)
       return false;
    }
 
-   if (!info)
-      return false;
+
+   if (!info && log_cb)
+      log_cb(RETRO_LOG_INFO, "Starting core without contend\n");
 
    image_buffer               =  (uint16_t*)malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
    image_buffer_base_width    =  272;
@@ -885,9 +896,10 @@ bool retro_load_game(const struct retro_game_info *info)
    disk_index = 0;
    disk_images = 0;
    disk_inserted = false;
-   extract_directory(base_dir, info->path, sizeof(base_dir));
+   if (info)
+      extract_directory(base_dir, info->path, sizeof(base_dir));
 
-   check_variables();
+   check_variables();   // msx_type from configuration 
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
       strcpy(properties_dir, dir);
@@ -914,7 +926,10 @@ bool retro_load_game(const struct retro_game_info *info)
 
    properties = propCreate(1, EMU_LANG_ENGLISH, P_KBD_EUROPEAN, P_EMU_SYNCNONE, "");
 
-   media_type = get_media_type(info->path);
+   if (info)
+      media_type = get_media_type(info->path);  // msx_type from file extension
+   else
+      media_type = MEDIA_NOT_AVAILABLE;
 
    if (is_coleco)
    {
@@ -977,68 +992,71 @@ bool retro_load_game(const struct retro_game_info *info)
    mixerEnableMaster(mixer, properties->sound.masterEnable);
 
 
-   if (mapper_auto)
-      mediaDbSetDefaultRomType(properties->cartridge.defaultType);
-   else
-      mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
-
-   switch(media_type)
+   if (info)
    {
-      case MEDIA_TYPE_DISK:
-         strcpy(disk_paths[0] , info->path);
-         strcpy(properties->media.disks[0].fileName , info->path);
-         disk_inserted = true;
-         attach_disk_swap_interface();
-         break;
-      case MEDIA_TYPE_DISK_BUNDLE:
-         if (!read_m3u(info->path))
-         {
-            if (log_cb)
-               log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: failed to read m3u file ...");
-            return false;
-         }
-         for (i = 0; (i <= disk_images) && (i <= 1); i++)
-         {
-            strcpy(properties->media.disks[i].fileName , disk_paths[i]);
-         }
-         disk_inserted = true;
-         attach_disk_swap_interface();
-         break;
-      case MEDIA_TYPE_TAPE:
-         strcpy(properties->media.tapes[0].fileName , info->path);
-         break;
-      case MEDIA_TYPE_CART:
-      case MEDIA_TYPE_OTHER:
-      default:
-         strcpy(properties->media.carts[0].fileName , info->path);
-         break;
-   }
+      if (mapper_auto)
+         mediaDbSetDefaultRomType(properties->cartridge.defaultType);
+      else
+         mediaDbSetDefaultRomType(mediaDbStringToType(msx_cartmapper));
 
-   for (i = 0; i < PROP_MAX_CARTS; i++)
-   {
-      /*    Breaks database detection
-            if (properties->media.carts[i].fileName[0] && mapper_auto)
-            insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
-       */
-      if (properties->media.carts[i].fileName[0] && !mapper_auto)
-         insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
+      switch(media_type)
+      {
+         case MEDIA_TYPE_DISK:
+            strcpy(disk_paths[0] , info->path);
+            strcpy(properties->media.disks[0].fileName , info->path);
+            disk_inserted = true;
+            attach_disk_swap_interface();
+            break;
+         case MEDIA_TYPE_DISK_BUNDLE:
+            if (!read_m3u(info->path))
+            {
+               if (log_cb)
+                  log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: failed to read m3u file ...");
+               return false;
+            }
+            for (i = 0; (i <= disk_images) && (i <= 1); i++)
+            {
+               strcpy(properties->media.disks[i].fileName , disk_paths[i]);
+            }
+            disk_inserted = true;
+            attach_disk_swap_interface();
+            break;
+         case MEDIA_TYPE_TAPE:
+            strcpy(properties->media.tapes[0].fileName , info->path);
+            break;
+         case MEDIA_TYPE_CART:
+         case MEDIA_TYPE_OTHER:
+         default:
+            strcpy(properties->media.carts[0].fileName , info->path);
+            break;
+      }
 
-      updateExtendedRomName(i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip);
-   }
+      for (i = 0; i < PROP_MAX_CARTS; i++)
+      {
+         /*    Breaks database detection
+               if (properties->media.carts[i].fileName[0] && mapper_auto)
+               insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, properties->media.carts[i].type, -1);
+         */
+         if (properties->media.carts[i].fileName[0] && !mapper_auto)
+            insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
 
-   for (i = 0; i < PROP_MAX_DISKS; i++)
-   {
-      if (properties->media.disks[i].fileName[0])
-         insertDiskette(properties, i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip, -1);
-      updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
-   }
+         updateExtendedRomName(i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip);
+      }
 
-   for (i = 0; i < PROP_MAX_TAPES; i++)
-   {
-      if (properties->media.tapes[i].fileName[0])
-         insertCassette(properties, i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip, 0);
-      updateExtendedCasName(i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip);
-   }
+      for (i = 0; i < PROP_MAX_DISKS; i++)
+      {
+         if (properties->media.disks[i].fileName[0])
+            insertDiskette(properties, i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip, -1);
+         updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
+      }
+
+      for (i = 0; i < PROP_MAX_TAPES; i++)
+      {
+         if (properties->media.tapes[i].fileName[0])
+            insertCassette(properties, i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip, 0);
+         updateExtendedCasName(i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip);
+      }
+   } // if (info)
 
    {
       Machine* machine = machineCreate(properties->emulation.machineName);
