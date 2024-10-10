@@ -209,6 +209,7 @@ else ifeq ($(platform), osx)
 		CXXFLAGS += $(TARGET_RULE)
 		LDFLAGS  += $(TARGET_RULE)
 		MINVERSION =
+		CFLAGS += -Wno-incompatible-function-pointer-types
 	endif
 	ifeq ($(UNIVERSAL),1)
 		CFLAGS += $(ARCHFLAGS)
