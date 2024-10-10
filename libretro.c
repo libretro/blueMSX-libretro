@@ -623,13 +623,13 @@ void retro_set_environment(retro_environment_t cb)
       { port, 2 },
       { NULL, 0 },
    };
+   bool no_content = true;
 
    environ_cb = cb;
 
    libretro_set_core_options(environ_cb);
    cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 
-   bool no_content = true;
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
 
 }
