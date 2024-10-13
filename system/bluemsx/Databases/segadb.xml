@@ -3278,4 +3278,137 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 			</systemrom>
 		</dump>
 	</software>
+	<software>
+		<title xml:lang="en">Rally-X</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">0c1957a5faae5254c69f3331e79d87499dd7cf48</hash>
+			</rom>
+		</dump>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">21770691191b62bafec9099bbe0f9942f5480f83</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Tank Battalion</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">0ca3b740b28266a2a606127ed8967c684b67cb44</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Yie Ar Kung-Fu II</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">44fb2dca3774f859f0ae0ad4d809a67f760cf9ae</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">*Bomberman Special</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">d1d56bcd996df94458f5901dc537a5e30021256b</hash>
+			</rom>
+		</dump>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">455838571dd8287d491431e03269b0ccd292c8b8</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Legend of Kage</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">902dbb122bf0efc76604a876c3fae51c074bdc6a</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Road Fighter</title>
+		<system>Sega</system>
+		<company>Jumbo</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">4f1a139974e3db27af5973bc9572ed68acd6ea68</hash>
+			</rom>
+		</dump>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">2755f74019dc94559fd0c2248e2ecb7f48879b90</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Knightmare</title>
+		<system>Sega</system>
+		<company>Jumbo</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">babdb6b109b20e81c28cd892c2042723e9cbff49</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">TwinBee</title>
+		<system>Sega</system>
+		<company>Jumbo</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">a8c30043c145e63f79a3265dde167529f0e08d49</hash>
+			</rom>
+		</dump>
+	</software>
 </softwaredb>

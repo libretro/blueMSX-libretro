@@ -83,9 +83,19 @@ static UInt8 read(RomMapperSg1000RamExpander* rm, UInt16 address)
     return rm->ram2[address & rm->mask2];
 }
 
+static UInt8 read_ram1(RomMapperSg1000RamExpander* rm, UInt16 address) 
+{
+    return rm->ram1[address - 0x2000];
+}
+
 static void write(RomMapperSg1000RamExpander* rm, UInt16 address, UInt8 value) 
 {
     rm->ram2[address & rm->mask2] = value;
+}
+
+static void write_ram1(RomMapperSg1000RamExpander* rm, UInt16 address, UInt8 value) 
+{
+    rm->ram1[address-0x2000] =  value;
 }
 
 int romMapperSg1000RamExpanderCreate(const char* filename, UInt8* romData, 
@@ -96,19 +106,19 @@ int romMapperSg1000RamExpanderCreate(const char* filename, UInt8* romData,
     int pages = size / 0x2000 + ((size & 0x1fff) ? 1 : 0);
     int i;
 
-    if (size != 0x8000 || startPage != 0) {
-        return 0;
-    }
+    // Some ROMs are 48KB
+    // if (size != 0x8000 || startPage != 0) {
+    //     return 0;
+    // }
 
     rm = malloc(sizeof(RomMapperSg1000RamExpander));
 
     rm->deviceHandle = deviceManagerRegister(type, &callbacks, rm);
-    slotRegister(slot, sslot, startPage, pages, read, read, write, destroy, rm);
 
     rm->romData = malloc(pages * 0x2000);
     memcpy(rm->romData, romData, size);
-    memset(rm->ram1, sizeof(rm->ram1), 0xff);
-    memset(rm->ram2, sizeof(rm->ram2), 0xff);
+    memset(rm->ram1, 0xff, sizeof(rm->ram1));
+    memset(rm->ram2, 0xff, sizeof(rm->ram2));
 
     rm->slot  = slot;
     rm->sslot = sslot;
@@ -118,15 +128,15 @@ int romMapperSg1000RamExpanderCreate(const char* filename, UInt8* romData,
     for (i = 0; i < pages; i++) {
         if (i + startPage >= 2) slot = 0;
         if (type == ROM_SG1000_RAMEXPANDER_A && i + startPage == 1) {
-            slotMapPage(slot, sslot, i + startPage, rm->ram1, 1, 1);
+            slotRegister(slot, sslot, i + startPage, 1, read_ram1, read_ram1, write_ram1, destroy, rm);
         }
         else {
             slotMapPage(slot, sslot, i + startPage, rm->romData + 0x2000 * i, 1, 0);
         }
     }
 
-    slotMapPage(slot, sslot, 6, NULL, 0, 0);
-    slotMapPage(slot, sslot, 7, NULL, 0, 0);
+    slotMapPage(0, 0, 6, rm->ram2, 1, 1);
+    slotMapPage(0, 0, 7, rm->ram2, 1, 1);
 
     return 1;
 }

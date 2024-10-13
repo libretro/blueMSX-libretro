@@ -122,39 +122,39 @@ int get_media_type(const char* filename)
 
    strcpy(workram, filename);
    lower_string(workram);
-   extension = workram + strlen(workram) - 4;
+   extension = workram + strlen(workram) - 3;
 
-   if(strcmp(extension, ".dsk") == 0){
+   if(strcmp(extension, "dsk") == 0){
       if (is_auto)
          strcpy(msx_type, "MSX2+");
       return MEDIA_TYPE_DISK;
    }
-   else if(strcmp(extension, ".m3u") == 0){
+   else if(strcmp(extension, "m3u") == 0){
       if (is_auto)
          strcpy(msx_type, "MSX2+");
       return MEDIA_TYPE_DISK_BUNDLE;
    }
-   else if(strcmp(extension, ".cas") == 0){
+   else if(strcmp(extension, "cas") == 0){
       if (is_auto)
          strcpy(msx_type, "MSX2+");
       return MEDIA_TYPE_TAPE;
    }
-   else if(strcmp(extension, ".rom") == 0){
+   else if(strcmp(extension, "rom") == 0){
       if (is_auto)
          strcpy(msx_type, "MSX2+");
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension, ".mx1") == 0){
+   else if(strcmp(extension, "mx1") == 0){
       if (is_auto)
          strcpy(msx_type, "MSX2+");
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension, ".mx2") == 0){
+   else if(strcmp(extension, "mx2") == 0){
       if (is_auto)
          strcpy(msx_type, "MSX2+");
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension, ".col") == 0){
+   else if(strcmp(extension, "col") == 0){
       if (is_auto){
          is_coleco = true;
          strcpy(msx_type, "COL - ColecoVision");
@@ -182,7 +182,7 @@ int get_media_type(const char* filename)
       }
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension, ".sf7") == 0){
+   else if(strcmp(extension, "sf7") == 0){
       if (is_auto){
          is_sega = true;
          strcpy(msx_type, "SEGA - SF-7000");
@@ -196,7 +196,7 @@ int get_media_type(const char* filename)
       }
       return MEDIA_TYPE_CART;
    }
-   else if(strcmp(extension, ".omv") == 0){
+   else if(strcmp(extension, "omv") == 0){
       if (is_auto){
          is_sega = true;
          strcpy(msx_type, "Othello Multivision");
@@ -899,7 +899,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (info)
       extract_directory(base_dir, info->path, sizeof(base_dir));
 
-   check_variables();   // msx_type from configuration 
+   check_variables();   // msx_type from configuration
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
       strcpy(properties_dir, dir);
