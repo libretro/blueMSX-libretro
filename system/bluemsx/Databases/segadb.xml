@@ -1719,20 +1719,6 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 		</dump>
 	</software>
 	<software>
-		<title xml:lang="en">King&#39;s Valley</title>
-		<system>Sega</system>
-		<company>Konami</company>
-		<year>1985</year>
-		<country>JP</country>
-		<dump>
-			<original value="false" />
-			<rom>
-				<type>SG1000RamA</type>
-				<hash algo="sha1">922d23895c12707b2fc382ea5cb769c5cb9b5755</hash>
-			</rom>
-		</dump>
-	</software>
-	<software>
 		<title xml:lang="en">Konami&#39;s Ping-Pong</title>
 		<system>Sega</system>
 		<company>Konami</company>
@@ -3194,20 +3180,6 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 	</software>
 <!-- SF-7000 roms -->
 	<software>
-		<title xml:lang="en">Magical Kid Wiz</title>
-		<system>Sega</system>
-		<company>Sony</company>
-		<year>1986</year>
-		<country>JP</country>
-		<dump>
-			<original value="false" />
-			<rom>
-				<type>SC3000</type>
-				<hash algo="sha1">fd24b501046cf811b04386129be0362a1eabf6b3</hash>
-			</rom>
-		</dump>
-	</software>
-	<software>
 		<title xml:lang="en">Super Boy I</title>
 		<system>Sega</system>
 		<company>Zemina</company>
@@ -3278,6 +3250,7 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 			</systemrom>
 		</dump>
 	</software>
+<!-- Taiwan 8KB RAM expansion roms -->
 	<software>
 		<title xml:lang="en">Rally-X</title>
 		<system>Sega</system>
@@ -3287,7 +3260,7 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 		<dump>
 			<original value="false" />
 			<rom>
-				<type>sg1000ramA</type>
+				<type>sg1000ramB</type>
 				<hash algo="sha1">0c1957a5faae5254c69f3331e79d87499dd7cf48</hash>
 			</rom>
 		</dump>
@@ -3328,7 +3301,7 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 		</dump>
 	</software>
 	<software>
-		<title xml:lang="en">*Bomberman Special</title>
+		<title xml:lang="en">Bomberman Special</title>
 		<system>Sega</system>
 		<company>DahJee</company>
 		<year>1986</year>
@@ -3336,7 +3309,7 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 		<dump>
 			<original value="false" />
 			<rom>
-				<type>sg1000ramA</type>
+				<type>sg1000ramB</type>
 				<hash algo="sha1">d1d56bcd996df94458f5901dc537a5e30021256b</hash>
 			</rom>
 		</dump>
@@ -3349,7 +3322,7 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 		</dump>
 	</software>
 	<software>
-		<title xml:lang="en">Legend of Kage</title>
+		<title xml:lang="en">The Legend of Kage</title>
 		<system>Sega</system>
 		<company>DahJee</company>
 		<year>1986</year>
@@ -3378,7 +3351,7 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 		<dump>
 			<original value="false" />
 			<rom>
-				<type>sg1000ramA</type>
+				<type>sg1000ramB</type>
 				<hash algo="sha1">2755f74019dc94559fd0c2248e2ecb7f48879b90</hash>
 			</rom>
 		</dump>
@@ -3408,6 +3381,76 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 			<rom>
 				<type>sg1000ramA</type>
 				<hash algo="sha1">a8c30043c145e63f79a3265dde167529f0e08d49</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Star Soldier</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>19xx</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">c1984257809ec5bce80a65d22b9b32561e04922c</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">King's Valley</title>
+		<system>Sega</system>
+		<company>Jinzita</company>
+		<year>198x</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">922d23895c12707b2fc382ea5cb769c5cb9b5755</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Pippols</title>
+		<system>Sega</system>
+		<company>Jumbo</company>
+		<year>198x</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">4a95b98e127fb0c6428d6debcfc92152069ac531</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">The Castle</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>1986</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramB</type>
+				<hash algo="sha1">5a81d5103487695cabd811aabd9e71f48b9e7996</hash>
+			</rom>
+		</dump>
+	</software>
+		<software>
+		<title xml:lang="en">Magical Kid Wiz</title>
+		<system>Sega</system>
+		<company>Sony</company>
+		<year>1986</year>
+		<country>JP</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramB</type>
+				<hash algo="sha1">fd24b501046cf811b04386129be0362a1eabf6b3</hash>
 			</rom>
 		</dump>
 	</software>

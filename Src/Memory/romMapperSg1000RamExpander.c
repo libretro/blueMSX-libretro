@@ -35,7 +35,6 @@
 #include <string.h>
 #include <stdio.h>
 
-
 typedef struct {
     int deviceHandle;
     UInt8* romData;
@@ -85,7 +84,7 @@ static UInt8 read(RomMapperSg1000RamExpander* rm, UInt16 address)
 
 static UInt8 read_ram1(RomMapperSg1000RamExpander* rm, UInt16 address) 
 {
-    return rm->ram1[address - 0x2000];
+    return rm->ram1[address & 0x1fff];
 }
 
 static void write(RomMapperSg1000RamExpander* rm, UInt16 address, UInt8 value) 
@@ -95,7 +94,7 @@ static void write(RomMapperSg1000RamExpander* rm, UInt16 address, UInt8 value)
 
 static void write_ram1(RomMapperSg1000RamExpander* rm, UInt16 address, UInt8 value) 
 {
-    rm->ram1[address-0x2000] =  value;
+    rm->ram1[address & 0x1fff] =  value;
 }
 
 int romMapperSg1000RamExpanderCreate(const char* filename, UInt8* romData, 
@@ -123,20 +122,17 @@ int romMapperSg1000RamExpanderCreate(const char* filename, UInt8* romData,
     rm->slot  = slot;
     rm->sslot = sslot;
     rm->startPage  = startPage;
-    rm->mask2 = ROM_SG1000_RAMEXPANDER_A ? 0x0400 : 0x2000;
-    
+    rm->mask2 = (type == ROM_SG1000_RAMEXPANDER_A) ? 0x3FF: 0x1FFF;
+
     for (i = 0; i < pages; i++) {
         if (i + startPage >= 2) slot = 0;
-        if (type == ROM_SG1000_RAMEXPANDER_A && i + startPage == 1) {
+        if (type == ROM_SG1000_RAMEXPANDER_A && i + startPage == 1)
             slotRegister(slot, sslot, i + startPage, 1, read_ram1, read_ram1, write_ram1, destroy, rm);
-        }
-        else {
+        else
             slotMapPage(slot, sslot, i + startPage, rm->romData + 0x2000 * i, 1, 0);
-        }
     }
 
-    slotMapPage(0, 0, 6, rm->ram2, 1, 1);
-    slotMapPage(0, 0, 7, rm->ram2, 1, 1);
+    slotRegister(0, 0, 6, 2, read, read, write, destroy, rm);
 
     return 1;
 }
