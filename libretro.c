@@ -66,6 +66,10 @@ static bool msx_ym2413_enable;
 static bool use_overscan = true;
 int msx2_dif = 0;
 
+bool use_keyboard_for_coleco;
+int patch_coleco_rom = 0;
+static int input_analog_deadzone = (int)(0.25f * (float)0x8000);
+
 static void reevaluate_variables_io_sound(bool setToMixer);
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
@@ -536,35 +540,41 @@ void init_input_descriptors(unsigned device){
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Joy Up" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Joy Down" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Joy Right" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "1 / coleco but.1" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "2 / coleco but.2" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "3 / coleco 2" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "4 / coleco 1" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "coleco #" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"coleco *" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "5 / coleco 4" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "6 / coleco 3" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,    "coleco 6" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "coleco 5" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "coleco 8" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "coleco 7" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "1 / Coleco but.1" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "2 / Coleco but.2" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "3 / Coleco 2" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "4 / Coleco 1" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Coleco #" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Coleco *" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "5 / Coleco 4" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "6 / Coleco 3" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,    "Coleco 6" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "Coleco 5" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "Coleco 8" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "Coleco 7" },
+      { 0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "Coleco SAC but.3(-)/but.4(+)" },
+      { 0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Coleco 9(-)/0(+)" },
+      
 
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Joy Left" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Joy Up" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Joy Down" },
       { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Joy Right" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "1 / coleco but.1" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "2 / coleco but.2" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "3 / coleco 2" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "4 / coleco 1" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "coleco #" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"coleco *" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "5 / coleco 4" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "6 / coleco 3" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,    "coleco 6" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "coleco 5" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "coleco 8" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "coleco 7" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "1 / Coleco but.1" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "2 / Coleco but.2" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "3 / Coleco 2" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "4 / Coleco 1" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Coleco #" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Coleco *" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "5 / Coleco 4" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "6 / Coleco 3" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,    "Coleco 6" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,    "Coleco 5" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,    "Coleco 8" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,    "Coleco 7" },
+      { 1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "Coleco SAC but.3(-)/but.4(+)" },
+      { 1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, "Coleco 8(-)/0(+)" },
+      
 
       { 0, 0, 0, 0, NULL }
    };
@@ -692,53 +702,56 @@ static void extract_directory(char *buf, const char *path, size_t size)
       buf[0] = '\0';
 }
 
-static void check_variables(void)
+static void check_variables(bool can_change_machine_type)
 {
    struct retro_system_av_info av_info;
    bool geometry_update = false;
    struct retro_variable var;
 
-   var.key = "bluemsx_msxtype";
-   var.value = NULL;
-
-   is_auto = false;
-   is_coleco = false;
-   is_sega = false;
-   is_spectra = false;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   if (can_change_machine_type)
    {
-      if (!strcmp(var.value, "ColecoVision"))
+      var.key = "bluemsx_msxtype";
+      var.value = NULL;
+
+      is_auto = false;
+      is_coleco = false;
+      is_sega = false;
+      is_spectra = false;
+
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
       {
-         is_coleco = true;
-         strcpy(msx_type, "COL - ColecoVision");
-      }
-      else if (!strcmp(var.value, "Coleco (Spectravideo SVI-603)"))
-      {
-         is_coleco = true;
-         strcpy(msx_type, "COL - Spectravideo SVI-603 Coleco");
-      }
-      else if (strcmp(var.value, "Auto")) // Not auto
-      {
-         strcpy(msx_type, var.value);
-         if (!strncmp(var.value, "SEGA", 4))
+         if (!strcmp(var.value, "ColecoVision"))
+         {
+            is_coleco = true;
+            strcpy(msx_type, "COL - ColecoVision");
+         }
+         else if (!strcmp(var.value, "Coleco (Spectravideo SVI-603)"))
+         {
+            is_coleco = true;
+            strcpy(msx_type, "COL - Spectravideo SVI-603 Coleco");
+         }
+         else if (strcmp(var.value, "Auto")) // Not auto
+         {
+            strcpy(msx_type, var.value);
+            if (!strncmp(var.value, "SEGA", 4))
+               is_sega = true;
+            if (!strncmp(var.value, "SVI", 3))
+               is_spectra = true;
+         }
+         else  // Auto
+         {
+            is_auto = true;
             is_sega = true;
-         if (!strncmp(var.value, "SVI", 3))
-            is_spectra = true;
+            strcpy(msx_type, "SEGA - SC-3000"); // Default machine
+         }
       }
-      else  // Auto
+      else  // Variable not defined
       {
          is_auto = true;
+         // Sega machines don't work if not set right from the start
          is_sega = true;
-         strcpy(msx_type, "SEGA - SC-3000"); // Default machine
+         strcpy(msx_type, "SEGA - SC-3000");
       }
-   }
-   else  // Variable not defined
-   {
-      is_auto = true;
-      // Sega machines don't work if not set right from the start
-      is_sega = true;
-      strcpy(msx_type, "SEGA - SC-3000");
    }
 
    var.key = "bluemsx_overscan";
@@ -832,6 +845,32 @@ static void check_variables(void)
    else
       auto_rewind_cas = true;
 
+   var.key = "use_keyboard_for_coleco";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         use_keyboard_for_coleco = false;
+      else if (!strcmp(var.value, "enabled"))
+         use_keyboard_for_coleco = true;
+   }
+   else
+      use_keyboard_for_coleco = false;
+
+   var.key = "patch_coleco_rom";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         patch_coleco_rom = 0;
+      else if (!strcmp(var.value, "enabled"))
+         patch_coleco_rom = 1;
+   }
+   else
+      patch_coleco_rom = 0;
+
    if (properties != NULL) // Avoid first run (check_variables() is called before propCreate())
    {
       reevaluate_variables_io_sound(true);
@@ -882,7 +921,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
 
    if (!info && log_cb)
-      log_cb(RETRO_LOG_INFO, "Starting core without contend\n");
+      log_cb(RETRO_LOG_INFO, "Starting core without content\n");
 
    image_buffer               =  (uint16_t*)malloc(FB_MAX_LINE_WIDTH*FB_MAX_LINES*sizeof(uint16_t));
    image_buffer_base_width    =  272;
@@ -899,7 +938,7 @@ bool retro_load_game(const struct retro_game_info *info)
    if (info)
       extract_directory(base_dir, info->path, sizeof(base_dir));
 
-   check_variables();   // msx_type from configuration
+   check_variables(true);   // msx_type from configuration
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
       strcpy(properties_dir, dir);
@@ -1095,9 +1134,11 @@ void retro_run(void)
    int i,j;
    bool updated = false;
    int16_t joypad_bits[MAX_PADS] = {0};
+   int analog_axis;
    
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
-      check_variables();
+      check_variables(false);
+      
 
    RETRO_PERFORMANCE_INIT(core_retro_run);
    RETRO_PERFORMANCE_START(core_retro_run);
@@ -1142,6 +1183,9 @@ void retro_run(void)
             }
          }
       }
+
+      /* Player 1 */
+
       eventMap[EC_COLECO1_1]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
       eventMap[EC_COLECO1_2]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
       eventMap[EC_COLECO1_3]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_R)      ? 1 : 0;
@@ -1152,8 +1196,24 @@ void retro_run(void)
       eventMap[EC_COLECO1_8]     = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
       eventMap[EC_COLECO1_STAR]  = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
       eventMap[EC_COLECO1_HASH]  = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
-      eventMap[EC_COLECO1_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_1)                    ? 1 : 0;
-      eventMap[EC_COLECO1_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_2)                    ? 1 : 0;
+
+      analog_axis = input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
+      eventMap[EC_COLECO1_9]    = (analog_axis < -input_analog_deadzone);
+      eventMap[EC_COLECO1_0]    = (analog_axis > input_analog_deadzone);
+      analog_axis = input_state_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
+      if (analog_axis < -input_analog_deadzone) /* Button 3 = 0 + 1*/
+      {
+         eventMap[EC_COLECO1_0]  = 1;
+         eventMap[EC_COLECO1_1]  = 1;
+      }
+      if (analog_axis > input_analog_deadzone)  /* Button 4 = 2 + 3*/
+      {
+         eventMap[EC_COLECO1_2]  = 1;
+         eventMap[EC_COLECO1_3]  = 1;
+      }
+
+
+      /* Player 2 */
 
       eventMap[EC_COLECO2_1]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_X)      ? 1 : 0;
       eventMap[EC_COLECO2_2]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_Y)      ? 1 : 0;
@@ -1165,8 +1225,57 @@ void retro_run(void)
       eventMap[EC_COLECO2_8]     = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_L3)     ? 1 : 0;
       eventMap[EC_COLECO2_STAR]  = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) ? 1 : 0;
       eventMap[EC_COLECO2_HASH]  = joypad_bits[1] & (1 << RETRO_DEVICE_ID_JOYPAD_START)  ? 1 : 0;
-      eventMap[EC_COLECO2_0]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_3)                    ? 1 : 0;
-      eventMap[EC_COLECO2_9]     = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_4)                    ? 1 : 0;
+
+      analog_axis = input_state_cb(1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
+      eventMap[EC_COLECO2_9]     = (analog_axis < -input_analog_deadzone);
+      eventMap[EC_COLECO2_0]     = (analog_axis > input_analog_deadzone);
+      analog_axis = input_state_cb(1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
+      if (analog_axis < -input_analog_deadzone) /* Button 3 = 0 + 1*/
+      {
+         eventMap[EC_COLECO2_0]  = 1;
+         eventMap[EC_COLECO2_1]  = 1;
+      }      
+      if (analog_axis > input_analog_deadzone)  /* Button 4 = 2 + 3*/
+      {
+         eventMap[EC_COLECO2_2]  = 1;
+         eventMap[EC_COLECO2_3]  = 1;
+      }
+
+      if (use_keyboard_for_coleco)
+      {
+         eventMap[EC_COLECO1_0]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_0) ? 1 : 0;
+         eventMap[EC_COLECO1_1]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_1) ? 1 : 0;
+         eventMap[EC_COLECO1_2]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_2) ? 1 : 0;
+         eventMap[EC_COLECO1_3]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_3) ? 1 : 0;
+         eventMap[EC_COLECO1_4]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_4) ? 1 : 0;
+         eventMap[EC_COLECO1_5]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_5) ? 1 : 0;
+         eventMap[EC_COLECO1_6]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_6) ? 1 : 0;
+         eventMap[EC_COLECO1_7]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_7) ? 1 : 0;
+         eventMap[EC_COLECO1_8]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_8) ? 1 : 0;
+         eventMap[EC_COLECO1_9]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_9) ? 1 : 0;
+         eventMap[EC_COLECO1_STAR] |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_MINUS)  ? 1 : 0;
+         eventMap[EC_COLECO1_HASH] |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_EQUALS) ? 1 : 0;
+
+         eventMap[EC_COLECO2_0]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP0) ? 1 : 0;
+         eventMap[EC_COLECO2_1]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP1) ? 1 : 0;
+         eventMap[EC_COLECO2_2]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP2) ? 1 : 0;
+         eventMap[EC_COLECO2_3]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP3) ? 1 : 0;
+         eventMap[EC_COLECO2_4]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP4) ? 1 : 0;
+         eventMap[EC_COLECO2_5]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP5) ? 1 : 0;
+         eventMap[EC_COLECO2_6]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP6) ? 1 : 0;
+         eventMap[EC_COLECO2_7]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP7) ? 1 : 0;
+         eventMap[EC_COLECO2_8]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP8) ? 1 : 0;
+         eventMap[EC_COLECO2_9]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP9) ? 1 : 0;
+         eventMap[EC_COLECO2_STAR] |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP_MULTIPLY) ? 1 : 0;
+         eventMap[EC_COLECO2_HASH] |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP_DIVIDE)    ? 1 : 0;
+      }
+      else
+      {
+         eventMap[EC_COLECO1_0]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_1) ? 1 : 0;
+         eventMap[EC_COLECO1_9]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_2) ? 1 : 0;
+         eventMap[EC_COLECO2_0]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_3) ? 1 : 0;
+         eventMap[EC_COLECO2_9]    |= input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_4) ? 1 : 0;
+      }
    }
    else
    {

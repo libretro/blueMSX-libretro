@@ -152,13 +152,18 @@
 #include "romMapperOpcodeSlotManager.h"
 #include "romMapperDooly.h"
 #include "romMapperMuPack.h"
-
+#ifdef __LIBRETRO__
+#include "Crc32Calc.h"
+#endif
 
 // PacketFileSystem.h Need to be included after all other includes
 #include "PacketFileSystem.h"
 
 
 #include "romExclusion.h"
+#ifdef __LIBRETRO__
+extern int patch_coleco_rom;
+#endif
 
 UInt8* g_mainRam=NULL;
 UInt32 g_mainRamSize=0;
@@ -1407,6 +1412,15 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize, UI
             }
             continue;
         }
+#ifdef __LIBRETRO__
+        /* Patch for COLECOVISION ROM - fast boot */
+        else
+        {   
+            /* https://forums.atariage.com/topic/322048-skip-startup-screen-bios-game-compatiblity */
+            if (patch_coleco_rom && calcCrc32(buf, size) == 0x3aa93ef3) 
+                buf[0x196a] = 6;
+        }
+#endif
 
         switch (machine->slotInfo[i].romType) {
         case ROM_0x4000:

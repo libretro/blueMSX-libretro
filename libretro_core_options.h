@@ -159,6 +159,28 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "disabled"
    },
+   {
+      "use_keyboard_for_coleco",
+      "Colecovision Keyboard Mapping",
+      "Additionally, use the keyboard for the Colecovision 0-9, #, and * buttons. Player 1: 0-9, # is -, and * is =; Player 2: Keypad 0-9, # is /, and * is *. Gamepad mappings also work.",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "patch_coleco_rom",
+      "Patch Colecovision ROM Fast Boot (Close Content)",
+      "Patch the NTSC Colecovision ROM for fast booting (3.3s)",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
 
