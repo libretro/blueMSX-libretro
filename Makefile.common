@@ -154,6 +154,7 @@ SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperSfg05.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperSg1000.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperSg1000Castle.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperSg1000RamExpander.c
+SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperSC3000MultiCart.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperSonyHBI55.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperSonyHBIV1.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperStandard.c

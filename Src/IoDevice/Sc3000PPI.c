@@ -82,7 +82,7 @@ static UInt16 getKeyState(Sc3000PPI* ppi)
                    (inputEventGetState(EC_E      ) <<  1) |
                    (inputEventGetState(EC_D      ) <<  2) |
                    (inputEventGetState(EC_C      ) <<  3) |
-                   (inputEventGetState(EC_JIKKOU ) <<  4) |
+                   (inputEventGetState(EC_CLS    ) <<  4) |
                    (inputEventGetState(EC_DIV    ) <<  5) |
                    (inputEventGetState(EC_SEMICOL) <<  6) |
                    (inputEventGetState(EC_P      ) <<  7) |

@@ -133,6 +133,8 @@ struct retro_core_option_definition option_defs_us[] = {
          { "SG1000RamA",   NULL },
          { "SG1000RamB",   NULL },
          { "SC3000",   NULL },
+         { "SC3000MultiCart",   NULL },
+         { "SC3000MegaCart",   NULL },
          { NULL, NULL },
       },
       "Auto"

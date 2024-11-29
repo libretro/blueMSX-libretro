@@ -263,12 +263,13 @@ RomType mediaDbStringToType(const char* romName)
 
 
     // SG-1000 roms
-    if (iequals(name, "sg1000"))       return ROM_SG1000;
-    if (iequals(name, "castle"))       return ROM_SG1000CASTLE;
-    if (iequals(name, "sg1000ramA"))   return ROM_SG1000_RAMEXPANDER_A;
-    if (iequals(name, "sg1000ramB"))   return ROM_SG1000_RAMEXPANDER_B;
-    if (iequals(name, "sg1000castle")) return ROM_SG1000CASTLE;
-
+    if (iequals(name, "sg1000"))            return ROM_SG1000;
+    if (iequals(name, "castle"))            return ROM_SG1000CASTLE;
+    if (iequals(name, "sg1000ramA"))        return ROM_SG1000_RAMEXPANDER_A;
+    if (iequals(name, "sg1000ramB"))        return ROM_SG1000_RAMEXPANDER_B;
+    if (iequals(name, "sg1000castle"))      return ROM_SG1000CASTLE;
+    if (iequals(name, "SC3000MultiCart"))   return ROM_SC3000_MULTICART;
+    if (iequals(name, "SC3000MegaCart"))   return ROM_SC3000_MEGACART;
 
     return ROM_UNKNOWN;
 }
@@ -377,7 +378,8 @@ static void mediaDbAddDump(TiXmlElement* dmp,
         }
 
         if (romType != ROM_SG1000CASTLE && romType != ROM_SEGABASIC &&
-            romType != ROM_SG1000_RAMEXPANDER_A && romType != ROM_SG1000_RAMEXPANDER_B) {
+            romType != ROM_SG1000_RAMEXPANDER_A && romType != ROM_SG1000_RAMEXPANDER_B &&
+            romType != ROM_SC3000_MULTICART     && romType != ROM_SC3000_MEGACART) {
             if (strcmpnocase(system.c_str(), "sg1000") == 0) {
                 romType = ROM_SG1000;
             }
@@ -552,7 +554,7 @@ static void mediaDbAddFromXmlFile(const char* fileName)
 
 extern MediaType* mediaDbLookup(MediaDb* mediaDb, const void *buffer, int size)
 {
-    if (size > 2 * 1024 * 1024) {
+    if (size > 4 * 1024 * 1024) {
         return NULL;
     }
 
@@ -694,8 +696,10 @@ extern "C" const char* romTypeToString(RomType romType)
     case ROM_SG1000:      return langRomTypeSg1000Cart();
     case ROM_SC3000:      return langRomTypeSc3000Cart();
     case ROM_SG1000CASTLE:return langRomTypeTheCastle();
-    case ROM_SG1000_RAMEXPANDER_A: return "Sega Ram Expander Type A";
-    case ROM_SG1000_RAMEXPANDER_B: return "Sega Ram Expander Type B";
+    case ROM_SG1000_RAMEXPANDER_A:  return "Sega Ram Expander Type A";
+    case ROM_SG1000_RAMEXPANDER_B:  return "Sega Ram Expander Type B";
+    case ROM_SC3000_MULTICART:      return "SC-3000 Survivors Multicart";
+    case ROM_SC3000_MEGACART:      return "SC-3000 Survivors Megacart";
     case ROM_SEGABASIC:   return langRomTypeSegaBasic();
     case ROM_SONYHBI55:   return langRomTypeSonyHbi55();
     case ROM_MSXAUDIODEV: return langRomTypeY8950();
@@ -873,6 +877,8 @@ extern "C" const char* romTypeToShortString(RomType romType)
     case ROM_SEGABASIC:   return "SEGABASIC";
     case ROM_SG1000_RAMEXPANDER_A: return "SEGARAM A";
     case ROM_SG1000_RAMEXPANDER_B: return "SEGARAM B";
+    case ROM_SC3000_MULTICART:     return "SC-3000 Survivors Multicart";
+    case ROM_SC3000_MEGACART:      return "SC-3000 Survivors Megacart";
     case ROM_SONYHBI55:   return "HBI-55";
     case ROM_MSXAUDIODEV: return "MSXAUDIO";
     case ROM_MSXPRN:      return "MSXPRN";
