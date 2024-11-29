@@ -46,7 +46,6 @@ to set the 6 high order bits of the 27C160 EPROMs plus another bit to select bet
     - https://github.com/mamedev/mame/blob/f7b31084659475223a979ec8435b7dce4a63bf01/src/devices/bus/sega8/rom.cpp#L1188
     - https://www.smspower.org/forums/17499-SegaSC3000MegacartBinariesForMAMEMEKAEmulators
 
-Todo: load and save states.
 
 */
 
@@ -114,6 +113,31 @@ static UInt8 writeIo(RomMapperSC3000MultiCart* rm, UInt16 ioPort, UInt8 value)
 }
 
 
+static void saveState(RomMapperSC3000MultiCart* rm)
+{
+    SaveState* state = saveStateOpenForWrite("mapperSC3000MultiCart");
+
+    saveStateSet(state, "is_mega", rm->is_mega);
+    saveStateSet(state, "offset", rm->offset);
+    saveStateSetBuffer(state, "rom", rm->rom, 0x8000);
+    saveStateSetBuffer(state, "ram", rm->ram, 0x8000);
+
+    saveStateClose(state);
+}
+
+static void loadState(RomMapperSC3000MultiCart* rm)
+{
+    SaveState* state = saveStateOpenForRead("mapperSC3000MultiCart");
+
+    rm->is_mega = saveStateGet(state, "is_mega", 0);
+    rm->offset = saveStateGet(state, "offset", 63 + 64*rm->is_mega);
+    saveStateGetBuffer(state, "rom", rm->rom, 0x8000);
+    saveStateGetBuffer(state, "ram", rm->ram, 0x8000);
+
+    saveStateClose(state);
+}
+
+
 static void destroy(RomMapperSC3000MultiCart* rm)
 {
     slotUnregister(rm->slot, rm->sslot, rm->startPage);
@@ -130,7 +154,7 @@ int romMapperSC3000MultiCartCreate( const char* filename, UInt8* romData,
     int i = 0;
     int pages = 4;
 
-    DeviceCallbacks callbacks = { destroy, NULL, NULL, NULL };
+    DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };
 
     RomMapperSC3000MultiCart* rm;
     rm = malloc(sizeof(RomMapperSC3000MultiCart));
