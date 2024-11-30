@@ -161,7 +161,7 @@ int romMapperSC3000MultiCartCreate( const char* filename, UInt8* romData,
     int i = 0;
     int pages = 4;
 
-    DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };
+    DeviceCallbacks callbacks = { destroy, reset, saveState, loadState };
 
     RomMapperSC3000MultiCart* rm;
     rm = malloc(sizeof(RomMapperSC3000MultiCart));
