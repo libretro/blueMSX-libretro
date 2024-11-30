@@ -138,6 +138,13 @@ static void loadState(RomMapperSC3000MultiCart* rm)
 }
 
 
+static void reset(RomMapperSC3000MultiCart* rm)
+{
+    rm->offset = 63 + 64*rm->is_mega;
+    memcpy(rm->rom, rm->romData + rm->offset*32768, 32768);
+    memset(rm->ram, 0xff, sizeof(rm->ram));
+}
+
 static void destroy(RomMapperSC3000MultiCart* rm)
 {
     slotUnregister(rm->slot, rm->sslot, rm->startPage);

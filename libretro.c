@@ -68,6 +68,7 @@ int msx2_dif = 0;
 
 bool use_keyboard_for_coleco;
 int patch_coleco_rom = 0;
+int hard_reset_f12 = 0;
 static int input_analog_deadzone = (int)(0.25f * (float)0x8000);
 
 static void reevaluate_variables_io_sound(bool setToMixer);
@@ -871,6 +872,20 @@ static void check_variables(bool can_change_machine_type)
    else
       patch_coleco_rom = 0;
 
+   var.key = "hard_reset_f12";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         hard_reset_f12 = 0;
+      else if (!strcmp(var.value, "enabled"))
+         hard_reset_f12 = 1;
+   }
+   else
+      hard_reset_f12 = 0;
+   
+
    if (properties != NULL) // Avoid first run (check_variables() is called before propCreate())
    {
       reevaluate_variables_io_sound(true);
@@ -1159,6 +1174,12 @@ void retro_run(void)
             joypad_bits[i] |= input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, j) ? (1 << j) : 0;
       }
    }
+
+   /* Reset with F12 like blueMSX standalone*/
+   if (hard_reset_f12 && input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12) ? 1 : 0) {
+      return retro_reset();
+   }
+
 
    if (is_coleco)
    {

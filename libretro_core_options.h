@@ -183,6 +183,17 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "disabled"
    },
+   {
+      "hard_reset_f12",
+      "Use F12 to hard reset and restart emulation",
+      "Use key F12 to hard reset and restart emulation like blueMSX standalone",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
 
