@@ -69,6 +69,8 @@ int msx2_dif = 0;
 bool use_keyboard_for_coleco;
 int patch_coleco_rom = 0;
 int hard_reset_f12 = 0;
+static int sega_nmi_pressed = 0;
+static int hard_reset_f12_pressed = 0;
 static int input_analog_deadzone = (int)(0.25f * (float)0x8000);
 
 static void reevaluate_variables_io_sound(bool setToMixer);
@@ -1176,10 +1178,38 @@ void retro_run(void)
    }
 
    /* Reset with F12 like blueMSX standalone*/
-   if (hard_reset_f12 && input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12) ? 1 : 0) {
+   /* Ref: https://www.msxblue.com/manual/shortcuts_c.htm */
+   if (hard_reset_f12 && hard_reset_f12_pressed && (input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12) ? 0 : 1))
+      hard_reset_f12_pressed = 0;
+   if (hard_reset_f12 && !hard_reset_f12_pressed && (input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12) ? 1 : 0)) {
+      hard_reset_f12_pressed = 1;
+      if (log_cb)
+         log_cb(RETRO_LOG_INFO, "Hard reset button pressed.\n");
       return retro_reset();
    }
 
+   /* Sega F10 NMI for Sega systems
+    *
+    * SG-1000 (pause button): https://segaretro.org/Sega_Game_1000_(SG-1000)_Information_(Draft)
+    * A NMI occurs when the Pause button is pressed.
+    * It's behaviour is the same as standard interrupt, except that the jumping
+    * location is 0x66.
+    * 
+    * SC-3000 (reset button): https://github.com/franckverrot/EmulationResources/blob/master/consoles/sms-gg/Sega%20SC-3000%20hardware%20notes.txt
+    * "RESET" and is connected to the Z80's NMI pin rather than being an actual input. 
+    * 
+    * MAME uses F10 for NMI: https://github.com/mamedev/mame/blob/442a9852bc24e47893795194b45c7f01e31153d1/src/mame/sega/sg1000.cpp#L484
+    * 
+   */
+   if (is_sega && sega_nmi_pressed && (input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F10) ? 0 : 1))
+      sega_nmi_pressed = 0;
+   if (is_sega && !sega_nmi_pressed && (input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F10) ? 1 : 0)) {
+      sega_nmi_pressed = 1;
+      if (log_cb)
+         log_cb(RETRO_LOG_INFO, "NMI pause/reset button pressed.\n");
+      r800ClearNmi((R800*)boardInfo.cpuRef);
+      return r800SetNmi((R800*)boardInfo.cpuRef);
+   }
 
    if (is_coleco)
    {
