@@ -162,9 +162,8 @@ static void destroy(Sc3000PPI* ppi)
 
 static void reset(Sc3000PPI* ppi) 
 {
-    ppi->row = 0x07;
-
     i8255Reset(ppi->i8255);
+    ppi->row = 0x07;
 }
 
 static void loadState(Sc3000PPI* ppi)
