@@ -203,14 +203,14 @@ void msxPPICreate(int ignoreKeyboard)
                                  NULL,  NULL,  NULL,
                                  NULL,  NULL,  writeCLo,
                                  NULL,  NULL,  writeCHi,
-                                 ppi);
+                                 ppi, 0);
     }
     else {
         ppi->i8255 = i8255Create(NULL,  NULL,  writeA,
                                  peekB, readB, NULL,
                                  NULL,  NULL,  writeCLo,
                                  NULL,  NULL,  writeCHi,
-                                 ppi);
+                                 ppi, 0);
     }
     ppi->keyClick = audioKeyClickCreate(boardGetMixer());
 

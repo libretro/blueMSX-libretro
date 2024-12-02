@@ -200,7 +200,7 @@ int romMapperSonyHBI55Create()
                             NULL,    NULL,    writeB,
                             readCLo, readCLo, writeCLo,
                             readCHi, readCHi, writeCHi,
-                            rm);
+                            rm, 0);
 
     ioPortRegister(0xb0, i8255Read, i8255Write, rm->i8255);
     ioPortRegister(0xb1, i8255Read, i8255Write, rm->i8255);

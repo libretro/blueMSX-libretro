@@ -271,7 +271,7 @@ void sviPPICreate(SviJoyIo* joyIO)
                              peekB, readB, NULL,
                              NULL,  NULL,  writeCLo,
                              NULL,  NULL,  writeCHi,
-                             ppi);
+                             ppi, 0);
 
     ppi->keyClick = audioKeyClickCreate(boardGetMixer());
 

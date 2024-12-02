@@ -232,7 +232,7 @@ int romMapperSvi328RsIdeCreate(int hdId)
                              NULL, readB,   writeB,
                              NULL, readCLo, writeCLo,
                              NULL, readCHi, writeCHi,
-                             rm);
+                             rm, 0);
 
     ioPortRegister(0x14, i8255Read, i8255Write, rm->i8255); // PPI Port A
     ioPortRegister(0x15, i8255Read, i8255Write, rm->i8255); // PPI Port B

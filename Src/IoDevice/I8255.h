@@ -39,7 +39,7 @@ I8255* i8255Create(I8255Read peekA,   I8255Read readA,   I8255Write writeA,
                    I8255Read peekB,   I8255Read readB,   I8255Write writeB,
                    I8255Read peekCLo, I8255Read readCLo, I8255Write writeCLo,
                    I8255Read peekCHi, I8255Read readCHi, I8255Write writeCHi,
-                   void* ref);
+                   void* ref, int is_sc3000ppi);
 void i8255Destroy(I8255* i8255); 
 void i8255Reset(I8255* i8255);
 UInt8 i8255Peek(I8255* i8255, UInt16 port);

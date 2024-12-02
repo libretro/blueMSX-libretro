@@ -44,6 +44,7 @@ struct I8255
     I8255Read readCHi;
     I8255Write writeCHi;
     void* ref;
+    int is_sc3000ppi;
 
     UInt8 reg[4];
 };
@@ -61,7 +62,7 @@ I8255* i8255Create(I8255Read peekA,   I8255Read readA,   I8255Write writeA,
                    I8255Read peekB,   I8255Read readB,   I8255Write writeB,
                    I8255Read peekCLo, I8255Read readCLo, I8255Write writeCLo,
                    I8255Read peekCHi, I8255Read readCHi, I8255Write writeCHi,
-                   void* ref)
+                   void* ref, int is_sc3000ppi)
 {
     I8255* i8255 = calloc(1, sizeof(I8255));
 
@@ -78,6 +79,8 @@ I8255* i8255Create(I8255Read peekA,   I8255Read readA,   I8255Write writeA,
     i8255->readCHi  = readCHi  ? readCHi  : readDummy;
     i8255->writeCHi = writeCHi ? writeCHi : writeDummy;
     i8255->ref      = ref;
+
+    i8255->is_sc3000ppi = is_sc3000ppi;
 
     return i8255;
 }
@@ -104,6 +107,7 @@ void i8255LoadState(I8255* i8255)
     i8255->reg[1] = (UInt8)saveStateGet(state, "reg01", 0);
     i8255->reg[2] = (UInt8)saveStateGet(state, "reg02", 0);
     i8255->reg[3] = (UInt8)saveStateGet(state, "reg03", 0);
+    i8255->is_sc3000ppi = (int)saveStateGet(state, "is_sc3000ppi", 0);
 
     saveStateClose(state);
 }
@@ -116,6 +120,7 @@ void i8255SaveState(I8255* i8255)
     saveStateSet(state, "reg01", i8255->reg[1]);
     saveStateSet(state, "reg02", i8255->reg[2]);
     saveStateSet(state, "reg03", i8255->reg[3]);
+    saveStateSet(state, "is_sc3000ppi", i8255->is_sc3000ppi);
 
     saveStateClose(state);
 }
@@ -287,10 +292,16 @@ void i8255Write(I8255* i8255, UInt16 port, UInt8 value)
          * 
         */
 
-        if (i8255->reg[3] & 0x01)
-            i8255->writeCLo(i8255->ref, 0x07);          /* keyboard disabled, read joystick*/
-        else
-            i8255->writeCLo(i8255->ref, value & 0x0f);  /* read keyboard or joystick*/
+        if (i8255->is_sc3000ppi) {
+            if (i8255->reg[3] & 0x01)
+                i8255->writeCLo(i8255->ref, 0x07);          /* keyboard disabled, read joystick*/
+            else
+                i8255->writeCLo(i8255->ref, value & 0x0f);  /* read keyboard or joystick*/
+        }
+        else {
+            if (!(i8255->reg[3] & 0x01))
+                i8255->writeCLo(i8255->ref, value & 0x0f);
+        }
 
         if (!(i8255->reg[3] & 0x08)) {
             i8255->writeCHi(i8255->ref, value >> 4);

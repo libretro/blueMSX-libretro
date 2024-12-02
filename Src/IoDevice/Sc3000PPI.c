@@ -239,7 +239,7 @@ void sc3000PPICreate(Sg1000JoyIo* joyIo)
                              peekB, readB, NULL,
                              NULL,  NULL,  writeCLo,
                              NULL,  NULL,  NULL,
-                             ppi);
+                             ppi, 1);
 
     ioPortRegister(0xdc, i8255Read, i8255Write, ppi->i8255); // PPI Port A
     ioPortRegister(0xdd, i8255Read, i8255Write, ppi->i8255); // PPI Port B
