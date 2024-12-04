@@ -720,6 +720,14 @@ int cartridgeInsert(int cartNo, RomType romType, const char* cart, const char* c
             success &= romMapperSegaBasicCreate(romName, buf, size, slot, sslot, 0);
             break;
 
+        case ROM_SC3000_MULTICART:
+            success &= romMapperSC3000MultiCartCreate(romName, buf, size, slot, sslot, 0, ROM_SC3000_MULTICART);
+            break;
+
+        case ROM_SC3000_MEGACART:
+            success &= romMapperSC3000MultiCartCreate(romName, buf, size, slot, sslot, 0, ROM_SC3000_MEGACART);
+            break;
+
         case ROM_KANJI:
             success &= romMapperKanjiCreate(buf, size);
             break;

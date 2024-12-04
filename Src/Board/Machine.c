@@ -1731,6 +1731,14 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize, UI
             success &= romMapperSegaBasicCreate(romName, buf, size, slot, subslot, startPage);
             break;
 
+        case ROM_SC3000_MULTICART:
+            success &= romMapperSC3000MultiCartCreate(romName, buf, size, slot, subslot, startPage, ROM_SC3000_MULTICART);
+            break;
+
+        case ROM_SC3000_MEGACART:
+            success &= romMapperSC3000MultiCartCreate(romName, buf, size, slot, subslot, startPage, ROM_SC3000_MEGACART);
+            break;
+
         case ROM_CASPATCH:
             success &= romMapperCasetteCreate(romName, buf, size, slot, subslot, startPage);
             break;

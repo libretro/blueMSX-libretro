@@ -133,6 +133,8 @@ struct retro_core_option_definition option_defs_us[] = {
          { "SG1000RamA",   NULL },
          { "SG1000RamB",   NULL },
          { "SC3000",   NULL },
+         { "SC3000MultiCart",   NULL },
+         { "SC3000MegaCart",   NULL },
          { NULL, NULL },
       },
       "Auto"
@@ -174,6 +176,17 @@ struct retro_core_option_definition option_defs_us[] = {
       "patch_coleco_rom",
       "Patch Colecovision ROM Fast Boot (Close Content)",
       "Patch the NTSC Colecovision ROM for fast booting (3.3s)",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "hard_reset_f12",
+      "Use F12 to hard reset and restart emulation",
+      "Use key F12 to hard reset and restart emulation like blueMSX standalone",
       {
          { "enabled",   NULL },
          { "disabled",   NULL },

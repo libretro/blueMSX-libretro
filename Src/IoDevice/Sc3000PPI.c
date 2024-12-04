@@ -82,7 +82,7 @@ static UInt16 getKeyState(Sc3000PPI* ppi)
                    (inputEventGetState(EC_E      ) <<  1) |
                    (inputEventGetState(EC_D      ) <<  2) |
                    (inputEventGetState(EC_C      ) <<  3) |
-                   (inputEventGetState(EC_JIKKOU ) <<  4) |
+                   (inputEventGetState(EC_CLS    ) <<  4) |
                    (inputEventGetState(EC_DIV    ) <<  5) |
                    (inputEventGetState(EC_SEMICOL) <<  6) |
                    (inputEventGetState(EC_P      ) <<  7) |
@@ -162,9 +162,8 @@ static void destroy(Sc3000PPI* ppi)
 
 static void reset(Sc3000PPI* ppi) 
 {
-    ppi->row = 0x07;
-
     i8255Reset(ppi->i8255);
+    ppi->row = 0x07;
 }
 
 static void loadState(Sc3000PPI* ppi)
@@ -240,7 +239,7 @@ void sc3000PPICreate(Sg1000JoyIo* joyIo)
                              peekB, readB, NULL,
                              NULL,  NULL,  writeCLo,
                              NULL,  NULL,  NULL,
-                             ppi);
+                             ppi, 1);
 
     ioPortRegister(0xdc, i8255Read, i8255Write, ppi->i8255); // PPI Port A
     ioPortRegister(0xdd, i8255Read, i8255Write, ppi->i8255); // PPI Port B

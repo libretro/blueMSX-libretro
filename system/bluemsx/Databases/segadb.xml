@@ -3454,4 +3454,32 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 			</rom>
 		</dump>
 	</software>
+	<software>
+		<title xml:lang="en">SC-3000 Survivors MkII Multicart v2.31</title>
+		<system>Sega</system>
+		<company>SC-3000 Survivors</company>
+		<year>2018</year>
+		<country>IT/NZ</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>SC3000MultiCart</type>
+				<hash algo="sha1">faff64ade6ef21e6673793d2d7b9603447bd5a01</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">SC-3000 Survivors Megacart v2.31</title>
+		<system>Sega</system>
+		<company>SC-3000 Survivors</company>
+		<year>2018</year>
+		<country>IT/NZ</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>SC3000MegaCart</type>
+				<hash algo="sha1">17c226646d937845caa1af0dac356f0ee1fa9677</hash>
+			</rom>
+		</dump>
+	</software>
 </softwaredb>

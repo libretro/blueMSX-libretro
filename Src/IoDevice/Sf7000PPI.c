@@ -184,7 +184,7 @@ void sf7000PPICreate()
                              NULL,  NULL,  NULL,
                              NULL,  NULL,  writeCLo,
                              NULL,  NULL,  writeCHi,
-                             ppi);
+                             ppi, 0);
 
 	ioPortRegister(0xe0, fdcRead, NULL, ppi);
 	ioPortRegister(0xe1, fdcRead, fdcWrite, ppi);

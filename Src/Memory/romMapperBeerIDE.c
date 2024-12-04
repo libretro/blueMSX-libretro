@@ -249,7 +249,7 @@ int romMapperBeerIdeCreate(int hdId, const char* fileName, UInt8* romData,
                              NULL, readB, writeB,
                              NULL, NULL,  writeCLo,
                              NULL, NULL,  writeCHi,
-                             rm);
+                             rm, 0);
 
     rm->romData = calloc(1, size);
     if (romData != NULL) {
