@@ -305,14 +305,17 @@ bool get_image_path(unsigned index, char *path, size_t len)
 
 bool get_image_label(unsigned index, char *label, size_t len)
 {
+    char *dot;
+    const char *filename;
+    size_t copy_len;
     if (index >= disk_images) return false;
     
-    const char *filename = strrchr(disk_paths[index], '/');
+    filename = strrchr(disk_paths[index], '/');
     filename = filename ? filename + 1 : disk_paths[index];
     
-    // Remove extension
-    char *dot = strrchr(filename, '.');
-    size_t copy_len = dot ? (size_t)(dot - filename) : strlen(filename);
+    /* Remove extension */
+    dot      = strrchr(filename, '.');
+    copy_len = dot ? (size_t)(dot - filename) : strlen(filename);
     
     if (copy_len >= len) copy_len = len - 1;
     
