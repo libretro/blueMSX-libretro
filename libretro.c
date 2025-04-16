@@ -333,29 +333,29 @@ void attach_disk_swap_interface(void)
     if (version >= 1)
     {
         struct retro_disk_control_ext_callback dskcb_ext = {
-            .set_eject_state = set_eject_state,
-            .get_eject_state = get_eject_state,
-            .set_image_index = set_image_index,
-            .get_image_index = get_image_index,
-            .get_num_images  = get_num_images,
-            .replace_image_index = replace_image_index,
-            .add_image_index = add_image_index,
-            .set_initial_image = set_initial_image,
-            .get_image_path = get_image_path,
-            .get_image_label = get_image_label
+            set_eject_state,
+            get_eject_state,
+            set_image_index,
+            get_image_index,
+            get_num_images,
+            replace_image_index,
+            add_image_index,
+            set_initial_image,
+            get_image_path,
+            get_image_label
         };
         environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &dskcb_ext);
     }
     else
     {
         struct retro_disk_control_callback dskcb = {
-            .set_eject_state = set_eject_state,
-            .get_eject_state = get_eject_state,
-            .set_image_index = set_image_index,
-            .get_image_index = get_image_index,
-            .get_num_images  = get_num_images,
-            .replace_image_index = replace_image_index,
-            .add_image_index = add_image_index
+            set_eject_state,
+            get_eject_state,
+            set_image_index,
+            get_image_index,
+            get_num_images,
+            replace_image_index,
+            add_image_index
         };
         environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
     }
