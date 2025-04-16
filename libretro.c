@@ -103,6 +103,9 @@ static struct retro_perf_callback perf_cb;
 #define PATH_MAX  4096
 #endif
 
+static unsigned initial_disk_index = 0;
+static char initial_disk_path[PATH_MAX] = {0};
+
 static char base_dir[PATH_MAX];
 
 /* .dsk support */
@@ -216,7 +219,6 @@ int get_media_type(const char* filename)
 
 /* end .dsk support */
 /* .dsk swap support */
-struct retro_disk_control_callback dskcb;
 unsigned disk_index = 0;
 unsigned disk_images = 0;
 char disk_paths[10][PATH_MAX];
@@ -279,18 +281,81 @@ bool replace_image_index(unsigned index,
    return true;
 }
 
+bool set_initial_image(unsigned index, const char *path)
+{
+    if (index >= disk_images) {
+        if (log_cb) log_cb(RETRO_LOG_WARN, "Invalid initial disk index: %u\n", index);
+        return false;
+    }
+    
+    initial_disk_index = index;
+    strncpy(initial_disk_path, path, sizeof(initial_disk_path)-1);
+    initial_disk_path[sizeof(initial_disk_path)-1] = '\0';
+    return true;
+}
+
+bool get_image_path(unsigned index, char *path, size_t len)
+{
+    if (index >= disk_images) return false;
+    
+    strncpy(path, disk_paths[index], len);
+    path[len-1] = '\0';
+    return true;
+}
+
+bool get_image_label(unsigned index, char *label, size_t len)
+{
+    if (index >= disk_images) return false;
+    
+    const char *filename = strrchr(disk_paths[index], '/');
+    filename = filename ? filename + 1 : disk_paths[index];
+    
+    // Remove extension
+    char *dot = strrchr(filename, '.');
+    size_t copy_len = dot ? (size_t)(dot - filename) : strlen(filename);
+    
+    if (copy_len >= len) copy_len = len - 1;
+    
+    strncpy(label, filename, copy_len);
+    label[copy_len] = '\0';
+    return true;
+}
+
 void attach_disk_swap_interface(void)
 {
-   /* these functions are unused */
-   dskcb.set_eject_state = set_eject_state;
-   dskcb.get_eject_state = get_eject_state;
-   dskcb.set_image_index = set_image_index;
-   dskcb.get_image_index = get_image_index;
-   dskcb.get_num_images  = get_num_images;
-   dskcb.add_image_index = add_image_index;
-   dskcb.replace_image_index = replace_image_index;
+    unsigned version = 0;
+    if (!environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &version))
+        version = 0;
 
-   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
+    if (version >= 1)
+    {
+        struct retro_disk_control_ext_callback dskcb_ext = {
+            .set_eject_state = set_eject_state,
+            .get_eject_state = get_eject_state,
+            .set_image_index = set_image_index,
+            .get_image_index = get_image_index,
+            .get_num_images  = get_num_images,
+            .replace_image_index = replace_image_index,
+            .add_image_index = add_image_index,
+            .set_initial_image = set_initial_image,
+            .get_image_path = get_image_path,
+            .get_image_label = get_image_label
+        };
+        environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &dskcb_ext);
+    }
+    else
+    {
+        struct retro_disk_control_callback dskcb = {
+            .set_eject_state = set_eject_state,
+            .get_eject_state = get_eject_state,
+            .set_image_index = set_image_index,
+            .get_image_index = get_image_index,
+            .get_num_images  = get_num_images,
+            .replace_image_index = replace_image_index,
+            .add_image_index = add_image_index
+        };
+        environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
+    }
 }
 /* end .dsk swap support */
 
@@ -1060,6 +1125,7 @@ bool retro_load_game(const struct retro_game_info *info)
          case MEDIA_TYPE_DISK:
             strcpy(disk_paths[0] , info->path);
             strcpy(properties->media.disks[0].fileName , info->path);
+            disk_images = 1;
             disk_inserted = true;
             attach_disk_swap_interface();
             break;
@@ -1067,12 +1133,13 @@ bool retro_load_game(const struct retro_game_info *info)
             if (!read_m3u(info->path))
             {
                if (log_cb)
-                  log_cb(RETRO_LOG_ERROR, "%s\n", "[libretro]: failed to read m3u file ...");
+                  log_cb(RETRO_LOG_ERROR, "Failed to read m3u file\n");
                return false;
             }
-            for (i = 0; (i <= disk_images) && (i <= 1); i++)
+            for (i = 0; i < disk_images; i++)
             {
-               strcpy(properties->media.disks[i].fileName , disk_paths[i]);
+               strncpy(properties->media.disks[i].fileName, disk_paths[i], PATH_MAX);
+               properties->media.disks[i].fileName[PATH_MAX-1] = '\0';
             }
             disk_inserted = true;
             attach_disk_swap_interface();
@@ -1087,6 +1154,42 @@ bool retro_load_game(const struct retro_game_info *info)
             break;
       }
 
+      /* Initial Disk Handling */
+      if (initial_disk_path[0] && disk_images > 0)
+      {
+         bool match_found = false;
+
+         if (initial_disk_index < disk_images)
+         {
+            if (strcmp(disk_paths[initial_disk_index], initial_disk_path) == 0)
+            {
+               disk_index = initial_disk_index;
+               match_found = true;
+            }
+         }
+
+         if (!match_found)
+         {
+            for (i = 0; i < disk_images; i++)
+            {
+               if (strcmp(disk_paths[i], initial_disk_path) == 0)
+               {
+                  disk_index = i;
+                  match_found = true;
+                  break;
+               }
+            }
+         }
+
+         if (!match_found)
+         {
+            disk_index = 0;
+            if (log_cb)
+               log_cb(RETRO_LOG_WARN, "No matching disk found, using index 0\n");
+         }
+      }
+
+      /* Media insertion */
       for (i = 0; i < PROP_MAX_CARTS; i++)
       {
          /*    Breaks database detection
@@ -1102,8 +1205,14 @@ bool retro_load_game(const struct retro_game_info *info)
       for (i = 0; i < PROP_MAX_DISKS; i++)
       {
          if (properties->media.disks[i].fileName[0])
-            insertDiskette(properties, i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip, -1);
-         updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
+         {
+            /* Only insert the initial disk */
+            if (i == 0 && disk_inserted)
+            {
+               insertDiskette(properties, 0, disk_paths[disk_index], NULL, -1);
+            }
+            updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
+         }
       }
 
       for (i = 0; i < PROP_MAX_TAPES; i++)
