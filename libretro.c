@@ -326,43 +326,43 @@ bool get_image_label(unsigned index, char *label, size_t len)
 
 void attach_disk_swap_interface(void)
 {
-    unsigned version = 0;
-    if (!environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &version))
-        version = 0;
+   unsigned version = 0;
+   if (!environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &version))
+      version = 0;
 
-    if (version >= 1)
-    {
-        struct retro_disk_control_ext_callback dskcb_ext;
-        memset(&dskcb_ext, 0, sizeof(dskcb_ext));
+   if (version >= 1)
+   {
+      struct retro_disk_control_ext_callback dskcb_ext;
+      memset(&dskcb_ext, 0, sizeof(dskcb_ext));
 
-        dskcb_ext.set_eject_state = set_eject_state;
-        dskcb_ext.get_eject_state = get_eject_state;
-        dskcb_ext.set_image_index = set_image_index;
-        dskcb_ext.get_image_index = get_image_index;
-        dskcb_ext.get_num_images = get_num_images;
-        dskcb_ext.replace_image_index = replace_image_index;
-        dskcb_ext.add_image_index = add_image_index;
-        dskcb_ext.set_initial_image = set_initial_image;
-        dskcb_ext.get_image_path = get_image_path;
-        dskcb_ext.get_image_label = get_image_label;
+      dskcb_ext.set_eject_state = set_eject_state;
+      dskcb_ext.get_eject_state = get_eject_state;
+      dskcb_ext.set_image_index = set_image_index;
+      dskcb_ext.get_image_index = get_image_index;
+      dskcb_ext.get_num_images = get_num_images;
+      dskcb_ext.replace_image_index = replace_image_index;
+      dskcb_ext.add_image_index = add_image_index;
+      dskcb_ext.set_initial_image = set_initial_image;
+      dskcb_ext.get_image_path = get_image_path;
+      dskcb_ext.get_image_label = get_image_label;
 
-        environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &dskcb_ext);
-    }
-    else
-    {
-        struct retro_disk_control_callback dskcb;
-        memset(&dskcb, 0, sizeof(dskcb));
+      environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &dskcb_ext);
+   }
+   else
+   {
+      struct retro_disk_control_callback dskcb;
+      memset(&dskcb, 0, sizeof(dskcb));
 
-        dskcb.set_eject_state = set_eject_state;
-        dskcb.get_eject_state = get_eject_state;
-        dskcb.set_image_index = set_image_index;
-        dskcb.get_image_index = get_image_index;
-        dskcb.get_num_images = get_num_images;
-        dskcb.replace_image_index = replace_image_index;
-        dskcb.add_image_index = add_image_index;
+      dskcb.set_eject_state = set_eject_state;
+      dskcb.get_eject_state = get_eject_state;
+      dskcb.set_image_index = set_image_index;
+      dskcb.get_image_index = get_image_index;
+      dskcb.get_num_images = get_num_images;
+      dskcb.replace_image_index = replace_image_index;
+      dskcb.add_image_index = add_image_index;
 
-        environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
-    }
+      environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
+   }
 }
 /* end .dsk swap support */
 
@@ -374,15 +374,14 @@ static bool read_m3u(const char *file)
    char *newline;
    char *start;
    char *end;
+   FILE *f;
 
-   FILE *f = fopen(file, "r");
-
+   f = fopen(file, "r");
    if (!f)
       return false;
 
-   while (fgets(line, sizeof(line), f)
-         && disk_images < 
-         sizeof(disk_paths) / sizeof(disk_paths[0]))
+   while (fgets(line, sizeof(line), f) &&
+          disk_images < (sizeof(disk_paths) / sizeof(disk_paths[0])))
    {
       /* Remove CR/LF */
       carriage_return = strchr(line, '\r');
@@ -404,7 +403,8 @@ static bool read_m3u(const char *file)
 
       /* Trim trailing whitespace */
       end = start + strlen(start) - 1;
-      while (end >= start && isspace((unsigned char)*end)) {
+      while (end >= start && isspace((unsigned char)*end))
+      {
          *end = '\0';
          end--;
       }
@@ -414,14 +414,15 @@ static bool read_m3u(const char *file)
 
       /* Handle absolute vs relative paths */
 #ifdef _WIN32
-      if ((start[0] && start[1] == ':') || start[0] == '\\' || start[0] == '/')
+      if ((start[0] && start[1] == ':') ||
+          start[0] == '\\' || start[0] == '/')
 #else
       if (start[0] == '/')
 #endif
       {
          /* Absolute path */
          strncpy(name, start, sizeof(name));
-         name[sizeof(name)-1] = '\0';
+         name[sizeof(name) - 1] = '\0';
       }
       else
       {
@@ -430,7 +431,7 @@ static bool read_m3u(const char *file)
       }
 
       strncpy(disk_paths[disk_images], name, PATH_MAX);
-      disk_paths[disk_images][PATH_MAX-1] = '\0';
+      disk_paths[disk_images][PATH_MAX - 1] = '\0';
       disk_images++;
    }
 
