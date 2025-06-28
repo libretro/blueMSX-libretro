@@ -31,6 +31,7 @@
 #include "InputEvent.h"
 #include "R800.h"
 #include "Src/Utils/SaveState.h"
+#include "DiskOverlay.h"
 
 #include "ziphelper.c"
 
@@ -72,6 +73,8 @@ int hard_reset_f12 = 0;
 static int sega_nmi_pressed = 0;
 static int hard_reset_f12_pressed = 0;
 static int input_analog_deadzone = (int)(0.25f * (float)0x8000);
+
+char overlayDir[512] = {0};
 
 static void reevaluate_variables_io_sound(bool setToMixer);
 
@@ -247,6 +250,7 @@ bool set_image_index(unsigned index)
    if(disk_index == disk_images)
    {
       //retroarch is trying to set "no disk in tray"
+      unmountDiskOverlay(0);
       return true;
    }
    
@@ -1036,7 +1040,11 @@ bool retro_load_game(const struct retro_game_info *info)
    machineSetDirectory(machines_dir);
 
    if(environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
+   {
       boardSetDirectory(save_dir);
+      strncpy(overlayDir, save_dir, sizeof(overlayDir) - 1);
+      overlayDir[sizeof(overlayDir) - 1] = 0;
+   }
 
 #if 0
    boardSetDirectory(buffer);
@@ -1581,6 +1589,8 @@ bool retro_load_game_special(unsigned a, const struct retro_game_info *b, size_t
 
 void retro_unload_game(void)
 {
+   unmountDiskOverlay(0);
+
    if (image_buffer)
       free(image_buffer);
    

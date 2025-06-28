@@ -27,6 +27,7 @@
 */
 #include "Disk.h"
 #include "DirAsDisk.h"
+#include "DiskOverlay.h"
 #include "ziphelper.h"
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,9 @@
 #define DISK_ERRORS_HEADER      "DiskImage errors\r\n\032"
 #define DISK_ERRORS_HEADER_SIZE 0x14
 #define DISK_ERRORS_SIZE        ((MAXSECTOR+7)/8)
+
+#define DISKOVERLAY_EXT ".sav"
+#define DISKOVERLAY_MAXPATH 512
 
 static int   drivesEnabled[MAXDRIVES] = { 1, 1 };
 static int   drivesIsCdrom[MAXDRIVES];
@@ -60,6 +64,11 @@ static char* drivesErrors[MAXDRIVES];
 static const UInt8 svi328Cpm80track[] = "CP/M-80";
 static void diskHdUpdateInfo(int driveId);
 static void diskReadHdIdentifySector(int driveId, UInt8* buffer);
+
+static DiskOverlay_t* diskOverlays[MAXDRIVES] = {0};
+static char overlayPaths[MAXDRIVES][DISKOVERLAY_MAXPATH] = {0};
+
+extern char overlayDir[DISKOVERLAY_MAXPATH];
 
 enum { MSX_DISK, SVI328_DISK, IDEHD_DISK } diskTypes;
 
@@ -177,6 +186,9 @@ DSKE diskRead(int driveId, UInt8* buffer, int sector)
     if (!diskPresent(driveId))
         return DSKE_NO_DATA;
 
+    if (diskOverlays[driveId] && diskOverlayRead(diskOverlays[driveId], sector, buffer))
+        return DSKE_OK;
+
     if (ramImageBuffer[driveId] != NULL) {
         int offset = sector * sectorSize[driveId];
 
@@ -216,6 +228,11 @@ DSKE diskReadSector(int driveId, UInt8* buffer, int sector, int side, int track,
 
     if (sectorSize != NULL) {
         *sectorSize = secSize;
+    }
+
+    if (diskOverlays[driveId] && diskOverlayRead(diskOverlays[driveId], offset / secSize, buffer)) 
+    {
+        return DSKE_OK;
     }
 
     if (ramImageBuffer[driveId] != NULL) {
@@ -454,72 +471,37 @@ static void diskUpdateInfo(int driveId)
 
 UInt8 diskWrite(int driveId, UInt8 *buffer, int sector)
 {
-    if (!diskPresent(driveId)) {
+    if (!diskPresent(driveId))
         return 0;
-    }
 
-    if (sector >= maxSector[driveId]) {
-        return 0;
-    }
-
-    if (ramImageBuffer[driveId] != NULL) {
-        int offset = sector * sectorSize[driveId];
-
-        if (ramImageSize[driveId] < offset + sectorSize[driveId]) {
-            return 0;
-        }
-
-        memcpy(ramImageBuffer[driveId] + offset, buffer, sectorSize[driveId]);
+    if (diskOverlays[driveId]) 
+    {
+        diskOverlayWrite(diskOverlays[driveId], sector, buffer);
+        changed[driveId] = 1;
         return 1;
     }
-    else {
-        if (drives[driveId] != NULL && !RdOnly[driveId]) {
-            if (0 == fseek(drives[driveId], sector * sectorSize[driveId], SEEK_SET)) {
-                UInt8 success = fwrite(buffer, 1, sectorSize[driveId], drives[driveId]) == sectorSize[driveId];
-                if (success && sector == 0) {
-                    diskUpdateInfo(driveId);
-                }
-                return success;
-            }
-        }
-    }
+
     return 0;
 }
 
 UInt8 diskWriteSector(int driveId, UInt8 *buffer, int sector, int side, int track, int density)
 {
-    int secSize;
-    int offset;
+    int secSize, offset;
 
     if (!diskPresent(driveId))
         return 0;
 
-    if (sector >= maxSector[driveId])
-        return 0;
-
-    if (density == 0) {
-        density = sectorSize[driveId];
-    }
-
     offset = diskGetSectorOffset(driveId, sector, side, track, density);
     secSize = diskGetSectorSize(driveId, side, track, density);
 
-    if (ramImageBuffer[driveId] != NULL) {
-        if (ramImageSize[driveId] < offset + secSize) {
-            return 0;
-        }
-
-        memcpy(ramImageBuffer[driveId] + offset, buffer, secSize);
+    /* Always write to overlay */
+    if (diskOverlays[driveId]) 
+    {
+        diskOverlayWrite(diskOverlays[driveId], offset / secSize, buffer);
+        changed[driveId] = 1;
         return 1;
     }
-    else {
-        if (drives[driveId] != NULL && !RdOnly[driveId]) {
-            if (0 == fseek(drives[driveId], offset, SEEK_SET)) {
-                UInt8 success = fwrite(buffer, 1, secSize, drives[driveId]) == secSize;
-                return success;
-            }
-        }
-    }
+
     return 0;
 }
 
@@ -739,20 +721,44 @@ int _diskGetTotalSectors(int driveId)
 */
 int _diskRead2(int driveId, UInt8* buffer, int sector, int numSectors)
 {
-    int length  = numSectors * 512;
+    int sectorSz, nRead, i;
     if (!diskPresent(driveId))
         return 0;
-
-    if (ramImageBuffer[driveId] == NULL) {
-        if ((drives[driveId] != NULL)) {
-            if (0 == fseek(drives[driveId], sector * 512, SEEK_SET))
-                return (fread(buffer, 1, length, drives[driveId]) == length);
+    sectorSz = sectorSize[driveId];
+    nRead = 0;
+    for (i = 0; i < numSectors; ++i) {
+        if (diskOverlays[driveId] && diskOverlayRead(diskOverlays[driveId], sector + i, buffer + i * sectorSz)) 
+        {
+            nRead++;
+        } 
+        else if (ramImageBuffer[driveId] != NULL) 
+        {
+            int offset = (sector + i) * sectorSz;
+            if (ramImageSize[driveId] < offset + sectorSz)
+                break;
+            memcpy(buffer + i * sectorSz, ramImageBuffer[driveId] + offset, sectorSz);
+            nRead++;
+        } 
+        else if (drives[driveId] != NULL) 
+        {
+            if (0 == fseek(drives[driveId], (sector + i) * sectorSz, SEEK_SET)) 
+            {
+                if (fread(buffer + i * sectorSz, 1, sectorSz, drives[driveId]) == (size_t)sectorSz) 
+                {
+                    nRead++;
+                } 
+                else 
+                {
+                    break;
+                }
+            } 
+            else 
+            {
+                break;
+            }
         }
-        return 0;
     }
-
-    memcpy(buffer, ramImageBuffer[driveId] + sector * 512, numSectors * 512);
-    return 1;
+    return nRead;
 }
 
 /*
@@ -760,18 +766,90 @@ int _diskRead2(int driveId, UInt8* buffer, int sector, int numSectors)
 */
 int _diskWrite2(int driveId, UInt8* buffer, int sector, int numSectors)
 {
-    int length  = numSectors * 512;
+    int sectorSz, i;
     if (!diskPresent(driveId))
         return 0;
-
-    if (ramImageBuffer[driveId] == NULL) {
-        if ((drives[driveId] != NULL)) {
-            if (0 == fseek(drives[driveId], sector * 512, SEEK_SET))
-                return (fwrite(buffer, 1, length, drives[driveId]) == length);
+    sectorSz = sectorSize[driveId];
+    for (i = 0; i < numSectors; ++i) 
+    {
+        if (diskOverlays[driveId]) 
+        {
+            diskOverlayWrite(diskOverlays[driveId], sector + i, buffer + i * sectorSz);
+            changed[driveId] = 1;
         }
-        return 0;
+    }
+    return numSectors;
+}
+
+/* Helper: builds overlay path in save dir using disk base name */
+static void buildOverlayPath(const char* dskPath, char* outPath, size_t outPathLen)
+{
+    const char* base;
+    size_t dirLen, baseLen, extLen, totalLen;
+    char* p;
+    char tmp[DISKOVERLAY_MAXPATH];
+    size_t i, j, k;
+
+    /* Extract base name (after last / or \) */
+    base = dskPath;
+    for (p = (char*)dskPath + strlen(dskPath) - 1; p >= dskPath; --p)
+    {
+        if (*p == '/' || *p == '\\')
+        {
+            base = p + 1;
+            break;
+        }
     }
 
-    memcpy(ramImageBuffer[driveId] + sector * 512, buffer, length);
-    return 1;
+    /* Compose full path: overlayDir + '/' + base + ".sav" */
+    dirLen = strlen(overlayDir);
+    baseLen = strlen(base);
+    extLen = strlen(DISKOVERLAY_EXT);
+    totalLen = dirLen + 1 + baseLen + extLen + 1;
+    if (totalLen > outPathLen)
+        return;
+
+    i = 0;
+    for (k = 0; k < dirLen; ++k)
+        tmp[i++] = overlayDir[k];
+    tmp[i++] = '/';
+    for (j = 0; j < baseLen; j++)
+        tmp[i++] = base[j];
+    for (j = 0; j < extLen; ++j)
+        tmp[i++] = DISKOVERLAY_EXT[j];
+    tmp[i] = 0;
+
+    strncpy(outPath, tmp, outPathLen - 1);
+    outPath[outPathLen - 1] = 0;
+}
+
+void mountDiskOverlay(int driveId, const char* dskImagePath, size_t sectorSize)
+{
+    if (diskOverlays[driveId])
+    {
+        diskOverlayFree(diskOverlays[driveId]);
+        diskOverlays[driveId] = 0;
+    }
+
+    buildOverlayPath(dskImagePath, overlayPaths[driveId], sizeof(overlayPaths[driveId]));
+    diskOverlays[driveId] = diskOverlayDeserialize(overlayPaths[driveId], sectorSize);
+
+    if (!diskOverlays[driveId])
+        diskOverlays[driveId] = diskOverlayCreate(sectorSize);
+}
+
+void unmountDiskOverlay(int driveId)
+{
+    if (diskOverlays[driveId] && !diskOverlayIsEmpty(diskOverlays[driveId]))
+    {
+        diskOverlaySerialize(diskOverlays[driveId], overlayPaths[driveId]);
+    }
+
+    if (diskOverlays[driveId])
+    {
+        diskOverlayFree(diskOverlays[driveId]);
+        diskOverlays[driveId] = 0;
+    }
+
+    overlayPaths[driveId][0] = 0;
 }
