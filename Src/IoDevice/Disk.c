@@ -69,6 +69,7 @@ static DiskOverlay_t* diskOverlays[MAXDRIVES] = {0};
 static char overlayPaths[MAXDRIVES][DISKOVERLAY_MAXPATH] = {0};
 
 extern char overlayDir[DISKOVERLAY_MAXPATH];
+extern int overlayTimer;
 
 enum { MSX_DISK, SVI328_DISK, IDEHD_DISK } diskTypes;
 
@@ -477,6 +478,10 @@ UInt8 diskWrite(int driveId, UInt8 *buffer, int sector)
     if (diskOverlays[driveId]) 
     {
         diskOverlayWrite(diskOverlays[driveId], sector, buffer);
+
+        /* Reset overlay timer to ensure changes are saved */
+        overlayTimer = 0; 
+
         changed[driveId] = 1;
         return 1;
     }
@@ -498,6 +503,10 @@ UInt8 diskWriteSector(int driveId, UInt8 *buffer, int sector, int side, int trac
     if (diskOverlays[driveId]) 
     {
         diskOverlayWrite(diskOverlays[driveId], offset / secSize, buffer);
+
+        /* Reset overlay timer to ensure changes are saved */
+        overlayTimer = 0; 
+
         changed[driveId] = 1;
         return 1;
     }
@@ -775,6 +784,10 @@ int _diskWrite2(int driveId, UInt8* buffer, int sector, int numSectors)
         if (diskOverlays[driveId]) 
         {
             diskOverlayWrite(diskOverlays[driveId], sector + i, buffer + i * sectorSz);
+
+            /* Reset overlay timer to ensure changes are saved */
+            overlayTimer = 0;
+
             changed[driveId] = 1;
         }
     }
@@ -840,10 +853,7 @@ void mountDiskOverlay(int driveId, const char* dskImagePath, size_t sectorSize)
 
 void unmountDiskOverlay(int driveId)
 {
-    if (diskOverlays[driveId] && !diskOverlayIsEmpty(diskOverlays[driveId]))
-    {
-        diskOverlaySerialize(diskOverlays[driveId], overlayPaths[driveId]);
-    }
+    writeDiskOverlay(driveId);
 
     if (diskOverlays[driveId])
     {
@@ -852,4 +862,12 @@ void unmountDiskOverlay(int driveId)
     }
 
     overlayPaths[driveId][0] = 0;
+}
+
+void writeDiskOverlay(int driveId)
+{
+    if (diskOverlays[driveId] && !diskOverlayIsEmpty(diskOverlays[driveId]))
+    {
+        diskOverlaySerialize(diskOverlays[driveId], overlayPaths[driveId]);
+    }
 }

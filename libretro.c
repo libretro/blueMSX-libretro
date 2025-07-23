@@ -75,6 +75,7 @@ static int hard_reset_f12_pressed = 0;
 static int input_analog_deadzone = (int)(0.25f * (float)0x8000);
 
 char overlayDir[512] = {0};
+int overlayTimer = -1;
 
 static void reevaluate_variables_io_sound(bool setToMixer);
 
@@ -1517,6 +1518,15 @@ void retro_run(void)
    else
       video_cb(image_buffer, image_buffer_current_width, image_buffer_height, image_buffer_current_width * sizeof(uint16_t));
 
+   if (overlayTimer >= 0)
+   {
+      overlayTimer++;
+      if (overlayTimer >= 60)
+      {
+         writeDiskOverlay(0);
+         overlayTimer = -1;
+      }
+   }
 }
 
 /* framebuffer */
