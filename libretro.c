@@ -307,22 +307,41 @@ bool get_image_label(unsigned index, char *label, size_t len)
 {
     char *dot;
     const char *filename;
+    const char *slash;
+#ifdef _WIN32
+    const char *alt_slash;
+#endif
     size_t copy_len;
-    if (index >= disk_images) return false;
+
+    if (index >= disk_images) 
+        return false;
+
+    slash = strrchr(disk_paths[index], SLASH);
+
+#ifdef _WIN32
+    /* Also check for the other slash type on Windows */
+    alt_slash = strrchr(disk_paths[index], (SLASH == '\\') ? '/' : '\\');
     
-    filename = strrchr(disk_paths[index], '/');
-    filename = filename ? filename + 1 : disk_paths[index];
-    
+    if (!slash || (alt_slash && alt_slash > slash))
+        slash = alt_slash;
+#endif
+
+    filename = slash ? slash + 1 : disk_paths[index];
+
     /* Remove extension */
-    dot      = strrchr(filename, '.');
+    dot = strrchr(filename, '.');
     copy_len = dot ? (size_t)(dot - filename) : strlen(filename);
-    
-    if (copy_len >= len) copy_len = len - 1;
-    
+
+    if (copy_len >= len) 
+      copy_len = len - 1;
+
     strncpy(label, filename, copy_len);
     label[copy_len] = '\0';
+
     return true;
 }
+
+
 
 void attach_disk_swap_interface(void)
 {
