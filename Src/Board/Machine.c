@@ -231,6 +231,23 @@ char *strcasestr(const char *h, const char *n)
 }
 #endif
 
+#if defined(__SWITCH__)
+const char *strcasestr(const char *haystack, const char *needle) {
+    if (!*needle) return haystack;
+
+    for (; *haystack; haystack++) {
+        const char *h = haystack;
+        const char *n = needle;
+        while (*h && *n && tolower((unsigned char)*h) == tolower((unsigned char)*n)) {
+            h++;
+            n++;
+        }
+        if (!*n) return haystack; // full match
+    }
+    return NULL;
+}
+#endif
+
 static int readMachine(Machine* machine, const char* machineName, const char* file)
 {
     static char buffer[10000];
