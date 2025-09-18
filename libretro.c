@@ -307,58 +307,81 @@ bool get_image_label(unsigned index, char *label, size_t len)
 {
     char *dot;
     const char *filename;
+    const char *slash;
+#ifdef _WIN32
+    const char *alt_slash;
+#endif
     size_t copy_len;
-    if (index >= disk_images) return false;
+
+    if (index >= disk_images) 
+        return false;
+
+    slash = strrchr(disk_paths[index], SLASH);
+
+#ifdef _WIN32
+    /* Also check for the other slash type on Windows */
+    alt_slash = strrchr(disk_paths[index], (SLASH == '\\') ? '/' : '\\');
     
-    filename = strrchr(disk_paths[index], '/');
-    filename = filename ? filename + 1 : disk_paths[index];
-    
+    if (!slash || (alt_slash && alt_slash > slash))
+        slash = alt_slash;
+#endif
+
+    filename = slash ? slash + 1 : disk_paths[index];
+
     /* Remove extension */
-    dot      = strrchr(filename, '.');
+    dot = strrchr(filename, '.');
     copy_len = dot ? (size_t)(dot - filename) : strlen(filename);
-    
-    if (copy_len >= len) copy_len = len - 1;
-    
+
+    if (copy_len >= len) 
+      copy_len = len - 1;
+
     strncpy(label, filename, copy_len);
     label[copy_len] = '\0';
+
     return true;
 }
 
+
+
 void attach_disk_swap_interface(void)
 {
-    unsigned version = 0;
-    if (!environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &version))
-        version = 0;
+   unsigned version = 0;
+   if (!environ_cb(RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION, &version))
+      version = 0;
 
-    if (version >= 1)
-    {
-        struct retro_disk_control_ext_callback dskcb_ext = {
-            set_eject_state,
-            get_eject_state,
-            set_image_index,
-            get_image_index,
-            get_num_images,
-            replace_image_index,
-            add_image_index,
-            set_initial_image,
-            get_image_path,
-            get_image_label
-        };
-        environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &dskcb_ext);
-    }
-    else
-    {
-        struct retro_disk_control_callback dskcb = {
-            set_eject_state,
-            get_eject_state,
-            set_image_index,
-            get_image_index,
-            get_num_images,
-            replace_image_index,
-            add_image_index
-        };
-        environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
-    }
+   if (version >= 1)
+   {
+      struct retro_disk_control_ext_callback dskcb_ext;
+      memset(&dskcb_ext, 0, sizeof(dskcb_ext));
+
+      dskcb_ext.set_eject_state = set_eject_state;
+      dskcb_ext.get_eject_state = get_eject_state;
+      dskcb_ext.set_image_index = set_image_index;
+      dskcb_ext.get_image_index = get_image_index;
+      dskcb_ext.get_num_images = get_num_images;
+      dskcb_ext.replace_image_index = replace_image_index;
+      dskcb_ext.add_image_index = add_image_index;
+      dskcb_ext.set_initial_image = set_initial_image;
+      dskcb_ext.get_image_path = get_image_path;
+      dskcb_ext.get_image_label = get_image_label;
+
+      environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &dskcb_ext);
+   }
+   else
+   {
+      struct retro_disk_control_callback dskcb;
+      memset(&dskcb, 0, sizeof(dskcb));
+
+      dskcb.set_eject_state = set_eject_state;
+      dskcb.get_eject_state = get_eject_state;
+      dskcb.set_image_index = set_image_index;
+      dskcb.get_image_index = get_image_index;
+      dskcb.get_num_images = get_num_images;
+      dskcb.replace_image_index = replace_image_index;
+      dskcb.add_image_index = add_image_index;
+
+      environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &dskcb);
+   }
 }
 /* end .dsk swap support */
 
@@ -366,21 +389,20 @@ static bool read_m3u(const char *file)
 {
    char line[PATH_MAX];
    char name[PATH_MAX];
-   FILE *f = fopen(file, "r");
+   char *carriage_return;
+   char *newline;
+   char *start;
+   char *end;
+   FILE *f;
 
+   f = fopen(file, "r");
    if (!f)
       return false;
 
-   while (fgets(line, sizeof(line), f)
-         && disk_images < 
-         sizeof(disk_paths) / sizeof(disk_paths[0])) 
+   while (fgets(line, sizeof(line), f) &&
+          disk_images < (sizeof(disk_paths) / sizeof(disk_paths[0])))
    {
-      char *carriage_return = NULL;
-      char *newline         = NULL;
-
-      if (line[0] == '#')
-         continue;
-
+      /* Remove CR/LF */
       carriage_return = strchr(line, '\r');
       if (carriage_return)
          *carriage_return = '\0';
@@ -389,12 +411,47 @@ static bool read_m3u(const char *file)
       if (newline)
          *newline = '\0';
 
-      if (line[0] != '\0')
+      /* Skip comments */
+      if (line[0] == '#')
+         continue;
+
+      /* Trim leading whitespace */
+      start = line;
+      while (*start && isspace((unsigned char)*start))
+         start++;
+
+      /* Trim trailing whitespace */
+      end = start + strlen(start) - 1;
+      while (end >= start && isspace((unsigned char)*end))
       {
-         snprintf(name, sizeof(name), "%s%c%s", base_dir, SLASH, line);
-         strcpy(disk_paths[disk_images], name);
-         disk_images++;
+         *end = '\0';
+         end--;
       }
+
+      if (*start == '\0')
+         continue; /* Skip empty lines */
+
+      /* Handle absolute vs relative paths */
+#ifdef _WIN32
+      if ((start[0] && start[1] == ':') ||
+          start[0] == '\\' || start[0] == '/')
+#else
+      if (start[0] == '/')
+#endif
+      {
+         /* Absolute path */
+         strncpy(name, start, sizeof(name));
+         name[sizeof(name) - 1] = '\0';
+      }
+      else
+      {
+         /* Relative path */
+         snprintf(name, sizeof(name), "%s%c%s", base_dir, SLASH, start);
+      }
+
+      strncpy(disk_paths[disk_images], name, PATH_MAX);
+      disk_paths[disk_images][PATH_MAX - 1] = '\0';
+      disk_images++;
    }
 
    fclose(f);
