@@ -194,6 +194,7 @@ SOURCES_C  += $(CORE_DIR)/Src/Z80/R800SaveState.c
 SOURCES_C  += $(CORE_DIR)/Src/Z80/R800Debug.c
 
 SOURCES_C  += $(CORE_DIR)/Src/IoDevice/Casette.c
+SOURCES_C  += $(CORE_DIR)/Src/IoDevice/DiskOverlay.c
 SOURCES_C  += $(CORE_DIR)/Src/IoDevice/DirAsDisk.c
 SOURCES_C  += $(CORE_DIR)/Src/IoDevice/Disk.c
 SOURCES_C  += $(CORE_DIR)/Src/IoDevice/FdcAudio.c

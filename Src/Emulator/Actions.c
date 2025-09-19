@@ -26,6 +26,7 @@
 ******************************************************************************
 */
 #include "Actions.h"
+#include "DiskOverlay.h"
 #include "MsxTypes.h"
 #include "Switches.h"
 #include "AudioMixer.h"
@@ -124,13 +125,16 @@ void actionDiskInsertDir(int diskNo)
     archUpdateMenu(0);
 }
 
-void actionDiskRemove(int i) {
+void actionDiskRemove(int i) 
+{
     state.properties->media.disks[i].fileName[0] = 0;
     state.properties->media.disks[i].fileNameInZip[0] = 0;
     updateExtendedDiskName(i, state.properties->media.disks[i].fileName, state.properties->media.disks[i].fileNameInZip);
-    if (emulatorGetState() != EMU_STOPPED) {
+    if (emulatorGetState() != EMU_STOPPED) 
+    {
         emulatorSuspend();
         boardChangeDiskette(i, NULL, NULL);
+        unmountDiskOverlay(i);
         emulatorResume();
     }
     archUpdateMenu(0);
