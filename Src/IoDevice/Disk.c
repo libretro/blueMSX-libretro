@@ -851,6 +851,14 @@ void mountDiskOverlay(int driveId, const char* dskImagePath, size_t sectorSize)
         diskOverlays[driveId] = diskOverlayCreate(sectorSize);
 }
 
+void writeDiskOverlay(int driveId)
+{
+    if (diskOverlays[driveId] && !diskOverlayIsEmpty(diskOverlays[driveId]))
+    {
+        diskOverlaySerialize(diskOverlays[driveId], overlayPaths[driveId]);
+    }
+}
+
 void unmountDiskOverlay(int driveId)
 {
     writeDiskOverlay(driveId);
@@ -862,12 +870,4 @@ void unmountDiskOverlay(int driveId)
     }
 
     overlayPaths[driveId][0] = 0;
-}
-
-void writeDiskOverlay(int driveId)
-{
-    if (diskOverlays[driveId] && !diskOverlayIsEmpty(diskOverlays[driveId]))
-    {
-        diskOverlaySerialize(diskOverlays[driveId], overlayPaths[driveId]);
-    }
 }
