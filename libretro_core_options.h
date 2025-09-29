@@ -120,13 +120,6 @@ struct retro_core_option_definition option_defs_us[] = {
          { "korean126",   NULL },
          { "MegaFlashRomScc",   NULL },
          { "MegaFlashRomSccPlus",   NULL },
-         { "msxdos2",   NULL },
-         { "scc",   NULL },
-         { "sccexpanded",   NULL },
-         { "sccmirrored",   NULL },
-         { "sccplus",   NULL },
-         { "snatcher",   NULL },
-         { "sdsnatcher",   NULL },
          { "SegaBasic",   NULL },
          { "SG1000",   NULL },
          { "SG1000Castle",   NULL },
@@ -138,6 +131,22 @@ struct retro_core_option_definition option_defs_us[] = {
          { NULL, NULL },
       },
       "Auto"
+   },
+   {
+      "bluemsx_additional_cart",
+      "Additional MSX Sound Cartridge (Restart)",
+      "Additional MSX sound cartridge to insert to the first free slot.",
+      {
+         { "disabled",   NULL },
+         { "scc",   NULL },
+         { "sccexpanded",   NULL },
+         { "sccmirrored",   NULL },
+         { "sccplus",   NULL },
+         { "snatcher",   NULL },
+         { "sdsnatcher",   NULL },
+         { NULL, NULL },
+      },
+      "None"
    },
    {
       "bluemsx_auto_rewind_cas",
