@@ -44,6 +44,11 @@
 static int mixerCPUFrequency;
 static int mixerConnector;
 static int mixerCPUFrequencyFixed;
+static int inReset = 0;
+
+void archSoundBeginReset(void) { inReset = 1; }
+void archSoundEndReset(void)   { inReset = 0; }
+
 
 void mixerSetBoardFrequency(int CPUFrequency)
 {
@@ -417,6 +422,9 @@ void mixerReset(Mixer* mixer)
 
 void mixerSync(Mixer* mixer)
 {
+    if (inReset) {
+        return;
+    }
     UInt32 systemTime = boardSystemTime();
     Int16* buffer   = mixer->buffer;
     Int32* chBuff[MAX_CHANNELS];

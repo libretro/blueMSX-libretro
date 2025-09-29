@@ -88,6 +88,7 @@ static void reset()
 {
     UInt32 systemTime = boardSystemTime();
 
+    archSoundBeginReset();
     slotManagerReset();
 
     if (r800 != NULL) {
@@ -95,6 +96,7 @@ static void reset()
     }
     
     deviceManagerReset();
+    archSoundEndReset();
 }
 
 static void destroy() {        
