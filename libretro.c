@@ -1207,8 +1207,8 @@ bool retro_load_game(const struct retro_game_info *info)
             }
             for (i = 0; i < disk_images; i++)
             {
-               strncpy(properties->media.disks[i].fileName, disk_paths[i], PATH_MAX);
-               properties->media.disks[i].fileName[PATH_MAX-1] = '\0';
+               strncpy(properties->media.disks[i].fileName, disk_paths[i], sizeof(properties->media.disks[i].fileName) - 1);
+               properties->media.disks[i].fileName[sizeof(properties->media.disks[i].fileName) - 1] = '\0';
             }
             disk_inserted = true;
             attach_disk_swap_interface();
