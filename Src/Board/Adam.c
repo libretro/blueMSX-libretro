@@ -370,6 +370,8 @@ int adamCreate(Machine* machine,
 
     r800 = r800Create(0, slotRead, slotWrite, ioPortRead, ioPortWrite, NULL, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
+    slotManagerSetR800(r800);
+
     boardInfo->cartridgeCount   = 1;
     boardInfo->diskdriveCount   = 2;
     boardInfo->casetteCount     = 1;

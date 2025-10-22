@@ -60,12 +60,26 @@ typedef struct {
     void*         ref;
 } Slot;
 
+typedef struct {
+    UInt32 addr;
+    UInt32 data;
+    UInt8  size;
+} CheatCode;
+
+#define MAX_CHEATS 256
+
+static CheatCode* cheats = NULL;
+static int cheats_count = 0;
+static R800* current_r800 = NULL;
+
 static RamSlotState     ramslot[8];
 static PrimarySlotState pslot[4];
 static Slot             slotTable[4][4][8];
 static Slot             slotAddr0;
 static UInt8            emptyRAM[0x2000];
 static Int32            initialized;
+
+static UInt8 slotReadCheat(void* ref, UInt16 address);
 
 void slotMapRamPage(int slot, int sslot, int page)
 {
@@ -289,7 +303,62 @@ void slotManagerCreate()
 
 void slotManagerDestroy() 
 {
+    if (cheats != NULL) {
+        free(cheats);
+        cheats = NULL;
+    }
+    cheats_count = 0;
     initialized = 0;
+}
+
+void slotManagerAddCheat(int addr, int data, int size)
+{
+    // Validation des paramètres
+    if (size != 1 && size != 2 && size != 4) {
+        return; // Taille invalide
+    }
+
+    if (addr < 0 || addr > 0xFFFF) {
+        return; // Adresse invalide
+    }
+
+    if (cheats == NULL) {
+        cheats = malloc(MAX_CHEATS * sizeof(CheatCode));
+        if (cheats == NULL) {
+            return;
+        }
+    }
+
+    if (cheats_count >= MAX_CHEATS) {
+        return;
+    }
+
+    cheats[cheats_count].addr = (UInt32)addr;
+    cheats[cheats_count].data = (UInt32)data;
+    cheats[cheats_count].size = (UInt8)size;
+    cheats_count++;
+
+    if (cheats_count == 1) {
+        current_r800->readMemory = slotReadCheat;
+    }
+}
+
+void slotManagerResetCheat()
+{
+    cheats_count = 0;
+    
+    // Libérer la mémoire si elle était allouée
+    if (cheats != NULL) {
+        free(cheats);
+        cheats = NULL;
+    }
+
+    current_r800->readMemory = slotRead;
+}
+
+void slotManagerSetR800(R800* r800)
+{
+    current_r800 = r800;
 }
 
 UInt8 slotPeek(void* ref, UInt16 address)
@@ -310,6 +379,20 @@ UInt8 slotPeek(void* ref, UInt16 address)
     }
 
     if (ramslot[address >> 13].readEnable) {
+        // Check for cheat codes
+        for (int i = 0; i < cheats_count; i++) {
+            if (cheats[i].size == 1) {
+                if (cheats[i].addr == address) {
+                    return cheats[i].data & 0xFF;
+                }
+            } else {
+                if (cheats[i].addr == address) {
+                    return cheats[i].data & 0xFF;
+                } else if (cheats[i].addr + 1 == address) {
+                    return (cheats[i].data & 0xFF00) >> 8;
+                }
+            }
+        }
         return ramslot[address >> 13].pageData[address & 0x1fff];
     }
 
@@ -344,6 +427,55 @@ UInt8 slotRead(void* ref, UInt16 address)
     }
 
     if (ramslot[address >> 13].readEnable) {
+        return ramslot[address >> 13].pageData[address & 0x1fff];
+    }
+
+    psl = pslot[address >> 14].state;
+    ssl = pslot[psl].subslotted ? pslot[address >> 14].substate : 0;
+
+    slotInfo = &slotTable[psl][ssl][address >> 13];
+
+    if (slotInfo->read != NULL) {
+        address -= slotInfo->startpage << 13;
+        return slotInfo->read(slotInfo->ref, address);
+    }
+
+    return 0xff;
+}
+
+
+UInt8 slotReadCheat(void* ref, UInt16 address)
+{
+    Slot* slotInfo;
+    int psl;
+    int ssl;
+
+    if (!initialized) {
+        return 0xff;
+    }
+
+    if (address == 0xffff) {
+        UInt8 sslReg = pslot[3].state;
+        if (pslot[sslReg].subslotted) {
+            return ~pslot[sslReg].sslReg;
+        }
+    }
+
+    if (ramslot[address >> 13].readEnable) {
+        // Check for cheat codes - optimized for size=1 (most common case)
+        for (int i = 0; i < cheats_count; i++) {
+            if (cheats[i].size == 1) {
+                if (cheats[i].addr == address) {
+                    return cheats[i].data & 0xFF;
+                }
+            } else {
+                if (cheats[i].addr == address) {
+                    return cheats[i].data & 0xFF;
+                } else if (cheats[i].addr + 1 == address) {
+                    return (cheats[i].data & 0xFF00) >> 8;
+                }
+            }
+        }
         return ramslot[address >> 13].pageData[address & 0x1fff];
     }
 

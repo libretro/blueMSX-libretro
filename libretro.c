@@ -1698,8 +1698,50 @@ size_t retro_get_memory_size(unsigned id)
 }
 unsigned retro_api_version(void){return RETRO_API_VERSION;}
 size_t retro_serialize_size(void){return 1<<21;}
-void retro_cheat_reset(void){}
-void retro_cheat_set(unsigned a, bool b, const char * c){}
+void retro_cheat_reset(void)
+{
+   slotManagerResetCheat();
+}
+
+void retro_cheat_set(unsigned a, bool b, const char * c)
+{
+   int addr, data, size;
+   int temp; // Variable temporaire pour les paramètres inutiles
+
+   if (c == NULL)
+      return;
+
+   // MFC format description is available @ https://www.msxblue.com/manual/trainermcf_c.htm
+   // Old MFC format : a,b,c,d,e (memtype,addr,value,enabled,description)
+   // enabled and description are optional
+   if(sscanf(c, "%d,%d,%d,%d,%*s", &temp, &addr, &data, &temp) == 4) {
+      slotManagerAddCheat(addr, data, 1);
+      return;
+   }
+   if(sscanf(c, "%d,%d,%d,%d", &temp, &addr, &data, &temp) == 4) {
+      slotManagerAddCheat(addr, data, 1);
+      return;
+   }
+   if(sscanf(c, "%d,%d,%d", &temp, &addr, &data) == 3) {
+      slotManagerAddCheat(addr, data, 1);
+      return;
+   }
+
+   // New MFC format : A:B:C:D:E (addr_hex,value_hex,size,displaytype,description)
+   // displaytype and description are optional
+   if(sscanf(c, "%x:%x:%d:%d:%*s", &addr, &data, &size, &temp) == 4) {
+      slotManagerAddCheat(addr, data, size == 0 ? 1 : 2); // 0=8bit, 1=16bit
+      return;
+   }
+   if(sscanf(c, "%x:%x:%d:%d", &addr, &data, &size, &temp) == 4) {
+      slotManagerAddCheat(addr, data, size == 0 ? 1 : 2); // 0=8bit, 1=16bit
+      return;
+   }
+   if(sscanf(c, "%x:%x:%d", &addr, &data, &size) == 3) {
+      slotManagerAddCheat(addr, data, size == 0 ? 1 : 2); // 0=8bit, 1=16bit
+      return;
+   }
+}
 
 bool retro_serialize(void *data, size_t size)
 {
