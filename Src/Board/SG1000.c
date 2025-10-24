@@ -222,6 +222,8 @@ int sg1000Create(Machine* machine,
 
     r800 = r800Create(0, slotRead, slotWrite, ioPortRead, ioPortWrite, NULL, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
+    slotManagerSetR800(r800);
+
     boardInfo->cartridgeCount   = 1;
     boardInfo->diskdriveCount   = 0;
     boardInfo->casetteCount     = 0;

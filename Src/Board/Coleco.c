@@ -353,6 +353,8 @@ int colecoCreate(Machine* machine,
 
     r800 = r800Create(CPU_ENABLE_M1, slotRead, slotWrite, ioPortRead, ioPortWrite, NULL, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
+    slotManagerSetR800(r800);
+
     boardInfo->cartridgeCount   = 1;
     boardInfo->diskdriveCount   = 0;
     boardInfo->casetteCount     = 0;

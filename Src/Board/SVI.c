@@ -317,6 +317,8 @@ int sviCreate(Machine* machine,
 
     r800 = r800Create(CPU_ENABLE_M1, sviMemRead, sviMemWrite, ioPortRead, ioPortWrite, PatchZ80, boardTimerCheckTimeout, NULL, NULL, NULL, NULL, NULL, NULL);
 
+    slotManagerSetR800(r800);
+
     boardInfo->cartridgeCount   = 1;
     boardInfo->diskdriveCount   = 2;
     boardInfo->casetteCount     = 1;
