@@ -96,5 +96,7 @@ void mixerUnregisterChannel(Mixer* mixer, Int32 handle);
 void mixerSetBoardFrequency(int CPUFrequency);
 void mixerSetBoardFrequencyFixed(int CPUFrequency);
 
+void archSoundBeginReset(void);
+void archSoundEndReset(void);
 #endif
 
