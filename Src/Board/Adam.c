@@ -309,6 +309,7 @@ static void reset()
 {
     UInt32 systemTime = boardSystemTime();
 
+    archSoundBeginReset();
     slotManagerReset();
 
     if (r800 != NULL) {
@@ -322,6 +323,7 @@ static void reset()
     ledSetCapslock(0);
 
     deviceManagerReset();
+    archSoundEndReset();
 }
 
 static void destroy() 

@@ -36,7 +36,8 @@ void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) { audio_batch_c
 static Int32 soundWrite(void* dummy, Int16 *buffer, UInt32 count)
 {
    if (audio_batch_cb)
-      audio_batch_cb(buffer, count / 2);
+      return (Int32)audio_batch_cb(buffer, count / 2);
+   return 0;
 }
 
 void archSoundCreate(Mixer* mixer, UInt32 sampleRate, UInt32 bufferSize, Int16 channels) {
