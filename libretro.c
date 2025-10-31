@@ -61,6 +61,8 @@ static int double_width;
 static char msx_type[256];
 static char msx_cartmapper[256];
 static bool mapper_auto;
+static char msx_additional_cart[256];
+static bool has_additional_cart;
 bool is_coleco, is_sega, is_spectra, is_auto, auto_rewind_cas;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
@@ -78,6 +80,7 @@ char overlayDir[512] = {0};
 int overlayTimer = -1;
 
 static void reevaluate_variables_io_sound(bool setToMixer);
+static void check_variables(bool can_change_machine_type);
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
 void retro_set_input_poll(retro_input_poll_t cb) { input_poll_cb = cb; }
@@ -807,15 +810,21 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_reset(void)
 {
+   int first_free_slot = 0;
    actionEmuResetSoft();
 
    /* Apply mapper override on reset, force mapper detection again */
-   if (properties->media.carts[0].fileName[0]){
+   if ((properties->media.carts[0].fileName[0] && !has_additional_cart) ||
+       (properties->media.carts[1].fileName[0] && has_additional_cart)) {
       if (!mapper_auto)
          insertCartridge(properties, 0, properties->media.carts[0].fileName, properties->media.carts[0].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
       else
          insertCartridge(properties, 0, properties->media.carts[0].fileName, properties->media.carts[0].fileNameInZip, 0, -1);
+      first_free_slot++;
    }
+
+   if (has_additional_cart)
+      insertCartridge(properties, first_free_slot, msx_additional_cart, NULL, mediaDbStringToType(msx_additional_cart), -1);
 }
 
 static void extract_directory(char *buf, const char *path, size_t size)
@@ -965,6 +974,20 @@ static void check_variables(bool can_change_machine_type)
       }
    }
 
+   var.key = "bluemsx_additional_cart";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         has_additional_cart = false;
+      else
+      {
+         has_additional_cart = true;
+         strcpy(msx_additional_cart, var.value);
+      }
+   }
+
    var.key = "bluemsx_auto_rewind_cas";
    var.value = NULL;
 
@@ -1054,7 +1077,7 @@ static void reevaluate_variables_io_sound(bool setToMixer)
 bool retro_load_game(const struct retro_game_info *info)
 {
    const char *save_dir = NULL;
-   int i, media_type;
+   int i, media_type, first_free_slot;
    char properties_dir[256], machines_dir[256], mediadb_dir[256];
    const char *dir = NULL;
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
@@ -1182,6 +1205,7 @@ bool retro_load_game(const struct retro_game_info *info)
    mixerEnableMaster(mixer, properties->sound.masterEnable);
 
 
+   first_free_slot = 0;
    if (info)
    {
       if (mapper_auto)
@@ -1268,6 +1292,9 @@ bool retro_load_game(const struct retro_game_info *info)
          if (properties->media.carts[i].fileName[0] && !mapper_auto)
             insertCartridge(properties, i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip, mediaDbStringToType(msx_cartmapper), -1);
 
+         if (properties->media.carts[i].fileName[0])
+            first_free_slot++;
+
          updateExtendedRomName(i, properties->media.carts[i].fileName, properties->media.carts[i].fileNameInZip);
       }
 
@@ -1291,6 +1318,9 @@ bool retro_load_game(const struct retro_game_info *info)
          updateExtendedCasName(i, properties->media.tapes[i].fileName, properties->media.tapes[i].fileNameInZip);
       }
    } // if (info)
+
+   if (has_additional_cart && first_free_slot < PROP_MAX_CARTS)
+      insertCartridge(properties, first_free_slot, msx_additional_cart, NULL, mediaDbStringToType(msx_additional_cart), -1);
 
    {
       Machine* machine = machineCreate(properties->emulation.machineName);
