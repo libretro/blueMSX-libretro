@@ -171,6 +171,17 @@ struct retro_core_option_definition option_defs_us[] = {
       "disabled"
    },
    {
+      "bluemsx_sunriseide_enable",
+      "SunriseIDE Enable (Restart)",
+      "Enable SunriseIDE hard drive support. When enabled, disk images will be loaded as IDE hard drives and SUNRISEIDE.rom will be automatically inserted.",
+      {
+         { "disabled",   NULL },
+         { "enabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
       "use_keyboard_for_coleco",
       "Colecovision Keyboard Mapping",
       "Additionally, use the keyboard for the Colecovision 0-9, #, and * buttons. Player 1: 0-9, # is -, and * is =; Player 2: Keypad 0-9, # is /, and * is *. Gamepad mappings also work.",
