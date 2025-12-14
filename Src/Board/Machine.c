@@ -45,6 +45,11 @@
 
 #include "AppConfig.h"
 
+#ifdef __LIBRETRO__
+#include "libretro.h"
+#include "Crc32Calc.h"
+#endif
+
 #include "RomLoader.h"
 #include "MSXMidi.h"
 #include "ramMapper.h"
@@ -152,9 +157,6 @@
 #include "romMapperOpcodeSlotManager.h"
 #include "romMapperDooly.h"
 #include "romMapperMuPack.h"
-#ifdef __LIBRETRO__
-#include "Crc32Calc.h"
-#endif
 
 // PacketFileSystem.h Need to be included after all other includes
 #include "PacketFileSystem.h"
@@ -591,6 +593,26 @@ void machineSave(Machine* machine)
     iniFileClose(configIni);
 }
 
+#ifdef __LIBRETRO__
+void addSunriseIde(Machine* machine)
+{
+    extern bool sunriseide_enable;
+    if (!sunriseide_enable || machine->slotInfoCount >= 32)
+        return;
+    
+    SlotInfo* slotInfo = &machine->slotInfo[machine->slotInfoCount];
+    slotInfo->slot = 1;
+    slotInfo->subslot = 0;
+    slotInfo->startPage = 0;
+    slotInfo->pageCount = 8;
+    slotInfo->romType = ROM_SUNRISEIDE;
+    strcpy(slotInfo->name, "Machines/Shared Roms/SUNRISEIDE.rom");
+    strcpy(slotInfo->inZipName, "");
+    slotInfo->error = 0;
+    machine->slotInfoCount++;
+}
+#endif
+
 Machine* machineCreate(const char* machineName)
 {
     char configIni[512];
@@ -640,6 +662,10 @@ Machine* machineCreate(const char* machineName)
 		machineDestroy(machine);
         return NULL;
     }
+    
+#ifdef __LIBRETRO__
+    addSunriseIde(machine);
+#endif
     
     machineUpdate(machine);
     
@@ -1422,6 +1448,9 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize, UI
             switch (machine->slotInfo[i].romType) {
             case ROM_MEGAFLSHSCC:
                 success &= romMapperMegaFlashRomSccCreate("Manbow2.rom", NULL, 0, slot, subslot, startPage, 0, 0x80000, 0);
+                break;
+            case ROM_SUNRISEIDE:
+                success &= romMapperSunriseIdeCreate(hdId++, romName, NULL, 0, slot, subslot, startPage);
                 break;
             default:
                 success = 0;
