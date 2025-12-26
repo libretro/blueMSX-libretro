@@ -26,6 +26,240 @@ extern "C" {
  * - Will be used as a fallback for any missing entries in
  *   frontend language definition */
 
+/* Core option categories and definitions (v2). */
+
+struct retro_core_option_v2_category option_cats_us[] = {
+   { "system",  "System",  NULL },
+   { "video",   "Video",   NULL },
+   { "audio",   "Audio",   NULL },
+   { "input",   "Input",   NULL },
+   { "advanced", "Advanced", NULL },
+   { NULL, NULL, NULL },
+};
+
+struct retro_core_option_v2_definition option_defs_us_v2[] = {
+   {
+      "bluemsx_msxtype",
+      "Machine Type (Restart)",
+      NULL,
+      "Manually select the machine type you would like the core to start in.",
+      NULL,
+      "system",
+      {
+         { "Auto",   NULL },
+         { "MSX",   NULL },
+         { "MSXturboR",   NULL },
+         { "MSX2",   NULL },
+         { "MSX2+",   NULL },
+         { "SEGA - SG-1000",   NULL },
+         { "SEGA - SC-3000",   NULL },
+         { "SEGA - SF-7000",   NULL },
+         { "SVI - Spectravideo SVI-318",   NULL },
+         { "SVI - Spectravideo SVI-328",   NULL },
+         { "SVI - Spectravideo SVI-328 MK2", NULL },
+         { "ColecoVision", NULL },
+         { "Coleco (Spectravideo SVI-603)", NULL },
+         { NULL, NULL },
+      },
+      "Auto"
+   },
+   {
+      "bluemsx_auto_rewind_cas",
+      "Auto Rewind Cassette",
+      NULL,
+      "",
+      NULL,
+      "system",
+      {
+         { "ON",   NULL },
+         { "OFF",   NULL },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   {
+      "bluemsx_overscan",
+      "Crop Overscan",
+      NULL,
+      "Forces cropping of overscanned frames",
+      NULL,
+      "video",
+      {
+         { "disabled",   NULL },
+         { "enabled",   NULL },
+         { "MSX2",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "bluemsx_vdp_synctype",
+      "VDP Sync Type (Restart)",
+      NULL,
+      "Match the game/machine region frequency to avoid emulated speed issues.",
+      NULL,
+      "video",
+      {
+         { "Auto",   NULL },
+         { "50Hz",   NULL },
+         { "60Hz",   NULL },
+         { NULL, NULL },
+      },
+      "Auto"
+   },
+   {
+      "bluemsx_nospritelimits",
+      "No Sprite Limit",
+      NULL,
+      "Remove the 4 sprite per line limit which can reduce or remove sprite flicker in some games.",
+      NULL,
+      "video",
+      {
+         { "OFF",   NULL },
+         { "ON",   NULL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "bluemsx_ym2413_enable",
+      "Sound YM2413 Enable (Restart)",
+      NULL,
+      "Awaiting description.",
+      NULL,
+      "audio",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "enabled"
+   },
+   {
+      "bluemsx_additional_cart",
+      "Additional MSX Sound Cartridge (Restart)",
+      NULL,
+      "Additional MSX sound cartridge to insert to the first free slot.",
+      NULL,
+      "audio",
+      {
+         { "disabled",   NULL },
+         { "scc",   NULL },
+         { "sccexpanded",   NULL },
+         { "sccmirrored",   NULL },
+         { "sccplus",   NULL },
+         { "snatcher",   NULL },
+         { "sdsnatcher",   NULL },
+         { NULL, NULL },
+      },
+      "None"
+   },
+   {
+      "bluemsx_sound_io_enable",
+      "I/O Sound Enable",
+      NULL,
+      "Enable the I/O sound (floppy disk access sound).",
+      NULL,
+      "audio",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "use_keyboard_for_coleco",
+      "Colecovision Keyboard Mapping",
+      NULL,
+      "Additionally, use the keyboard for the Colecovision 0-9, #, and * buttons. Player 1: 0-9, # is -, and * is =; Player 2: Keypad 0-9, # is /, and * is *. Gamepad mappings also work.",
+      NULL,
+      "input",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "hard_reset_f12",
+      "Use F12 to hard reset and restart emulation",
+      NULL,
+      "Use key F12 to hard reset and restart emulation like blueMSX standalone",
+      NULL,
+      "input",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "bluemsx_cartmapper",
+      "Cart Mapper Type (Restart)",
+      NULL,
+      "When a ROM game or application is in the database, the emulator uses the databases to apply the correct mapper. If the sha1 value of a dump is not yet in the databases, it uses an automatic mapper detection system, but it can fail in some cases. In this situation, you can manually select the correct mapper.",
+      NULL,
+      "advanced",
+      {
+         { "Auto",   NULL },
+         { "Normal",   NULL },
+         { "mirrored",   NULL },
+         { "basic",   NULL },
+         { "0x4000",   NULL },
+         { "0xC000",   NULL },
+         { "ascii8",   NULL },
+         { "ascii8sram",   NULL },
+         { "ascii16",   NULL },
+         { "ascii16sram",   NULL },
+         { "ascii16nf",   NULL },
+         { "konami4",   NULL },
+         { "konami4nf",   NULL },
+         { "konami5",   NULL },
+         { "konamisynth",   NULL },
+         { "korean80",   NULL },
+         { "korean90",   NULL },
+         { "korean126",   NULL },
+         { "MegaFlashRomScc",   NULL },
+         { "MegaFlashRomSccPlus",   NULL },
+         { "SegaBasic",   NULL },
+         { "SG1000",   NULL },
+         { "SG1000Castle",   NULL },
+         { "SG1000RamA",   NULL },
+         { "SG1000RamB",   NULL },
+         { "SC3000",   NULL },
+         { "SC3000MultiCart",   NULL },
+         { "SC3000MegaCart",   NULL },
+         { NULL, NULL },
+      },
+      "Auto"
+   },
+   {
+      "patch_coleco_rom",
+      "Patch Colecovision ROM Fast Boot (Close Content)",
+      NULL,
+      "Patch the NTSC Colecovision ROM for fast booting (3.3s)",
+      NULL,
+      "advanced",
+      {
+         { "enabled",   NULL },
+         { "disabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL }
+};
+
+struct retro_core_options_v2 options_us_v2 = {
+   option_cats_us,
+   option_defs_us_v2
+};
+
+/* Core option definitions (v1). */
+
 struct retro_core_option_definition option_defs_us[] = {
    {
       "bluemsx_msxtype",
@@ -203,7 +437,7 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "disabled"
    },
-   { NULL, NULL, NULL, {{0}}, NULL },
+   { NULL, NULL, NULL, {{0}}, NULL }
 };
 
 /* RETRO_LANGUAGE_JAPANESE */
@@ -248,6 +482,28 @@ struct retro_core_option_definition option_defs_us[] = {
  ********************************
 */
 
+struct retro_core_options_v2 *options_intl_v2[RETRO_LANGUAGE_LAST] = {
+   &options_us_v2, /* RETRO_LANGUAGE_ENGLISH */
+   NULL,           /* RETRO_LANGUAGE_JAPANESE */
+   NULL,           /* RETRO_LANGUAGE_FRENCH */
+   NULL,           /* RETRO_LANGUAGE_SPANISH */
+   NULL,           /* RETRO_LANGUAGE_GERMAN */
+   NULL,           /* RETRO_LANGUAGE_ITALIAN */
+   NULL,           /* RETRO_LANGUAGE_DUTCH */
+   NULL,           /* RETRO_LANGUAGE_PORTUGUESE_BRAZIL */
+   NULL,           /* RETRO_LANGUAGE_PORTUGUESE_PORTUGAL */
+   NULL,           /* RETRO_LANGUAGE_RUSSIAN */
+   NULL,           /* RETRO_LANGUAGE_KOREAN */
+   NULL,           /* RETRO_LANGUAGE_CHINESE_TRADITIONAL */
+   NULL,           /* RETRO_LANGUAGE_CHINESE_SIMPLIFIED */
+   NULL,           /* RETRO_LANGUAGE_ESPERANTO */
+   NULL,           /* RETRO_LANGUAGE_POLISH */
+   NULL,           /* RETRO_LANGUAGE_VIETNAMESE */
+   NULL,           /* RETRO_LANGUAGE_ARABIC */
+   NULL,           /* RETRO_LANGUAGE_GREEK */
+   NULL,           /* RETRO_LANGUAGE_TURKISH */
+};
+
 struct retro_core_option_definition *option_defs_intl[RETRO_LANGUAGE_LAST] = {
    option_defs_us, /* RETRO_LANGUAGE_ENGLISH */
    NULL,           /* RETRO_LANGUAGE_JAPANESE */
@@ -291,21 +547,41 @@ static INLINE void libretro_set_core_options(retro_environment_t environ_cb)
    if (!environ_cb)
       return;
 
-   if (environ_cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && (version == 1))
+   if (environ_cb(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version))
    {
-      struct retro_core_options_intl core_options_intl;
-      unsigned language = 0;
+      if (version >= 2)
+      {
+         struct retro_core_options_v2_intl core_options_intl;
+         unsigned language = 0;
 
-      core_options_intl.us    = option_defs_us;
-      core_options_intl.local = NULL;
+         core_options_intl.us    = &options_us_v2;
+         core_options_intl.local = NULL;
 
-      if (environ_cb(RETRO_ENVIRONMENT_GET_LANGUAGE, &language) &&
-          (language < RETRO_LANGUAGE_LAST) && (language != RETRO_LANGUAGE_ENGLISH))
-         core_options_intl.local = option_defs_intl[language];
+         if (environ_cb(RETRO_ENVIRONMENT_GET_LANGUAGE, &language) &&
+             (language < RETRO_LANGUAGE_LAST) && (language != RETRO_LANGUAGE_ENGLISH))
+            core_options_intl.local = options_intl_v2[language];
 
-      environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL, &core_options_intl);
+         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2_INTL, &core_options_intl);
+         return;
+      }
+
+      if (version == 1)
+      {
+         struct retro_core_options_intl core_options_intl;
+         unsigned language = 0;
+
+         core_options_intl.us    = option_defs_us;
+         core_options_intl.local = NULL;
+
+         if (environ_cb(RETRO_ENVIRONMENT_GET_LANGUAGE, &language) &&
+             (language < RETRO_LANGUAGE_LAST) && (language != RETRO_LANGUAGE_ENGLISH))
+            core_options_intl.local = option_defs_intl[language];
+
+         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL, &core_options_intl);
+         return;
+      }
    }
-   else
+
    {
       size_t i;
       size_t num_options               = 0;
