@@ -32,6 +32,7 @@
 #include "R800.h"
 #include "Src/Utils/SaveState.h"
 #include "DiskOverlay.h"
+#include "Disk.h"
 
 #include "ziphelper.c"
 
@@ -67,6 +68,7 @@ bool is_coleco, is_sega, is_spectra, is_auto, auto_rewind_cas;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
+bool sunriseide_enable = false;
 int msx2_dif = 0;
 
 bool use_keyboard_for_coleco;
@@ -1041,6 +1043,19 @@ static void check_variables(bool can_change_machine_type)
       hard_reset_f12 = 0;
    
 
+   var.key = "bluemsx_sunriseide_enable";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "disabled"))
+         sunriseide_enable = false;
+      else if (!strcmp(var.value, "enabled"))
+         sunriseide_enable = true;
+   }
+   else
+      sunriseide_enable = false;
+
    if (properties != NULL) // Avoid first run (check_variables() is called before propCreate())
    {
       reevaluate_variables_io_sound(true);
@@ -1305,7 +1320,14 @@ bool retro_load_game(const struct retro_game_info *info)
             /* Only insert the initial disk */
             if (i == 0 && disk_inserted)
             {
-               insertDiskette(properties, 0, disk_paths[disk_index], NULL, -1);
+               if (sunriseide_enable)
+               {
+                  insertDiskette(properties, diskGetHdDriveId(2, 0), disk_paths[disk_index], NULL, -1);
+               }
+               else
+               {
+                  insertDiskette(properties, 0, disk_paths[disk_index], NULL, -1);
+               }
             }
             updateExtendedDiskName(i, properties->media.disks[i].fileName, properties->media.disks[i].fileNameInZip);
          }
