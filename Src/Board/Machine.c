@@ -597,10 +597,11 @@ void machineSave(Machine* machine)
 void addSunriseIde(Machine* machine)
 {
     extern bool sunriseide_enable;
+    SlotInfo* slotInfo;
     if (!sunriseide_enable || machine->slotInfoCount >= 32)
         return;
     
-    SlotInfo* slotInfo = &machine->slotInfo[machine->slotInfoCount];
+    slotInfo = &machine->slotInfo[machine->slotInfoCount];
     slotInfo->slot = 1;
     slotInfo->subslot = 0;
     slotInfo->startPage = 0;
