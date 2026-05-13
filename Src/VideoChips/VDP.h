@@ -55,6 +55,10 @@ void vdpForceSync();
 #define VDP_VIDEODA_WIDTH  544
 #define VDP_VIDEODA_HEIGHT 240
 
+#define VDP_HTICKS       1368
+#define VDP_LINES_NTSC   262
+#define VDP_LINES_PAL    313
+
 typedef struct {
     void (*daStart)(void*, int);
     void (*daEnd)(void*);

@@ -113,9 +113,6 @@ typedef struct
 
 struct Mixer
 { 
-    MixerWriteCallback writeCallback;
-    void*  writeRef;
-    Int32  fragmentSize;
     UInt32 refTime;
     UInt32 refFrag;
     UInt32 index;
@@ -322,7 +319,6 @@ Mixer* mixerCreate(void)
 {
     Mixer* mixer        = (Mixer*)calloc(1, sizeof(Mixer));
 
-    mixer->fragmentSize = 512;
     mixer->enable       = 1;
     mixer->rate         = AUDIO_SAMPLERATE;
 
@@ -351,16 +347,6 @@ void mixerSetSampleRate(Mixer* mixer, UInt32 rate)
         if (mixer->channels[i].rateCallback != NULL)
             mixer->channels[i].rateCallback(mixer->channels[i].ref, rate);
     }
-}
-
-void mixerSetWriteCallback(Mixer* mixer, MixerWriteCallback callback, void* ref, int fragmentSize)
-{
-    mixer->fragmentSize = fragmentSize;
-    mixer->writeCallback = callback;
-    mixer->writeRef = ref;
-
-    if (mixer->fragmentSize <= 0)
-        mixer->fragmentSize = 512;
 }
 
 Int32 mixerRegisterChannel(Mixer* mixer, Int32 audioType, Int32 stereo, MixerUpdateCallback callback, MixerSetSampleRateCallback rateCallback, void* ref)
@@ -450,12 +436,6 @@ void mixerSync(Mixer* mixer)
             else
                 buffer[mixer->index++] = 0;
 
-            if (mixer->index == mixer->fragmentSize)
-	    {
-                if (mixer->writeCallback != NULL)
-                    mixer->writeCallback(mixer->writeRef, buffer, mixer->fragmentSize);
-                mixer->index = 0;
-            }
         }
         return;
     }
@@ -516,13 +496,6 @@ void mixerSync(Mixer* mixer)
             buffer[mixer->index++] = (Int16)left;
             buffer[mixer->index++] = (Int16)right;
 
-            if (mixer->index == mixer->fragmentSize)
-	    {
-                if (mixer->writeCallback != NULL)
-                    mixer->writeCallback(mixer->writeRef, buffer, mixer->fragmentSize);
-                mixer->index = 0;
-            }
-
             mixer->volIndex++;
         }
     }
@@ -561,13 +534,6 @@ void mixerSync(Mixer* mixer)
             if (left  < -32767) left  = -32767;
 
             buffer[mixer->index++] = (Int16)left;
-            
-            if (mixer->index == mixer->fragmentSize)
-	    {
-                if (mixer->writeCallback != NULL)
-                    mixer->writeCallback(mixer->writeRef, buffer, mixer->fragmentSize);
-                mixer->index = 0;
-            }
 
             mixer->volIndex++;
         }

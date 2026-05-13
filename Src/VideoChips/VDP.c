@@ -130,7 +130,7 @@ void vdpUnregisterDaConverter(int vdpDaHandle)
 
 // VDP emulation
 
-#define HPERIOD      1368
+#define HPERIOD      VDP_HTICKS
 
 #define INT_IE0     0x01
 #define INT_IE1     0x02

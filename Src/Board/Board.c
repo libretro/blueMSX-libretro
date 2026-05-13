@@ -763,7 +763,6 @@ int boardRun(Machine* machine,
         }
 
 #ifdef __LIBRETRO__
-        boardTimerAdd(mixerTimer, boardSystemTime() + boardFrequency() / 50);
         return success;
 #else
         boardTimerAdd(syncTimer, boardSystemTime() + 1);
