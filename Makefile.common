@@ -50,6 +50,8 @@ SOURCES_C   := $(CORE_DIR)/libretro.c \
 	       $(CORE_DIR)/Src/Libretro/Cdrom.c \
 	       $(CORE_DIR)/Src/Libretro/Mouse.c \
 	       $(CORE_DIR)/Src/Libretro/Emulator.c \
+	       $(CORE_DIR)/Src/Libretro/libretro-graph.c \
+	       $(CORE_DIR)/Src/Libretro/libretro-vkbd.c \
 	       $(CORE_DIR)/Src/Common/ArrayList.c \
 	       $(CORE_DIR)/Src/Bios/Patch.c \
 	       $(CORE_DIR)/Src/Unzip/unzip.c \
