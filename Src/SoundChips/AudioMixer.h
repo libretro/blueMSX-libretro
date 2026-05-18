@@ -61,8 +61,6 @@ typedef enum {
 
 typedef Int32* (*MixerUpdateCallback)(void*, UInt32);
 typedef void (*MixerSetSampleRateCallback)(void*, UInt32);
-typedef Int32 (*MixerWriteCallback)(void*, Int16*, UInt32);
-
 /* Constructor and destructor */
 Mixer* mixerCreate();
 void mixerDestroy(Mixer* mixer);
@@ -79,9 +77,6 @@ void mixerSetChannelTypeVolume(Mixer* mixer, Int32 channelType, Int32 volume);
 void mixerSetChannelTypePan(Mixer* mixer, Int32 channelType, Int32 pan);
 void mixerEnableChannelType(Mixer* mixer, Int32 channelType, Int32 enable);
 Int32 mixerIsChannelTypeActive(Mixer* mixer, Int32 channelType, Int32 reset);
-
-/* Write callback registration for audio drivers */
-void mixerSetWriteCallback(Mixer* mixer, MixerWriteCallback callback, void*, int);
 
 /* Internal interface methods */
 void mixerReset(Mixer* mixer);

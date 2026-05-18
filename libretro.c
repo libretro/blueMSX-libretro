@@ -40,6 +40,7 @@
 
 retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
+static retro_audio_sample_batch_t audio_batch_cb;
 static retro_input_poll_t input_poll_cb;
 static retro_input_state_t input_state_cb;
 static retro_environment_t environ_cb;
@@ -85,6 +86,7 @@ static void reevaluate_variables_io_sound(bool setToMixer);
 static void check_variables(bool can_change_machine_type);
 
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
+void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) { audio_batch_cb = cb; }
 void retro_set_input_poll(retro_input_poll_t cb) { input_poll_cb = cb; }
 void retro_set_input_state(retro_input_state_t cb) { input_state_cb = cb; }
 
@@ -668,8 +670,12 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry.max_width = FB_MAX_LINE_WIDTH ;
    info->geometry.max_height = FB_MAX_LINES ;
    info->geometry.aspect_ratio = 0;
-   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC) ? 60.0 : 50.0;
-   info->timing.sample_rate = 44100.0;
+   /* Exact VDP timing: boardFrequency() Hz master clock, VDP_HTICKS ticks/line
+      NTSC: VDP_LINES_NTSC lines/frame (~59.9227 Hz), PAL: VDP_LINES_PAL lines/frame (~50.1566 Hz) */
+   info->timing.fps = (retro_get_region() == RETRO_REGION_NTSC)
+      ? ((double)boardFrequency() / (VDP_HTICKS * VDP_LINES_NTSC))
+      : ((double)boardFrequency() / (VDP_HTICKS * VDP_LINES_PAL));
+      info->timing.sample_rate = 44100.0;
 }
 
 void init_input_descriptors(unsigned device){
@@ -1618,7 +1624,14 @@ void retro_run(void)
    }
 
    ((R800*)boardInfo.cpuRef)->terminate = 0;
-   boardInfo.run(boardInfo.cpuRef);   
+   boardInfo.run(boardInfo.cpuRef);
+   mixerSync(boardGetMixer());
+   {
+      UInt32 samples;
+      Int16* buf = mixerGetBuffer(boardGetMixer(), &samples);
+      if (audio_batch_cb && samples > 0)
+         audio_batch_cb(buf, samples / 2);
+   }
    RETRO_PERFORMANCE_STOP(core_retro_run);
 
    if (!use_overscan)
