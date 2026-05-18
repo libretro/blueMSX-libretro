@@ -37,6 +37,8 @@
 #include "ziphelper.c"
 
 #include "libretro_core_options.h"
+#include "libretro-vkbd.h"
+#include "libretro-graph.h"
 
 retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
@@ -65,7 +67,7 @@ static char msx_cartmapper[256];
 static bool mapper_auto;
 static char msx_additional_cart[256];
 static bool has_additional_cart;
-bool is_coleco, is_sega, is_spectra, is_auto, auto_rewind_cas;
+bool is_coleco, is_sega, is_sega_kb, is_spectra, is_auto, auto_rewind_cas;
 static unsigned msx_vdp_synctype;
 static bool msx_ym2413_enable;
 static bool use_overscan = true;
@@ -81,6 +83,7 @@ static int input_analog_deadzone = (int)(0.25f * (float)0x8000);
 
 char overlayDir[512] = {0};
 int overlayTimer = -1;
+static int osk_select_prev = 0;
 
 static void reevaluate_variables_io_sound(bool setToMixer);
 static void check_variables(bool can_change_machine_type);
@@ -192,6 +195,7 @@ int get_media_type(const char* filename)
    else if(strcmp(extension, ".sc") == 0){
       if (is_auto){
          is_sega = true;
+         is_sega_kb = true;
          strcpy(msx_type, "SEGA - SC-3000");
       }
       return MEDIA_TYPE_CART;
@@ -199,6 +203,7 @@ int get_media_type(const char* filename)
    else if(strcmp(extension, ".sf") == 0){
       if (is_auto){
          is_sega = true;
+         is_sega_kb = true;
          strcpy(msx_type, "SEGA - SF-7000");
       }
       return MEDIA_TYPE_CART;
@@ -206,6 +211,7 @@ int get_media_type(const char* filename)
    else if(strcmp(extension, "sf7") == 0){
       if (is_auto){
          is_sega = true;
+         is_sega_kb = true;
          strcpy(msx_type, "SEGA - SF-7000");
       }
       return MEDIA_TYPE_CART;
@@ -866,6 +872,7 @@ static void check_variables(bool can_change_machine_type)
       is_auto = false;
       is_coleco = false;
       is_sega = false;
+      is_sega_kb = false;
       is_spectra = false;
 
       if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -883,8 +890,11 @@ static void check_variables(bool can_change_machine_type)
          else if (strcmp(var.value, "Auto")) // Not auto
          {
             strcpy(msx_type, var.value);
-            if (!strncmp(var.value, "SEGA", 4))
+            if (!strncmp(var.value, "SEGA", 4)) {
                is_sega = true;
+               if (!strcmp(var.value, "SEGA - SC-3000") || !strcmp(var.value, "SEGA - SF-7000"))
+                  is_sega_kb = true;
+            }
             if (!strncmp(var.value, "SVI", 3))
                is_spectra = true;
          }
@@ -892,6 +902,7 @@ static void check_variables(bool can_change_machine_type)
          {
             is_auto = true;
             is_sega = true;
+            is_sega_kb = true;
             strcpy(msx_type, "SEGA - SC-3000"); // Default machine
          }
       }
@@ -900,6 +911,7 @@ static void check_variables(bool can_change_machine_type)
          is_auto = true;
          // Sega machines don't work if not set right from the start
          is_sega = true;
+         is_sega_kb = true;
          strcpy(msx_type, "SEGA - SC-3000");
       }
    }
@@ -1413,6 +1425,16 @@ void retro_run(void)
       }
    }
 
+   /* OSK toggle via SELECT (only for machines with keyboard: MSX, SVI, SC-3000, SF-7000) */
+   if (!is_coleco && (!is_sega || is_sega_kb)) {
+      int sel = !!(joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT));
+      if (sel && !osk_select_prev)
+         vkbd_toggle();
+      osk_select_prev = sel;
+      if (vkbd_active)
+         joypad_bits[0] &= ~(1 << RETRO_DEVICE_ID_JOYPAD_SELECT);
+   }
+
    /* Reset with F12 like blueMSX standalone*/
    /* Ref: https://www.msxblue.com/manual/shortcuts_c.htm */
    if (hard_reset_f12 && hard_reset_f12_pressed && (input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12) ? 0 : 1))
@@ -1582,8 +1604,10 @@ void retro_run(void)
          }
       }
 
-      for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
-         eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
+      if (!vkbd_active) {
+         for (j = 0; j < EC_KEYBOARD_KEYCOUNT; j++)
+            eventMap[j] = input_state_cb(0, RETRO_DEVICE_KEYBOARD, 0, btn_map[j]) ? 1 : 0;
+      }
 
       if (input_devices[0] == RETRO_DEVICE_MAPPER && !is_spectra){
          eventMap[EC_LEFT]   = joypad_bits[0] & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)  ? 1 : 0;
@@ -1623,6 +1647,52 @@ void retro_run(void)
       }
    }
 
+   /* OSK: intercept D-pad/A/B from game, inject pressed keys */
+   if (vkbd_active && !is_coleco && (!is_sega || is_sega_kb)) {
+      int osk_k;
+      vkbd_update_input(joypad_bits);
+      /* Prevent D-pad and fire buttons from reaching the game */
+      eventMap[EC_JOY1_UP]      = 0;
+      eventMap[EC_JOY1_DOWN]    = 0;
+      eventMap[EC_JOY1_LEFT]    = 0;
+      eventMap[EC_JOY1_RIGHT]   = 0;
+      eventMap[EC_JOY1_BUTTON1] = 0;
+      eventMap[EC_JOY1_BUTTON2] = 0;
+      /* Also clear arrow keys that mapper mode binds to D-pad */
+      eventMap[EC_LEFT]  = 0;
+      eventMap[EC_RIGHT] = 0;
+      eventMap[EC_UP]    = 0;
+      eventMap[EC_DOWN]  = 0;
+      /* Clear mapper-mode keys that joypad A/B/X/Y would trigger */
+      eventMap[EC_RETURN] = 0;
+      eventMap[EC_SPACE]  = 0;
+      eventMap[EC_CTRL]   = 0;
+      eventMap[EC_GRAPH]  = 0;
+      /* Inject OSK key presses into eventMap; explicitly clear inactive keys */
+      for (osk_k = 1; osk_k < EC_KEYBOARD_KEYCOUNT; osk_k++) {
+         if (osk_keydown[osk_k] > 0) {
+            eventMap[osk_k] = 1;
+            osk_keydown[osk_k]--;
+         } else if (osk_k != EC_CAPS) {
+            eventMap[osk_k] = osk_sticky[osk_k] ? 1 : 0;
+         } else {
+            eventMap[osk_k] = 0;  /* CAPS: pulsed via keydown; sticky is visual-only */
+         }
+      }
+      /* Clear stickies (except CAPS) once all keydowns have expired */
+      if (osk_sticky_pending_clear) {
+         int any_down = 0;
+         for (osk_k = 1; osk_k < EC_KEYBOARD_KEYCOUNT; osk_k++)
+            if (osk_keydown[osk_k] > 0) { any_down = 1; break; }
+         if (!any_down) {
+            int k;
+            for (k = 0; k < 256; k++)
+               if (k != EC_CAPS) osk_sticky[k] = 0;
+            osk_sticky_pending_clear = 0;
+         }
+      }
+   }
+
    ((R800*)boardInfo.cpuRef)->terminate = 0;
    boardInfo.run(boardInfo.cpuRef);
    mixerSync(boardGetMixer());
@@ -1633,6 +1703,24 @@ void retro_run(void)
          audio_batch_cb(buf, samples / 2);
    }
    RETRO_PERFORMANCE_STOP(core_retro_run);
+
+   /* OSK overlay rendered directly onto image_buffer before video_cb */
+   if (vkbd_active && !is_coleco && (!is_sega || is_sega_kb)) {
+      vkbd_x_scale = double_width ? 2 : 1;
+      vkbd_buf_stride = image_buffer_current_width;
+      if (use_overscan) {
+         vkbd_buf    = image_buffer;
+         vkbd_view_w = image_buffer_current_width / vkbd_x_scale;
+         vkbd_view_h = image_buffer_height;
+      } else {
+         unsigned vx = 8;
+         unsigned vy = (unsigned)(12 - (msx2_dif / 2));
+         vkbd_buf    = image_buffer + vy * image_buffer_current_width + vx;
+         vkbd_view_w = (image_buffer_current_width - 16) / vkbd_x_scale;
+         vkbd_view_h = (unsigned)(image_buffer_height - 48 + (msx2_dif * 2));
+      }
+      vkbd_render();
+   }
 
    if (!use_overscan)
       video_cb(image_buffer + 8 + (image_buffer_current_width * sizeof(uint16_t) * (12 - (msx2_dif / 2))),
