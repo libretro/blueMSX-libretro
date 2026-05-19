@@ -23,6 +23,7 @@ distribution.
 */
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdlib.h>
 #include "tinyxml.h"
 
@@ -969,12 +970,15 @@ int TiXmlAttribute::QueryIntValue( int* ival ) const
 	const char* s = value.c_str();
 	char* end;
 	long v = strtol( s, &end, 10 );
-	if ( end != s )
-	{
-		*ival = (int)v;
-		return TIXML_SUCCESS;
-	}
-	return TIXML_WRONG_TYPE;
+	if ( end == s )
+		return TIXML_WRONG_TYPE;
+	/* sizeof(long) > sizeof(int) on LP64 targets, so a value that's a
+	 * valid long can still overflow int. Saturate rather than letting
+	 * the cast invoke implementation-defined truncation. */
+	if      ( v > (long)INT_MAX ) *ival = INT_MAX;
+	else if ( v < (long)INT_MIN ) *ival = INT_MIN;
+	else                          *ival = (int)v;
+	return TIXML_SUCCESS;
 }
 
 int TiXmlAttribute::QueryDoubleValue( double* dval ) const

@@ -11,10 +11,14 @@
  * and leaves the cursor untouched, so callers can chain checks with &&.
  *
  * Number scanners mimic sscanf's "%d" / "%x" behaviour of skipping leading
- * whitespace before the number itself. They are intentionally minimal:
- * no locale awareness, no overflow check beyond modular wrap. Use them
- * only for trusted / format-controlled input (config files, debugger
- * commands, libretro cheat strings, etc.).
+ * whitespace before the number itself. Overflow is defined: the cursor
+ * still advances past every consumed digit, and the output is clamped to
+ * the destination type's representable range (INT_MIN / INT_MAX for
+ * scan_dec, UINT_MAX for scan_hex). This is what glibc's sscanf does in
+ * practice; the C standard leaves it undefined.
+ *
+ * No locale awareness. Use these only for trusted / format-controlled
+ * input (config files, debugger commands, libretro cheat strings, etc.).
  */
 #ifndef SCAN_PARSE_H
 #define SCAN_PARSE_H
@@ -23,18 +27,21 @@
 extern "C" {
 #endif
 
-/* Skip ASCII whitespace at the cursor. Always succeeds. */
-int scan_skip_ws(const char **pp);
-
 /* Parse a signed decimal integer (sscanf %d semantics): skip leading
- * whitespace, optional +/- sign, one or more decimal digits. */
+ * whitespace, optional +/- sign, one or more decimal digits. On overflow
+ * the cursor is still advanced past the digits and *out is clamped to
+ * INT_MIN or INT_MAX. */
 int scan_dec(const char **pp, int *out);
 
 /* Parse an unsigned hexadecimal integer (sscanf %x semantics): skip
- * leading whitespace, optional 0x/0X prefix, one or more hex digits. */
+ * leading whitespace, optional 0x/0X prefix, one or more hex digits.
+ * Note: a bare 0x/0X with no hex digit following is a failed parse and
+ * the cursor is left untouched, same as sscanf %x. On overflow the cursor
+ * is still advanced past the digits and *out is clamped to UINT_MAX. */
 int scan_hex(const char **pp, unsigned int *out);
 
-/* If the next character matches c exactly, consume it and return 1. */
+/* If the next character matches c exactly, consume it and return 1.
+ * Precondition: c must not be '\0'. */
 int scan_char(const char **pp, char c);
 
 /* If the next characters match the literal s exactly, consume them and
