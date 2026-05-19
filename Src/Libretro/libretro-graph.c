@@ -16,6 +16,8 @@
 
 #include <string.h>
 
+#include <retro_inline.h>
+
 /* ── Globals (set from libretro.c before each vkbd_render call) ────────── */
 uint16_t *vkbd_buf        = NULL;
 unsigned  vkbd_buf_stride = 0;
@@ -26,13 +28,13 @@ unsigned  vkbd_x_scale    = 1;
 /* ── Internal helpers ────────────────────────────────────────────────────── */
 
 /* RGB565 50% alpha blend (no cross-channel bleed) */
-static inline uint16_t blend50(uint16_t fg, uint16_t bg)
+static INLINE uint16_t blend50(uint16_t fg, uint16_t bg)
 {
    return (uint16_t)((fg + bg + ((fg ^ bg) & 0x0821u)) >> 1);
 }
 
 /* Set one pixel; coordinates are in visible-area space */
-static inline void set_pixel(int x, int y, uint16_t color)
+static INLINE void set_pixel(int x, int y, uint16_t color)
 {
    unsigned sx;
    unsigned base;
@@ -95,8 +97,9 @@ void vkbd_draw_text(int x, int y, uint16_t fg, const char *str)
    if (!str || !vkbd_buf) return;
    for (i = 0; str[i]; i++) {
       unsigned char c = (unsigned char)str[i];
+      const unsigned char *glyph;
       if (c >= 128) c = 0;
-      const unsigned char *glyph = &font_array[c * 8];
+      glyph = &font_array[c * 8];
       for (cy = 0; cy < 8; cy++) {
          unsigned char row = glyph[cy];
          for (cx = 0; cx < 7; cx++) {
