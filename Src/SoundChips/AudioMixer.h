@@ -81,6 +81,7 @@ Int32 mixerIsChannelTypeActive(Mixer* mixer, Int32 channelType, Int32 reset);
 /* Internal interface methods */
 void mixerReset(Mixer* mixer);
 void mixerSync(Mixer* mixer);
+Int16* mixerGetBuffer(Mixer* mixer, UInt32* samplesOut);
 
 Int32 mixerRegisterChannel(Mixer* mixer, Int32 audioType, Int32 stereo, 
                            MixerUpdateCallback callback, MixerSetSampleRateCallback rateCallback,
