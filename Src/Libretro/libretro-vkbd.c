@@ -372,17 +372,25 @@ void vkbd_render(void)
       ky = osk_y + row * key_h;
 
       for (col = 0; col < VKBD_COLS; col++) {
+         int         ec;
+         const char *lbl;
+         const char *slbl;
+         int         kx, kw;
+         int         lbl_len, lbl_w, tx, ty;
+         int         has_shift, half_h;
+         int         inner_y, inner_h;
+         uint16_t    bg, fg;
+
          if (col_w[col] == 0) continue;
 
-         int         ec  = vkbd_layout[row][col];
-         const char *lbl = vkbd_labels[row][col];
+         ec  = vkbd_layout[row][col];
+         lbl = vkbd_labels[row][col];
          if (ec < 0 || !lbl[0]) continue;
 
-         int kx = col_x[col];
-         int kw = col_w[col];
+         kx = col_x[col];
+         kw = col_w[col];
 
          /* Choose background color */
-         uint16_t bg;
          if (row == cur_y && col == cur_x && ec > 0 && ec < 256 && osk_keydown[ec] > 0)
             bg = VKBD_KEY_ACT;          /* amber flash while key is held */
          else if (row == cur_y && col == cur_x)
@@ -397,13 +405,13 @@ void vkbd_render(void)
             vkbd_draw_border(kx, ky, kw, key_h, VKBD_KEY_BRD);
 
          /* ── Labels ── */
-         uint16_t fg = VKBD_WHITE;
-         int lbl_len = (int)strlen(lbl);
+         fg      = VKBD_WHITE;
+         lbl_len = (int)strlen(lbl);
 
          /* Secondary (shift) label — upper half of key, gold */
-         const char *slbl      = vkbd_shift_labels[row][col];
-         int         has_shift  = (slbl[0] != '\0');
-         int         half_h     = key_h / 2;
+         slbl      = vkbd_shift_labels[row][col];
+         has_shift = (slbl[0] != '\0');
+         half_h    = key_h / 2;
 
          if (has_shift) {
             int slbl_len = (int)strlen(slbl);
@@ -417,12 +425,11 @@ void vkbd_render(void)
          }
 
          /* Primary label — lower half (if shift) or full key */
-         int lbl_w, tx, ty;
-         int inner_y = has_shift ? ky + half_h : ky + 1;
-         int inner_h = has_shift ? half_h      : key_h - 2;
-         lbl_w = lbl_len * 6;
-         tx    = kx + 1 + ((kw - 2 - lbl_w) / 2);
-         ty    = inner_y + (inner_h - 8) / 2;
+         inner_y = has_shift ? ky + half_h : ky + 1;
+         inner_h = has_shift ? half_h      : key_h - 2;
+         lbl_w   = lbl_len * 6;
+         tx      = kx + 1 + ((kw - 2 - lbl_w) / 2);
+         ty      = inner_y + (inner_h - 8) / 2;
          if (tx < kx + 1) tx = kx + 1;
          if (ty < ky + 1) ty = ky + 1;
          vkbd_draw_text(tx, ty, fg, lbl);
