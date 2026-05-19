@@ -31,6 +31,7 @@
 #include "InputEvent.h"
 #include "R800.h"
 #include "Src/Utils/SaveState.h"
+#include "Src/Utils/ScanParse.h"
 #include "DiskOverlay.h"
 #include "Disk.h"
 
@@ -1858,40 +1859,38 @@ void retro_cheat_reset(void)
 
 void retro_cheat_set(unsigned a, bool b, const char * c)
 {
+   const char *p;
    int addr, data, size;
-   int temp; // Variable temporaire pour les paramètres inutiles
+   int temp; /* parsed but unused (memtype / enabled / displaytype) */
+   unsigned int addr_u, data_u;
 
    if (c == NULL)
       return;
 
-   // MFC format description is available @ https://www.msxblue.com/manual/trainermcf_c.htm
-   // Old MFC format : a,b,c,d,e (memtype,addr,value,enabled,description)
-   // enabled and description are optional
-   if(sscanf(c, "%d,%d,%d,%d,%*s", &temp, &addr, &data, &temp) == 4) {
-      slotManagerAddCheat(addr, data, 1);
-      return;
-   }
-   if(sscanf(c, "%d,%d,%d,%d", &temp, &addr, &data, &temp) == 4) {
-      slotManagerAddCheat(addr, data, 1);
-      return;
-   }
-   if(sscanf(c, "%d,%d,%d", &temp, &addr, &data) == 3) {
+   /* MFC format description is available @ https://www.msxblue.com/manual/trainermcf_c.htm
+    *
+    * Old MFC format: a,b,c[,d[,e]]   (memtype, addr, value, [enabled], [description])
+    * The original code tried three sscanf variants ("%d,%d,%d,%d,%*s",
+    * "%d,%d,%d,%d", "%d,%d,%d") that all dispatched the same call. The
+    * minimal common parse is three comma-separated decimals; any trailing
+    * fields are ignored, matching the original behaviour for the same
+    * inputs. */
+   p = c;
+   if (scan_dec(&p, &temp) && scan_char(&p, ',') &&
+       scan_dec(&p, &addr) && scan_char(&p, ',') &&
+       scan_dec(&p, &data))
+   {
       slotManagerAddCheat(addr, data, 1);
       return;
    }
 
-   // New MFC format : A:B:C:D:E (addr_hex,value_hex,size,displaytype,description)
-   // displaytype and description are optional
-   if(sscanf(c, "%x:%x:%d:%d:%*s", &addr, &data, &size, &temp) == 4) {
-      slotManagerAddCheat(addr, data, size == 0 ? 1 : 2); // 0=8bit, 1=16bit
-      return;
-   }
-   if(sscanf(c, "%x:%x:%d:%d", &addr, &data, &size, &temp) == 4) {
-      slotManagerAddCheat(addr, data, size == 0 ? 1 : 2); // 0=8bit, 1=16bit
-      return;
-   }
-   if(sscanf(c, "%x:%x:%d", &addr, &data, &size) == 3) {
-      slotManagerAddCheat(addr, data, size == 0 ? 1 : 2); // 0=8bit, 1=16bit
+   /* New MFC format: A:B:C[:D[:E]]   (addr_hex, value_hex, size, [displaytype], [description]) */
+   p = c;
+   if (scan_hex(&p, &addr_u) && scan_char(&p, ':') &&
+       scan_hex(&p, &data_u) && scan_char(&p, ':') &&
+       scan_dec(&p, &size))
+   {
+      slotManagerAddCheat((int)addr_u, (int)data_u, size == 0 ? 1 : 2); /* 0=8bit, 1=16bit */
       return;
    }
 }

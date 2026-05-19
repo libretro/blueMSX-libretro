@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include "Properties.h"
 #include "SaveState.h"
+#include "ScanParse.h"
 #include "ziphelper.h"
 
 
@@ -231,8 +232,10 @@ int tapeInsert(char *name, const char *fileInZipFile)
     file = fopen(tapePosName, "rb");
     if (file != NULL) {
         char buffer[32] = { 0 };
+        const char *p = buffer;
         fread(buffer, 1, 31, file);
-        sscanf(buffer, "POS:%d", &ramImagePos);
+        if (scan_lit(&p, "POS:"))
+            scan_dec(&p, &ramImagePos);
         fclose(file);
     }
 

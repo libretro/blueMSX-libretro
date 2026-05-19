@@ -33,6 +33,7 @@
 #include "Machine.h"
 #include "SaveState.h"
 #include "IniFileParser.h"
+#include "ScanParse.h"
 #include "ArchGlob.h"
 #include <string.h>
 #include <ctype.h>
@@ -308,15 +309,19 @@ static int readMachine(Machine* machine, const char* machineName, const char* fi
 
     // Read CPU info
     iniFileGetString(configIni, "CPU", "Z80 Frequency", "none", buffer, 10000);
-    if (0 == sscanf(buffer, "%dHz", &value)) {
-        value = 3579545;
+    {
+        const char *p = buffer;
+        if (!scan_dec(&p, &value))
+            value = 3579545;
     }
     machine->cpu.freqZ80 = value;
 
     // Read CPU info
     iniFileGetString(configIni, "CPU", "R800 Frequency", "none", buffer, 10000);
-    if (0 == sscanf(buffer, "%dHz", &value)) {
-        value = 7159090;
+    {
+        const char *p = buffer;
+        if (!scan_dec(&p, &value))
+            value = 7159090;
     }
     machine->cpu.freqR800 = value;
 

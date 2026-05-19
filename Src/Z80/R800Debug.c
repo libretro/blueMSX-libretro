@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "Board.h"
+#include "ScanParse.h"
 
 
 extern void debuggerTrace(const char* str);
@@ -181,14 +182,17 @@ static void watchpointIoCb(R800Debug* dbg, UInt16 port, UInt8 value)
 
 static void debugCb(R800Debug* dbg, int command, const char* data) 
 {
-    int slot, page, addr, rv;
+    const char *p;
+    unsigned int slot, page, addr;
     switch (command) {
     case ASDBG_TRACE:
         debuggerTrace(data);
         break;
     case ASDBG_SETBP:
-        rv = sscanf(data, "%x %x %x", &slot, &page, &addr);
-        if (rv == 3) {
+        p = data;
+        if (scan_hex(&p, &slot) &&
+            scan_hex(&p, &page) &&
+            scan_hex(&p, &addr)) {
             debuggerSetBreakpoint((UInt16)slot, (UInt16)page, (UInt16)addr);
         }
         break;

@@ -31,6 +31,7 @@ extern "C" {
 #include "Crc32Calc.h"
 #include "TokenExtract.h"
 #include "StrcmpNoCase.h"
+#include "ScanParse.h"
 #include "ArchGlob.h"
 #include "Board.h"
 #include "Language.h"
@@ -335,7 +336,8 @@ static void mediaDbAddItem(MediaDb* mediaDb, TiXmlElement* dmp, const MediaType&
                 if (strcmp(type, "crc32") == 0) {
                     UInt32 crc32;
                     TiXmlNode* hash = it->FirstChild();
-                    if (sscanf(hash->Value(), "%x", &crc32) == 1) {
+                    const char *p = hash->Value();
+                    if (scan_hex(&p, &crc32)) {
                         mediaDb->crcMap[crc32] = new MediaType(mediaType);
                     }
                 }

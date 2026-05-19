@@ -966,15 +966,27 @@ void TiXmlAttribute::StreamOut( TIXML_OSTREAM * stream ) const
 
 int TiXmlAttribute::QueryIntValue( int* ival ) const
 {
-	if ( sscanf( value.c_str(), "%d", ival ) == 1 )
+	const char* s = value.c_str();
+	char* end;
+	long v = strtol( s, &end, 10 );
+	if ( end != s )
+	{
+		*ival = (int)v;
 		return TIXML_SUCCESS;
+	}
 	return TIXML_WRONG_TYPE;
 }
 
 int TiXmlAttribute::QueryDoubleValue( double* dval ) const
 {
-	if ( sscanf( value.c_str(), "%lf", dval ) == 1 )
+	const char* s = value.c_str();
+	char* end;
+	double v = strtod( s, &end );
+	if ( end != s )
+	{
+		*dval = v;
 		return TIXML_SUCCESS;
+	}
 	return TIXML_WRONG_TYPE;
 }
 

@@ -261,6 +261,7 @@ SOURCES_C  += $(CORE_DIR)/Src/Emulator/Properties.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/IsFileExtension.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/SaveState.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/StrcmpNoCase.c
+SOURCES_C  += $(CORE_DIR)/Src/Utils/ScanParse.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/TokenExtract.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/IniFileParser.c
 SOURCES_C  += $(CORE_DIR)/Src/Utils/ZipFromMem.c
