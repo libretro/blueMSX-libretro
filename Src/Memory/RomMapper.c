@@ -28,6 +28,7 @@
 #include "romMapper.h"
 #include "msxTypes.h"
 #include "TokenExtract.h"
+#include "ScanParse.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -208,9 +209,10 @@ RomType romMapperRomFromFile(const void *romData, int size, char* extendedName)
         char* crcBuf  = extractToken(buffer, 0);
 
         if (crcBuf) {
-            int c = 0;
+            UInt32 c = 0;
+            const char *p = crcBuf;
 
-            sscanf(crcBuf, "%x", &c);
+            scan_hex(&p, &c); /* on failure c stays 0, matching original sscanf semantics */
 
             if (c == crc) {
                 romType = romMapperTypeFromString(extractToken(buffer, 1));
@@ -412,9 +414,10 @@ void romMapperGetDiskInfo(const void *data, int size, char* extendedName)
             char* crcBuf  = extractToken(buffer, 0);
 
             if (crcBuf) {
-                int c = 0;
+                UInt32 c = 0;
+                const char *p = crcBuf;
 
-                sscanf(crcBuf, "%x", &c);
+                scan_hex(&p, &c);
 
                 if (c == crc) {
                     int index = 1;
@@ -461,9 +464,10 @@ void romMapperGetCasInfo(const void *data, int size, char* extendedName)
             char* crcBuf  = extractToken(buffer, 0);
 
             if (crcBuf) {
-                int c = 0;
+                UInt32 c = 0;
+                const char *p = crcBuf;
 
-                sscanf(crcBuf, "%x", &c);
+                scan_hex(&p, &c);
 
                 if (c == crc) {
                     int index = 1;
