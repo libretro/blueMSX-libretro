@@ -260,8 +260,15 @@ unsigned get_image_index(void)
 
 bool set_image_index(unsigned index)
 {
+   /* index == disk_images is the valid "no disk in tray" request;
+    * anything beyond that (or beyond the array capacity) is out of
+    * range and must not be used to index disk_paths[]. */
+   if (index > disk_images ||
+       index >= (sizeof(disk_paths) / sizeof(disk_paths[0])))
+      return false;
+
    disk_index = index;
-   
+
    if(disk_index == disk_images)
    {
       //retroarch is trying to set "no disk in tray"
@@ -293,10 +300,17 @@ bool add_image_index(void)
 bool replace_image_index(unsigned index,
       const struct retro_game_info *info)
 {
+   if (index >= (sizeof(disk_paths) / sizeof(disk_paths[0])))
+      return false;
+
+   if (!info || !info->path)
+      return false;
+
    if(get_media_type(info->path) != MEDIA_TYPE_DISK)
        return false; /* can't swap a cart or tape into a disk slot */
-    
-   strcpy(disk_paths[index], info->path);
+
+   strncpy(disk_paths[index], info->path, PATH_MAX);
+   disk_paths[index][PATH_MAX - 1] = '\0';
    return true;
 }
 
