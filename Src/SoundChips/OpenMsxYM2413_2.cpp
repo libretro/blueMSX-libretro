@@ -4,6 +4,7 @@
 // The file was originally written by Mitsutaka Okazaki.
 //
 #include "OpenMsxYM2413_2.h"
+#include "DetTablesYm2413o.h"
 
 #include <cmath>
 #include <algorithm>
@@ -23,7 +24,6 @@ extern "C" {
 using std::string;
 
 static const int CLOCK_FREQ = 3579545;
-static const DoubleT PI = 3.14159265358979323846;
 
 int OpenYM2413_2::pmtable[PM_PG_WIDTH];
 int OpenYM2413_2::amtable[AM_PG_WIDTH];
@@ -49,24 +49,26 @@ unsigned int OpenYM2413_2::am_dphase;
 
 int OpenYM2413_2::Slot::EG2DB(int d) 
 {
-	return d * (int)(EG_STEP / DB_STEP);
+	return d * 2;	// (int)(EG_STEP / DB_STEP) == 0.375 / 0.1875, exact
 }
 int OpenYM2413_2::TL2EG(int d)
 { 
-	return d * (int)(TL_STEP / EG_STEP);
+	return d * 2;	// (int)(TL_STEP / EG_STEP) == 0.75 / 0.375, exact
 }
 int OpenYM2413_2::Slot::SL2EG(int d)
 {
-	return d * (int)(SL_STEP / EG_STEP);
+	return d * 8;	// (int)(SL_STEP / EG_STEP) == 3.0 / 0.375, exact
 }
 
-unsigned int OpenYM2413_2::DB_POS(DoubleT x)
+unsigned int OpenYM2413_2::DB_POS(int x)
 {
-	return (unsigned int)(x / DB_STEP);
+	// x / DB_STEP with DB_STEP == 0.1875 == 3/16; exact for the
+	// whole-dB multiples of 3 this is called with.
+	return (unsigned int)(x * 16 / 3);
 }
-unsigned int OpenYM2413_2::DB_NEG(DoubleT x)
+unsigned int OpenYM2413_2::DB_NEG(int x)
 {
-	return (unsigned int)(2 * DB_MUTE + x / DB_STEP);
+	return (unsigned int)(2 * DB_MUTE + x * 16 / 3);
 }
 
 // Cut the lower b bit off
@@ -81,11 +83,14 @@ static inline unsigned EXPAND_BITS(unsigned x, int s, int d)
 	return x << (d - s);
 }
 // Adjust envelope speed which depends on sampling rate
-static inline unsigned int rate_adjust(DoubleT x, int rate)
+static inline unsigned int rate_adjust(unsigned int x, int rate)
 {
-	DoubleT tmp = x * CLOCK_FREQ / 72 / rate + 0.5; // +0.5 to round
-	assert (tmp <= 4294967295U);
-	return (unsigned int)tmp;
+	// Former double math: trunc(x * CLOCK_FREQ / 72 / rate + 0.5).
+	// Exact-integer round-half-up equivalent, verified bit-for-bit
+	// against the double original in tools/gen_tables.c.
+	UInt64 num = (UInt64)x * 2 * (UInt64)CLOCK_FREQ + (UInt64)72 * (UInt64)rate;
+	UInt64 den = (UInt64)2 * 72 * (UInt64)rate;
+	return (unsigned int)(num / den);
 }
 
 static inline bool BIT(int s, int b)
@@ -103,10 +108,9 @@ static inline bool BIT(int s, int b)
 // Table for AR to LogCurve.
 void OpenYM2413_2::makeAdjustTable()
 {
-	AR_ADJUST_TABLE[0] = (1 << EG_BITS) - 1;
-	for (int i = 1; i < (1 << EG_BITS); ++i) {
-		AR_ADJUST_TABLE[i] = (unsigned short)((DoubleT)(1 << EG_BITS) - 1 -
-		                     ((1 << EG_BITS) - 1) * ::log((DoubleT)i) / ::log(127.0));
+	for (int i = 0; i < (1 << EG_BITS); ++i) {
+		// logarithmic curve, baked (DetTablesYm2413o.h)
+		AR_ADJUST_TABLE[i] = (unsigned short)detYm2413oArAdjust[i];
 	}
 }
 
@@ -114,27 +118,18 @@ void OpenYM2413_2::makeAdjustTable()
 void OpenYM2413_2::makeDB2LinTable()
 {
 	for (int i = 0; i < 2 * DB_MUTE; ++i) {
-		dB2LinTab[i] = (i < DB_MUTE)
-		             ?  (short)((DoubleT)((1 << DB2LIN_AMP_BITS) - 1) *
-		                    powf(10.0, -(DoubleT)i * DB_STEP / 20))
-		             : 0;
+		// dB -> linear, baked (DetTablesYm2413o.h)
+		dB2LinTab[i] = (i < DB_MUTE) ? detYm2413oDb2Lin[i] : 0;
 		dB2LinTab[i + 2 * DB_MUTE] = -dB2LinTab[i];
 	}
 }
 
-// lin(+0.0 .. +1.0) to  dB((1<<DB_BITS)-1 .. 0)
-int OpenYM2413_2::lin2db(DoubleT d)
-{
-	return (d == 0)
-		? DB_MUTE - 1
-		: std::min(-(int)(20.0 * log10(d) / DB_STEP), DB_MUTE - 1); // 0 - 127
-}
 
 // Sin Table
 void OpenYM2413_2::makeSinTable()
 {
 	for (int i = 0; i < PG_WIDTH / 4; ++i)
-		fullsintable[i] = lin2db(sin(2.0 * PI * i / PG_WIDTH));
+		fullsintable[i] = detYm2413oSinQuarter[i];	// lin2db(sin(...)), baked
 	for (int i = 0; i < PG_WIDTH / 4; ++i)
 		fullsintable[PG_WIDTH / 2 - 1 - i] = fullsintable[i];
 	for (int i = 0; i < PG_WIDTH / 2; ++i)
@@ -146,24 +141,13 @@ void OpenYM2413_2::makeSinTable()
 		halfsintable[i] = fullsintable[0];
 }
 
-static inline DoubleT saw(DoubleT phase)
-{
-  if (phase <= (PI / 2)) {
-    return phase * 2 / PI;
-  } else if (phase <= (PI * 3 / 2)) {
-    return 2.0 - (phase * 2 / PI);
-  } else {
-    return -4.0 + phase * 2 / PI;
-  }
-}
 
 // Table for Pitch Modulator
 void OpenYM2413_2::makePmTable()
 {
 	for (int i = 0; i < PM_PG_WIDTH; ++i) {
-		 pmtable[i] = (int)((DoubleT)PM_AMP * 
-		     powf(2.0, (DoubleT)PM_DEPTH * 
-		            saw(2.0 * PI * i / PM_PG_WIDTH) / 1200));
+		// PM_AMP * 2^(PM_DEPTH * saw / 1200), baked
+		pmtable[i] = detYm2413oPmTable[i];
 	}
 }
 
@@ -171,8 +155,8 @@ void OpenYM2413_2::makePmTable()
 void OpenYM2413_2::makeAmTable()
 {
 	for (int i = 0; i < AM_PG_WIDTH; ++i) {
-		amtable[i] = (int)((DoubleT)AM_DEPTH / 2 / DB_STEP *
-		                   (1.0 + saw(2.0 * PI * i / PM_PG_WIDTH)));
+		// AM_DEPTH / 2 / DB_STEP * (1 + saw), baked
+		amtable[i] = detYm2413oAmTable[i];
 	}
 }
 
@@ -198,13 +182,15 @@ void OpenYM2413_2::makeDphaseTable(int sampleRate)
 
 void OpenYM2413_2::makeTllTable()
 {
-	DoubleT kltable[16] = {
-		( 0.000 * 2), ( 9.000 * 2), (12.000 * 2), (13.875 * 2),
-		(15.000 * 2), (16.125 * 2), (16.875 * 2), (17.625 * 2),
-		(18.000 * 2), (18.750 * 2), (19.125 * 2), (19.500 * 2),
-		(19.875 * 2), (20.250 * 2), (20.625 * 2), (21.000 * 2)
+	// Key-scale-level attenuation, in quarter-dB units (kltable * 4),
+	// so all arithmetic is exact.  Values and the /EG_STEP conversion
+	// were verified bit-for-bit against the double original in
+	// tools/gen_tables.c.
+	static const int klq[16] = {
+		  0,  72,  96, 111, 120, 129, 135, 141,
+		144, 150, 153, 156, 159, 162, 165, 168
 	};
-  
+
 	for (int fnum = 0; fnum < 16; ++fnum) {
 		for (int block = 0; block < 8; ++block) {
 			for (int TL = 0; TL < 64; ++TL) {
@@ -212,11 +198,12 @@ void OpenYM2413_2::makeTllTable()
 					if (KL == 0) {
 						tllTable[fnum][block][TL][KL] = TL2EG(TL);
 					} else {
-						int tmp = (int)(kltable[fnum] - (3.000 * 2) * (7 - block));
+						// tmp in dB (truncated), as before
+						int tmp = (klq[fnum] - 24 * (7 - block)) / 4;
 						tllTable[fnum][block][TL][KL] =
 						    (tmp <= 0) ?
 						    TL2EG(TL) :
-						    (unsigned int)((tmp >> (3 - KL)) / EG_STEP) + TL2EG(TL);
+						    (unsigned int)(((unsigned int)(tmp >> (3 - KL)) * 8) / 3) + TL2EG(TL);
 					}
 				}
 			}
@@ -640,8 +627,10 @@ void OpenYM2413_2::setSampleRate(int sampleRate, int Oversampling)
 	makeDphaseTable(sampleRate);
 	makeDphaseARTable(sampleRate);
 	makeDphaseDRTable(sampleRate);
-	pm_dphase = rate_adjust(PM_SPEED * PM_DP_WIDTH / (CLOCK_FREQ / 72), sampleRate);
-	am_dphase = rate_adjust(AM_SPEED * AM_DP_WIDTH / (CLOCK_FREQ / 72), sampleRate);
+	// Baked for sampleRate == 44100 (the only rate used); see
+	// tools/gen_tables.c.
+	pm_dphase = DET_YM2413O_PM_DPHASE;
+	am_dphase = DET_YM2413O_AM_DPHASE;
 }
 
 
@@ -781,12 +770,13 @@ inline void OpenYM2413_2::update_noise()
 // EG
 void OpenYM2413_2::Slot::calc_envelope(int lfo_am)
 {
-	#define S2E(x) static_cast<unsigned int>(SL2EG((int)(x / SL_STEP)) << (EG_DP_BITS - EG_BITS))
+	// x / SL_STEP == x / 3, exact for these multiples of 3
+	#define S2E(x) static_cast<unsigned int>(SL2EG((x) / 3) << (EG_DP_BITS - EG_BITS))
 	static unsigned int SL[16] = {
-		S2E( 0.0), S2E( 3.0), S2E( 6.0), S2E( 9.0),
-		S2E(12.0), S2E(15.0), S2E(18.0), S2E(21.0),
-		S2E(24.0), S2E(27.0), S2E(30.0), S2E(33.0),
-		S2E(36.0), S2E(39.0), S2E(42.0), S2E(48.0)
+		S2E( 0), S2E( 3), S2E( 6), S2E( 9),
+		S2E(12), S2E(15), S2E(18), S2E(21),
+		S2E(24), S2E(27), S2E(30), S2E(33),
+		S2E(36), S2E(39), S2E(42), S2E(48)
 	};
 
 	unsigned out;
@@ -901,9 +891,9 @@ int OpenYM2413_2::Slot::calc_slot_snare(bool noise)
 		return 0;
 	} 
 	if (BIT(pgout, 7)) {
-		return dB2LinTab[(noise ? DB_POS(0.0) : DB_POS(15.0)) + egout];
+		return dB2LinTab[(noise ? DB_POS(0) : DB_POS(15)) + egout];
 	} else {
-		return dB2LinTab[(noise ? DB_NEG(0.0) : DB_NEG(15.0)) + egout];
+		return dB2LinTab[(noise ? DB_NEG(0) : DB_NEG(15)) + egout];
 	}
 }
 
@@ -917,8 +907,8 @@ int OpenYM2413_2::Slot::calc_slot_cym(unsigned int pgout_hh)
 	    = (((BIT(pgout_hh, PG_BITS - 8) ^ BIT(pgout_hh, PG_BITS - 1)) |
 	        BIT(pgout_hh, PG_BITS - 7)) ^
 	       (BIT(pgout, PG_BITS - 7) & !BIT(pgout, PG_BITS - 5)))
-	    ? DB_NEG(3.0)
-	    : DB_POS(3.0);
+	    ? DB_NEG(3)
+	    : DB_POS(3);
 	return dB2LinTab[dbout + egout];
 }
 
@@ -932,9 +922,9 @@ int OpenYM2413_2::Slot::calc_slot_hat(int pgout_cym, bool noise)
 	if (((BIT(pgout, PG_BITS - 8) ^ BIT(pgout, PG_BITS - 1)) |
 	     BIT(pgout, PG_BITS - 7)) ^
 	    (BIT(pgout_cym, PG_BITS - 7) & !BIT(pgout_cym, PG_BITS - 5))) {
-		dbout = noise ? DB_NEG(12.0) : DB_NEG(24.0);
+		dbout = noise ? DB_NEG(12) : DB_NEG(24);
 	} else {
-		dbout = noise ? DB_POS(12.0) : DB_POS(24.0);
+		dbout = noise ? DB_POS(12) : DB_POS(24);
 	}
 	return dB2LinTab[dbout + egout];
 }
