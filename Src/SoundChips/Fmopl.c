@@ -13,15 +13,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <math.h>
+#include "DetTablesFmopl.h"
 #include "Fmopl.h"
 #include "Switches.h"
 #include "SaveState.h"
 #include "Board.h"
 
-#ifndef	PI
-#define	PI 3.14159265358979323846
-#endif
 
 extern void	y8950TimerSet(void* ref, int timer, int count);
 extern void	y8950TimerStart(void* ref, int timer, int start);
@@ -97,55 +94,12 @@ static const int slot_array[32]=
 
 /* key scale level */
 /* table is	3dB/OCT	, DV converts this in TL step at 6dB/OCT */
-#define	DV (EG_STEP/2)
-static const UINT32	KSL_TABLE[8*16]=
-{
-	/* OCT 0 */
-	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),
-		/* OCT 1 */
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),
-		(UINT32)(0.000/DV),	(UINT32)(0.750/DV),	(UINT32)(1.125/DV),	(UINT32)(1.500/DV),
-		(UINT32)(1.875/DV),	(UINT32)(2.250/DV),	(UINT32)(2.625/DV),	(UINT32)(3.000/DV),
-		/* OCT 2 */
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),
-		(UINT32)(0.000/DV),	(UINT32)(1.125/DV),	(UINT32)(1.875/DV),	(UINT32)(2.625/DV),
-		(UINT32)(3.000/DV),	(UINT32)(3.750/DV),	(UINT32)(4.125/DV),	(UINT32)(4.500/DV),
-		(UINT32)(4.875/DV),	(UINT32)(5.250/DV),	(UINT32)(5.625/DV),	(UINT32)(6.000/DV),
-		/* OCT 3 */
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(1.875/DV),
-		(UINT32)(3.000/DV),	(UINT32)(4.125/DV),	(UINT32)(4.875/DV),	(UINT32)(5.625/DV),
-		(UINT32)(6.000/DV),	(UINT32)(6.750/DV),	(UINT32)(7.125/DV),	(UINT32)(7.500/DV),
-		(UINT32)(7.875/DV),	(UINT32)(8.250/DV),	(UINT32)(8.625/DV),	(UINT32)(9.000/DV),
-		/* OCT 4 */
-		(UINT32)(0.000/DV),	(UINT32)(0.000/DV),	(UINT32)(3.000/DV),	(UINT32)(4.875/DV),
-		(UINT32)(6.000/DV),	(UINT32)(7.125/DV),	(UINT32)(7.875/DV),	(UINT32)(8.625/DV),
-		(UINT32)(9.000/DV),	(UINT32)(9.750/DV),(UINT32)(10.125/DV),(UINT32)(10.500/DV),
-		(UINT32)(10.875/DV),(UINT32)(11.250/DV),(UINT32)(11.625/DV),(UINT32)(12.000/DV),
-		/* OCT 5 */
-		(UINT32)(0.000/DV),	(UINT32)(3.000/DV),	(UINT32)(6.000/DV),	(UINT32)(7.875/DV),
-		(UINT32)(9.000/DV),(UINT32)(10.125/DV),(UINT32)(10.875/DV),(UINT32)(11.625/DV),
-		(UINT32)(12.000/DV),(UINT32)(12.750/DV),(UINT32)(13.125/DV),(UINT32)(13.500/DV),
-		(UINT32)(13.875/DV),(UINT32)(14.250/DV),(UINT32)(14.625/DV),(UINT32)(15.000/DV),
-		/* OCT 6 */
-		(UINT32)(0.000/DV),	(UINT32)(6.000/DV),	(UINT32)(9.000/DV),(UINT32)(10.875/DV),
-		(UINT32)(12.000/DV),(UINT32)(13.125/DV),(UINT32)(13.875/DV),(UINT32)(14.625/DV),
-		(UINT32)(15.000/DV),(UINT32)(15.750/DV),(UINT32)(16.125/DV),(UINT32)(16.500/DV),
-		(UINT32)(16.875/DV),(UINT32)(17.250/DV),(UINT32)(17.625/DV),(UINT32)(18.000/DV),
-		/* OCT 7 */
-		(UINT32)(0.000/DV),	(UINT32)(9.000/DV),(UINT32)(12.000/DV),(UINT32)(13.875/DV),
-		(UINT32)(15.000/DV),(UINT32)(16.125/DV),(UINT32)(16.875/DV),(UINT32)(17.625/DV),
-		(UINT32)(18.000/DV),(UINT32)(18.750/DV),(UINT32)(19.125/DV),(UINT32)(19.500/DV),
-		(UINT32)(19.875/DV),(UINT32)(20.250/DV),(UINT32)(20.625/DV),(UINT32)(21.000/DV)
-};
-#undef DV
+/* Values are dB / (EG_STEP/2); baked in DetTablesFmopl.h. */
+#define KSL_TABLE detOplKslTable
 
 /* sustain lebel table (3db	per	step) */
 /* 0 - 15: 0, 3, 6,	9,12,15,18,21,24,27,30,33,36,39,42,93 (dB)*/
-#define	SC(db) (INT32)((db*((3/EG_STEP)*(1<<ENV_BITS)))+EG_DST)
+#define	SC(db) ((INT32)((db)*((EG_ENT/32)*(1<<ENV_BITS))+EG_DST)) /* 3/EG_STEP == EG_ENT/32, exact */
 static const INT32 SL_TABLE[16]={
 	SC(	0),SC( 1),SC( 2),SC(3 ),SC(4 ),SC(5	),SC(6 ),SC( 7),
 		SC(	8),SC( 9),SC(10),SC(11),SC(12),SC(13),SC(14),SC(31)
@@ -170,15 +124,13 @@ INT32 *VIB_TABLE;
 static INT32 ENV_CURVE[2*EG_ENT+1];
 
 /* multiple	table */
-#define	ML 2
 static const UINT32	MUL_TABLE[16]= {
-	/* 1/2,	1, 2, 3, 4,	5, 6, 7, 8,	9,10,11,12,13,14,15	*/
-	(UINT32)(0.50*ML), (UINT32)(1.00*ML), (UINT32)(2.00*ML), (UINT32)(3.00*ML),	
-		(UINT32)(4.00*ML), (UINT32)(5.00*ML), (UINT32)(6.00*ML), (UINT32)(7.00*ML),
-		(UINT32)(8.00*ML), (UINT32)(9.00*ML),(UINT32)(10.00*ML),(UINT32)(10.00*ML),
-		(UINT32)(12.00*ML),(UINT32)(12.00*ML),(UINT32)(15.00*ML),(UINT32)(15.00*ML)
+	/* 2 * (1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12, 15, 15) */
+	1, 2, 4, 6,
+	8, 10, 12, 14,
+	16, 18, 20, 20,
+	24, 24, 30, 30
 };
-#undef ML
 
 /* dummy attack	/ decay	rate ( when	rate ==	0 )	*/
 static INT32 RATE_0[16]=
@@ -364,7 +316,7 @@ void set_ksl_tl(FM_OPL *OPL,int	slot,int v)
 	int	ksl	= v>>6;	/* 0 / 1.5 / 3 / 6 db/OCT */
 
 	SLOT->ksl =	ksl	? 3-ksl	: 31;
-	SLOT->TL  =	(INT32)((v&0x3f)*(0.75/EG_STEP)); /* 0.75db	step */
+	SLOT->TL  =	(INT32)((v&0x3f)*32); /* 0.75db	step; 0.75/EG_STEP == 32, exact */
 
 	if(	!(OPL->mode&0x80) )
 	{	/* not CSM latch total level */
@@ -451,11 +403,21 @@ void OPL_CALC_CH( OPL_CH *CH )
 }
 
 /* ---------- calcrate rythm block ---------- */
-#define	WHITE_NOISE_db 6.0
+/* Deterministic white-noise bit.  The former code used libc rand(),
+ * whose sequence differs between platforms/libcs; a fixed 23-bit LFSR
+ * (taps as in the real OPL noise generator) makes the rhythm noise
+ * identical everywhere.  WHITE_NOISE_db(6.0)/EG_STEP == 256, exact. */
+static UINT32 opl_noise_lfsr = 1;
+static INT32 opl_noise_bit(void)
+{
+	UINT32 bit = ((opl_noise_lfsr >> 22) ^ (opl_noise_lfsr >> 8)) & 1;
+	opl_noise_lfsr = ((opl_noise_lfsr << 1) | bit) & 0x7fffff;
+	return (INT32)bit;
+}
 void OPL_CALC_RH( OPL_CH *CH )
 {
 	UINT32 env_tam,env_sd,env_top,env_hh;
-	int	whitenoise = (int)((rand()&1)*(WHITE_NOISE_db/EG_STEP));
+	int	whitenoise = opl_noise_bit() * 256;
 	INT32 tone8;
 
 	OPL_SLOT *SLOT;
@@ -539,32 +501,23 @@ void OPL_CALC_RH( OPL_CH *CH )
 static void	init_timetables( FM_OPL	*OPL , int ARRATE ,	int	DRRATE )
 {
 	int	i;
-	DoubleT rate;
 
-	/* make	attack rate	& decay	rate tables	*/
-	for	(i = 0;i < 4;i++) OPL->AR_TABLE[i] = OPL->DR_TABLE[i] =	0;
-	for	(i = 4;i <=	60;i++){
-		rate  =	OPL->freqbase;						/* frequency rate */
-		if(	i <	60 ) rate *= 1.0+(i&3)*0.25;		/* b0-1	: x1 , x1.25 , x1.5	, x1.75	*/
-		rate *=	1<<((i>>2)-1);						/* b2-5	: shift	bit	*/
-		rate *=	(DoubleT)(EG_ENT<<ENV_BITS);
-		OPL->AR_TABLE[i] = (INT32)(rate	/ ARRATE);
-		OPL->DR_TABLE[i] = (INT32)(rate	/ DRRATE);
-	}
-	for	(i = 60;i <	76;i++)
-	{
-		OPL->AR_TABLE[i] = EG_AED-1;
-		OPL->DR_TABLE[i] = OPL->DR_TABLE[60];
+	/* Attack / decay rate tables. Baked for freqbase == 1 (i.e. rate ==
+	 * clock/72, the only configuration this core is ever created with);
+	 * see tools/gen_tables.c.  ARRATE/DRRATE kept for signature parity. */
+	(void)ARRATE; (void)DRRATE;
+	for (i = 0; i < 76; i++) {
+		OPL->AR_TABLE[i] = detOplArTable[i];
+		OPL->DR_TABLE[i] = detOplDrTable[i];
 	}
 }
 
 /* ---------- generic table	initialize ---------- */
 static int OPLOpenTable( void )
 {
-	int	s,t;
-	DoubleT rate;
-	int	i,j;
-	DoubleT pom;
+	int	s;
+	int	i;
+	int	j;
 
 	/* allocate	dynamic	tables */
 	if(	(TL_TABLE =	malloc(TL_MAX*2*sizeof(INT32)))	== NULL)
@@ -587,24 +540,21 @@ static int OPLOpenTable( void )
 		free(AMS_TABLE);
 		return 0;
 	}
-	/* make	total level	table */
-	for	(t = 0;t < EG_ENT-1	;t++){
-		rate = ((1<<TL_BITS)-1)/pow(10,EG_STEP*t/20);	/* dB -> voltage */
-		TL_TABLE[		t] =  (int)rate;
-		TL_TABLE[TL_MAX+t] = -TL_TABLE[t];
+	/* total level table: dB -> voltage, baked (DetTablesFmopl.h) */
+	for	(i = 0;i < EG_ENT-1	;i++){
+		TL_TABLE[		i] =  detOplTlTable[i];
+		TL_TABLE[TL_MAX+i] = -TL_TABLE[i];
 	}
 	/* fill	volume off area	*/
-	for	( t	= EG_ENT-1;	t <	TL_MAX ;t++){
-		TL_TABLE[t]	= TL_TABLE[TL_MAX+t] = 0;
+	for	( i	= EG_ENT-1;	i <	TL_MAX ;i++){
+		TL_TABLE[i]	= TL_TABLE[TL_MAX+i] = 0;
 	}
 
-	/* make	sinwave	table (total level offet) */
+	/* make	sinwave	table (total level offset), indices baked */
 	/* degree 0	= degree 180				   = off */
 	SIN_TABLE[0] = SIN_TABLE[SIN_ENT/2]			= &TL_TABLE[EG_ENT-1];
 	for	(s = 1;s <=	SIN_ENT/4;s++){
-		pom	= sin(2*PI*s/SIN_ENT); /* sin	  */
-		pom	= 20*log10(1/pom);	   /* decibel */
-		j =	(int)(pom /	EG_STEP);		  /* TL_TABLE steps	*/
+		j = detOplSinIndex[s];
 
 		/* degree 0	  -	 90	   , degree	180	-  90 :	plus section */
 		SIN_TABLE[			s] = SIN_TABLE[SIN_ENT/2-s]	= &TL_TABLE[j];
@@ -621,29 +571,22 @@ static int OPLOpenTable( void )
 	/* envelope	counter	-> envelope	output table */
 	for	(i=0; i<EG_ENT;	i++)
 	{
-		/* ATTACK curve	*/
-		pom	= pow( ((DoubleT)(EG_ENT-1-i)/EG_ENT) , 8 ) * EG_ENT;
-		/* if( pom >= EG_ENT ) pom = EG_ENT-1; */
-		ENV_CURVE[i] = (int)pom;
+		/* ATTACK curve	(baked) */
+		ENV_CURVE[i] = detOplEnvAttack[i];
 		/* DECAY ,RELEASE curve	*/
 		ENV_CURVE[(EG_DST>>ENV_BITS)+i]= i;
 	}
 	/* off */
 	ENV_CURVE[EG_OFF>>ENV_BITS]= EG_ENT-1;
-	/* make	LFO	ams	table */
-	for	(i=0; i<AMS_ENT; i++)
+	/* LFO	ams	table (baked) */
+	for	(i=0; i<AMS_ENT*2; i++)
 	{
-		pom	= (1.0+sin(2*PI*i/AMS_ENT))/2; /* sin */
-		AMS_TABLE[i]		 = (INT32)((1.0/EG_STEP)*pom); /* 1dB	*/
-		AMS_TABLE[AMS_ENT+i] = (INT32)((4.8/EG_STEP)*pom); /* 4.8dB	*/
+		AMS_TABLE[i] = detOplAmsTable[i];
 	}
-	/* make	LFO	vibrate	table */
-	for	(i=0; i<VIB_ENT; i++)
+	/* LFO	vibrato	table (baked) */
+	for	(i=0; i<VIB_ENT*2; i++)
 	{
-		/* 100cent = 1seminote = 6%	?? */
-		pom	= (DoubleT)VIB_RATE*0.06*sin(2*PI*i/VIB_ENT); /*	+-100sect step */
-		VIB_TABLE[i]		 = (INT32)(VIB_RATE	+ (pom*0.07)); /* +- 7cent */
-		VIB_TABLE[VIB_ENT+i] = (INT32)(VIB_RATE	+ (pom*0.14)); /* +-14cent */
+		VIB_TABLE[i] = detOplVibTable[i];
 	}
 	return 1;
 }
@@ -679,31 +622,20 @@ static void	OPL_initalize(FM_OPL *OPL)
 {
 	int	fn;
 
-#if 0
-	/* frequency base */
-	OPL->freqbase =	(OPL->rate)	? ((DoubleT)OPL->clock /	OPL->rate) / 72	 : 0;
-	/* Timer base time */
-	OPL->TimerBase = 1.0/((DoubleT)OPL->clock / 72.0	);
-#else
-    if (OPL->baseRate == OPL->clock / 72) {
-	    OPL->freqbase =	OPL->baseRate / OPL->rate;
-	    OPL->TimerBase = 1.0 / OPL->baseRate;
-    }
-    else {
-	    OPL->freqbase =	(OPL->rate)	? ((DoubleT)OPL->clock /	OPL->rate) / 72	 : 0;
-	    OPL->TimerBase = 1.0/((DoubleT)OPL->clock / 72.0	);
-    }
-#endif
+	/* All frequency-derived tables below are baked for the fixed
+	 * configuration this core runs with (clock=3579545, rate=clock/72,
+	 * i.e. freqbase == 1); see tools/gen_tables.c. */
+
 	/* make	time tables	*/
 	init_timetables( OPL , OPL_ARRATE ,	OPL_DRRATE );
 	/* make	fnumber	-> increment counter table */
 	for( fn=0 ;	fn < 1024 ;	fn++ )
 	{
-		OPL->FN_TABLE[fn] =	(UINT32)(OPL->freqbase * fn	* FREQ_RATE	* (1<<7) / 2);
+		OPL->FN_TABLE[fn] =	detOplFnTable[fn];
 	}
 	/* LFO freq.table */
-	OPL->amsIncr = (INT32)(OPL->rate ? (DoubleT)AMS_ENT*(1<<AMS_SHIFT) /	OPL->rate *	3.7	* ((DoubleT)OPL->clock/3600000) : 0);
-	OPL->vibIncr = (INT32)(OPL->rate ? (DoubleT)VIB_ENT*(1<<VIB_SHIFT) /	OPL->rate *	6.4	* ((DoubleT)OPL->clock/3600000) : 0);
+	OPL->amsIncr = DET_OPL_AMS_INCR;
+	OPL->vibIncr = DET_OPL_VIB_INCR;
 }
 
 /* ---------- write	a OPL registers	---------- */
@@ -1079,7 +1011,17 @@ void OPLResetChip(FM_OPL *OPL)
 	{
 		YM_DELTAT *DELTAT =	OPL->deltat;
 
-		DELTAT->freqbase = OPL->freqbase;
+		/* frequency base as exact rational clock/(72*rate); when rate ==
+		 * clock/72 (always the case here) this is exactly 1, matching the
+		 * old double freqbase. */
+		if (OPL->baseRate == OPL->clock / 72 && OPL->rate == OPL->baseRate) {
+			DELTAT->freqbaseNum = 1;
+			DELTAT->freqbaseDen = 1;
+		}
+		else {
+			DELTAT->freqbaseNum = (UINT32)OPL->clock;
+			DELTAT->freqbaseDen = (UINT32)(72 * OPL->rate);
+		}
 		DELTAT->output_pointer = &outd;
 #ifdef MSX_AUDIO
 		DELTAT->portshift =	2;

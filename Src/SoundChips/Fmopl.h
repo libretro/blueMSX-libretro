@@ -92,8 +92,8 @@ typedef struct fm_opl_f {
 	int clock;			/* master clock  (Hz)                */
 	int rate;			/* sampling rate (Hz)                */
     int baseRate;       /* sampling rate (Hz)                */
-	DoubleT freqbase;	/* frequency base                    */
-	DoubleT TimerBase;	/* Timer base time (==sampling time) */
+	/* freqbase/TimerBase removed: phase tables are exact-integer now.
+	 * The effective frequency base is clock / (72 * rate).            */
 
     UINT8 type;			/* chip type                        */
 	UINT8 address;		/* address register                  */

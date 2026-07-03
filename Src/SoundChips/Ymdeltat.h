@@ -21,7 +21,10 @@ typedef struct deltat_adpcm_state {
 	UINT8 *memory;
 	UINT32 memory_size;
     void* OPL;
-	DoubleT freqbase;
+	/* frequency base as an exact rational (num/den).  Replaces the old
+	 * double 'freqbase'; with num==den it equals exactly 1.0. */
+	UINT32 freqbaseNum;
+	UINT32 freqbaseDen;
 	INT32 *output_pointer; /* pointer of output pointers */
 	int output_range;
 
