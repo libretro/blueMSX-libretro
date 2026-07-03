@@ -43,13 +43,11 @@ extern "C" {
 #define DIR_SEPARATOR "/"
 #endif
 
-/* Define double type for different targets
- */
-#if defined(__x86_64__) || defined(__i386__) || defined _WIN32
-typedef double DoubleT;
-#else
-typedef float DoubleT;
-#endif
+/* The DoubleT typedef has been removed: this core is fully integer /
+ * fixed-point for determinism.  All former floating-point tables are
+ * baked as integer constants (Src/SoundChips/DetTables*.h, generated
+ * by tools/gen_tables.c) and all runtime math uses exact 64-bit
+ * integer arithmetic. */
 
 
 /* So far, only support for MSVC types
