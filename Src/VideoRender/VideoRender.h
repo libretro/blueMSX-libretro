@@ -61,10 +61,12 @@ struct Video {
     int scanLinesPct;
     int colorSaturationEnable;
     int colorSaturationWidth;
-    DoubleT gamma;
-    DoubleT saturation;
-    DoubleT brightness;
-    DoubleT contrast;
+    /* Stored as percentages (100 == 1.0); the Video pipeline is not
+     * implemented in this port, so these are plain integers now. */
+    Int32 gamma;
+    Int32 saturation;
+    Int32 brightness;
+    Int32 contrast;
     int deInterlace;
     int invertRGB;
 };
