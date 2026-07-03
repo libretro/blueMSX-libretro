@@ -80,7 +80,7 @@ int patch_coleco_rom = 0;
 int hard_reset_f12 = 0;
 static int sega_nmi_pressed = 0;
 static int hard_reset_f12_pressed = 0;
-static int input_analog_deadzone = (int)(0.25f * (float)0x8000);
+static int input_analog_deadzone = 0x2000; /* == 0.25 * 0x8000 */
 
 char overlayDir[512] = {0};
 int overlayTimer = -1;

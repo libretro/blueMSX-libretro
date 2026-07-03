@@ -44,7 +44,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
@@ -791,7 +790,7 @@ static int add_single_file_svi(int diskType, char *name, const char *pathname)
 
     memcpy(dskimage + dirOff + dirEntryNo * 16, &myDir, sizeof(myDir));
 
-    dskimage[dirOff + 14 * 256 + fatCounter] = 0xC0 | (int)ceil(UINT8sRead / 256.00);
+    dskimage[dirOff + 14 * 256 + fatCounter] = 0xC0 | (int)((UINT8sRead + 255) / 256); /* == ceil(x/256), exact */
 
     memcpy(dskimage + dirOff + 15 * 256, dskimage + dirOff + 14 * 256, 256);
     memcpy(dskimage + dirOff + 16 * 256, dskimage + dirOff + 14 * 256, 256);
@@ -949,7 +948,7 @@ static int add_single_file_cpm(int diskType, char *name, const char *pathname)
 
     fclose(fpImport);
 
-    myDir.blkcnt = (int)ceil((alCount * dpbBLS - (dpbBLS - fileRead)) / 128.00);
+    myDir.blkcnt = (int)((alCount * dpbBLS - (dpbBLS - fileRead) + 127) / 128); /* == ceil(x/128), exact */
 
     memcpy(&dskimage[dirOffset + drm * sizeof(myDir)], &myDir, sizeof(myDir));
 

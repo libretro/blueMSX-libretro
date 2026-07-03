@@ -366,7 +366,7 @@ void actionVideoEnableMon3(int value) {
 // Actions controlled by value 0 - 100
 
 void actionRenshaSetLevel(int value) {
-    state.properties->joy1.autofire = (int)ceil((11 - 1) * value / 100.0);
+    state.properties->joy1.autofire = (10 * value + 99) / 100; /* == ceil(10*value/100), exact */
     switchSetRensha(state.properties->joy1.autofire);
 }
 

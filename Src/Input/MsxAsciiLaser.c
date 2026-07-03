@@ -97,7 +97,9 @@ static UInt8 read(MsxAsciiLaser* joystick) {
             int R = 256 * ((rgb >> COLSHIFT_R) & COLMASK_R) / COLMASK_R;
             int G = 256 * ((rgb >> COLSHIFT_G) & COLMASK_G) / COLMASK_G;
             int B = 256 * ((rgb >> COLSHIFT_B) & COLMASK_B) / COLMASK_B;
-            int Y = (int)(0.2989*R + 0.5866*G + 0.1145*B);
+            /* luminance; exact-rational version of the former
+             * (int)(0.2989*R + 0.5866*G + 0.1145*B) */
+            int Y = (2989*R + 5866*G + 1145*B) / 10000;
         
             if (Y > TRESHOLD) {
                 state |= 1 << 4;
