@@ -32,7 +32,6 @@
 #include "Language.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <float.h>
 #include <string.h>
 #include <math.h>
 #include <limits.h>
@@ -61,7 +60,15 @@ static int VoltTables[2][16] =
     { 9897, 7867, 6248, 4962, 3937, 3127, 2487, 1978, 1567, 1247,  992,  783,  627,  496,  392, 0 }
 };
 
-#define DELTA_CLOCK  ((float)3579545 / 16 / 44100)
+/* Master clock advance per output sample, kept as an exact rational:
+ * 3579545 / 16 clocks per second, 44100 samples per second.
+ * clockAcc accumulates the numerator; CLOCK_DEN = 16 * 44100.
+ */
+#define CLOCK_NUM  3579545
+#define CLOCK_DEN  (16 * 44100)
+
+/* Tone edge interpolation is carried in Q14 fixed point. */
+#define INTERPOL_SHIFT 14
 
 struct SN76489 {
     /* Framework params */
@@ -75,7 +82,7 @@ struct SN76489 {
     int shiftRegisterWidth;
     
     /* State params */
-    float clock;
+    Int32 clockAcc;    /* residual master clocks, scaled by CLOCK_DEN */
 
     int regs[8];
     int latch;
@@ -84,7 +91,8 @@ struct SN76489 {
     
     int toneFrequency[4];
     int toneFlipFlop[4];
-    float toneInterpol[4];
+    Int32 toneInterpol[4];      /* Q14, valid only when toneInterpolValid[i] */
+    Int32 toneInterpolValid[4];
 
     /* Filter params */
     Int32  ctrlVolume;
@@ -156,9 +164,10 @@ void sn76489SaveState(SN76489* sn76489)
         saveStateSet(state, tag, sn76489->toneFlipFlop[i]);
         
         sn76489->toneInterpol[i] = 0;
+        sn76489->toneInterpolValid[i] = 0;
     }
 
-    sn76489->clock = 0;
+    sn76489->clockAcc = 0;
 
     saveStateClose(state);
 }
@@ -208,10 +217,11 @@ void sn76489Reset(SN76489* sn76489)
         p->noiseFreq        = 0x10;
         p->toneFrequency[i] = 0;
         p->toneFlipFlop[i]  = 1;
-        p->toneInterpol[i]  = FLT_MIN;
+        p->toneInterpol[i]  = 0;
+        p->toneInterpolValid[i] = 0;
     }
 
-    p->clock    = 0;
+    p->clockAcc = 0;
     p->latch    = 0;
     p->shiftReg = 1 << (sn76489->shiftRegisterWidth - 1);
 }
@@ -285,8 +295,8 @@ static Int32* sn76489Sync(void* ref, UInt32 count)
         Int32 sampleVolume = 0;
 
         for (i = 0; i < 3; i++) {
-            if (p->toneInterpol[i] > FLT_MIN) {
-                sampleVolume += (int)(VoltTables[p->voltTableIdx][p->regs[2 * i + 1]] * p->toneInterpol[i]);
+            if (p->toneInterpolValid[i] && p->toneInterpol[i] > 0) {
+                sampleVolume += (int)(((Int64)VoltTables[p->voltTableIdx][p->regs[2 * i + 1]] * p->toneInterpol[i]) >> INTERPOL_SHIFT);
             }
             else {
                 sampleVolume += VoltTables[p->voltTableIdx][p->regs[2 * i + 1]] * p->toneFlipFlop[i];
@@ -305,10 +315,10 @@ static Int32* sn76489Sync(void* ref, UInt32 count)
         /* Store calclulated sample value */
         p->buffer[j] = 4 * p->daVolume;
 
-        /* Increment clock by 1 sample length */
-        p->clock += DELTA_CLOCK;
-        clocksPerSample = (int)p->clock;
-        p->clock -= clocksPerSample;
+        /* Increment clock by 1 sample length (exact rational accumulator) */
+        p->clockAcc += CLOCK_NUM;
+        clocksPerSample = p->clockAcc / CLOCK_DEN;
+        p->clockAcc -= clocksPerSample * CLOCK_DEN;
     
         for (i = 0; i <= 2; i++) {
             p->toneFrequency[i] -= clocksPerSample;
@@ -324,22 +334,37 @@ static Int32* sn76489Sync(void* ref, UInt32 count)
         for (i = 0; i <= 2; i++) {
             if (p->regs[2 * i] == 0) {
                 p->toneFlipFlop[i] = 1;
-                p->toneInterpol[i] = FLT_MIN;
+                p->toneInterpolValid[i] = 0;
                 p->toneFrequency[i] = 0;
             }
             else if (p->toneFrequency[i] <= 0) {
                 if (p->regs[i * 2] > PSG_CUTOFF) {
-                    p->toneInterpol[i] = (clocksPerSample - p->clock + 2 * p->toneFrequency[i]) * p->toneFlipFlop[i] / (clocksPerSample + p->clock);
+                    /* Fractional edge position within the sample.
+                     * The former float expression was
+                     *   (cps - frac + 2*toneFreq) * flipFlop / (cps + frac)
+                     * where frac = clockAcc / CLOCK_DEN. Multiply numerator
+                     * and denominator by CLOCK_DEN to stay in integers.
+                     */
+                    Int64 num = ((Int64)clocksPerSample * CLOCK_DEN - p->clockAcc
+                                 + (Int64)2 * p->toneFrequency[i] * CLOCK_DEN) * p->toneFlipFlop[i];
+                    Int64 den = (Int64)clocksPerSample * CLOCK_DEN + p->clockAcc;
+                    if (den != 0) {
+                        p->toneInterpol[i] = (Int32)((num << INTERPOL_SHIFT) / den);
+                        p->toneInterpolValid[i] = 1;
+                    }
+                    else {
+                        p->toneInterpolValid[i] = 0;
+                    }
                     p->toneFlipFlop[i] = -p->toneFlipFlop[i];
                 }
                 else {
                     p->toneFlipFlop[i] = 1;
-                    p->toneInterpol[i] = FLT_MIN;
+                    p->toneInterpolValid[i] = 0;
                 }
                 p->toneFrequency[i] += p->regs[i*2] * (clocksPerSample / p->regs[i*2] + 1);
             }
             else {
-                p->toneInterpol[i] = FLT_MIN;
+                p->toneInterpolValid[i] = 0;
             }
         }
 
@@ -485,13 +510,6 @@ SN76489* sn76489Create(Mixer* mixer)
     sn76489->handle = mixerRegisterChannel(mixer, MIXER_CHANNEL_PSG, 0, sn76489Sync, sn76489);
 
     sn76489Reset(sn76489);
-
-    {
-        DoubleT v = 0x26a9;
-        for (i = 0; i < 15; i++) {
-            v /= 1.258925412;
-        }
-    }
 
     return sn76489;
 }
