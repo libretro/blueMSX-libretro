@@ -78,6 +78,20 @@ struct retro_core_option_v2_definition option_defs_us_v2[] = {
       "ON"
    },
    {
+      "bluemsx_rtc_source",
+      "Real-Time Clock Source (Restart)",
+      NULL,
+      "Initial time of the emulated real-time clock (MSX2 and later). 'Host Clock' matches your computer's clock. 'Fixed Epoch' always starts at 1985-01-01 00:00:00, making emulation bit-identical between runs for netplay, run-ahead and input replay. The clock advances from emulated time either way.",
+      NULL,
+      "system",
+      {
+         { "host clock",   "Host Clock" },
+         { "fixed epoch",  "Fixed Epoch (deterministic)" },
+         { NULL, NULL },
+      },
+      "host clock"
+   },
+   {
       "bluemsx_overscan",
       "Crop Overscan",
       NULL,
@@ -282,6 +296,17 @@ struct retro_core_option_definition option_defs_us[] = {
          { NULL, NULL },
       },
       "Auto"
+   },
+   {
+      "bluemsx_rtc_source",
+      "Real-Time Clock Source (Restart)",
+      "Initial time of the emulated real-time clock (MSX2 and later). 'host clock' matches your computer's clock; 'fixed epoch' always starts at 1985-01-01 00:00:00, making emulation bit-identical between runs for netplay, run-ahead and input replay.",
+      {
+         { "host clock",   NULL },
+         { "fixed epoch",  NULL },
+         { NULL, NULL },
+      },
+      "host clock"
    },
    {
       "bluemsx_overscan",

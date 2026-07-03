@@ -308,6 +308,13 @@ static void getDebugInfo(RTC* rtc, DbgDevice* dbgDevice)
     dbgIoPortsAddPort(ioPorts, 1, 0xb5, DBG_IO_READWRITE, rtcPeekData(rtc, 0xb5));
 }
 
+static int rtcDeterministicTime = 0;
+
+void rtcSetDeterministicTime(int enable)
+{
+    rtcDeterministicTime = enable;
+}
+
 RTC* rtcCreate(int enable, char* cmosName)
 {
     DebugCallbacks dbgCallbacks = { getDebugInfo, NULL, NULL, NULL };
@@ -316,8 +323,6 @@ RTC* rtcCreate(int enable, char* cmosName)
     rtc->modeReg = MODE_TIMERENABLE;
 
     if (cmosName != NULL) {
-        struct tm* tm;
-        time_t t;
         FILE* file;
 
         strcpy(rtc->cmosName, cmosName);
@@ -329,18 +334,43 @@ RTC* rtcCreate(int enable, char* cmosName)
             fclose(file);
         }
 
-        t = time(NULL);
-        tm = localtime(&t);
+        if (rtcDeterministicTime) {
+            /* Fixed epoch: Tuesday 1985-01-01 00:00:00.  The host clock
+             * was the last remaining source of nondeterminism in the
+             * emulated machine state; from here on the RTC advances
+             * from emulated time only.  Field values follow the same
+             * struct tm mapping as the host-clock path below
+             * (tm_year = 85, tm_wday = 2).  refTime is anchored to the
+             * moment of creation so the clock reads exactly the epoch
+             * at machine start. */
+            rtc->refTime  = boardSystemTime();
+            rtc->fraction = 0;
+            rtc->seconds  = 0;
+            rtc->minutes  = 0;
+            rtc->hours    = 0;
+            rtc->dayWeek  = 2;
+            rtc->days     = 0;
+            rtc->months   = 0;
+            rtc->years    = 5;
+            rtc->leapYear = 1;
+        }
+        else {
+            struct tm* tm;
+            time_t t;
 
-        rtc->fraction = 0;
-        rtc->seconds  = tm->tm_sec;
-        rtc->minutes  = tm->tm_min;
-        rtc->hours    = tm->tm_hour;
-        rtc->dayWeek  = tm->tm_wday;
-        rtc->days     = tm->tm_mday - 1;
-        rtc->months   = tm->tm_mon;
-        rtc->years    = tm->tm_year - 80;
-        rtc->leapYear = tm->tm_year % 4;
+            t = time(NULL);
+            tm = localtime(&t);
+
+            rtc->fraction = 0;
+            rtc->seconds  = tm->tm_sec;
+            rtc->minutes  = tm->tm_min;
+            rtc->hours    = tm->tm_hour;
+            rtc->dayWeek  = tm->tm_wday;
+            rtc->days     = tm->tm_mday - 1;
+            rtc->months   = tm->tm_mon;
+            rtc->years    = tm->tm_year - 80;
+            rtc->leapYear = tm->tm_year % 4;
+        }
     }
 
     if (enable) {

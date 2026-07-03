@@ -37,6 +37,13 @@ typedef struct RTC RTC;
 RTC* rtcCreate(int enable, char* cmosName);
 void rtcDestroy(RTC* rtc);
 
+/* When enabled, newly created RTCs are seeded with a fixed epoch
+ * (1985-01-01 00:00:00) instead of the host clock, so emulation is
+ * bit-identical between runs (netplay, run-ahead, input replay).
+ * Must be set before machine creation; the clock advances from
+ * emulated time either way. */
+void rtcSetDeterministicTime(int enable);
+
 void rtcLoadState(RTC* rtc);
 void rtcSaveState(RTC* rtc);
 

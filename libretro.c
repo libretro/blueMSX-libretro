@@ -34,6 +34,7 @@
 #include "Src/Utils/ScanParse.h"
 #include "DiskOverlay.h"
 #include "Disk.h"
+#include "RTC.h"
 
 #include "ziphelper.c"
 
@@ -930,6 +931,19 @@ static void check_variables(bool can_change_machine_type)
          strcpy(msx_type, "SEGA - SC-3000");
       }
    }
+
+   var.key = "bluemsx_rtc_source";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (!strcmp(var.value, "fixed epoch"))
+         rtcSetDeterministicTime(1);
+      else
+         rtcSetDeterministicTime(0);
+   }
+   else
+      rtcSetDeterministicTime(0);
 
    var.key = "bluemsx_overscan";
    var.value = NULL;
