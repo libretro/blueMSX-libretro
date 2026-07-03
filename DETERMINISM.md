@@ -85,6 +85,41 @@ libretro API defines as `double`. Both are computed from exact integers
 (and the compiler folds them to constants), so they are deterministic;
 they exist only at the frontend API boundary and never feed emulation.
 
+## End-to-end validation
+
+`tools/tests/` contains an empirical replay test:
+
+* `replay_harness.c` — a minimal, dependency-free libretro frontend that
+  boots the bundled self-contained "MSX2 - C-BIOS" machine, runs N frames
+  with an empty input stream, and CRC32s every video frame and audio
+  batch into one digest.
+* `testcart.asm` / `testcart.rom` — a fixed test cartridge that drives
+  the VDP (border colour, VRAM writes), the PSG (tone sweep) and reads
+  the RP-5C01 real-time clock, folding the clock contents into the video
+  stream so the digest is sensitive to the RTC seed.
+* `run_replay_tests.sh` — the automated battery.
+
+Verified results (600 and 3000 frames):
+
+* two identical runs → identical digests;
+* `bluemsx_rtc_source = "fixed epoch"` → identical digests regardless of
+  the host date (tested with `faketime`), while the `"host clock"`
+  control diverges between dates — proving the cartridge genuinely reads
+  the RTC and the option genuinely fixes it;
+* a clang build of the core → identical digests to gcc;
+* an **aarch64 cross build run under qemu-user → digests bit-identical
+  to x86-64**, over 3000 frames (~50 s of emulation, 2.2 M audio
+  samples).
+
+Run it from the repository root after building the core:
+
+```
+sh tools/tests/run_replay_tests.sh [frames]
+```
+
+Sections 2–4 are skipped gracefully when `faketime`, `clang`, or the
+aarch64 cross toolchain + `qemu-aarch64` are not installed.
+
 ## Regenerating the tables
 
 ```
