@@ -398,7 +398,14 @@ void vlm5030_update_callback(stream_sample_t *_buffer, int length)
 			}
 			else if (chip->old_pitch <= 1)
 			{	/* generate unvoiced samples here */
-				current_val = (rand()&1) ? (int)chip->current_energy : -(int)chip->current_energy;
+				/* deterministic replacement for libc rand()&1 (platform-
+				 * dependent sequence): 23-bit LFSR, fixed seed */
+				{
+					static UInt32 vlm_noise_lfsr = 1;
+					UInt32 bit = ((vlm_noise_lfsr >> 22) ^ (vlm_noise_lfsr >> 8)) & 1;
+					vlm_noise_lfsr = ((vlm_noise_lfsr << 1) | bit) & 0x7fffff;
+					current_val = bit ? (int)chip->current_energy : -(int)chip->current_energy;
+				}
 			}
 			else
 			{
