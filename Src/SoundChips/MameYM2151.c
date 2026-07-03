@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include "DetTablesYm2151.h"
 
 #include "MameYM2151.h"
 #include "SaveState.h"
@@ -152,7 +152,7 @@ extern void ym2151WritePortCallback(void* ref, UInt32 port, UInt8 value);
 
 #define ENV_BITS		10
 #define ENV_LEN			(1<<ENV_BITS)
-#define ENV_STEP		(128.0/ENV_LEN)
+/* ENV_STEP (128.0/ENV_LEN) removed: only used by the former float table init */
 
 #define MAX_ATT_INDEX	(ENV_LEN-1) /* 1023 */
 #define MIN_ATT_INDEX	(0)			/* 0 */
@@ -451,35 +451,17 @@ static UInt8 lfo_noise_waveform[256] = {
 static MameYm2151 * PSG;
 
 
-/* own PI definition */
-#ifdef PI
-	#undef PI
-#endif
-#define PI 3.14159265358979323846
 
 
 
 static void init_tables(void)
 {
 	signed int i,x,n;
-	DoubleT o,m;
 
 	for (x=0; x<TL_RES_LEN; x++)
 	{
-		m = (1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0);
-		m = floor(m);
-
-		/* we never reach (1<<16) here due to the (x+1) */
-		/* result fits within 16 bits at maximum */
-
-		n = (int)m;		/* 16 bits here */
-		n >>= 4;		/* 12 bits here */
-		if (n&1)		/* round to closest */
-			n = (n>>1)+1;
-		else
-			n = n>>1;
-						/* 11 bits here (rounded) */
-		n <<= 2;		/* 13 bits here (as in real chip) */
+		/* dB -> linear conversion, baked (DetTablesYm2151.h) */
+		n = detYm2151TlBase[x];		/* 13 bits (as in real chip) */
 		tl_tab[ x*2 + 0 ] = n;
 		tl_tab[ x*2 + 1 ] = -tl_tab[ x*2 + 0 ];
 
@@ -488,48 +470,18 @@ static void init_tables(void)
 			tl_tab[ x*2+0 + i*2*TL_RES_LEN ] =  tl_tab[ x*2+0 ]>>i;
 			tl_tab[ x*2+1 + i*2*TL_RES_LEN ] = -tl_tab[ x*2+0 + i*2*TL_RES_LEN ];
 		}
-	#if 0
-		logerror("tl %04i", x*2);
-		for (i=0; i<13; i++)
-			logerror(", [%02i] %4i", i*2, tl_tab[ x*2 /*+1*/ + i*2*TL_RES_LEN ]);
-		logerror("\n");
-	#endif
 	}
-	/*logerror("TL_TAB_LEN = %i (%i bytes)\n",TL_TAB_LEN, (int)sizeof(tl_tab));*/
-	/*logerror("ENV_QUIET= %i\n",ENV_QUIET );*/
-
 
 	for (i=0; i<SIN_LEN; i++)
 	{
-		/* non-standard sinus */
-		m = sin( ((i*2)+1) * PI / SIN_LEN ); /* verified on the real chip */
-
-		/* we never reach zero here due to ((i*2)+1) */
-
-		if (m>0.0)
-			o = 8*log(1.0/m)/log(2);	/* convert to 'decibels' */
-		else
-			o = 8*log(-1.0/m)/log(2);	/* convert to 'decibels' */
-
-		o = o / (ENV_STEP/4);
-
-		n = (int)(2.0*o);
-		if (n&1)						/* round to closest */
-			n = (n>>1)+1;
-		else
-			n = n>>1;
-
-		sin_tab[ i ] = n*2 + (m>=0.0? 0: 1 );
-		/*logerror("sin [0x%4x]= %4i (tl_tab value=%8x)\n", i, sin_tab[i],tl_tab[sin_tab[i]]);*/
+		/* non-standard sinus in decibel scale, baked */
+		sin_tab[ i ] = detYm2151SinTab[i];
 	}
 
-
-	/* calculate d1l_tab table */
+	/* calculate d1l_tab table (baked; equals (i!=15?i:i+16)*32) */
 	for (i=0; i<16; i++)
 	{
-		m = (UInt32)((i!=15 ? i : i+16) * (4.0/ENV_STEP));   /* every 3 'dB' except for all bits = 1 = 45+48 'dB' */
-		d1l_tab[i] = (UInt32)(m);
-		/*logerror("d1l_tab[%02x]=%08x\n",i,d1l_tab[i] );*/
+		d1l_tab[i] = detYm2151D1lTab[i];
 	}
 }
 
@@ -537,31 +489,15 @@ static void init_tables(void)
 static void init_chip_tables(MameYm2151 *chip)
 {
 	int i,j;
-	DoubleT mult,phaseinc,Hz;
-	DoubleT scaler;
 
-	scaler = ( (DoubleT)chip->clock / 64.0 ) / ( (DoubleT)chip->sampfreq );
-	/*logerror("scaler    = %20.15f\n", scaler);*/
-
-
-	/* this loop calculates Hertz values for notes from c-0 to b-7 */
-	/* including 64 'cents' (100/64 that is 1.5625 of real cent) per note */
-	/* i*100/64/1200 is equal to i/768 */
-
-	/* real chip works with 10 bits fixed point values (10.10) */
-	mult = (1<<(FREQ_SH-10)); /* -10 because phaseinc_rom table values are already in 10.10 format */
+	/* Frequency tables, baked for clock=3579545, sampfreq=clock/64
+	 * (the only configuration used); exact-integer equivalents were
+	 * verified against the former double math in tools/gen_tables.c. */
 
 	for (i=0; i<768; i++)
 	{
-		/* 3.4375 Hz is note A; C# is 4 semitones higher */
-		Hz = 1000;
-
-		phaseinc = phaseinc_rom[i];	/* real chip phase increment */
-		phaseinc *= scaler;			/* adjust */
-
-
-		/* octave 2 - reference octave */
-		chip->freq[ 768+2*768+i ] = ((int)(phaseinc*mult)) & 0xffffffc0; /* adjust to X.10 fixed point */
+		/* octave 2 - reference octave (10.10 -> X.10 fixed point) */
+		chip->freq[ 768+2*768+i ] = detYm2151Freq2[i];
 		/* octave 0 and octave 1 */
 		for (j=0; j<2; j++)
 		{
@@ -589,34 +525,22 @@ static void init_chip_tables(MameYm2151 *chip)
 		}
 	}
 
-	mult = (1<<FREQ_SH);
 	for (j=0; j<4; j++)
 	{
 		for (i=0; i<32; i++)
 		{
-			Hz = ( (DoubleT)dt1_tab[j*32+i] * ((DoubleT)chip->clock/64.0) ) / (DoubleT)(1<<20);
-
-			/*calculate phase increment*/
-			phaseinc = (Hz*SIN_LEN) / (DoubleT)chip->sampfreq;
-
 			/*positive and negative values*/
-			chip->dt1_freq[ (j+0)*32 + i ] = (Int32)(phaseinc * mult);
+			chip->dt1_freq[ (j+0)*32 + i ] = detYm2151Dt1Freq[j*32 + i];
 			chip->dt1_freq[ (j+4)*32 + i ] = -chip->dt1_freq[ (j+0)*32 + i ];
 		}
 	}
 
     chip->timer_A_val = 0;
 
-    /* calculate noise periods table */
-	scaler = ( (DoubleT)chip->clock / 64.0 ) / ( (DoubleT)chip->sampfreq );
+    /* noise periods table (baked) */
 	for (i=0; i<32; i++)
 	{
-		j = (i!=31 ? i : 30);				/* rate 30 and 31 are the same */
-		j = 32-j;
-		j = (int)(65536.0 / (DoubleT)(j*32.0));	/* number of samples per one shift of the shift register */
-		/*chip->noise_tab[i] = j * 64;*/	/* number of chip clock cycles per one shift */
-		chip->noise_tab[i] = (UInt32)(j * 64 * scaler);
-		/*logerror("noise_tab[%02x]=%08x\n", i, chip->noise_tab[i]);*/
+		chip->noise_tab[i] = detYm2151NoiseTab[i];
 	}
 }
 
@@ -1147,9 +1071,11 @@ MameYm2151* YM2151Create(void* ref, int clock, int rate)
 	chip->sampfreq = rate ? rate : 44100;	/* avoid division by 0 in init_chip_tables() */
 	init_chip_tables(chip);
 
-	chip->lfo_timer_add = (UInt32)((1<<LFO_SH) * (clock/64.0) / chip->sampfreq);
+	/* exact integer form of (1<<LFO_SH) * (clock/64.0) / sampfreq;
+	 * bit-identical because clock/64.0 is a dyadic rational */
+	chip->lfo_timer_add = (UInt32)(((UInt64)(1<<LFO_SH) * (UInt64)clock) / (64ULL * (UInt64)chip->sampfreq));
 
-	chip->eg_timer_add  = (UInt32)((1<<EG_SH)  * (clock/64.0) / chip->sampfreq);
+	chip->eg_timer_add  = (UInt32)(((UInt64)(1<<EG_SH) * (UInt64)clock) / (64ULL * (UInt64)chip->sampfreq));
 	chip->eg_timer_overflow = ( 3 ) * (1<<EG_SH);
 
 	YM2151ResetChip(chip);
