@@ -26,6 +26,7 @@
 ******************************************************************************
 */
 #include "SCC.h"
+#include "DetTablesScc.h"
 #include "Board.h"
 #include "SaveState.h"
 #include "DebugDeviceManager.h"
@@ -612,7 +613,7 @@ static Int32 filter(SCC* scc, Int32 input) {
 static Int32 filter4(SCC* scc, Int32 in1, Int32 in2, Int32 in3, Int32 in4)
 {
     int i;
-    DoubleT res;
+    Int32 res;
 
     for (i = 0; i < 91; ++i) {
         scc->in[i] = scc->in[i + 4];
@@ -622,56 +623,18 @@ static Int32 filter4(SCC* scc, Int32 in1, Int32 in2, Int32 in3, Int32 in4)
     scc->in[93] = in3;
     scc->in[94] = in4;
 
-    res =  2.8536195E-4 * (scc->in[ 0] + scc->in[94]) +
-           9.052306E-5  * (scc->in[ 1] + scc->in[93]) +
-          -2.6902245E-4 * (scc->in[ 2] + scc->in[92]) +
-          -6.375284E-4  * (scc->in[ 3] + scc->in[91]) +
-          -7.87536E-4   * (scc->in[ 4] + scc->in[90]) +
-          -5.3910224E-4 * (scc->in[ 5] + scc->in[89]) +
-           1.1107049E-4 * (scc->in[ 6] + scc->in[88]) +
-           9.2801993E-4 * (scc->in[ 7] + scc->in[87]) +
-           0.0015018889 * (scc->in[ 8] + scc->in[86]) +
-           0.0014338732 * (scc->in[ 9] + scc->in[85]) +
-           5.688559E-4  * (scc->in[10] + scc->in[84]) +
-          -8.479743E-4  * (scc->in[11] + scc->in[83]) +
-          -0.0021999443 * (scc->in[12] + scc->in[82]) +
-          -0.0027432537 * (scc->in[13] + scc->in[81]) +
-          -0.0019824558 * (scc->in[14] + scc->in[80]) +
-           2.018935E-9  * (scc->in[15] + scc->in[79]) +
-           0.0024515253 * (scc->in[16] + scc->in[78]) +
-           0.00419754   * (scc->in[17] + scc->in[77]) +
-           0.0041703423 * (scc->in[18] + scc->in[76]) +
-           0.0019952168 * (scc->in[19] + scc->in[75]) +
-          -0.0016656333 * (scc->in[20] + scc->in[74]) +
-          -0.005242034  * (scc->in[21] + scc->in[73]) +
-          -0.0068841926 * (scc->in[22] + scc->in[72]) +
-          -0.005360789  * (scc->in[23] + scc->in[71]) +
-          -8.1365916E-4 * (scc->in[24] + scc->in[70]) +
-           0.0050464263 * (scc->in[25] + scc->in[69]) +
-           0.00950725   * (scc->in[26] + scc->in[68]) +
-           0.010038091  * (scc->in[27] + scc->in[67]) +
-           0.005602208  * (scc->in[28] + scc->in[66]) +
-          -0.00253724   * (scc->in[29] + scc->in[65]) +
-          -0.011011368  * (scc->in[30] + scc->in[64]) +
-          -0.015622435  * (scc->in[31] + scc->in[63]) +
-          -0.013267951  * (scc->in[32] + scc->in[62]) +
-          -0.0036876823 * (scc->in[33] + scc->in[61]) +
-           0.009843254  * (scc->in[34] + scc->in[60]) +
-           0.021394625  * (scc->in[35] + scc->in[59]) +
-           0.02469893   * (scc->in[36] + scc->in[58]) +
-           0.01608393   * (scc->in[37] + scc->in[57]) +
-          -0.0032088074 * (scc->in[38] + scc->in[56]) +
-          -0.026453404  * (scc->in[39] + scc->in[55]) +
-          -0.043139543  * (scc->in[40] + scc->in[54]) +
-          -0.042553578  * (scc->in[41] + scc->in[53]) +
-          -0.018007802  * (scc->in[42] + scc->in[52]) +
-           0.029919287  * (scc->in[43] + scc->in[51]) +
-           0.09252273   * (scc->in[44] + scc->in[50]) +
-           0.15504532   * (scc->in[45] + scc->in[49]) +
-           0.20112106   * (scc->in[46] + scc->in[48]) +
-           0.2180678    *  scc->in[47];
+    {
+        /* 94th-order symmetric FIR, coefficients in Q30 (DetTablesScc.h). */
+        Int64 acc = 0;
+        for (i = 0; i < 47; ++i) {
+            acc += (Int64)detSccFirQ30[i] * (scc->in[i] + scc->in[94 - i]);
+        }
+        acc += (Int64)detSccFirQ30[47] * scc->in[47];
+        /* truncate toward zero, matching the old (Int32)(double) cast */
+        res = (Int32)(acc >= 0 ? (acc >> 30) : -((-acc) >> 30));
+    }
 
-    return (Int32)res;
+    return res;
 }
 
 static Int32* sccSync(SCC* scc, UInt32 count)
