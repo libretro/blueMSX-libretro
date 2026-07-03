@@ -31,7 +31,7 @@
 #include "ArchMidi.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
+#include "DetTablesMixer.h"
 
 #define BITSPERSAMPLE     16
 
@@ -126,7 +126,7 @@ struct Mixer
     UInt32  oldTick;
     Int32   stereo;
     UInt32  rate;
-    DoubleT  masterVolume;
+    Int32   masterVolumeQ16;   /* Q16 gain, see DetTablesMixer.h */
     Int32   masterEnable;
     Int32   volIntLeft;
     Int32   volIntRight;
@@ -190,7 +190,9 @@ void mixerSetMasterVolume(Mixer* mixer, Int32 volume)
 {
     int i;
 
-    mixer->masterVolume = pow(10.0, (volume - 100) / 60.0) - pow(10.0, -100 / 60.0);
+    if (volume < 0)   volume = 0;
+    if (volume > 100) volume = 100;
+    mixer->masterVolumeQ16 = detMixerVolQ16[volume];
     
     for (i = 0; i < MIXER_CHANNEL_TYPE_COUNT; i++)
         mixerRecalculateType(mixer, i);
@@ -247,12 +249,27 @@ Int32 mixerIsChannelTypeActive(Mixer* mixer, Int32 type, Int32 reset)
 
 static void recalculateChannelVolume(Mixer* mixer, MixerChannel* channel)
 {
-    DoubleT volume        = pow(10.0, (channel->volume - 100) / 60.0) - pow(10.0, -100 / 60.0);
-    DoubleT panLeft       = pow(10.0, (MIN(100 - channel->pan, 50) - 50) / 30.0) - pow(10.0, -50 / 30.0);
-    DoubleT panRight      = pow(10.0, (MIN(channel->pan, 50) - 50) / 30.0) - pow(10.0, -50 / 30.0);
+    Int32 vol      = channel->volume;
+    Int32 panL     = MIN(100 - channel->pan, 50);
+    Int32 panR     = MIN(channel->pan, 50);
+    Int32 volumeQ16;
+    Int32 panLeftQ16;
+    Int32 panRightQ16;
+    Int64 gainQ16;
 
-    channel->volumeLeft  = channel->enable * mixer->masterEnable * (Int32)(1024 * mixer->masterVolume * volume * panLeft);
-    channel->volumeRight = channel->enable * mixer->masterEnable * (Int32)(1024 * mixer->masterVolume * volume * panRight);
+    if (vol  <   0) vol  =   0;
+    if (vol  > 100) vol  = 100;
+    if (panL <   0) panL =   0;
+    if (panR <   0) panR =   0;
+
+    volumeQ16   = detMixerVolQ16[vol];
+    panLeftQ16  = detMixerPanQ16[panL];
+    panRightQ16 = detMixerPanQ16[panR];
+
+    /* (Int32)(1024 * master * volume * pan), all factors in [0,1) Q16 */
+    gainQ16 = ((Int64)mixer->masterVolumeQ16 * volumeQ16) >> 16;
+    channel->volumeLeft  = channel->enable * mixer->masterEnable * (Int32)((((gainQ16 * panLeftQ16)  >> 16) * 1024) >> 16);
+    channel->volumeRight = channel->enable * mixer->masterEnable * (Int32)((((gainQ16 * panRightQ16) >> 16) * 1024) >> 16);
 
     if (!mixer->stereo)
     {
@@ -559,8 +576,12 @@ void mixerSync(Mixer* mixer)
 
         for (i = 0; i < mixer->channelCount; i++)
 	{
-            Int32 newVolumeLeft  = (Int32)(mixer->channels[i].volCntLeft  / mixer->masterVolume / mixer->volIndex / 328);
-            Int32 newVolumeRight = (Int32)(mixer->channels[i].volCntRight / mixer->masterVolume / mixer->volIndex / 328);
+            Int32 newVolumeLeft  = 0;
+            Int32 newVolumeRight = 0;
+            if (mixer->masterVolumeQ16 > 0 && mixer->volIndex > 0) {
+                newVolumeLeft  = (Int32)((((Int64)mixer->channels[i].volCntLeft  << 16) / mixer->masterVolumeQ16) / mixer->volIndex / 328);
+                newVolumeRight = (Int32)((((Int64)mixer->channels[i].volCntRight << 16) / mixer->masterVolumeQ16) / mixer->volIndex / 328);
+            }
 
             if (newVolumeLeft > 100)
                 newVolumeLeft = 100;
