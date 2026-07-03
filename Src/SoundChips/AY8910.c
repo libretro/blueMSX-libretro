@@ -26,6 +26,7 @@
 ******************************************************************************
 */
 #include "AY8910.h"
+#include "DetTablesAy8910.h"
 #include "IoPort.h"
 #include "SaveState.h"
 #include "DebugDeviceManager.h"
@@ -223,26 +224,19 @@ AY8910* ay8910Create(Mixer* mixer, Ay8910Connector connector, PsgType type, Int3
     AY8910* ay8910 = (AY8910*)calloc(1, sizeof(AY8910));
     int i;
 
-    DoubleT v = 0x26a9;
-    for (i = 15; i >= 0; i--) {
-        voltTable[i] = (Int16)v;
-        voltEnvTable[2 * i + 0] = (Int16)v;
-        voltEnvTable[2 * i + 1] = (Int16)v;
-        v *= 0.70794578438413791080221494218943;
+    for (i = 0; i < 16; i++) {
+        voltTable[i] = detAy8910VoltTable[i];
     }
-
-    if ( type == PSGTYPE_YM2149) {
-        DoubleT v = 0x26a9;
-        for (i = 31; i >= 0; i--) {
-            voltEnvTable[i] = (Int16)v;
-            v *= 0.84139514164519509115274189380029;
+    if (type == PSGTYPE_YM2149) {
+        for (i = 0; i < 32; i++) {
+            voltEnvTable[i] = detAy8910VoltEnvYM[i];
         }
     }
-
-    for (i = 0; i < 16; i++)
-        voltTable[i] -= voltTable[0];
-    for (i = 0; i < 32; i++)
-        voltEnvTable[i] -= voltEnvTable[0];
+    else {
+        for (i = 0; i < 32; i++) {
+            voltEnvTable[i] = detAy8910VoltEnvAY[i];
+        }
+    }
 
     ay8910->mixer = mixer;
     ay8910->connector = connector;
