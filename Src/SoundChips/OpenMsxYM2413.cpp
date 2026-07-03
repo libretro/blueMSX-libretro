@@ -4,6 +4,7 @@
 // The file was originally written by Mitsutaka Okazaki and by Jarek Burczynski.
 //
 #include "OpenMsxYM2413.h"
+#include "DetTablesYm2413b.h"
 
 #include <cmath>
 #include <cstring>
@@ -15,7 +16,6 @@ extern "C" {
 #include <stdio.h>
 #include <math.h>
 
-const DoubleT PI = 3.14159265358979323846;
  
 const int FREQ_SH = 16;	// 16.16 fixed point (frequency calculations)
 const int EG_SH   = 16;	// 16.16 fixed point (EG timing)
@@ -26,7 +26,7 @@ const unsigned EG_TIMER_OVERFLOW = (1 << EG_SH);
 // envelope output entries
 const int ENV_BITS = 10;
 const int ENV_LEN  = 1 << ENV_BITS;
-const DoubleT ENV_STEP = 128.0 / ENV_LEN;
+/* ENV_STEP == 0.125; only integer-scaled uses remain */
 
 const int MAX_ATT_INDEX = (1 << (ENV_BITS - 2)) - 1;	// 255
 const int MIN_ATT_INDEX = 0;
@@ -54,54 +54,12 @@ const UINT8 EG_OFF = 0;
 // table is 3dB/octave, DV converts this into 6dB/octave
 // 0.1875 is bit 0 weight of the envelope counter (volume) expressed
 // in the 'decibel' scale
-#define DV(x) (int)(x / 0.1875)
-static const int ksl_tab[8 * 16] =
-{
-	// OCT 0
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 0.000),
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 0.000),
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 0.000),
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 0.000),
-	// OCT 1
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 0.000),
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 0.000),
-	DV( 0.000),DV( 0.750),DV( 1.125),DV( 1.500),
-	DV( 1.875),DV( 2.250),DV( 2.625),DV( 3.000),
-	// OCT 2
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 0.000),
-	DV( 0.000),DV( 1.125),DV( 1.875),DV( 2.625),
-	DV( 3.000),DV( 3.750),DV( 4.125),DV( 4.500),
-	DV( 4.875),DV( 5.250),DV( 5.625),DV( 6.000),
-	// OCT 3
-	DV( 0.000),DV( 0.000),DV( 0.000),DV( 1.875),
-	DV( 3.000),DV( 4.125),DV( 4.875),DV( 5.625),
-	DV( 6.000),DV( 6.750),DV( 7.125),DV( 7.500),
-	DV( 7.875),DV( 8.250),DV( 8.625),DV( 9.000),
-	// OCT 4
-	DV( 0.000),DV( 0.000),DV( 3.000),DV( 4.875),
-	DV( 6.000),DV( 7.125),DV( 7.875),DV( 8.625),
-	DV( 9.000),DV( 9.750),DV(10.125),DV(10.500),
-	DV(10.875),DV(11.250),DV(11.625),DV(12.000),
-	// OCT 5
-	DV( 0.000),DV( 3.000),DV( 6.000),DV( 7.875),
-	DV( 9.000),DV(10.125),DV(10.875),DV(11.625),
-	DV(12.000),DV(12.750),DV(13.125),DV(13.500),
-	DV(13.875),DV(14.250),DV(14.625),DV(15.000),
-	// OCT 6
-	DV( 0.000),DV( 6.000),DV( 9.000),DV(10.875),
-	DV(12.000),DV(13.125),DV(13.875),DV(14.625),
-	DV(15.000),DV(15.750),DV(16.125),DV(16.500),
-	DV(16.875),DV(17.250),DV(17.625),DV(18.000),
-	// OCT 7
-	DV( 0.000),DV( 9.000),DV(12.000),DV(13.875),
-	DV(15.000),DV(16.125),DV(16.875),DV(17.625),
-	DV(18.000),DV(18.750),DV(19.125),DV(19.500),
-	DV(19.875),DV(20.250),DV(20.625),DV(21.000)
-};
+/* Values are dB / 0.1875; baked in DetTablesYm2413b.h. */
+#define ksl_tab detYm2413bKslTab
 
 // sustain level table (3dB per step)
 // 0 - 15: 0, 3, 6, 9,12,15,18,21,24,27,30,33,36,39,42,45 (dB)
-#define SC(db) (int)(((DoubleT)db) / ENV_STEP)
+#define SC(db) ((db) * 8)	/* == db / ENV_STEP, ENV_STEP = 0.125, exact */
 static const int sl_tab[16] = {
 	SC( 0),SC( 1),SC( 2),SC(3 ),SC(4 ),SC(5 ),SC(6 ),SC( 7),
 	SC( 8),SC( 9),SC(10),SC(11),SC(12),SC(13),SC(14),SC(15)
@@ -215,12 +173,11 @@ static const UINT8 eg_rate_shift[16 + 64 + 16] =
 
 
 // multiple table
-#define ML(x) (UINT8)(2 * x)
 static const UINT8 mul_tab[16] =
 {
-	// 1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,10,12,12,15,15
-	ML(0.50), ML(1.00),ML( 2.00),ML( 3.00),ML( 4.00),ML( 5.00),ML( 6.00),ML( 7.00),
-	ML(8.00), ML(9.00),ML(10.00),ML(10.00),ML(12.00),ML(12.00),ML(15.00),ML(15.00)
+	// 2 * (1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,10,12,12,15,15)
+	1, 2, 4, 6, 8, 10, 12, 14,
+	16, 18, 20, 20, 24, 24, 30, 30
 };
 
 //  TL_TAB_LEN is calculated as:
@@ -821,20 +778,8 @@ void OpenYM2413::init_tables()
 	alreadyInit = true;
 	
 	for (int x = 0; x < TL_RES_LEN; x++) {
-		DoubleT m = (1 << 16) / pow(2.0, (x + 1) * (ENV_STEP / 4.0) / 8.0);
-		m = floor(m);
-
-		// we never reach (1 << 16) here due to the (x + 1)
-		// result fits within 16 bits at maximum
-		int n = (int)m;	// 16 bits here
-		n >>= 4;	// 12 bits here
-		if (n & 1) {
-			// round to nearest
-			n = (n >> 1) + 1;
-		} else {
-			n =  n >> 1;
-		}
-		// 11 bits here (rounded)
+		// dB -> linear conversion, baked (DetTablesYm2413b.h)
+		int n = detYm2413bTlBase[x];	// 11 bits (rounded)
 		tl_tab[x * 2 + 0] = n;
 		tl_tab[x * 2 + 1] = -tl_tab[x * 2 + 0];
 
@@ -845,24 +790,8 @@ void OpenYM2413::init_tables()
 	}
 
 	for (int i = 0; i < SIN_LEN; i++) {
-		// non-standard sinus
-		DoubleT m = sin(((i * 2) + 1) * PI / SIN_LEN); // checked against the real chip
-
-		// we never reach zero here due to ((i*2)+1)
-		DoubleT o = (m > 0.0) ?
-		           (8 * ::log( 1.0 / m) / ::log(2.0)) :	// convert to 'decibels'
-		           (8 * ::log(-1.0 / m) / ::log(2.0));	// convert to 'decibels'
-		o = o / (ENV_STEP / 4);
-
-		int n = (int)(2.0 * o);
-		if (n & 1) {
-			// round to nearest
-			n = (n >> 1) + 1;
-		} else {
-			n =  n >> 1;
-		}
-		// waveform 0: standard sinus
-		sin_tab[i] = n * 2 + (m >= 0.0 ? 0: 1);
+		// waveform 0: standard sinus in decibel scale, baked
+		sin_tab[i] = detYm2413bSinTab[i];
 
 		// waveform 1:  __      __     
 		//             /  \____/  \____
@@ -879,28 +808,32 @@ void OpenYM2413::init_tables()
 void OpenYM2413::setSampleRate(int sampleRate, int Oversampling)
 {
     oplOversampling = Oversampling;
-	const int CLOCK_FREQ = 3579545;
-	DoubleT freqbase = (CLOCK_FREQ / 72.0) / (DoubleT)(sampleRate * oplOversampling);
+	(void)sampleRate;
+
+	// All values below are baked for the fixed configuration this core is
+	// created with (clock=3579545, sampleRate=44100, oversampling=1); the
+	// exact-integer equivalents were verified against the former double
+	// math in tools/gen_tables.c.
 
 	// make fnumber -> increment counter table 
 	for (int i = 0 ; i < 1024; i++) {
 		// OPLL (YM2413) phase increment counter = 18bit 
 		// -10 because chip works with 10.10 fixed point, while we use 16.16 
-		fn_tab[i] = (int)((DoubleT)i * 64 * freqbase * (1 << (FREQ_SH - 10)));
+		fn_tab[i] = detYm2413bFnTab[i];
 	}
 
 	// Amplitude modulation: 27 output levels (triangle waveform)
 	// 1 level takes one of: 192, 256 or 448 samples 
 	// One entry from LFO_AM_TABLE lasts for 64 samples 
-	lfo_am_inc = (unsigned)((1 << LFO_SH) * freqbase / 64);
+	lfo_am_inc = DET_YM2413B_LFO_AM_INC;
 
 	// Vibrato: 8 output levels (triangle waveform); 1 level takes 1024 samples 
-	lfo_pm_inc = (unsigned)((1 << LFO_SH) * freqbase / 1024);
+	lfo_pm_inc = DET_YM2413B_LFO_PM_INC;
 
 	// Noise generator: a step takes 1 sample 
-	noise_f = (unsigned)((1 << FREQ_SH) * freqbase);
+	noise_f = DET_YM2413B_NOISE_F;
 
-	eg_timer_add  = (unsigned)((1 << EG_SH) * freqbase);
+	eg_timer_add  = DET_YM2413B_EG_TIMER_ADD;
 }
 
 inline void Slot::KEY_ON(UINT8 key_set)
