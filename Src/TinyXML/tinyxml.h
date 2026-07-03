@@ -656,7 +656,6 @@ public:
 	const char*		Name()  const		{ return name.c_str (); }		///< Return the name of this attribute.
 	const char*		Value() const		{ return value.c_str (); }		///< Return the value of this attribute.
 	const int       IntValue() const;									///< Return the value of this attribute, converted to an integer.
-	const double	DoubleValue() const;								///< Return the value of this attribute, converted to a double.
 
 	/** QueryIntValue examines the value string. It is an alternative to the
 		IntValue() method with richer error checking.
@@ -669,13 +668,11 @@ public:
 	*/
 	int QueryIntValue( int* value ) const;
 	/// QueryDoubleValue examines the value string. See QueryIntValue().
-	int QueryDoubleValue( double* value ) const;
 
 	void SetName( const char* _name )	{ name = _name; }				///< Set the name of this attribute.
 	void SetValue( const char* _value )	{ value = _value; }				///< Set the value.
 
 	void SetIntValue( int value );										///< Set the value from an integer.
-	void SetDoubleValue( double value );								///< Set the value from a double.
 
     #ifdef TIXML_USE_STL
 	/// STL std::string form.
@@ -790,14 +787,6 @@ public:
 	*/
 	const char* Attribute( const char* name, int* i ) const;
 
-	/** Given an attribute name, Attribute() returns the value
-		for the attribute of that name, or null if none exists.
-		If the attribute exists and can be converted to an double,
-		the double value will be put in the return 'd', if 'd'
-		is non-null.
-	*/
-	const char* Attribute( const char* name, double* d ) const;
-
 	/** QueryIntAttribute examines the attribute - it is an alternative to the
 		Attribute() method with richer error checking.
 		If the attribute is an integer, it is stored in 'value' and 
@@ -807,7 +796,6 @@ public:
 	*/	
 	int QueryIntAttribute( const char* name, int* value ) const;
 	/// QueryDoubleAttribute examines the attribute - see QueryIntAttribute().
-	int QueryDoubleAttribute( const char* name, double* value ) const;
 
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.
@@ -817,9 +805,7 @@ public:
     #ifdef TIXML_USE_STL
 	const char* Attribute( const std::string& name ) const				{ return Attribute( name.c_str() ); }
 	const char* Attribute( const std::string& name, int* i ) const		{ return Attribute( name.c_str(), i ); }
-	const char* Attribute( const std::string& name, double* d ) const	{ return Attribute( name.c_str(), d ); }
 	int QueryIntAttribute( const std::string& name, int* value ) const	{ return QueryIntAttribute( name.c_str(), value ); }
-	int QueryDoubleAttribute( const std::string& name, double* value ) const { return QueryDoubleAttribute( name.c_str(), value ); }
 
 	/// STL std::string form.
 	void SetAttribute( const std::string& name, const std::string& _value )	
@@ -846,7 +832,6 @@ public:
 	/** Sets an attribute of name to a given value. The attribute
 		will be created if it does not exist, or changed if it does.
 	*/
-	void SetDoubleAttribute( const char * name, double value );
 
 	/** Deletes an attribute with the given name.
 	*/

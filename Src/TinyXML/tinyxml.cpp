@@ -542,18 +542,6 @@ const char * TiXmlElement::Attribute( const char * name, int* i ) const
 }
 
 
-const char * TiXmlElement::Attribute( const char * name, double* d ) const
-{
-	const char * s = Attribute( name );
-	if ( d )
-	{
-		if ( s )
-			*d = atof( s );
-		else
-			*d = 0;
-	}
-	return s;
-}
 
 
 int TiXmlElement::QueryIntAttribute( const char* name, int* ival ) const
@@ -566,14 +554,6 @@ int TiXmlElement::QueryIntAttribute( const char* name, int* ival ) const
 }
 
 
-int TiXmlElement::QueryDoubleAttribute( const char* name, double* dval ) const
-{
-	TiXmlAttribute* node = attributeSet.Find( name );
-	if ( !node )
-		return TIXML_NO_ATTRIBUTE;
-
-	return node->QueryDoubleValue( dval );
-}
 
 
 void TiXmlElement::SetAttribute( const char * name, int val )
@@ -584,12 +564,6 @@ void TiXmlElement::SetAttribute( const char * name, int val )
 }
 
 
-void TiXmlElement::SetDoubleAttribute( const char * name, double val )
-{	
-	char buf[128];
-	sprintf( buf, "%f", val );
-	SetAttribute( name, buf );
-}
 
 
 void TiXmlElement::SetAttribute( const char * name, const char * _value )
@@ -981,18 +955,6 @@ int TiXmlAttribute::QueryIntValue( int* ival ) const
 	return TIXML_SUCCESS;
 }
 
-int TiXmlAttribute::QueryDoubleValue( double* dval ) const
-{
-	const char* s = value.c_str();
-	char* end;
-	double v = strtod( s, &end );
-	if ( end != s )
-	{
-		*dval = v;
-		return TIXML_SUCCESS;
-	}
-	return TIXML_WRONG_TYPE;
-}
 
 void TiXmlAttribute::SetIntValue( int _value )
 {
@@ -1001,22 +963,12 @@ void TiXmlAttribute::SetIntValue( int _value )
 	SetValue (buf);
 }
 
-void TiXmlAttribute::SetDoubleValue( double _value )
-{
-	char buf [64];
-	sprintf (buf, "%lf", _value);
-	SetValue (buf);
-}
 
 const int TiXmlAttribute::IntValue() const
 {
 	return atoi (value.c_str ());
 }
 
-const double  TiXmlAttribute::DoubleValue() const
-{
-	return atof (value.c_str ());
-}
 
 
 TiXmlComment::TiXmlComment( const TiXmlComment& copy ) : TiXmlNode( TiXmlNode::COMMENT )
