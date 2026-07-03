@@ -4,6 +4,7 @@
 // $Id: OpenMsxYMF278.cpp,v 1.6 2008/03/31 22:07:05 hap-hap Exp $
 
 #include "OpenMsxYMF278.h"
+#include "DetTablesYmf278.h"
 
 #include <stdio.h>
 #include <cmath>
@@ -20,7 +21,7 @@ const unsigned int EG_TIMER_OVERFLOW = 1 << EG_SH;
 // envelope output entries
 const int ENV_BITS      = 10;
 const int ENV_LEN       = 1 << ENV_BITS;
-const DoubleT ENV_STEP   = 128.0 / ENV_LEN;
+/* ENV_STEP == 0.125; only integer-scaled uses remain */
 const int MAX_ATT_INDEX = (1 << (ENV_BITS - 1)) - 1; //511
 const int MIN_ATT_INDEX = 0;
 
@@ -49,7 +50,7 @@ const int mix_level[8] = {
 
 // decay level table (3dB per step)
 // 0 - 15: 0, 3, 6, 9,12,15,18,21,24,27,30,33,36,39,42,93 (dB)
-#define SC(db) (unsigned int)(db * (2.0 / ENV_STEP))
+#define SC(db) ((unsigned int)((db) * 16))	/* == db * 2.0/ENV_STEP, exact */
 const unsigned int dl_tab[16] = {
  SC( 0), SC( 1), SC( 2), SC(3 ), SC(4 ), SC(5 ), SC(6 ), SC( 7),
  SC( 8), SC( 9), SC(10), SC(11), SC(12), SC(13), SC(14), SC(31)
@@ -127,28 +128,21 @@ const UINT8 eg_rate_shift[64] = {
 
 //number of steps to take in quarter of lfo frequency
 //TODO check if frequency matches real chip
-#define O(a) ((int)((EG_TIMER_OVERFLOW / a) / 6))
-const int lfo_period[8] = {
-	O(0.168), O(2.019), O(3.196), O(4.206),
-	O(5.215), O(5.888), O(6.224), O(7.066)
-};
-#undef O
+// (int)((EG_TIMER_OVERFLOW / a) / 6) for a in {0.168, 2.019, 3.196,
+// 4.206, 5.215, 5.888, 6.224, 7.066}; baked in DetTablesYmf278.h
+#define lfo_period detYmf278LfoPeriod
 
 
-#define O(a) ((int)(a * 65536))
-const int vib_depth[8] = {
-	O(0),	   O(3.378),  O(5.065),  O(6.750),
-	O(10.114), O(20.170), O(40.106), O(79.307)
-};
-#undef O
+// (int)(a * 65536) for a in {0, 3.378, 5.065, 6.750, 10.114, 20.170,
+// 40.106, 79.307}; baked in DetTablesYmf278.h
+#define vib_depth detYmf278VibDepth
 
 
-#define SC(db) static_cast<int>(db * (2.0 / ENV_STEP))
+// static_cast<int>(db * 16) of 0, 1.781, 2.906, 3.656, 4.406, 5.906, 7.406, 11.91
 const int am_depth[8] = {
-	SC(0),	   SC(1.781), SC(2.906), SC(3.656),
-	SC(4.406), SC(5.906), SC(7.406), SC(11.91)
+	0,  28, 46, 58,
+	70, 94, 118, 190
 };
-#undef SC
 
 
 YMF278Slot::YMF278Slot()
@@ -824,7 +818,10 @@ void YMF278::setInternalVolume(short newVolume)
 	// Volume table, 1 = -0.375dB, 8 = -3dB, 256 = -96dB
     int i;
 	for (i = 0; i < 256; i++) {
-		volume[i] = (int)(4.0 * (DoubleT)newVolume * pow(2.0, (-0.375 / 6) * i));
+		/* (int)(4.0 * newVolume * pow(2, -0.375*i/6)); the Q40 fixed-point
+		 * form below was verified bit-for-bit for every possible newVolume
+		 * in tools/gen_tables.c. */
+		volume[i] = (int)(((Int64)4 * newVolume * detYmf278Pow2Q40[i]) / 1099511627776LL);
 	}
 	for (i = 256; i < 256 * 4; i++) {
 		volume[i] = 0;

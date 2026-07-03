@@ -134,7 +134,6 @@ class YMF278 : public SoundDevice
 		UINT8* ram;
 
         int oplOversampling;
-		DoubleT freqbase;
 
 		YMF278Slot slots[24];
 
