@@ -979,9 +979,10 @@ int	Y8950UpdateOne(FM_OPL *OPL)
 /* ---------- reset	one	of chip	---------- */
 void OPLResetChip(FM_OPL *OPL)
 {
-	OPL->noiseLfsr = 1;
 	int	c,s;
 	int	i;
+
+	OPL->noiseLfsr = 1;
 
 	/* reset chip */
 	OPL->mode	= 0;	/* normal mode */
