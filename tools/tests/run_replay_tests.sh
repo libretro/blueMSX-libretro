@@ -102,6 +102,17 @@ else
     say "== 4. skipped: aarch64 cross toolchain / qemu-aarch64 not installed =="
 fi
 
+say "== 5. savestate round-trip (bit-exact save -> load -> run) =="
+SS=$((FRAMES / 2))
+R1=$(/tmp/replay_native ./bluemsx_libretro.so "$SYS" "$ROM" "$FRAMES" --rtc=fixed \
+     "--savestate-test=$SS" 2>/dev/null | tail -1)
+say "  plain mapper: $R1"
+[ "$R1" = "SAVESTATE MATCH" ] || fail "savestate round-trip diverged (plain)"
+R2=$(/tmp/replay_native ./bluemsx_libretro.so "$SYS" "$ROM" "$FRAMES" --rtc=fixed \
+     --mapper=KonamiSCC "--savestate-test=$SS" 2>/dev/null | tail -1)
+say "  KonamiSCC mapper (SCC audio active): $R2"
+[ "$R2" = "SAVESTATE MATCH" ] || fail "savestate round-trip diverged (SCC)"
+
 if [ "$FAILED" = 0 ]; then
     say "REPLAY TESTS: ALL PASS"
 else

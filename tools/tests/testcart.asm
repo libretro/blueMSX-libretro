@@ -66,6 +66,45 @@ rtc_read:
         cp      13
         jr      nz, rtc_read
 
+        ; --- SCC (only when the harness forces the KonamiSCC mapper;
+        ;     with a plain mapper these are writes to ROM and ignored) ---
+        ; The BIOS calls INIT with only page 1 (0x4000-0x7FFF) selected
+        ; to the cartridge slot; select the same primary slot for page 2
+        ; (0x8000-0xBFFF) so the SCC bank/register writes reach us.
+        in      a, (0xa8)
+        ld      b, a
+        and     0x0c            ; page-1 slot bits
+        rlca
+        rlca                    ; -> page-2 position
+        ld      c, a
+        ld      a, b
+        and     0xcf            ; clear page-2 bits
+        or      c
+        out     (0xa8), a
+        ; map the SCC into 0x9800-0x9FFF: write 0x3F to bank reg 0x9000
+        ld      a, 0x3f
+        ld      (0x9000), a
+        ; waveform for channel 1: a crude 32-byte sawtooth
+        ld      hl, 0x9800
+        ld      b, 32
+        ld      a, -128
+sccwave:
+        ld      (hl), a
+        inc     hl
+        add     a, 8
+        djnz    sccwave
+        ; channel 1 frequency
+        ld      a, 0x40
+        ld      (0x9880), a
+        ld      a, 0x01
+        ld      (0x9881), a
+        ; channel 1 volume
+        ld      a, 10
+        ld      (0x988a), a
+        ; enable channel 1
+        ld      a, 0x01
+        ld      (0x988f), a
+
         ld      hl, 0           ; frame-ish counter
         ld      c, 0            ; colour/period counter
 
@@ -88,6 +127,10 @@ mainloop:
         and     0x03
         inc     a
         out     (0xa1), a
+
+        ; --- sweep SCC channel 1 frequency too (ignored w/o SCC mapper) ---
+        ld      a, c
+        ld      (0x9880), a
 
         ; --- write a deterministic byte pattern into VRAM at 0x0000+ ---
         ; set VRAM write address = HL & 0x3fff

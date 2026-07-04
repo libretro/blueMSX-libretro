@@ -15,6 +15,12 @@
  *
  * Prints one line per 100 frames plus a final combined digest:
  *   FINAL video=xxxxxxxx audio=xxxxxxxx frames=N samples=M
+ *
+ * With --savestate-test=F1 (F1 < frames), the harness additionally
+ * verifies bit-exact save/load: it serializes at frame F1, runs the
+ * remaining frames recording a segment digest, restores the state and
+ * runs the same segment again.  Both passes must match exactly - this
+ * is the property run-ahead and netplay rollback rely on.
  */
 #include <dlfcn.h>
 #include <stdio.h>
@@ -49,6 +55,9 @@ typedef void (*retro_audio_sample_t)(int16_t left, int16_t right);
 typedef size_t (*retro_audio_sample_batch_t)(const int16_t* data, size_t frames);
 typedef void (*retro_input_poll_t)(void);
 typedef int16_t (*retro_input_state_t)(unsigned port, unsigned device, unsigned index, unsigned id);
+typedef size_t (*retro_serialize_size_t)(void);
+typedef bool (*retro_serialize_t)(void*, size_t);
+typedef bool (*retro_unserialize_t)(const void*, size_t);
 
 /* --- self-contained CRC32 (zlib polynomial), no external deps --- */
 static uint32_t crc_table[256];
@@ -79,6 +88,7 @@ static uint32_t g_audio_crc = 0;
 static uint64_t g_samples = 0;
 static int g_verbose = 0;
 static const char* g_rtc_mode = "fixed epoch";
+static const char* g_mapper = NULL;
 
 static void log_cb(enum retro_log_level level, const char* fmt, ...)
 {
@@ -112,6 +122,10 @@ static bool env_cb(unsigned cmd, void* data)
         }
         if (!strcmp(var->key, "bluemsx_rtc_source")) {
             var->value = g_rtc_mode;
+            return true;
+        }
+        if (g_mapper && !strcmp(var->key, "bluemsx_cartmapper")) {
+            var->value = g_mapper;
             return true;
         }
         return false;                        /* everything else: defaults */
@@ -160,7 +174,8 @@ int main(int argc, char** argv)
 {
     if (argc < 5) {
         fprintf(stderr, "usage: %s <core.so> <system_dir> <rom> <frames>"
-                        " [--rtc=fixed|host] [-v]\n", argv[0]);
+                        " [--rtc=fixed|host] [--mapper=NAME]\n"
+                        "        [--savestate-test=FRAME] [-v]\n", argv[0]);
         return 2;
     }
     crc_init();
@@ -169,11 +184,17 @@ int main(int argc, char** argv)
     const char* rom_path = argv[3];
     long frames = strtol(argv[4], NULL, 10);
     int i;
+    long ss_frame = 0;   /* 0 = savestate test disabled */
     for (i = 5; i < argc; i++) {
         if (!strcmp(argv[i], "-v"))            g_verbose = 1;
         else if (!strcmp(argv[i], "--rtc=host"))  g_rtc_mode = "host clock";
         else if (!strcmp(argv[i], "--rtc=fixed")) g_rtc_mode = "fixed epoch";
+        else if (!strncmp(argv[i], "--savestate-test=", 17))
+            ss_frame = strtol(argv[i] + 17, NULL, 10);
+        else if (!strncmp(argv[i], "--mapper=", 9))
+            g_mapper = argv[i] + 9;
     }
+    if (ss_frame < 0 || ss_frame >= frames) ss_frame = 0;
 
     /* start from a clean save directory so battery-backed CMOS from a
      * previous run cannot leak into the comparison */
@@ -245,6 +266,10 @@ int main(int argc, char** argv)
             av.geometry.base_width, av.geometry.base_height,
             av.timing.fps, av.timing.sample_rate);
 
+    size_t (*retro_serialize_size_fn)(void) = dlsym(core, "retro_serialize_size");
+    bool (*retro_serialize_fn)(void*, size_t) = dlsym(core, "retro_serialize");
+    bool (*retro_unserialize_fn)(const void*, size_t) = dlsym(core, "retro_unserialize");
+
     long f;
     for (f = 1; f <= frames; f++) {
         retro_run_fn();
@@ -252,6 +277,51 @@ int main(int argc, char** argv)
             printf("frame %ld: video=%08x audio=%08x samples=%llu\n",
                    f, g_video_crc, g_audio_crc,
                    (unsigned long long)g_samples);
+
+        if (ss_frame && f == ss_frame) {
+            /* --- pass 1: snapshot, then run the tail segment --- */
+            size_t sz = retro_serialize_size_fn();
+            void* snap = malloc(sz);
+            uint32_t v1, a1, v2, a2;
+            uint64_t s1, s2;
+            long g;
+            if (!snap || !retro_serialize_fn(snap, sz)) {
+                fprintf(stderr, "serialize failed\n");
+                return 1;
+            }
+            g_video_crc = g_audio_crc = 0; g_samples = 0;
+            for (g = f + 1; g <= frames; g++) {
+                retro_run_fn();
+                if (g_verbose)
+                    fprintf(stderr, "p1 f%ld v=%08x\n", g, g_video_crc);
+            }
+            v1 = g_video_crc; a1 = g_audio_crc; s1 = g_samples;
+
+            /* --- pass 2: restore, run the same segment again --- */
+            if (!retro_unserialize_fn(snap, sz)) {
+                fprintf(stderr, "unserialize failed\n");
+                return 1;
+            }
+            g_video_crc = g_audio_crc = 0; g_samples = 0;
+            for (g = f + 1; g <= frames; g++) {
+                retro_run_fn();
+                if (g_verbose)
+                    fprintf(stderr, "p2 f%ld v=%08x\n", g, g_video_crc);
+            }
+            v2 = g_video_crc; a2 = g_audio_crc; s2 = g_samples;
+            free(snap);
+
+            printf("SAVESTATE pass1 video=%08x audio=%08x samples=%llu\n",
+                   v1, a1, (unsigned long long)s1);
+            printf("SAVESTATE pass2 video=%08x audio=%08x samples=%llu\n",
+                   v2, a2, (unsigned long long)s2);
+            printf("SAVESTATE %s\n",
+                   (v1 == v2 && a1 == a2 && s1 == s2) ? "MATCH" : "MISMATCH");
+            retro_unload_game_fn();
+            retro_deinit_fn();
+            dlclose(core);
+            return (v1 == v2 && a1 == a2 && s1 == s2) ? 0 : 1;
+        }
     }
 
     printf("FINAL video=%08x audio=%08x frames=%ld samples=%llu\n",

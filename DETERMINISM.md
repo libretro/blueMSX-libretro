@@ -120,6 +120,48 @@ sh tools/tests/run_replay_tests.sh [frames]
 Sections 2–4 are skipped gracefully when `faketime`, `clang`, or the
 aarch64 cross toolchain + `qemu-aarch64` are not installed.
 
+## Bit-exact savestates (run-ahead / netplay rollback)
+
+Save → load → run is bit-identical to an uninterrupted run, which is the
+property RetroArch run-ahead and netplay rollback rely on. This required
+fixing several long-standing gaps, found with the harness's
+`--savestate-test=FRAME` mode (serialize mid-run, run a segment, restore,
+re-run the segment, compare digests) and a save→load→save fixpoint
+differ:
+
+* **Board scope** — the in-session load paths (libretro
+  `retro_unserialize` and the built-in rewind) restored no board state
+  at all: `boardSysTime64`/`oldTime` stayed stale, so the first
+  `boardSystemTime64()` after a load computed a wrapped-around delta and
+  corrupted the hi-res clock that VDP timer scheduling uses. Restored
+  via `boardOnLoadState()`.
+* **Audio mixer** — had no serialization; its `refTime`/`refFrag`/output
+  buffer are now saved (previously the sample stream shifted by roughly
+  a frame after every load).
+* **Frame buffer** — the VDP renders scanlines lazily into a single
+  flat buffer in this port, so at any save point it holds partially
+  rendered lines that are not reconstructible from VDP state. The
+  buffer contents are now serialized (this is most of the state-size
+  growth; `retro_serialize_size` is raised to 4 MB).
+* **Sound chips** — SN76489 (whose `SaveState` also *mutated* the live
+  chip: every serialize perturbed the running machine — poison for
+  run-ahead, which snapshots every frame), SCC (95-tap FIR history and
+  high-pass filter state), the Y8950 and YM2151 wrapper resamplers, and
+  the DAC smoothing state used by the PPI key click and several mappers
+  are now fully serialized. The deterministic noise LFSRs (OPL rhythm,
+  VLM5030) moved from file statics into per-chip state and are
+  serialized too.
+* **Byte-stable blobs** — `saveStateSetBuffer` zeroed its word-alignment
+  padding, so two serializations of the same state are byte-identical
+  (useful for netplay state hashing).
+
+The test cartridge gained a Konami-SCC variant (`--mapper=KonamiSCC`)
+that selects its own slot for page 2, enables the SCC and plays a
+sawtooth through it, so the SCC's filter memory is actually exercised;
+reverting the SCC serialization makes the test fail, confirming it has
+teeth. Known remaining gap: the printer-port DAC (SIMPL/covox), whose
+owning device has no serialization plumbing at all upstream.
+
 ## Regenerating the tables
 
 ```
