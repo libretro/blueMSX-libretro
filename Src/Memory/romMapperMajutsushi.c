@@ -60,6 +60,8 @@ static void saveState(RomMapperMajutsushi* rm)
     }
 
     saveStateClose(state);
+
+    dacSaveState(rm->dac, "mapperMajutsushiDac");
 }
 
 static void loadState(RomMapperMajutsushi* rm)
@@ -74,6 +76,8 @@ static void loadState(RomMapperMajutsushi* rm)
     }
 
     saveStateClose(state);
+
+    dacLoadState(rm->dac, "mapperMajutsushiDac");
 
     for (i = 0; i < 4; i++) {   
         slotMapPage(rm->slot, rm->sslot, rm->startPage + i, rm->romData + rm->romMapper[i] * 0x2000, 1, 0);

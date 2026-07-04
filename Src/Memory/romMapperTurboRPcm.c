@@ -61,6 +61,8 @@ static void saveState(RomMapperTurboRPcm* rm)
     saveStateSet(state, "refFrag", rm->refFrag);
     
     saveStateClose(state);
+
+    dacSaveState(rm->dac, "mapperTurboRPcmDac");
 }
 
 static void loadState(RomMapperTurboRPcm* rm)
@@ -76,6 +78,8 @@ static void loadState(RomMapperTurboRPcm* rm)
     mixerSetEnable(rm->mixer, rm->status & 1);
 
     saveStateClose(state);
+
+    dacLoadState(rm->dac, "mapperTurboRPcmDac");
 }
 
 static void destroy(RomMapperTurboRPcm* rm)

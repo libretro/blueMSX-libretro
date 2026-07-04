@@ -164,6 +164,7 @@ static void loadState(SviPPI* ppi)
     saveStateClose(state);
     
     i8255LoadState(ppi->i8255);
+    dacLoadState(ppi->dac, "sviPpiDac");
 }
 
 static void saveState(SviPPI* ppi)
@@ -176,6 +177,7 @@ static void saveState(SviPPI* ppi)
     saveStateClose(state);
 
     i8255SaveState(ppi->i8255);
+    dacSaveState(ppi->dac, "sviPpiDac");
 }
 
 static UInt8 readRow(SviPPI* ppi, UInt16 ioPort)

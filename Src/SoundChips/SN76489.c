@@ -132,7 +132,15 @@ void sn76489LoadState(SN76489* sn76489)
 
         sprintf(tag, "toneFlipFlop%d", i);
         sn76489->toneFlipFlop[i] = saveStateGet(state, tag, 0);
+
+        sprintf(tag, "toneInterpol%d", i);
+        sn76489->toneInterpol[i] = (Int32)saveStateGet(state, tag, 0);
+
+        sprintf(tag, "toneInterpolValid%d", i);
+        sn76489->toneInterpolValid[i] = (Int32)saveStateGet(state, tag, 0);
     }
+
+    sn76489->clockAcc = (Int32)saveStateGet(state, "clockAcc", 0);
 
     saveStateClose(state);
 }
@@ -162,12 +170,15 @@ void sn76489SaveState(SN76489* sn76489)
 
         sprintf(tag, "toneFlipFlop%d", i);
         saveStateSet(state, tag, sn76489->toneFlipFlop[i]);
-        
-        sn76489->toneInterpol[i] = 0;
-        sn76489->toneInterpolValid[i] = 0;
+
+        sprintf(tag, "toneInterpol%d", i);
+        saveStateSet(state, tag, (UInt32)sn76489->toneInterpol[i]);
+
+        sprintf(tag, "toneInterpolValid%d", i);
+        saveStateSet(state, tag, (UInt32)sn76489->toneInterpolValid[i]);
     }
 
-    sn76489->clockAcc = 0;
+    saveStateSet(state, "clockAcc", (UInt32)sn76489->clockAcc);
 
     saveStateClose(state);
 }

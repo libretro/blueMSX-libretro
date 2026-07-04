@@ -26,6 +26,7 @@
 ******************************************************************************
 */
 #include "DAC.h"
+#include "SaveState.h"
 #include "Board.h"
 #include <stdlib.h>
 #include <string.h>
@@ -64,6 +65,56 @@ void dacReset(DAC* dac) {
     dac->sampleVolume[DAC_CH_RIGHT]    = 0;
     dac->ctrlVolume[DAC_CH_RIGHT]      = 0;
     dac->daVolume[DAC_CH_RIGHT]        = 0;
+}
+
+void dacSaveState(DAC* dac, const char* section)
+{
+    SaveState* state = saveStateOpenForWrite(section);
+    int i;
+    char tag[32];
+
+    saveStateSet(state, "enabled", dac->enabled);
+    for (i = 0; i < 2; i++) {
+        sprintf(tag, "sampleVolume%d", i);
+        saveStateSet(state, tag, (UInt32)dac->sampleVolume[i]);
+        sprintf(tag, "oldSampleVolume%d", i);
+        saveStateSet(state, tag, (UInt32)dac->oldSampleVolume[i]);
+        sprintf(tag, "sampleVolumeSum%d", i);
+        saveStateSet(state, tag, (UInt32)dac->sampleVolumeSum[i]);
+        sprintf(tag, "count%d", i);
+        saveStateSet(state, tag, (UInt32)dac->count[i]);
+        sprintf(tag, "ctrlVolume%d", i);
+        saveStateSet(state, tag, (UInt32)dac->ctrlVolume[i]);
+        sprintf(tag, "daVolume%d", i);
+        saveStateSet(state, tag, (UInt32)dac->daVolume[i]);
+    }
+
+    saveStateClose(state);
+}
+
+void dacLoadState(DAC* dac, const char* section)
+{
+    SaveState* state = saveStateOpenForRead(section);
+    int i;
+    char tag[32];
+
+    dac->enabled = saveStateGet(state, "enabled", dac->enabled);
+    for (i = 0; i < 2; i++) {
+        sprintf(tag, "sampleVolume%d", i);
+        dac->sampleVolume[i] = (Int32)saveStateGet(state, tag, 0);
+        sprintf(tag, "oldSampleVolume%d", i);
+        dac->oldSampleVolume[i] = (Int32)saveStateGet(state, tag, 0);
+        sprintf(tag, "sampleVolumeSum%d", i);
+        dac->sampleVolumeSum[i] = (Int32)saveStateGet(state, tag, 0);
+        sprintf(tag, "count%d", i);
+        dac->count[i] = (Int32)saveStateGet(state, tag, 0);
+        sprintf(tag, "ctrlVolume%d", i);
+        dac->ctrlVolume[i] = (Int32)saveStateGet(state, tag, 0);
+        sprintf(tag, "daVolume%d", i);
+        dac->daVolume[i] = (Int32)saveStateGet(state, tag, 0);
+    }
+
+    saveStateClose(state);
 }
 
 DAC* dacCreate(Mixer* mixer, DacMode mode)

@@ -285,6 +285,10 @@ void y8950SaveState(Y8950* y8950)
     saveStateSet(state, "vib",           vib);
     saveStateSet(state, "feedback2",     feedback2);
 
+    saveStateSet(state, "resampleOff", (UInt32)y8950->off);
+    saveStateSet(state, "resampleS1",  (UInt32)y8950->s1);
+    saveStateSet(state, "resampleS2",  (UInt32)y8950->s2);
+
     saveStateClose(state);
 
     Y8950SaveState(y8950->opl);
@@ -307,6 +311,10 @@ void y8950LoadState(Y8950* y8950)
     ams       = saveStateGet(state, "ams",       0);
     vib       = saveStateGet(state, "vib",       0);
     feedback2 = saveStateGet(state, "feedback2", 0);
+
+    y8950->off = (int)saveStateGet(state, "resampleOff", 0);
+    y8950->s1  = (Int32)saveStateGet(state, "resampleS1", 0);
+    y8950->s2  = (Int32)saveStateGet(state, "resampleS2", 0);
 
     saveStateClose(state);
 

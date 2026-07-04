@@ -207,6 +207,7 @@ static void saveState(MsxPsg* msxPsg)
     }
 
     ay8910SaveState(msxPsg->ay8910);
+    dacSaveState(msxPsg->dac, "msxPsgDac");
 }
 
 static void loadState(MsxPsg* msxPsg)
@@ -226,6 +227,7 @@ static void loadState(MsxPsg* msxPsg)
     }
 
     ay8910LoadState(msxPsg->ay8910);
+    dacLoadState(msxPsg->dac, "msxPsgDac");
 }
 
 static void reset(MsxPsg* msxPsg)

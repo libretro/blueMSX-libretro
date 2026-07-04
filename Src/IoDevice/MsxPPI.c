@@ -99,6 +99,7 @@ static void loadState(MsxPPI* ppi)
     saveStateClose(state);
     
     i8255LoadState(ppi->i8255);
+    dacLoadState(ppi->dac, "ppiDac");
 }
 
 static void saveState(MsxPPI* ppi)
@@ -112,6 +113,7 @@ static void saveState(MsxPPI* ppi)
     saveStateClose(state);
 
     i8255SaveState(ppi->i8255);
+    dacSaveState(ppi->dac, "ppiDac");
 }
 
 static void writeA(MsxPPI* ppi, UInt8 value)

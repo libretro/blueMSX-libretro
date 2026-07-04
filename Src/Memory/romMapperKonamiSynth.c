@@ -46,6 +46,16 @@ typedef struct {
     int startPage;
 } RomMapperKonamiSynth;
 
+static void saveState(RomMapperKonamiSynth* rm)
+{
+    dacSaveState(rm->dac, "mapperKonamiSynthDac");
+}
+
+static void loadState(RomMapperKonamiSynth* rm)
+{
+    dacLoadState(rm->dac, "mapperKonamiSynthDac");
+}
+
 static void destroy(RomMapperKonamiSynth* rm)
 {
     slotUnregister(rm->slot, rm->sslot, rm->startPage);
@@ -68,7 +78,7 @@ static void write(RomMapperKonamiSynth* rm, UInt16 address, UInt8 value)
 int romMapperKonamiSynthCreate(const char* filename, UInt8* romData, 
                                int size, int slot, int sslot, int startPage) 
 {
-    DeviceCallbacks callbacks = { destroy, NULL, NULL, NULL };
+    DeviceCallbacks callbacks = { destroy, NULL, saveState, loadState };
     RomMapperKonamiSynth* rm;
     int i;
 

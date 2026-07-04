@@ -118,7 +118,20 @@ void sccLoadState(SCC* scc)
 
         sprintf(tag, "oldSample%d", i);
         scc->oldSample[i] = saveStateGet(state, tag, 0);
+
+        sprintf(tag, "deformSample%d", i);
+        scc->deformSample[i] = saveStateGet(state, tag, 0);
+
+        sprintf(tag, "curWave%d", i);
+        scc->curWave[i] = (Int8)saveStateGet(state, tag, 0);
     }
+
+    scc->enable = (UInt8)saveStateGet(state, "enable", 1);
+    scc->bus    = (UInt16)saveStateGet(state, "bus", 0);
+
+    saveStateGetBuffer(state, "firIn",  scc->in,    sizeof(scc->in));
+    saveStateGetBuffer(state, "hpIn",   scc->inHp,  sizeof(scc->inHp));
+    saveStateGetBuffer(state, "hpOut",  scc->outHp, sizeof(scc->outHp));
 
     saveStateClose(state);
 }
@@ -165,7 +178,22 @@ void sccSaveState(SCC* scc)
 
         sprintf(tag, "oldSample%d", i);
         saveStateSet(state, tag, scc->oldSample[i]);
+
+        sprintf(tag, "deformSample%d", i);
+        saveStateSet(state, tag, scc->deformSample[i]);
+
+        sprintf(tag, "curWave%d", i);
+        saveStateSet(state, tag, (UInt32)(UInt8)scc->curWave[i]);
     }
+
+    saveStateSet(state, "enable", scc->enable);
+    saveStateSet(state, "bus",    scc->bus);
+
+    /* anti-alias filter memory: without it the first ~2 ms of audio
+     * after a state load differ from an uninterrupted run */
+    saveStateSetBuffer(state, "firIn",  scc->in,    sizeof(scc->in));
+    saveStateSetBuffer(state, "hpIn",   scc->inHp,  sizeof(scc->inHp));
+    saveStateSetBuffer(state, "hpOut",  scc->outHp, sizeof(scc->outHp));
 
     saveStateClose(state);
 }

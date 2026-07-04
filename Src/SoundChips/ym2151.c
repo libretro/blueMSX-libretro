@@ -236,6 +236,12 @@ void ym2151SaveState(YM2151* ym2151)
     saveStateSet(state, "timerValue2",   ym2151->timerValue2);
     saveStateSet(state, "timerRunning2", ym2151->timerRunning2);
     saveStateSet(state, "timeout2",      ym2151->timeout2);
+
+    saveStateSet(state, "resampleOff", (UInt32)ym2151->off);
+    saveStateSet(state, "resampleS1l", (UInt32)ym2151->s1l);
+    saveStateSet(state, "resampleS2l", (UInt32)ym2151->s2l);
+    saveStateSet(state, "resampleS1r", (UInt32)ym2151->s1r);
+    saveStateSet(state, "resampleS2r", (UInt32)ym2151->s2r);
     saveStateSet(state, "irqVector",     ym2151->irqVector);
     
     saveStateClose(state);
@@ -256,6 +262,12 @@ void ym2151LoadState(YM2151* ym2151)
     ym2151->timerValue2   =        saveStateGet(state, "timerValue2",   0);
     ym2151->timerRunning2 =        saveStateGet(state, "timerRunning2", 0);
     ym2151->timeout2      =        saveStateGet(state, "timeout2",      0);
+
+    ym2151->off = (int)saveStateGet(state, "resampleOff", 0);
+    ym2151->s1l = (Int32)saveStateGet(state, "resampleS1l", 0);
+    ym2151->s2l = (Int32)saveStateGet(state, "resampleS2l", 0);
+    ym2151->s1r = (Int32)saveStateGet(state, "resampleS1r", 0);
+    ym2151->s2r = (Int32)saveStateGet(state, "resampleS2r", 0);
     ym2151->irqVector     = (UInt8)saveStateGet(state, "irqVector",     0);
 
     saveStateClose(state);

@@ -118,6 +118,7 @@ struct vlm5030_info
 	UINT8 pin_RST;
 	UINT8 latch_data;
 	UINT16 vcu_addr_h;
+	UINT32 noise_lfsr;	/* deterministic unvoiced-noise LFSR */
 	UINT8 parameter;
 	UINT8 phase;
 
@@ -399,11 +400,11 @@ void vlm5030_update_callback(stream_sample_t *_buffer, int length)
 			else if (chip->old_pitch <= 1)
 			{	/* generate unvoiced samples here */
 				/* deterministic replacement for libc rand()&1 (platform-
-				 * dependent sequence): 23-bit LFSR, fixed seed */
+				 * dependent sequence): fixed-seed 23-bit LFSR, per chip
+				 * and serialized so save/load is bit-exact */
 				{
-					static UInt32 vlm_noise_lfsr = 1;
-					UInt32 bit = ((vlm_noise_lfsr >> 22) ^ (vlm_noise_lfsr >> 8)) & 1;
-					vlm_noise_lfsr = ((vlm_noise_lfsr << 1) | bit) & 0x7fffff;
+					UInt32 bit = ((chip->noise_lfsr >> 22) ^ (chip->noise_lfsr >> 8)) & 1;
+					chip->noise_lfsr = ((chip->noise_lfsr << 1) | bit) & 0x7fffff;
 					current_val = bit ? (int)chip->current_energy : -(int)chip->current_energy;
 				}
 			}
@@ -532,6 +533,7 @@ static void VLM5030_restore_state(void *param)
 
 static void VLM5030_reset(struct vlm5030_info *chip)
 {
+	chip->noise_lfsr = 1;
 	chip->phase = PH_RESET;
 	chip->address = 0;
 	chip->vcu_addr_h = 0;
@@ -741,6 +743,7 @@ void vlm5030_LoadState()
     saveStateSet(state, "address",       chip->address);
     saveStateSet(state, "pin_ST",        chip->pin_ST);
     saveStateSet(state, "pin_BSY",       chip->pin_BSY);
+    saveStateSet(state, "noiseLfsr",     chip->noise_lfsr);
     saveStateSet(state, "pin_VCU",       chip->pin_VCU);
     saveStateSet(state, "pin_RST",       chip->pin_RST);
     saveStateSet(state, "latch_data",    chip->latch_data);
@@ -779,6 +782,7 @@ void vlm5030_SaveState()
     chip->address       = (UInt16)saveStateGet(state, "address",       0);
     chip->pin_ST        = (UInt8)saveStateGet(state, "pin_ST",        0);
     chip->pin_BSY       = (UInt8)saveStateGet(state, "pin_BSY",       0);
+    chip->noise_lfsr = saveStateGet(state, "noiseLfsr", 1);
     chip->pin_VCU       = (UInt8)saveStateGet(state, "pin_VCU",       0);
     chip->pin_RST       = (UInt8)saveStateGet(state, "pin_RST",       0);
     chip->latch_data    = (UInt8)saveStateGet(state, "latch_data",    0);

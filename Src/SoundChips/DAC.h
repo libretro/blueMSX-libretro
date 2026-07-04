@@ -44,6 +44,12 @@ DAC* dacCreate(Mixer* mixer, DacMode mode);
 void dacDestroy(DAC* dac);
 void dacReset(DAC* dac);
 
+/* Serialize the DAC's smoothing state so audio after a state load is
+ * bit-identical to an uninterrupted run.  'section' must be a unique
+ * name per owning device (several devices own a DAC each). */
+void dacSaveState(DAC* dac, const char* section);
+void dacLoadState(DAC* dac, const char* section);
+
 /* Register read/write methods */
 void dacWrite(DAC* dac, DacChannel channel, UInt8 value);
 

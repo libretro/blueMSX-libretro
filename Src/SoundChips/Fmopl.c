@@ -404,20 +404,21 @@ void OPL_CALC_CH( OPL_CH *CH )
 
 /* ---------- calcrate rythm block ---------- */
 /* Deterministic white-noise bit.  The former code used libc rand(),
- * whose sequence differs between platforms/libcs; a fixed 23-bit LFSR
- * (taps as in the real OPL noise generator) makes the rhythm noise
- * identical everywhere.  WHITE_NOISE_db(6.0)/EG_STEP == 256, exact. */
-static UINT32 opl_noise_lfsr = 1;
-static INT32 opl_noise_bit(void)
+ * whose sequence differs between platforms/libcs; a fixed-seed 23-bit
+ * LFSR per chip (taps as in the real OPL noise generator) makes the
+ * rhythm noise identical everywhere.  The LFSR lives in FM_OPL and is
+ * serialized, so save/load is bit-exact.
+ * WHITE_NOISE_db(6.0)/EG_STEP == 256, exact. */
+static INT32 opl_noise_bit(FM_OPL* OPL)
 {
-	UINT32 bit = ((opl_noise_lfsr >> 22) ^ (opl_noise_lfsr >> 8)) & 1;
-	opl_noise_lfsr = ((opl_noise_lfsr << 1) | bit) & 0x7fffff;
+	UINT32 bit = ((OPL->noiseLfsr >> 22) ^ (OPL->noiseLfsr >> 8)) & 1;
+	OPL->noiseLfsr = ((OPL->noiseLfsr << 1) | bit) & 0x7fffff;
 	return (INT32)bit;
 }
-void OPL_CALC_RH( OPL_CH *CH )
+void OPL_CALC_RH( FM_OPL *OPL, OPL_CH *CH )
 {
 	UINT32 env_tam,env_sd,env_top,env_hh;
-	int	whitenoise = opl_noise_bit() * 256;
+	int	whitenoise = opl_noise_bit(OPL) * 256;
 	INT32 tone8;
 
 	OPL_SLOT *SLOT;
@@ -951,7 +952,7 @@ int	Y8950UpdateOne(FM_OPL *OPL)
 		    OPL_CALC_CH(CH);
 	    /* Rythn part */
 	    if(rythm)
-		    OPL_CALC_RH(S_CH);
+		    OPL_CALC_RH(OPL, S_CH);
     }
     outd /= OPL->rate / OPL->baseRate;
 
@@ -978,6 +979,7 @@ int	Y8950UpdateOne(FM_OPL *OPL)
 /* ---------- reset	one	of chip	---------- */
 void OPLResetChip(FM_OPL *OPL)
 {
+	OPL->noiseLfsr = 1;
 	int	c,s;
 	int	i;
 
@@ -1229,6 +1231,7 @@ void Y8950LoadState(FM_OPL *OPL)
     OPL->amsIncr            = saveStateGet(state, "amsIncr",            0);
     OPL->vibCnt             = saveStateGet(state, "vibCnt",             0);
     OPL->vibIncr            = saveStateGet(state, "vibIncr",            0);
+    OPL->noiseLfsr = saveStateGet(state, "noiseLfsr", 1);
     OPL->wavesel            = (UInt8)saveStateGet(state, "wavesel",            0);
     OPL->dacSampleVolume    = saveStateGet(state, "dacSampleVolume",    0);
     OPL->dacOldSampleVolume = saveStateGet(state, "dacOldSampleVolume", 0);
@@ -1379,6 +1382,7 @@ void Y8950SaveState(FM_OPL *OPL)
     saveStateSet(state, "amsIncr",            OPL->amsIncr);
     saveStateSet(state, "vibCnt",             OPL->vibCnt);
     saveStateSet(state, "vibIncr",            OPL->vibIncr);
+    saveStateSet(state, "noiseLfsr", OPL->noiseLfsr);
     saveStateSet(state, "wavesel",            OPL->wavesel);
     saveStateSet(state, "dacSampleVolume",    OPL->dacSampleVolume);
     saveStateSet(state, "dacOldSampleVolume", OPL->dacOldSampleVolume);

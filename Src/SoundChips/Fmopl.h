@@ -94,6 +94,7 @@ typedef struct fm_opl_f {
     int baseRate;       /* sampling rate (Hz)                */
 	/* freqbase/TimerBase removed: phase tables are exact-integer now.
 	 * The effective frequency base is clock / (72 * rate).            */
+	UINT32 noiseLfsr;	/* rhythm white-noise LFSR (deterministic) */
 
     UINT8 type;			/* chip type                        */
 	UINT8 address;		/* address register                  */
