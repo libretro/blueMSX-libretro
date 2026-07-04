@@ -185,6 +185,11 @@ void saveStateSetBuffer(SaveState* state, const char* tagName, void* buffer, UIn
     stateExtendBuffer(state, 2 + (length + sizeof(UInt32) - 1) / sizeof(UInt32));
     state->buffer[state->offset++] = tagFromName(tagName);
     state->buffer[state->offset++] = length;
+    /* zero the last word first so the alignment padding is deterministic
+     * (serialized states are byte-stable, e.g. for netplay state hashes) */
+    if (length & (sizeof(UInt32) - 1)) {
+        state->buffer[state->offset + length / sizeof(UInt32)] = 0;
+    }
     memcpy(state->buffer + state->offset, buffer, length);
     state->offset += (length + sizeof(UInt32) - 1) / sizeof(UInt32);
 }

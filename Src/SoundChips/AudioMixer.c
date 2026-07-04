@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "DetTablesMixer.h"
+#include "SaveState.h"
 
 #define BITSPERSAMPLE     16
 
@@ -419,6 +420,45 @@ void mixerReset(Mixer* mixer)
 {
     mixer->refTime = boardSystemTime();
     mixer->index = 0;
+}
+
+void mixerSaveState(Mixer* mixer)
+{
+    SaveState* state = saveStateOpenForWrite("mixer");
+
+    saveStateSet(state, "refTime",     mixer->refTime);
+    saveStateSet(state, "refFrag",     mixer->refFrag);
+    saveStateSet(state, "index",       mixer->index);
+    saveStateSet(state, "volIndex",    mixer->volIndex);
+    saveStateSet(state, "volCntLeft",  mixer->volCntLeft);
+    saveStateSet(state, "volCntRight", mixer->volCntRight);
+    if (mixer->index > 0) {
+        saveStateSetBuffer(state, "buffer", mixer->buffer,
+                           mixer->index * sizeof(Int16));
+    }
+
+    saveStateClose(state);
+}
+
+void mixerLoadState(Mixer* mixer)
+{
+    SaveState* state = saveStateOpenForRead("mixer");
+
+    mixer->refTime     = saveStateGet(state, "refTime", boardSystemTime());
+    mixer->refFrag     = saveStateGet(state, "refFrag", 0);
+    mixer->index       = saveStateGet(state, "index", 0);
+    mixer->volIndex    = saveStateGet(state, "volIndex", 0);
+    mixer->volCntLeft  = saveStateGet(state, "volCntLeft", 0);
+    mixer->volCntRight = saveStateGet(state, "volCntRight", 0);
+    if (mixer->index > (UInt32)AUDIO_STEREO_BUFFER_SIZE) {
+        mixer->index = 0;
+    }
+    if (mixer->index > 0) {
+        saveStateGetBuffer(state, "buffer", mixer->buffer,
+                           mixer->index * sizeof(Int16));
+    }
+
+    saveStateClose(state);
 }
 
 void mixerSync(Mixer* mixer)

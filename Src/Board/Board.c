@@ -653,6 +653,7 @@ int boardRewind()
 //    machineLoadState(boardMachine);
 
     boardInfo.loadState();
+    boardOnLoadState();
     boardCaptureLoadState();
 
 #if 1
@@ -738,6 +739,7 @@ int boardRun(Machine* machine,
 
     if (success && loadState) {
         boardInfo.loadState();
+        boardOnLoadState();
         boardCaptureLoadState();
     }
 
@@ -939,6 +941,30 @@ static BoardType boardLoadState(void)
 }
 
 
+/* Restore board-scope state in the in-session load paths (libretro
+ * retro_unserialize and the built-in rewind).  The full boardLoadState()
+ * below is only used when loading a state from disk into a fresh board;
+ * the in-session paths previously restored no board state at all, which
+ * left boardSysTime64/oldTime/pendingInt stale.  A stale (larger)
+ * oldTime makes boardSystemTime64() compute a wrapped-around delta,
+ * corrupting the hi-res clock that VDP timer scheduling depends on, so
+ * emulation after a load diverged from an uninterrupted run. */
+void boardOnLoadState(void)
+{
+    SaveState* state = saveStateOpenForRead("board");
+
+    boardSysTime64 = (UInt64)saveStateGet(state, "boardSysTime64Hi", 0) << 32 |
+                     (UInt64)saveStateGet(state, "boardSysTime64Lo", 0);
+    oldTime        = saveStateGet(state, "oldTime", 0);
+    pendingInt     = saveStateGet(state, "pendingInt", 0);
+
+    saveStateClose(state);
+
+    tapeLoadState();
+    mixerLoadState(boardMixer);
+    frameBufferLoadState();
+}
+
 void boardSaveState(const char* stateFile, int screenshot)
 {
     BoardDeviceInfo* di = boardDeviceInfo;
@@ -1006,6 +1032,8 @@ void boardSaveState(const char* stateFile, int screenshot)
 
     videoManagerSaveState();
     tapeSaveState();
+    mixerSaveState(boardMixer);
+    frameBufferSaveState();
 
     // Save machine state
     machineSaveState(boardMachine);

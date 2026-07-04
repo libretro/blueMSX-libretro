@@ -74,6 +74,14 @@ FrameBufferData* frameBufferGetActive();
 
 void frameBufferSetBlendFrames(int blendFrames);
 
+/* Serialize the frame buffer contents so that the first frame produced
+ * after a state load is bit-identical to an uninterrupted run.  The VDP
+ * renders scanlines into the frame buffer progressively (lazily), so at
+ * any save point the buffer holds partially rendered lines that are not
+ * reconstructible from VDP state alone. */
+void frameBufferSaveState(void);
+void frameBufferLoadState(void);
+
 #ifdef WII
 #define BKMODE_TRANSPARENT 0x0020
 #define videoGetColor(R, G, B) \

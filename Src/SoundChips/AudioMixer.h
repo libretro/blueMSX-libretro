@@ -80,6 +80,12 @@ Int32 mixerIsChannelTypeActive(Mixer* mixer, Int32 channelType, Int32 reset);
 
 /* Internal interface methods */
 void mixerReset(Mixer* mixer);
+
+/* Serialize the mixer's stream state (timing anchors and any samples
+ * produced but not yet fetched) so that save -> load -> run is
+ * bit-identical to an uninterrupted run. */
+void mixerSaveState(Mixer* mixer);
+void mixerLoadState(Mixer* mixer);
 void mixerSync(Mixer* mixer);
 Int16* mixerGetBuffer(Mixer* mixer, UInt32* samplesOut);
 

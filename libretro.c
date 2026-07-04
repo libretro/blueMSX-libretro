@@ -1821,6 +1821,34 @@ int frameBufferGetMaxWidth(FrameBuffer* frameBuffer)
    return FB_MAX_LINE_WIDTH;
 }
 
+void frameBufferSaveState(void)
+{
+   SaveState* state = saveStateOpenForWrite("framebuffer");
+
+   saveStateSet(state, "width",       image_buffer_current_width);
+   saveStateSet(state, "height",      image_buffer_height);
+   saveStateSet(state, "doubleWidth", double_width);
+   saveStateSet(state, "scanLine",    fbScanLine);
+   saveStateSetBuffer(state, "pixels", image_buffer,
+                      FB_MAX_LINE_WIDTH * FB_MAX_LINES * sizeof(uint16_t));
+
+   saveStateClose(state);
+}
+
+void frameBufferLoadState(void)
+{
+   SaveState* state = saveStateOpenForRead("framebuffer");
+
+   image_buffer_current_width = saveStateGet(state, "width",  image_buffer_current_width);
+   image_buffer_height        = saveStateGet(state, "height", image_buffer_height);
+   double_width               = saveStateGet(state, "doubleWidth", double_width);
+   fbScanLine                 = saveStateGet(state, "scanLine",    fbScanLine);
+   saveStateGetBuffer(state, "pixels", image_buffer,
+                      FB_MAX_LINE_WIDTH * FB_MAX_LINES * sizeof(uint16_t));
+
+   saveStateClose(state);
+}
+
 int frameBufferGetDoubleWidth(FrameBuffer* frameBuffer, int y)
 {
    return double_width;
@@ -1879,7 +1907,10 @@ size_t retro_get_memory_size(unsigned id)
    return 0;
 }
 unsigned retro_api_version(void){return RETRO_API_VERSION;}
-size_t retro_serialize_size(void){return 1<<21;}
+/* Serialized state now includes the frame buffer (~600 kB) on top of
+ * VRAM/RAM/device state; 4 MB leaves comfortable headroom for the
+ * largest machine configurations. */
+size_t retro_serialize_size(void){return 1<<22;}
 void retro_cheat_reset(void)
 {
    slotManagerResetCheat();
@@ -1973,6 +2004,7 @@ bool retro_unserialize(const void *data, size_t size)
    } 
    saveStateCreateForRead("mem0");
    boardInfo.loadState();
+   boardOnLoadState();
    memZipFileDestroy(memZipFileFind("mem0"));
    return true;
 }

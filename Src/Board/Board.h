@@ -119,6 +119,7 @@ int boardCaptureCompleteAmount();
 UInt8 boardCaptureUInt8(UInt8 logId, UInt8 value);
 
 void boardSaveState(const char* stateFile, int screenshot);
+void boardOnLoadState(void);
 
 void boardSetFrequency(int frequency);
 int  boardGetRefreshRate();
