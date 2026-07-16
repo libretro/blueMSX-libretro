@@ -6,7 +6,13 @@ HAVE_COMPAT := 1
 
 include $(CORE_DIR)/Makefile.common
 
-COREFLAGS := -DANDROID $(COREDEFINES) $(INCFLAGS) -Wno-c++11-narrowing
+# The blueMSX codebase pervasively registers device callbacks whose first
+# parameter is a concrete struct pointer against void*-based callback
+# typedefs (~1000 sites).  Clang 16+ (NDK r26+) treats this as an error
+# by default; keep it a warning here, as retyping every callback would
+# be unjustifiable churn.  Genuine bugs it would hide (wrong arity or
+# return type) are caught by the Linux CI's clang job.
+COREFLAGS := -DANDROID $(COREDEFINES) $(INCFLAGS) -Wno-c++11-narrowing -Wno-error=incompatible-function-pointer-types
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
