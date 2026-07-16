@@ -84,7 +84,7 @@ static UInt8 read_ram(RomMapperSC3000MultiCart* rm, UInt16 address)
     return rm->ram[address];
 }
 
-static UInt8 write_ram(RomMapperSC3000MultiCart* rm, UInt16 address, UInt8 value)
+static void write_ram(RomMapperSC3000MultiCart* rm, UInt16 address, UInt8 value)
 {
     rm->ram[address] = value;
 }
@@ -96,7 +96,7 @@ static UInt8 readIo(RomMapperSC3000MultiCart* rm, UInt16 ioPort)
 }
 
 
-static UInt8 writeIo(RomMapperSC3000MultiCart* rm, UInt16 ioPort, UInt8 value)
+static void writeIo(RomMapperSC3000MultiCart* rm, UInt16 ioPort, UInt8 value)
 {
     int game_no;
 

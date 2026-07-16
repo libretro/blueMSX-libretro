@@ -112,6 +112,7 @@
 #include "romMapperDooly.h"
 #include "romMapperSg1000RamExpander.h"
 #include "romMapperMuPack.h"
+#include "romMapperSC3000MultiCart.h"
 
 #include <stdlib.h>
 #include <string.h>
