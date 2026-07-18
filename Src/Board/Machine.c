@@ -42,6 +42,7 @@
 #include "MediaDb.h"
 #include "TokenExtract.h"
 #include "Disk.h"
+#include "romMapperSC3000MultiCart.h"
 #include "unzip.h"
 
 #include "AppConfig.h"

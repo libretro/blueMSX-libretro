@@ -29,6 +29,7 @@
 #define DISK_H
 
 #include "MsxTypes.h"
+#include <stddef.h>
 
 #define MAX_FDC_COUNT            2
 
@@ -62,6 +63,11 @@ int   diskGetSectorSize(int driveId, int side, int track, int density);
 int   diskIsCdrom(int driveId);
 int   diskGetSides(int driveId);
 int   diskChanged(int driveId);
+
+/* Per-drive write-overlay support (implemented in Disk.c) */
+void  mountDiskOverlay(int driveId, const char* dskImagePath, size_t sectorSize);
+void  writeDiskOverlay(int driveId);
+void  unmountDiskOverlay(int driveId);
 int   _diskRead2(int driveId, UInt8* buffer, int sector, int numSectors);
 int   _diskWrite2(int driveId, UInt8* buffer, int sector, int numSectors);
 int   _diskGetTotalSectors(int driveId);

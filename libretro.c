@@ -34,6 +34,7 @@
 #include "Src/Utils/ScanParse.h"
 #include "DiskOverlay.h"
 #include "Disk.h"
+#include "SlotManager.h"
 #include "RTC.h"
 
 #include "ziphelper.c"
