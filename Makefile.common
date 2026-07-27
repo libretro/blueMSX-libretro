@@ -314,7 +314,7 @@ ifneq ($(STATIC_LINKING), 1)
 SOURCES_C += $(LIBRETRO_COMM_DIR)/file/retro_dirent.c \
 	     $(LIBRETRO_COMM_DIR)/compat/compat_snprintf.c \
 	     $(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c
-
+endif
 #include zlib
 SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 	     $(DEPS_DIR)/zlib/compress.c \
@@ -326,7 +326,6 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 	     $(DEPS_DIR)/zlib/trees.c \
 	     $(DEPS_DIR)/zlib/uncompr.c \
 	     $(DEPS_DIR)/zlib/zutil.c
-endif
 
 ifeq ($(HAVE_COMPAT), 1)
 	SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-glob.c
