@@ -1,7 +1,7 @@
 /* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (strcasestr.h).
+ * The following license statement only applies to this file (strl.h).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -20,10 +20,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __LIBRETRO_SDK_COMPAT_STRCASESTR_H
-#define __LIBRETRO_SDK_COMPAT_STRCASESTR_H
+#ifndef __LIBRETRO_SDK_COMPAT_STRL_H
+#define __LIBRETRO_SDK_COMPAT_STRL_H
 
+/**
+ * @file strl.h
+ *
+ * Portable implementation of \c strlcpy(3) and \c strlcat(3).
+ * If these functions are available on the target platform,
+ * then the originals should be imported instead.
+ *
+ * @see https://linux.die.net/man/3/strlcpy
+ */
 #include <string.h>
+#include <stddef.h>
 
 #if defined(RARCH_INTERNAL) && defined(HAVE_CONFIG_H)
 #include "../../../config.h"
@@ -33,28 +43,43 @@
 
 RETRO_BEGIN_DECLS
 
+#if defined(__MACH__) && defined(__APPLE__)
+#ifndef HAVE_STRL
+#define HAVE_STRL
+#endif
+#endif
+
+#ifndef HAVE_STRL
+/* Avoid possible naming collisions during link since
+ * we prefer to use the actual name. */
+#define strlcpy(dst, src, size) strlcpy_retro__(dst, src, size)
+
+#define strlcat(dst, src, size) strlcat_retro__(dst, src, size)
+
 /**
- * Case-insensitive substring search.
- *
- * Called by its own name rather than shadowing strcasestr, and used
- * unconditionally rather than only where the C library lacks one.  The
- * library's version is not reliably the better choice: glibc's measured
- * some fifty times slower than this on a representative search, and the
- * handheld targets that set HAVE_STRCASESTR are the slowest machines
- * RetroArch runs on and the least likely to have a good implementation.
- * Using one function everywhere also means one set of semantics, rather
- * than case folding that varies with the platform's locale.
- *
- * Folds ASCII only, which is what the callers mean - extensions, driver
- * names, search terms - and matches the behaviour of the C library
- * versions it replaces for every input that is not undefined.
- *
- * @param haystack String to search in.
- * @param needle   String to search for.
- * @return Pointer to the first occurrence within \c haystack,
- *         or NULL if there is none.
+ * @brief Portable implementation of \c strlcpy(3).
+ * @see https://linux.die.net/man/3/strlcpy
  */
-char *compat_strcasestr(const char *haystack, const char *needle);
+size_t strlcpy(char *s, const char *source, size_t len);
+
+/**
+ * @brief Portable implementation of \c strlcat(3).
+ * @see https://linux.die.net/man/3/strlcpy
+ */
+size_t strlcat(char *s, const char *source, size_t len);
+
+#endif
+
+/**
+ * A version of \c strndup(3) that guarantees the result will be null-terminated.
+ *
+ * @param s The string to duplicate.
+ * @param n The maximum number of characters to copy from \c s.
+ * The result will allocate one more byte than this value.
+ * @return Pointer to the cloned string.
+ * Must be freed with \c free().
+ */
+char *strldup(const char *s, size_t n);
 
 RETRO_END_DECLS
 

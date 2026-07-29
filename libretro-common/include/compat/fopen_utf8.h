@@ -1,7 +1,7 @@
 /* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (retro_common.h).
+ * The following license statement only applies to this file (fopen_utf8.h).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -20,17 +20,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _LIBRETRO_COMMON_RETRO_COMMON_H
-#define _LIBRETRO_COMMON_RETRO_COMMON_H
+#ifndef __LIBRETRO_SDK_COMPAT_FOPEN_UTF8_H
+#define __LIBRETRO_SDK_COMPAT_FOPEN_UTF8_H
 
-/*!
- * @internal This file is designed to normalize the libretro-common compiling environment.
- * It is not to be used in public API headers, as they should be designed as leanly as possible.
- * Nonetheless.. in the meantime, if you do something like use ssize_t, which is not fully portable,
- * in a public API, you may need this.
- */
-
-/* conditional compilation is handled inside here */
-#include <compat/msvc.h>
-
+#ifdef _WIN32
+/* Defined to error rather than fopen_utf8, to make it clear to everyone reading the code that not worrying about utf16 is fine */
+/* TODO: enable */
+/* #define fopen (use fopen_utf8 instead) */
+void *fopen_utf8(const char * filename, const char * mode);
+#else
+#define fopen_utf8 fopen
+#endif
 #endif

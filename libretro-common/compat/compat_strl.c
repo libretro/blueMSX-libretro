@@ -1,7 +1,7 @@
 /* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (retro_common.h).
+ * The following license statement only applies to this file (compat_strl.c).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -20,17 +20,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _LIBRETRO_COMMON_RETRO_COMMON_H
-#define _LIBRETRO_COMMON_RETRO_COMMON_H
+#include <compat/strl.h>
 
-/*!
- * @internal This file is designed to normalize the libretro-common compiling environment.
- * It is not to be used in public API headers, as they should be designed as leanly as possible.
- * Nonetheless.. in the meantime, if you do something like use ssize_t, which is not fully portable,
- * in a public API, you may need this.
- */
+/* Implementation of strlcpy()/strlcat() based on OpenBSD. */
 
-/* conditional compilation is handled inside here */
-#include <compat/msvc.h>
+#if !(defined(__MACH__) && defined(__APPLE__))
+size_t strlcpy(char *s, const char *in, size_t len)
+{
+   size_t src_len = strlen(in);
+   if (len)
+   {
+      size_t cpy_len = src_len < len - 1 ? src_len : len - 1;
+      memcpy(s, in, cpy_len);
+      s[cpy_len] = '\0';
+   }
+   return src_len;
+}
 
+/* NOTE: When 'len' is smaller than strlen(s), the return value is
+ * strlen(s) + strlen(source), whereas OpenBSD returns
+ * len + strlen(source). No bytes are written in either case, and the
+ * usual 'return value >= len means truncated' test holds for both,
+ * so this only matters to callers that use the return value as an
+ * exact required-buffer-size figure. */
+size_t strlcat(char *s, const char *source, size_t len)
+{
+   size_t dst_len = strlen(s);
+   s += dst_len;
+   if (dst_len > len)
+      len = 0;
+   else
+      len -= dst_len;
+   return dst_len + strlcpy(s, source, len);
+}
 #endif
