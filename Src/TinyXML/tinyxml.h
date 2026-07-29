@@ -39,9 +39,15 @@ distribution.
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <wchar.h>
 
 /* file_stream_transforms.h maps stdio file I/O onto the libretro VFS;
-   included here so FILE consistently means RFILE for all TinyXML users. */
+   included here so FILE consistently means RFILE for all TinyXML users.
+   wchar.h is included first because the mingw-w64 CRT declares
+   __acrt_iob_func with a FILE* return in both stdio.h and wchar.h;
+   both declarations must be seen with the native FILE type before it
+   is remapped, or a later <string>/<cwchar> include produces a
+   conflicting declaration. */
 #include <streams/file_stream_transforms.h>
 
 #ifdef TIXML_USE_STL
