@@ -39,8 +39,6 @@
 #include "AppConfig.h"
 
 
-// PacketFileSystem.h Need to be included after all other includes
-#include "PacketFileSystem.h"
 
 static char settFilename[512];
 

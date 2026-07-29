@@ -9,6 +9,7 @@
 */
 #include "R800Dasm.h"
 #include <stdio.h>
+#include <streams/file_stream_transforms.h>
 #include <string.h>
 
 static FILE* traceFile = NULL;

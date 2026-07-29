@@ -44,8 +44,6 @@
 #include "ArchDialog.h"
 
 
-// PacketFileSystem.h Need to be included after all other includes
-#include "PacketFileSystem.h"
 
 
 void archUpdateMenu(int show);
