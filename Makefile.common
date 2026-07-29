@@ -338,10 +338,6 @@ SOURCES_C += $(DEPS_DIR)/zlib/adler32.c \
 	     $(DEPS_DIR)/zlib/uncompr.c \
 	     $(DEPS_DIR)/zlib/zutil.c
 
-ifeq ($(HAVE_COMPAT), 1)
-	SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-glob.c
-	SOURCES_C  += $(CORE_DIR)/Src/Libretro/psp/diet-fnmatch.c
-endif
 
 ifeq ($(HAVE_WIN32_MSX_MANAGER), 1)
 	COREDEFINES  += -DHAVE_WIN32_MSX_MANAGER

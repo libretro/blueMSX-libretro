@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <sys/stat.h>
+#include <file/file_path.h>
 
 /* file_stream_transforms.h needs to be included after all other includes */
 #include <streams/file_stream_transforms.h>
@@ -536,8 +536,6 @@ static char *makeErrorsFileName(const char *fileName)
 
 UInt8 diskChange(int driveId, const char* fileName, const char* fileInZipFile)
 {
-    struct stat s;
-    int rv;
     char *fname;
 
     if (driveId >= MAXDRIVES)
@@ -571,14 +569,11 @@ UInt8 diskChange(int driveId, const char* fileName, const char* fileInZipFile)
         return 1;
     }
 
-    rv = stat(fileName, &s);
-    if (rv == 0) {
-        if (s.st_mode & S_IFDIR) {
-            ramImageBuffer[driveId] = dirLoadFile(DDT_MSX, fileName, &ramImageSize[driveId]);
-            fileSize[driveId] = ramImageSize[driveId];
-            diskUpdateInfo(driveId);
-            return ramImageBuffer[driveId] != NULL;
-        }
+    if (path_is_directory(fileName)) {
+        ramImageBuffer[driveId] = dirLoadFile(DDT_MSX, fileName, &ramImageSize[driveId]);
+        fileSize[driveId] = ramImageSize[driveId];
+        diskUpdateInfo(driveId);
+        return ramImageBuffer[driveId] != NULL;
     }
 
     if (fileInZipFile != NULL) {
