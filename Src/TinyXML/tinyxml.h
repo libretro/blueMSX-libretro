@@ -40,6 +40,10 @@ distribution.
 #include <ctype.h>
 #include <string.h>
 
+/* file_stream_transforms.h maps stdio file I/O onto the libretro VFS;
+   included here so FILE consistently means RFILE for all TinyXML users. */
+#include <streams/file_stream_transforms.h>
+
 #ifdef TIXML_USE_STL
 	#include <string>
  	#include <iostream>
@@ -1178,7 +1182,6 @@ public:
 											}
 
 	/** Dump the document to standard out. */
-	void Print() const						{ Print( stdout, 0 ); }
 
 	/// Print this Document to a FILE stream.
 	virtual void Print( FILE* cfile, int depth = 0 ) const;

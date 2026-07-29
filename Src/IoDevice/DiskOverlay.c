@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <streams/file_stream_transforms.h>
 
 DiskOverlay_t* diskOverlayCreate(size_t sectorSize)
 {

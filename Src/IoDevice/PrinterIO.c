@@ -31,6 +31,7 @@
 #include "Board.h"
 #include <stdlib.h>
 #include <string.h>
+#include <streams/file_stream_transforms.h>
 
 typedef struct PrinterIO {
     PrinterType type;

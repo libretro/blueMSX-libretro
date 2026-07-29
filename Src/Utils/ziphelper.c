@@ -32,21 +32,10 @@
 #include "ctype.h"
 #include "ZipFromMem.h"
 #include <stdio.h>
+#include <streams/file_stream_transforms.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <errno.h>
-#ifdef WIN32
-#include <direct.h>
-#endif
-
-#if defined(MINGW)
- #define MKDIR(x) mkdir(x)
-#elif defined(WIN32)
- #define MKDIR(x) _mkdir(x)
-#else
- #define MKDIR(x) mkdir(x,0777)
-#endif
+#include <file/file_path.h>
 
 static void toLower(char* str) {
     while (*str) {
@@ -737,7 +726,7 @@ char* zipGetFileList(const char* zipName, const char* ext, int* count) {
 static int makedir(const char *newdir)
 {
     char *buffer;
-    char *p;
+    int ok;
     int len = (int)strlen(newdir);
 
     if (len <= 0) return 0;
@@ -748,29 +737,14 @@ static int makedir(const char *newdir)
     if (buffer[len-1] == '/') {
         buffer[len-1] = '\0';
     }
-    if (MKDIR(buffer) == 0) {
-        free(buffer);
-        return 1;
-    }
 
-    p = buffer+1;
-    while (1) {
-        char hold;
-
-        while(*p && *p != '\\' && *p != '/') p++;
-        hold = *p;
-        *p = 0;
-        if ((MKDIR(buffer) == -1) && (errno == ENOENT))
-        {
-            printf("couldn't create directory %s\n",buffer);
-            free(buffer);
-            return 0;
-        }
-        if (hold == 0) break;
-        *p++ = hold;
+    /* path_mkdir creates intermediate directories as needed */
+    ok = path_mkdir(buffer);
+    if (!ok) {
+        printf("couldn't create directory %s\n",buffer);
     }
     free(buffer);
-    return 1;
+    return ok ? 1 : 0;
 }
 
 int zipExtractCurrentfile(unzFile uf, int overwrite, const char* password)
@@ -802,7 +776,7 @@ int zipExtractCurrentfile(unzFile uf, int overwrite, const char* password)
     }
 
     if ((*filename_withoutpath)=='\0') {
-        MKDIR(filename_inzip);
+        path_mkdir(filename_inzip);
     }else{
         const char* write_filename;
         int skip=0;

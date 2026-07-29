@@ -48,6 +48,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <ctype.h>
+#include <streams/file_stream_transforms.h>
 #ifdef USE_ARCH_GLOB
 #include "ArchGlob.h"
 #else
@@ -917,7 +918,7 @@ static int add_single_file_cpm(int diskType, char *name, const char *pathname)
     memcpy(&myDir.name, filename, 8);
     memcpy(&myDir.ext, extension, 3);
 
-    rewind(fpImport);
+    fseek(fpImport, 0, SEEK_SET);
     do {
         memset(&fileBuf, 0, dpbBLS);
         myDir.pointers[alCount] = alBlockNo;

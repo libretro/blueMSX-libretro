@@ -988,7 +988,7 @@ void TiXmlComment::Print( FILE* cfile, int depth ) const
 {
 	for ( int i=0; i<depth; i++ )
 	{
-		fputs( "    ", cfile );
+		fprintf( cfile, "%s", "    " );
 	}
 	fprintf( cfile, "<!--%s-->", value.c_str() );
 }

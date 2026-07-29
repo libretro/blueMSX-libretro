@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <streams/file_stream_transforms.h>
 
 const char* sramCreateFilenameWithSuffix(const char* romFilename, char* suffix, char* ext)
 {

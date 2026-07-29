@@ -32,6 +32,7 @@
 #include "DAC.h"
 #include "Board.h"
 #include "ArchMidi.h"
+#include <streams/file_stream_transforms.h>
 
 typedef struct MidiIO {
     MidiType inType;

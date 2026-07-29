@@ -31,8 +31,8 @@
 #include <string.h>
 #include <stdio.h>
 
-// PacketFileSystem.h Need to be included after all other includes
-#include "PacketFileSystem.h"
+/* file_stream_transforms.h needs to be included after all other includes */
+#include <streams/file_stream_transforms.h>
 
 UInt8* romLoad(const char *fileName, const char *fileInZipFile, int* size)
 {
@@ -74,7 +74,5 @@ UInt8* romLoad(const char *fileName, const char *fileInZipFile, int* size)
     return buf;
 
 error:
-    if (fileName && fileName[0])
-      fflush(stdout);
     return NULL;
 }
