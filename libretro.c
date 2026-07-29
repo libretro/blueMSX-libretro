@@ -8,6 +8,9 @@
 #include <ctype.h>
 
 #include <retro_miscellaneous.h>
+#include <streams/file_stream.h>
+#include <file/file_path.h>
+#include <retro_dirent.h>
 
 #include "Properties.h"
 #include "ArchFile.h"
@@ -428,13 +431,14 @@ static bool read_m3u(const char *file)
    char *newline;
    char *start;
    char *end;
-   FILE *f;
+   RFILE *f;
 
-   f = fopen(file, "r");
+   f = filestream_open(file, RETRO_VFS_FILE_ACCESS_READ,
+         RETRO_VFS_FILE_ACCESS_HINT_NONE);
    if (!f)
       return false;
 
-   while (fgets(line, sizeof(line), f) &&
+   while (filestream_gets(f, line, sizeof(line)) &&
           disk_images < (sizeof(disk_paths) / sizeof(disk_paths[0])))
    {
       /* Remove CR/LF */
@@ -489,7 +493,7 @@ static bool read_m3u(const char *file)
       disk_images++;
    }
 
-   fclose(f);
+   filestream_close(f);
    return (disk_images != 0);
 }
 
@@ -802,6 +806,8 @@ void retro_set_environment(retro_environment_t cb)
    };
    bool no_content = true;
 
+   struct retro_vfs_interface_info vfs_iface_info;
+
    environ_cb = cb;
 
    libretro_set_core_options(environ_cb);
@@ -809,6 +815,14 @@ void retro_set_environment(retro_environment_t cb)
 
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
 
+   vfs_iface_info.required_interface_version = 3;
+   vfs_iface_info.iface                      = NULL;
+   if (cb(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info))
+   {
+      filestream_vfs_init(&vfs_iface_info);
+      path_vfs_init(&vfs_iface_info);
+      dirent_vfs_init(&vfs_iface_info);
+   }
 }
 
 void retro_set_controller_port_device(unsigned port, unsigned device)

@@ -50,6 +50,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <streams/file_stream_transforms.h>
 
 extern void PatchReset(BoardType boardType);
 

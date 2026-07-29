@@ -160,8 +160,8 @@
 #include "romMapperDooly.h"
 #include "romMapperMuPack.h"
 
-// PacketFileSystem.h Need to be included after all other includes
-#include "PacketFileSystem.h"
+/* file_stream_transforms.h needs to be included after all other includes */
+#include <streams/file_stream_transforms.h>
 
 
 #include "romExclusion.h"

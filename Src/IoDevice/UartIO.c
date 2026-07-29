@@ -31,6 +31,7 @@
 #include "ArchUart.h"
 #include "DAC.h"
 #include "Board.h"
+#include <streams/file_stream_transforms.h>
 
 typedef struct UartIO {
     UartType type;

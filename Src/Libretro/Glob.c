@@ -25,134 +25,132 @@
 **
 ******************************************************************************
 */
-#if defined(_WIN32) && !defined(_XBOX)
-
 #include "ArchGlob.h"
-#include <windows.h>
-#include <stdlib.h>
 
-// This glob only support very basic globbing, dirs in the patterns are only
-// supported without any wildcards
+#include <stdlib.h>
+#include <string.h>
+
+#include <retro_dirent.h>
+
+/* Match a directory entry name against a glob pattern supporting the
+ * '*' and '?' wildcards. Iterative with single-star backtracking. */
+static int globMatch(const char* pattern, const char* name)
+{
+    const char* p = pattern;
+    const char* n = name;
+    const char* starP = NULL;
+    const char* starN = NULL;
+
+    while (*n) {
+        if (*p == '*') {
+            starP = ++p;
+            starN = n;
+        }
+        else if (*p == '?' || *p == *n) {
+            p++;
+            n++;
+        }
+        else if (starP) {
+            p = starP;
+            n = ++starN;
+        }
+        else {
+            return 0;
+        }
+    }
+    while (*p == '*') p++;
+    return *p == 0;
+}
+
+static int globCompare(const void* a, const void* b)
+{
+    return strcmp(*(char* const*)a, *(char* const*)b);
+}
 
 ArchGlob* archGlob(const char* pattern, int flags)
 {
-    char oldPath[MAX_PATH];
+    char dirName[512];
     const char* filePattern;
-    ArchGlob* glob;
-    WIN32_FIND_DATA wfd;
-    HANDLE handle;
+    const char* sep;
+    const char* sep2;
+    size_t dirLen;
+    struct RDIR* rdir;
+    ArchGlob* globHandle;
 
-    GetCurrentDirectory(MAX_PATH, oldPath);
+    /* Split the pattern into a directory part and a basename pattern.
+     * Wildcards are only supported in the basename. */
+    sep = strrchr(pattern, '/');
+    sep2 = strrchr(pattern, '\\');
+    if (sep2 > sep) sep = sep2;
 
-    filePattern = strrchr(pattern, '/');
-    if (filePattern == NULL) {
+    if (sep == NULL) {
+        strcpy(dirName, ".");
+        dirLen = 0;
         filePattern = pattern;
     }
     else {
-        char relPath[MAX_PATH];
-        strcpy(relPath, pattern);
-        relPath[filePattern - pattern] = '\0';
-        pattern = filePattern + 1;
-        SetCurrentDirectory(relPath);
+        dirLen = (size_t)(sep - pattern);
+        if (dirLen == 0 || dirLen >= sizeof(dirName)) {
+            return NULL;
+        }
+        memcpy(dirName, pattern, dirLen);
+        dirName[dirLen] = 0;
+        filePattern = sep + 1;
+        dirLen++; /* include the separator when building result paths */
     }
 
-    handle = FindFirstFile(pattern, &wfd);
-    if (handle == INVALID_HANDLE_VALUE) {
-        SetCurrentDirectory(oldPath);
+    rdir = retro_opendir(dirName);
+    if (rdir == NULL) {
         return NULL;
     }
-
-    glob = (ArchGlob*)calloc(1, sizeof(ArchGlob));
-
-    do {
-        DWORD fa;
-        if (0 == strcmp(wfd.cFileName, ".") || 0 == strcmp(wfd.cFileName, "..")) {
-            continue;
-        }
-      fa = GetFileAttributes(wfd.cFileName);
-        if (((flags & ARCH_GLOB_DIRS) && (fa & FILE_ATTRIBUTE_DIRECTORY) != 0) ||
-            ((flags & ARCH_GLOB_FILES) && (fa & FILE_ATTRIBUTE_DIRECTORY) == 0))
-        {
-            char* path = (char*)malloc(MAX_PATH);
-            GetCurrentDirectory(MAX_PATH, path);
-            strcat(path, "\\");
-            strcat(path, wfd.cFileName);
-
-            glob->count++;
-            glob->pathVector = (char**)realloc(glob->pathVector, sizeof(char*) * glob->count);
-            glob->pathVector[glob->count - 1] = path;
-        }
-    } while (FindNextFile(handle, &wfd));
-
-    FindClose(handle);
-
-    SetCurrentDirectory(oldPath);
-
-    return glob;
-}
-
-void archGlobFree(ArchGlob* globHandle)
-{
-    int i;
-
-    if (globHandle == NULL) {
-        return;
-    }
-
-    for (i = 0; i < globHandle->count; i++) {
-        free(globHandle->pathVector[i]);
-    }
-    free(globHandle->pathVector);
-    free(globHandle);
-}
-
-
-#else
-#include "ArchGlob.h"
-#if defined(PSP) || defined(__PS3__) || defined(ANDROID) || defined(WIIU) || defined(_XBOX) || defined(VITA) || defined(PS2) || defined(_3DS) || defined(__SWITCH__)
-/* TODO/FIXME - might want to turn this into more generic define that we
- * flick on for consoles/portables */
-#include "psp/diet-glob.h"
-#else
-#include <glob.h>
-#endif
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
-ArchGlob* archGlob(const char* pattern, int flags)
-{
-    glob_t g;
-    ArchGlob* globHandle = NULL;
-    int i;
-    int rv = glob(pattern, GLOB_MARK, NULL, &g);
-    if (rv != 0)
-        return NULL;
 
     globHandle = (ArchGlob*)calloc(1, sizeof(ArchGlob));
 
-    for (i = 0; i < g.gl_pathc; i++) {
-        char* path = g.gl_pathv[i];
-        int len = strlen(path);
+    while (retro_readdir(rdir)) {
+        const char* name = retro_dirent_get_name(rdir);
+        int isDir;
+        char* storePath;
+        size_t nameLen;
 
-        if ((flags & ARCH_GLOB_DIRS) && path[len - 1] == '/') {
-            char* storePath = (char*)calloc(1, len);
-            memcpy(storePath, path, len - 1);
-            globHandle->count++;
-            globHandle->pathVector = (char**)realloc(globHandle->pathVector, sizeof(char*) * globHandle->count);
-            globHandle->pathVector[globHandle->count - 1] = storePath;
+        if (name == NULL || name[0] == 0) {
+            continue;
+        }
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+            continue;
         }
 
-        if ((flags & ARCH_GLOB_FILES) && path[len - 1] != '/') {
-            char* storePath = (char*)calloc(1, len + 1);
-            memcpy(storePath, path, len);
-            globHandle->count++;
-            globHandle->pathVector = (char**)realloc(globHandle->pathVector, sizeof(char*) * globHandle->count);
-            globHandle->pathVector[globHandle->count - 1] = storePath;
+        isDir = retro_dirent_is_dir(rdir, NULL);
+        if (isDir && !(flags & ARCH_GLOB_DIRS)) {
+            continue;
         }
+        if (!isDir && !(flags & ARCH_GLOB_FILES)) {
+            continue;
+        }
+        if (!globMatch(filePattern, name)) {
+            continue;
+        }
+
+        nameLen = strlen(name);
+        storePath = (char*)malloc(dirLen + nameLen + 1);
+        if (dirLen > 0) {
+            memcpy(storePath, pattern, dirLen);
+        }
+        memcpy(storePath + dirLen, name, nameLen + 1);
+
+        globHandle->count++;
+        globHandle->pathVector = (char**)realloc(globHandle->pathVector, sizeof(char*) * globHandle->count);
+        globHandle->pathVector[globHandle->count - 1] = storePath;
     }
 
-    globfree(&g);
+    retro_closedir(rdir);
+
+    if (globHandle->count == 0) {
+        free(globHandle);
+        return NULL;
+    }
+
+    /* POSIX glob() returns sorted results; callers rely on this. */
+    qsort(globHandle->pathVector, globHandle->count, sizeof(char*), globCompare);
 
     return globHandle;
 }
@@ -173,5 +171,3 @@ void archGlobFree(ArchGlob* globHandle)
     }
     free(globHandle);
 }
-
-#endif

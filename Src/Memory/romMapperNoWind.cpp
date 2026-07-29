@@ -32,6 +32,7 @@
 extern "C" {
 
 #include  <stdlib.h>
+#include <streams/file_stream_transforms.h>
 
 #include "romMapperNoWind.h"
 #include "AmdFlash.h"

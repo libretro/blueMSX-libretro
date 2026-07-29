@@ -25,42 +25,15 @@
 **
 ******************************************************************************
 */
-#define USE_ARCH_GLOB
-
 #include "DirAsDisk.h"
 
-#pragma warning(disable: 4996)
-#if defined(WIN32) || defined (WINDOWS_HOST)
-#include <io.h> // not on Linux
-#endif
-
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif
-
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
 #include <ctype.h>
-#ifdef USE_ARCH_GLOB
 #include "ArchGlob.h"
-#else
-#include <windows.h>
-#endif
-
-#if defined(WIN32) || defined (WINDOWS_HOST)
-#include <io.h>
-#else
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
-#endif
+#include <streams/file_stream_transforms.h>
 
 static const unsigned char msxboot[] = { 
 	0xeb,0xfe,0x90,0x44,0x53,0x4b,0x54,0x4f,
@@ -407,11 +380,13 @@ static fileinfo *getfileinfo(int pos) {
   return file;
 }
 
-static int getfilelength(int fd) {
-    int cur = lseek(fd, 0, SEEK_CUR);
-    int length = lseek(fd, 0, SEEK_END);
-    lseek(fd, cur, SEEK_SET);
-    return length;
+static int getfilelength(FILE* f) {
+    long cur = ftell(f);
+    long length;
+    fseek(f, 0, SEEK_END);
+    length = ftell(f);
+    fseek(f, cur, SEEK_SET);
+    return (int)length;
 }
 
 static int match(fileinfo *file, char *name) {
@@ -535,11 +510,10 @@ static void store_fat(int link, int next) {
 static int add_single_file(char *name, const char *pathname) {
   int i,total;
   fileinfo *file;
-  int fileid;
+  FILE* fileid;
   UINT8 *buffer;
   UINT8 *b;
   int size;
-  struct stat s;
   struct tm *t;
   int first;
   int current;
@@ -552,9 +526,9 @@ static int add_single_file(char *name, const char *pathname) {
   strcpy (fullname,pathname);
   strcat (fullname,"/");
   strcat (fullname,name);
-  fileid=open (fullname,O_BINARY|O_RDONLY);
-  
-  if (fileid < 0) {
+  fileid=fopen (fullname,"rb");
+
+  if (fileid == NULL) {
       return -1;
   }
 
@@ -569,7 +543,7 @@ static int add_single_file(char *name, const char *pathname) {
 
   if ((size=getfilelength(fileid))>UINT8s_free())
   {
-    close (fileid);
+    fclose (fileid);
     return 1;
   }
 
@@ -578,16 +552,16 @@ static int add_single_file(char *name, const char *pathname) {
       break;
   if (i==direlements)
   {
-    close (fileid);
+    fclose (fileid);
     return 2;
   }
 
   pos=i;
 
   b = buffer=(UINT8 *) malloc ((size+1023)&(~1023));
-  read (fileid,buffer,size);
+  fread (buffer,1,size,fileid);
 
-  close (fileid);
+  fclose (fileid);
 
   total=(size+1023)>>10;
   current=first=get_free ();
@@ -614,14 +588,13 @@ static int add_single_file(char *name, const char *pathname) {
     direc[pos*32+i++]=toupper (*p);
   }
 
-  result = stat(fullname, &s);
-
-  t = localtime(&s.st_mtime);
-  if (t == NULL) {
+  /* The libretro VFS does not expose file modification times, so the
+   * generated directory entry is stamped with the current time. */
+  result = 0;
+  {
       time_t tmp = time(NULL);
       t = localtime(&tmp);
   }
-;
   if (t == NULL) {
       result = -1;
   }
@@ -917,7 +890,7 @@ static int add_single_file_cpm(int diskType, char *name, const char *pathname)
     memcpy(&myDir.name, filename, 8);
     memcpy(&myDir.ext, extension, 3);
 
-    rewind(fpImport);
+    fseek(fpImport, 0, SEEK_SET);
     do {
         memset(&fileBuf, 0, dpbBLS);
         myDir.pointers[alCount] = alBlockNo;
@@ -955,7 +928,6 @@ static int add_single_file_cpm(int diskType, char *name, const char *pathname)
     return 0;
 }
 
-#ifdef USE_ARCH_GLOB
 void* dirLoadFile(DirDiskType diskType, const char* directory, int* size)
 {
     ArchGlob* glob;
@@ -1008,53 +980,3 @@ void* dirLoadFile(DirDiskType diskType, const char* directory, int* size)
 
     return dskimage;
 }
-#else
-void* dirLoadFile(DirDiskType diskType, const char* directory, int* size)
-{
-	WIN32_FIND_DATA fileData;
-    HANDLE hFile;
-    static char filename[512];
-    int success;
-    int rv;
-
-    if (diskType == 0) {
-        load_dsk_msx();
-    }
-    else {
-        load_dsk_svi(diskType);
-    }
-
-    sprintf(filename, "%s" DIR_SEPARATOR "*.*", directory);
-
-    hFile = FindFirstFile(filename,&fileData);
-    success = hFile != INVALID_HANDLE_VALUE;
-    while (success) {
-        if (fileData.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY) {
-            if (diskType == 0) {
-                rv = add_single_file(fileName, directory);
-            }
-            else if (diskType == 4 || diskType == 5) {
-                rv = add_single_file_svi(diskType, fileName, directory);
-            }
-            else {
-                rv = add_single_file_cpm(diskType, fileName, directory);
-            }
-
-            if (rv) {
-                free(dskimage);
-                dskimage = NULL;
-                break;
-            }
-        }
-        success = FindNextFile(hFile, &fileData);
-	}
-    
-    if (hFile != INVALID_HANDLE_VALUE) {
-        FindClose(hFile);
-    }
-
-    *size = dskimagesize;
-
-    return dskimage;
-}
-#endif
