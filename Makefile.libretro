@@ -425,6 +425,11 @@ else ifneq (,$(findstring armv,$(platform)))
 else ifeq ($(platform), emscripten)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
 	STATIC_LINKING = 1
+	# Clang 16+ promotes incompatible-pointer-types to errors by default.
+	# blueMSX's C89 codebase and its bundled zlib trigger this with
+	# unsigned long vs unsigned int pointer assignments.
+	CFLAGS += -Wno-incompatible-function-pointer-types -Wno-incompatible-pointer-types
+	CXXFLAGS += -Wno-incompatible-function-pointer-types
 
 # Genode
 else ifeq ($(platform), genode)
