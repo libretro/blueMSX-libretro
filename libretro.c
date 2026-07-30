@@ -1407,7 +1407,26 @@ bool retro_load_game(const struct retro_game_info *info)
       insertCartridge(properties, first_free_slot, msx_additional_cart, NULL, mediaDbStringToType(msx_additional_cart), -1);
 
    {
+      /*
+       * C-BIOS fallback: machines auto-detected by file extension (e.g. "MSX2+" for .rom
+       * files) reference proprietary BIOS ROMs that users may not have. If the requested
+       * machine fails to load, cascade through C-BIOS variants which use freely
+       * redistributable ROMs included in the core's system files.
+       */
       Machine* machine = machineCreate(properties->emulation.machineName);
+      if (!machine) {
+         if (log_cb) log_cb(RETRO_LOG_WARN, "Machine '%s' not found, trying C-BIOS fallback\n", properties->emulation.machineName);
+         strncpy(properties->emulation.machineName, "MSX2+ - C-BIOS", sizeof(properties->emulation.machineName) - 1);
+         machine = machineCreate(properties->emulation.machineName);
+      }
+      if (!machine) {
+         strncpy(properties->emulation.machineName, "MSX2 - C-BIOS", sizeof(properties->emulation.machineName) - 1);
+         machine = machineCreate(properties->emulation.machineName);
+      }
+      if (!machine) {
+         strncpy(properties->emulation.machineName, "MSX - C-BIOS", sizeof(properties->emulation.machineName) - 1);
+         machine = machineCreate(properties->emulation.machineName);
+      }
       if (!machine)
          return false;
       boardSetMachine(machine);
