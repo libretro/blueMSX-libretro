@@ -82,7 +82,7 @@ static void loadState(RomMapperASCII8sram* rm)
 
     for (i = 0; i < 4; i++) {   
         if (rm->sramEnabled & (1 << i)) {
-            slotMapPage(rm->slot, rm->sslot, rm->startPage + i, rm->sram, 1, 0);
+            slotMapPage(rm->slot, rm->sslot, rm->startPage + i, rm->sram, 1, i > 1);
         }
         else {
             slotMapPage(rm->slot, rm->sslot, rm->startPage + i, rm->romData + rm->romMapper[i] * 0x2000, 1, 0);
