@@ -811,6 +811,36 @@ int boardRun(Machine* machine,
     return success;
 }
 
+#ifdef __LIBRETRO__
+/* boardRun() returns once the board is set up when built for libretro, so the
+ * teardown that follows its run loop is done here instead. Destroying the
+ * devices writes each cartridge's SRAM out to its file. */
+void boardEnd()
+{
+    if (!boardRunning) {
+        return;
+    }
+
+    boardCaptureDestroy();
+
+    boardInfo.destroy();
+
+    boardTimerDestroy(fdcTimer);
+    boardTimerDestroy(mixerTimer);
+    if (breakpointTimer != NULL) {
+        boardTimerDestroy(breakpointTimer);
+        breakpointTimer = NULL;
+    }
+    if (stateTimer != NULL) {
+        boardTimerDestroy(stateTimer);
+        stateTimer = NULL;
+        memZipFileSystemDestroy();
+    }
+
+    boardRunning = 0;
+}
+#endif
+
 BoardType boardGetType()
 {
     return boardType & BOARD_MASK;

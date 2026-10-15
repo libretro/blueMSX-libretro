@@ -1920,6 +1920,9 @@ void retro_unload_game(void)
 {
    unmountDiskOverlay(0);
 
+   /* Writes cartridge SRAM out, so games that save to it keep their saves */
+   boardEnd();
+
    if (image_buffer)
       free(image_buffer);
    
