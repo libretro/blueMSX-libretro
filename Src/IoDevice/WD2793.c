@@ -713,10 +713,18 @@ void wd2793LoadState(WD2793* wd)
     wd->sectorOffset    =         saveStateGet(state, "sectorOffset",    0);
     wd->dataAvailable   =         saveStateGet(state, "dataAvailable",   0);
     wd->diskTrack       = (UInt8) saveStateGet(state, "diskTrack",       0);
-    wd->diskTracks[0]   = (UInt8) saveStateGet(state, "diskTracks0",     0);
-    wd->diskTracks[1]   = (UInt8) saveStateGet(state, "diskTracks1",     0);
-    wd->diskTracks[2]   = (UInt8) saveStateGet(state, "diskTracks2",     0);
-    wd->diskTracks[3]   = (UInt8) saveStateGet(state, "diskTracks3",     0);
+    /* saved as "diskTracks[0]"; also accept the old name */
+    wd->diskTracks[0]   = (UInt8) saveStateGet(state, "diskTracks[0]",
+                                     saveStateGet(state, "diskTracks0", 0));
+    /* saved as "diskTracks[1]"; also accept the old name */
+    wd->diskTracks[1]   = (UInt8) saveStateGet(state, "diskTracks[1]",
+                                     saveStateGet(state, "diskTracks1", 0));
+    /* saved as "diskTracks[2]"; also accept the old name */
+    wd->diskTracks[2]   = (UInt8) saveStateGet(state, "diskTracks[2]",
+                                     saveStateGet(state, "diskTracks2", 0));
+    /* saved as "diskTracks[3]"; also accept the old name */
+    wd->diskTracks[3]   = (UInt8) saveStateGet(state, "diskTracks[3]",
+                                     saveStateGet(state, "diskTracks3", 0));
     wd->diskSide        =         saveStateGet(state, "diskSide",        0);
     wd->diskDensity     =         saveStateGet(state, "diskDensity",     0);
 
