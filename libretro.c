@@ -1044,7 +1044,10 @@ static void check_variables(bool can_change_machine_type)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "disabled"))
+      /* "None" was the documented default for a while but is not in the
+       * value list; treat it like disabled so frontends that still send it
+       * do not insert a bogus ROM_UNKNOWN cart. */
+      if (!strcmp(var.value, "disabled") || !strcmp(var.value, "None"))
          has_additional_cart = false;
       else
       {
@@ -1920,13 +1923,24 @@ void retro_unload_game(void)
 {
    unmountDiskOverlay(0);
 
-   if (image_buffer)
-      free(image_buffer);
-   
-   if (properties)
-      propDestroy(properties);
+   emulatorStop();
 
-   image_buffer               = NULL;
+   if (mixer != NULL) {
+      mixerDestroy(mixer);
+      mixer = NULL;
+   }
+   emulatorExit();
+
+   if (image_buffer) {
+      free(image_buffer);
+      image_buffer = NULL;
+   }
+
+   if (properties != NULL) {
+      propDestroy(properties);
+      properties = NULL;
+   }
+
    image_buffer_base_width    = 0;
    image_buffer_current_width = 0;
    image_buffer_height        = 0;

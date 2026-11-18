@@ -166,7 +166,7 @@ struct retro_core_option_v2_definition option_defs_us_v2[] = {
          { "sdsnatcher",   NULL },
          { NULL, NULL },
       },
-      "None"
+      "disabled"
    },
    {
       "bluemsx_sound_io_enable",
@@ -405,7 +405,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "sdsnatcher",   NULL },
          { NULL, NULL },
       },
-      "None"
+      "disabled"
    },
    {
       "bluemsx_auto_rewind_cas",

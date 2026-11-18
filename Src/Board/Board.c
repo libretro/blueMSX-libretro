@@ -811,6 +811,47 @@ int boardRun(Machine* machine,
     return success;
 }
 
+void boardStop(void)
+{
+    if (!boardRunning) {
+        return;
+    }
+
+    boardCaptureDestroy();
+
+    if (boardInfo.destroy) {
+        boardInfo.destroy();
+    }
+
+    if (fdcTimer != NULL) {
+        boardTimerDestroy(fdcTimer);
+        fdcTimer = NULL;
+    }
+#ifndef __LIBRETRO__
+    if (syncTimer != NULL) {
+        boardTimerDestroy(syncTimer);
+        syncTimer = NULL;
+    }
+#endif
+    if (mixerTimer != NULL) {
+        boardTimerDestroy(mixerTimer);
+        mixerTimer = NULL;
+    }
+    if (breakpointTimer != NULL) {
+        boardTimerDestroy(breakpointTimer);
+        breakpointTimer = NULL;
+    }
+    if (stateTimer != NULL) {
+        boardTimerDestroy(stateTimer);
+        stateTimer = NULL;
+        memZipFileSystemDestroy();
+    }
+
+    boardRunning = 0;
+    boardMixer = NULL;
+    boardMachine = NULL;
+}
+
 BoardType boardGetType()
 {
     return boardType & BOARD_MASK;
