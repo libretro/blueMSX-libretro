@@ -1920,13 +1920,24 @@ void retro_unload_game(void)
 {
    unmountDiskOverlay(0);
 
-   if (image_buffer)
-      free(image_buffer);
-   
-   if (properties)
-      propDestroy(properties);
+   emulatorStop();
 
-   image_buffer               = NULL;
+   if (mixer != NULL) {
+      mixerDestroy(mixer);
+      mixer = NULL;
+   }
+   emulatorExit();
+
+   if (image_buffer) {
+      free(image_buffer);
+      image_buffer = NULL;
+   }
+
+   if (properties != NULL) {
+      propDestroy(properties);
+      properties = NULL;
+   }
+
    image_buffer_base_width    = 0;
    image_buffer_current_width = 0;
    image_buffer_height        = 0;

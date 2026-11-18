@@ -96,6 +96,10 @@ int boardRun(Machine* machine,
              int reverseBufferCnt,
              int (*syncCallback)(int, int));
 
+/* Tear down a board started by boardRun(). Required for libretro, where
+ * boardRun returns while the board is still live (no desktop run loop). */
+void boardStop(void);
+
 int boardRewind();
 int boardRewindOne();
 void boardEnableSnapshots(int enable);
