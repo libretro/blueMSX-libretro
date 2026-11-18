@@ -1044,7 +1044,10 @@ static void check_variables(bool can_change_machine_type)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
-      if (!strcmp(var.value, "disabled"))
+      /* "None" was the documented default for a while but is not in the
+       * value list; treat it like disabled so frontends that still send it
+       * do not insert a bogus ROM_UNKNOWN cart. */
+      if (!strcmp(var.value, "disabled") || !strcmp(var.value, "None"))
          has_additional_cart = false;
       else
       {
