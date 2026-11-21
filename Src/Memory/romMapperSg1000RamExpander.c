@@ -61,8 +61,8 @@ static void loadState(RomMapperSg1000RamExpander* rm)
 {
     SaveState* state = saveStateOpenForRead("mapperSegaRamExpander");
 
-    rm->mask2 = saveStateGet(state, "mask2", 0x400);
-    saveStateGetBuffer(state, "ram1", rm->ram2, 0x2000);
+    rm->mask2 = saveStateGet(state, "mask2", 0x3FF);
+    saveStateGetBuffer(state, "ram1", rm->ram1, 0x2000);
     saveStateGetBuffer(state, "ram2", rm->ram2, rm->mask2 + 1);
 
     saveStateClose(state);
@@ -71,6 +71,7 @@ static void loadState(RomMapperSg1000RamExpander* rm)
 static void destroy(RomMapperSg1000RamExpander* rm)
 {
     slotUnregister(rm->slot, rm->sslot, rm->startPage);
+    slotUnregister(0, 0, 6);
     deviceManagerUnregister(rm->deviceHandle);
 
     free(rm->romData);
@@ -82,19 +83,9 @@ static UInt8 read(RomMapperSg1000RamExpander* rm, UInt16 address)
     return rm->ram2[address & rm->mask2];
 }
 
-static UInt8 read_ram1(RomMapperSg1000RamExpander* rm, UInt16 address) 
-{
-    return rm->ram1[address & 0x1fff];
-}
-
 static void write(RomMapperSg1000RamExpander* rm, UInt16 address, UInt8 value) 
 {
     rm->ram2[address & rm->mask2] = value;
-}
-
-static void write_ram1(RomMapperSg1000RamExpander* rm, UInt16 address, UInt8 value) 
-{
-    rm->ram1[address & 0x1fff] =  value;
 }
 
 int romMapperSg1000RamExpanderCreate(const char* filename, UInt8* romData, 
@@ -124,15 +115,23 @@ int romMapperSg1000RamExpanderCreate(const char* filename, UInt8* romData,
     rm->startPage  = startPage;
     rm->mask2 = (type == ROM_SG1000_RAMEXPANDER_A) ? 0x3FF: 0x1FFF;
 
+    slotRegister(slot, sslot, startPage, 2, NULL, NULL, NULL, destroy, rm); // only for destroy
+
     for (i = 0; i < pages; i++) {
         if (i + startPage >= 2) slot = 0;
         if (type == ROM_SG1000_RAMEXPANDER_A && i + startPage == 1)
-            slotRegister(slot, sslot, i + startPage, 1, read_ram1, read_ram1, write_ram1, destroy, rm);
+            slotMapPage(slot, sslot, i + startPage, rm->ram1, 1, 1); // Additional RAM
         else
             slotMapPage(slot, sslot, i + startPage, rm->romData + 0x2000 * i, 1, 0);
     }
 
-    slotRegister(0, 0, 6, 2, read, read, write, destroy, rm);
+    // Additional RAM for slot 0, pages 6 and 7
+    slotRegister(0, 0, 6, 2, read, read, write, NULL, rm);
+
+    // Solve RESET issue, as we have slotUnregister(0, 0, 6) on destroy.
+    slotMapPage(0, 0, 6, NULL, 0, 0);
+    slotMapPage(0, 0, 7, NULL, 0, 0);
+
 
     return 1;
 }

@@ -3440,7 +3440,7 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 			</rom>
 		</dump>
 	</software>
-		<software>
+	<software>
 		<title xml:lang="en">Magical Kid Wiz</title>
 		<system>Sega</system>
 		<company>Sony</company>
@@ -3451,6 +3451,48 @@ f0f128b25e5557e660d936995e6bf25c8ebd17e5</hash>
 			<rom>
 				<type>sg1000ramB</type>
 				<hash algo="sha1">fd24b501046cf811b04386129be0362a1eabf6b3</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Zanac</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>198x</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">b1f811021193565c955c3c84803dbda4c4e1407f</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">Adventure Island</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>198x</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">4171ee70b15a49d55b35104d5ca61838759b2b4e</hash>
+			</rom>
+		</dump>
+	</software>
+	<software>
+		<title xml:lang="en">The Goonies</title>
+		<system>Sega</system>
+		<company>DahJee</company>
+		<year>198x</year>
+		<country>TW</country>
+		<dump>
+			<original value="false" />
+			<rom>
+				<type>sg1000ramA</type>
+				<hash algo="sha1">91d695d642b6e6097becca04487a3281fd80e410</hash>
 			</rom>
 		</dump>
 	</software>
