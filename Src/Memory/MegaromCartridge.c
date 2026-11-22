@@ -103,6 +103,7 @@
 #include "romMapperNoWind.h"
 #include "romMapperGoudaSCSI.h"
 #include "romMapperMegaFlashRomScc.h"
+#include "romMapperKonamiUltimateCollection.h"
 #include "romMapperForteII.h"
 #include "romMapperMatraINK.h"
 #include "romMapperNettouYakyuu.h"
@@ -526,6 +527,10 @@ int cartridgeInsert(int cartNo, RomType romType, const char* cart, const char* c
 
         case ROM_MAJUTSUSHI:
             success &= romMapperMajutsushiCreate(romName, buf, size, slot, sslot, 2);
+            break;
+
+        case ROM_KONAMIULTCOLL:
+            success &= romMapperKonamiUltimateCollectionCreate(romName, buf, size, slot, sslot, 2);
             break;
 
         case ROM_HOLYQURAN:

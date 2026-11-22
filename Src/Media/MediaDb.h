@@ -203,7 +203,8 @@ enum  {
     ROM_ACTIVISIONPCB_16K    = 173,
     ROM_SC3000_MULTICART     = 174,
     ROM_SC3000_MEGACART      = 175,
-    ROM_MAXROMID             = 175
+    ROM_KONAMIULTCOLL        = 176,
+    ROM_MAXROMID             = 176
 };
 
 typedef struct MediaType MediaType;
