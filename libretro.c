@@ -1926,6 +1926,7 @@ void retro_unload_game(void)
    if (properties)
       propDestroy(properties);
 
+   properties                 = NULL;
    image_buffer               = NULL;
    image_buffer_base_width    = 0;
    image_buffer_current_width = 0;
