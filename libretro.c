@@ -1920,6 +1920,16 @@ void retro_unload_game(void)
 {
    unmountDiskOverlay(0);
 
+   /* Tear the emulated board down so the mapper destroy callbacks write
+    * battery-backed cartridge SRAM / flash (sramSave) to the save directory.
+    * The libretro port never did this, so in-game saves of SRAM and flash
+    * cartridges were lost on every restart. */
+   if (boardInfo.destroy)
+   {
+      boardInfo.destroy();
+      boardInfo.destroy = NULL;
+   }
+
    if (image_buffer)
       free(image_buffer);
    
