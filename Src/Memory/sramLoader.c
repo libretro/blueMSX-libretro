@@ -62,10 +62,8 @@ const char* sramCreateFilenameWithSuffix(const char* romFilename, char* suffix, 
     while (*src != '.' && src > romFilename) {
         src--;
     }
-    src--;
-
-    while (*src != '/' && *src != '\\' && src >= romFilename) {
-        *--dst = *src--;
+    while (src > romFilename && src[-1] != '/' && src[-1] != '\\') {
+        *--dst = *--src;
     }
 
     sprintf(SRAMfileName, "%s" DIR_SEPARATOR "%s", boardGetBaseDirectory(), dst);
