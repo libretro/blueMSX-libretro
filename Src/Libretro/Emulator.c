@@ -241,28 +241,35 @@ void emulatorStart(const char* stateName) {
 }
 
 void emulatorStop() {
-    if (emuState == EMU_STOPPED) {
-        return;
+    if (emuState != EMU_STOPPED) {
+        debuggerNotifyEmulatorStop();
+
+        emuState = EMU_STOPPED;
+
+        emuExitFlag = 1;
+
+        archMidiEnable(0);
+
+        // Reset active indicators in mixer
+        if (mixer != NULL) {
+            mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_MOONSOUND, 1);
+            mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_YAMAHA_SFG, 1);
+            mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_MSXAUDIO, 1);
+            mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_MSXMUSIC, 1);
+            mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_SCC, 1);
+        }
+
+        archEmulationStopNotification();
     }
 
-    debuggerNotifyEmulatorStop();
+    /* libretro's boardRun returns with the board still live; destroy it here
+     * so a second retro_load_game does not stack SCC/mappers on a dead mixer. */
+    boardStop();
 
-    emuState = EMU_STOPPED;
-
-    emuExitFlag = 1;
-
-    archMidiEnable(0);
-    machineDestroy(machine);
-
-    // Reset active indicators in mixer
-    mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_MOONSOUND, 1);
-    mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_YAMAHA_SFG, 1);
-    mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_MSXAUDIO, 1);
-    mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_MSXMUSIC, 1);
-    mixerIsChannelTypeActive(mixer, MIXER_CHANNEL_SCC, 1);
-
-    archEmulationStopNotification();
-
+    if (machine != NULL) {
+        machineDestroy(machine);
+        machine = NULL;
+    }
 }
 
 
