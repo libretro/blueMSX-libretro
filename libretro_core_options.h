@@ -92,6 +92,20 @@ struct retro_core_option_v2_definition option_defs_us_v2[] = {
       "host clock"
    },
    {
+      "bluemsx_sunriseide_enable",
+      "SunriseIDE Enable (Restart)",
+      NULL,
+      "Enable SunriseIDE hard drive support. When enabled, disk images will be loaded as IDE hard drives and SUNRISEIDE.rom will be automatically inserted.",
+      NULL,
+      "system",
+      {
+         { "disabled",   NULL },
+         { "enabled",   NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
       "bluemsx_overscan",
       "Crop Overscan",
       NULL,
