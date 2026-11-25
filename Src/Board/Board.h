@@ -87,6 +87,10 @@ typedef struct {
 
 void boardInit(UInt32* systemTime);
 
+#ifdef __LIBRETRO__
+void boardEnd();
+#endif
+
 int boardRun(Machine* machine, 
              BoardDeviceInfo* deviceInfo,
              Mixer* mixer,
