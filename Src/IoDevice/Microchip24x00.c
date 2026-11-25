@@ -215,7 +215,7 @@ void microchip24x00SaveState(Microchip24x00* rm)
     saveStateSet(state, "address",          rm->address);
     saveStateSet(state, "data",             rm->data);
     saveStateSet(state, "isWriting",        rm->isWriting);
-    saveStateSet(state, "writeCounter",     rm->isWriting);
+    saveStateSet(state, "writeCounter",     rm->writeCounter);
     saveStateSet(state, "writeBufferMask",  rm->writeBufferMask);
     saveStateSet(state, "timeWriting",      rm->timeWriting);
 
@@ -235,6 +235,7 @@ void microchip24x00LoadState(Microchip24x00* rm)
     rm->command         = saveStateGet(state, "command",         0);
     rm->address         = saveStateGet(state, "address",         0);
     rm->data            = saveStateGet(state, "data",            0);
+    rm->isWriting       = saveStateGet(state, "isWriting",       0);
     rm->writeCounter    = saveStateGet(state, "writeCounter",    0);
     rm->writeBufferMask = saveStateGet(state, "writeBufferMask", 0);
     rm->timeWriting     = saveStateGet(state, "timeWriting",     0);
