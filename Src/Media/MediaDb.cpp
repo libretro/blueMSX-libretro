@@ -123,6 +123,7 @@ RomType mediaDbStringToType(const char* romName)
     if (iequals(name, "HamarajaNight"))    return ROM_HAMARAJANIGHT;
     if (iequals(name, "MegaFlashRomScc"))  return ROM_MEGAFLSHSCC;
     if (iequals(name, "MegaFlashRomSccPlus")) return ROM_MEGAFLSHSCCPLUS;
+    if (iequals(name, "KonamiUltimateCollection")) return ROM_KONAMIULTCOLL;
     if (iequals(name, "Halnote"))          return ROM_HALNOTE;
     if (iequals(name, "HarryFox"))         return ROM_HARRYFOX;
     if (iequals(name, "Playball"))         return ROM_PLAYBALL;
@@ -613,6 +614,7 @@ extern "C" const char* romTypeToString(RomType romType)
     case ROM_MANBOW2_V2:  return "Manbow 2 v2";
     case ROM_MEGAFLSHSCC: return langRomTypeMegaFlashRomScc();
     case ROM_MEGAFLSHSCCPLUS: return "Mega Flash Rom SCC+";
+    case ROM_KONAMIULTCOLL: return "Konami Ultimate Collection";
     case ROM_OBSONET:     return langRomTypeObsonet();
     case ROM_DUMAS:       return langRomTypeDumas();
     case ROM_NOWIND:      return langRomTypeNoWind();
@@ -793,6 +795,7 @@ extern "C" const char* romTypeToShortString(RomType romType)
     case ROM_MANBOW2_V2:  return "MANBOW 2 v2";
     case ROM_MEGAFLSHSCC: return "MEGAFLSHSCC";
     case ROM_MEGAFLSHSCCPLUS: return "MEGAFLSHSCC+";
+    case ROM_KONAMIULTCOLL: return "KONAMI ULTCOL";
     case ROM_OBSONET:     return "OBSONET";
     case ROM_DUMAS:       return "DUMAS";
     case ROM_NOWIND:      return "NOWIND";
@@ -1020,6 +1023,7 @@ int romTypeIsMegaRom(RomType romType) {
     case ROM_MANBOW2_V2:  return 1;
     case ROM_MEGAFLSHSCC: return 1;
     case ROM_MEGAFLSHSCCPLUS: return 1;
+    case ROM_KONAMIULTCOLL: return 1;
     case ROM_OBSONET:     return 1;
     case ROM_DUMAS:       return 1;
     case ROM_NOWIND:      return 1;
@@ -1323,6 +1327,19 @@ extern "C" MediaType* mediaDbGuessRom(const void *buffer, int size)
 		return mediaType;
 	}
     
+    /* Konami Ultimate Collection (Manuel Pazos): multi-megabyte flash image
+    ** whose menu (bank 0, 'AB' header) carries the title string. */
+    if (size > 0x100000 && size <= 0x800000 && romData[0] == 'A' && romData[1] == 'B') {
+        const char KucTag[] = "ULTIMATE COLLECTION";
+        int kucTagLength = (int)strlen(KucTag);
+        for (i = 0; i < 0x2000 - kucTagLength; i++) {
+            if (romData[i] == KucTag[0] && memcmp(romData + i, KucTag, kucTagLength) == 0) {
+                mediaType->romType = ROM_KONAMIULTCOLL;
+                return mediaType;
+            }
+        }
+    }
+
     const char ManbowTag[] = "Mapper: Manbow 2";
     UInt32 tagLength = strlen(ManbowTag);
     for (i = 0; i < (int)(size - tagLength); i++) {

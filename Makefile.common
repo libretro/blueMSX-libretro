@@ -112,6 +112,7 @@ SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperKonamiKeyboardMaster.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperKonamiSynth.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperKonamiWordPro.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperKorean126.c
+SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperKonamiUltimateCollection.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperKorean80.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperKorean90.c
 SOURCES_C  += $(CORE_DIR)/Src/Memory/romMapperLodeRunner.c

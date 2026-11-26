@@ -143,6 +143,7 @@
 #include "romMapperNoWind.h"
 #include "romMapperGoudaSCSI.h"
 #include "romMapperMegaFlashRomScc.h"
+#include "romMapperKonamiUltimateCollection.h"
 #include "romMapperForteII.h"
 #include "romMapperA1FMModem.h"
 #include "romMapperA1FM.h"
@@ -1599,6 +1600,10 @@ int machineInitialize(Machine* machine, UInt8** mainRam, UInt32* mainRamSize, UI
 
         case ROM_MAJUTSUSHI:
             success &= romMapperMajutsushiCreate(romName, buf, size, slot, subslot, startPage);
+            break;
+
+        case ROM_KONAMIULTCOLL:
+            success &= romMapperKonamiUltimateCollectionCreate(romName, buf, size, slot, subslot, startPage);
             break;
             
         case ROM_HOLYQURAN:

@@ -2299,8 +2299,10 @@ void vdpCreate(VdpConnector connector, VdpVersion version, VdpSyncMode sync, int
         break;
         
     case VDP_SG1000:
-        ioPortRegister(0xbe, vdp_read,       write,      vdp);
-        ioPortRegister(0xbf, vdp_readStatus, writeLatch, vdp);
+        for (i = 0x80; i < 0xc0; i += 2) {
+            ioPortRegister(i,     vdp_read,       write,      vdp);
+            ioPortRegister(i + 1, vdp_readStatus, writeLatch, vdp);
+        }
         break;
     }
 }

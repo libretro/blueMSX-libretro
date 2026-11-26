@@ -54,59 +54,73 @@ struct AmdFlash
     AmdCmd cmd[8];
     int    cmdIdx;
     int    writeProtectMask;
+    UInt32 cmdMask;
+    UInt8  manufacturerId;
+    UInt8  deviceId;
+    int    dirty;
     char   sramFilename[512];
 };
 
+static int isSectorProtected(AmdFlash* rm, UInt32 address)
+{
+    UInt32 sector = address / rm->sectorSize;
+    return sector < 32 && ((rm->writeProtectMask >> sector) & 1);
+}
+
 static int checkCommandEraseSector(AmdFlash* rm) 
 {
-    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
-    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & 0x7ff) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
-    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[2].value != 0x80)) return 0;
-    if (rm->cmdIdx > 3 && ((rm->cmd[3].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[3].value != 0xaa)) return 0;
-    if (rm->cmdIdx > 4 && ((rm->cmd[4].address & 0x7ff) != rm->cmdAddr2 || rm->cmd[4].value != 0x55)) return 0;
+    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
+    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & rm->cmdMask) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
+    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[2].value != 0x80)) return 0;
+    if (rm->cmdIdx > 3 && ((rm->cmd[3].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[3].value != 0xaa)) return 0;
+    if (rm->cmdIdx > 4 && ((rm->cmd[4].address & rm->cmdMask) != rm->cmdAddr2 || rm->cmd[4].value != 0x55)) return 0;
     if (rm->cmdIdx > 5 && (                                                rm->cmd[5].value != 0x30)) return 0;
 
     if (rm->cmdIdx < 6) return 1;
 
-    if (((rm->writeProtectMask >> (rm->cmd[5].address / rm->sectorSize)) & 1) == 0) {
+    if (!isSectorProtected(rm, rm->cmd[5].address)) {
         memset(rm->romData + (rm->cmd[5].address & ~(rm->sectorSize - 1) & (rm->flashSize - 1)), 0xff, rm->sectorSize);
+        rm->dirty = 1;
     }
     return 0;
 }
 
 static int checkCommandEraseChip(AmdFlash* rm) 
 {
-    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
-    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & 0x7ff) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
-    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[2].value != 0x80)) return 0;
-    if (rm->cmdIdx > 3 && ((rm->cmd[3].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[3].value != 0xaa)) return 0;
-    if (rm->cmdIdx > 4 && ((rm->cmd[4].address & 0x7ff) != rm->cmdAddr2 || rm->cmd[4].value != 0x55)) return 0;
+    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
+    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & rm->cmdMask) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
+    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[2].value != 0x80)) return 0;
+    if (rm->cmdIdx > 3 && ((rm->cmd[3].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[3].value != 0xaa)) return 0;
+    if (rm->cmdIdx > 4 && ((rm->cmd[4].address & rm->cmdMask) != rm->cmdAddr2 || rm->cmd[4].value != 0x55)) return 0;
     if (rm->cmdIdx > 5 && (                                         rm->cmd[5].value != 0x10)) return 0;
 
     if (rm->cmdIdx < 6) return 1;
 
     memset(rm->romData, 0xff, rm->flashSize);
+    rm->dirty = 1;
     return 0;
 }
 
 static int checkCommandProgram(AmdFlash* rm) 
 {
-    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
-    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & 0x7ff) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
-    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[2].value != 0xa0)) return 0;
+    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
+    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & rm->cmdMask) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
+    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[2].value != 0xa0)) return 0;
 
     if (rm->cmdIdx < 4) return 1;
 
-    if (((rm->writeProtectMask >> (rm->cmd[3].address / rm->sectorSize)) & 1) == 0)
+    if (!isSectorProtected(rm, rm->cmd[3].address)) {
         rm->romData[rm->cmd[3].address & (rm->flashSize - 1)] &= rm->cmd[3].value;
+        rm->dirty = 1;
+    }
     return 0;
 }
 
 static int checkCommandManifacturer(AmdFlash* rm) 
 {
-    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
-    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & 0x7ff) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
-    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & 0x7ff) != rm->cmdAddr1 || rm->cmd[2].value != 0x90)) return 0;
+    if (rm->cmdIdx > 0 && ((rm->cmd[0].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[0].value != 0xaa)) return 0;
+    if (rm->cmdIdx > 1 && ((rm->cmd[1].address & rm->cmdMask) != rm->cmdAddr2 || rm->cmd[1].value != 0x55)) return 0;
+    if (rm->cmdIdx > 2 && ((rm->cmd[2].address & rm->cmdMask) != rm->cmdAddr1 || rm->cmd[2].value != 0x90)) return 0;
 
     if (rm->cmdIdx == 3)
         rm->state = ST_IDENT;
@@ -121,11 +135,11 @@ UInt8 amdFlashRead(AmdFlash* rm, UInt32 address)
         rm->cmdIdx = 0;
         switch (address & 0x03) {
         case 0: 
-            return 0x01;
+            return rm->manufacturerId;
         case 1: 
-            return 0xa4;
+            return rm->deviceId;
         case 2:
-            return (rm->writeProtectMask >> (address / rm->sectorSize)) & 1;
+            return isSectorProtected(rm, address);
         case 3:
             return 0x01;
         }
@@ -222,9 +236,20 @@ AmdFlash* amdFlashCreate(AmdType type, int flashSize, int sectorSize, UInt32 wri
 
     rm->writeProtectMask = writeProtectMask;
 
-    if (type == 0) {
+    rm->cmdMask        = 0x7ff;
+    rm->manufacturerId = 0x01;
+    rm->deviceId       = 0xa4;
+
+    if (type == AMD_TYPE_1) {
         rm->cmdAddr1 = 0xaaa;
         rm->cmdAddr2 = 0x555;
+    }
+    else if (type == AMD_TYPE_M29W640GB) {
+        rm->cmdAddr1       = 0xaaa;
+        rm->cmdAddr2       = 0x555;
+        rm->cmdMask        = 0xfff;
+        rm->manufacturerId = 0x20;
+        rm->deviceId       = 0x7e;
     }
     else {
         rm->cmdAddr1 = 0x555;
@@ -260,7 +285,11 @@ AmdFlash* amdFlashCreate(AmdType type, int flashSize, int sectorSize, UInt32 wri
 
 void amdFlashDestroy(AmdFlash* rm)
 {
-    if (rm->sramFilename[0])
+    /* Only write the backing file when the flash was actually programmed or
+    ** erased: large chips (8MB on the Konami Ultimate Collection) would
+    ** otherwise be dumped to disk on every cartridge removal. */
+    if (rm->sramFilename[0] && rm->dirty)
         sramSave(rm->sramFilename, rm->romData, rm->flashSize, NULL, 0);
+    free(rm->romData);
     free(rm);
 }

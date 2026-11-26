@@ -37178,4 +37178,18 @@ This MSX games database is conceived for blueMSX, although it's 99% compatible w
 			</rom>
 		</dump>
 	</software>
+	<software>
+		<title xml:lang="en">Konami Ultimate Collection</title>
+		<system>MSX</system>
+		<company>Manuel Pazos</company>
+		<year>2014</year>
+		<country>ES</country>
+		<dump>
+			<original value="false" />
+			<megarom>
+				<type>KonamiUltimateCollection</type>
+				<hash algo="sha1">3d94e0998690325bcb3640e1646d8e4e13f652cf</hash>
+			</megarom>
+		</dump>
+	</software>
 </softwaredb>

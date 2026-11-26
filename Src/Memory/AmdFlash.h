@@ -32,7 +32,10 @@
 
 typedef struct AmdFlash AmdFlash;
 
-typedef enum { AMD_TYPE_1, AMD_TYPE_2 } AmdType;
+/* AMD_TYPE_M29W640GB: ST M29W640GB used in byte (x8) mode, as found on the
+** Konami Ultimate Collection / MegaFlashROM SCC+ SD: command addresses
+** 0xAAA/0x555 decoded on 12 address bits, manufacturer 0x20, device 0x7E. */
+typedef enum { AMD_TYPE_1, AMD_TYPE_2, AMD_TYPE_M29W640GB } AmdType;
 
 
 AmdFlash* amdFlashCreate(AmdType type, int flashSize, int sectorSize, UInt32 writeProtectMask, 
